@@ -1,7 +1,7 @@
 ql
 ==
 
-Package ql implements a pure Go embedded (S)QL database.
+Package ql is a pure Go embedded (S)QL database.
 
 Installation
 
