@@ -87,6 +87,7 @@ Factor = PrimaryFactor {
 	  } [ Predicate ] .
 Field = Expression [ "AS" identifier ] .
 FieldList = Field { "," Field } [ "," ] .
+GroupByClause = "GROUP BY" ColumnNameList .
 Index = "[" Expression "]" .
 InsertIntoStmt = "INSERT" "INTO" TableName [
 		 "(" ColumnNameList ")"
@@ -136,12 +137,12 @@ PrimaryTerm = UnaryExpr {
 	  } .
 QualifiedIdent = identifier [ "." identifier ] .
 RecordSet = (
-		  identifier
+		  TableName
 		| "(" SelectStmt [ ";" ] ")"
 	  ) [ "AS" identifier ] .
 RecordSetList = RecordSet { "," RecordSet } [ "," ] .
 RollbackStmt = "ROLLBACK" .
-SelectStmt = "SELECT" [ "DISTINCT" ] ( "*" | FieldList ) "FROM" RecordSetList [ WhereClause ] [ OrderBy ] .
+SelectStmt = "SELECT" [ "DISTINCT" ] ( "*" | FieldList ) "FROM" RecordSetList [ WhereClause ] [ GroupByClause ] [ OrderBy ] .
 Slice = "[" [ Expression ] ":" [ Expression ] "]" .
 Statement = EmptyStmt
 	| AlterTableStmt

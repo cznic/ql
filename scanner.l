@@ -21,6 +21,7 @@ import (
 )
 
 type lexer struct {
+	aggFn  bool
 	c      int
 	col    int
 	errs   []error
@@ -144,10 +145,11 @@ desc		{d}{e}{s}{c}
 distinct	{d}{i}{s}{t}{i}{n}{c}{t}
 drop		{d}{r}{o}{p}
 from		{f}{r}{o}{m}
+group		{g}{r}{o}{u}{p}
 in		{i}{n}
-is		{i}{s}
 insert		{i}{n}{s}{e}{r}{t}
 into		{i}{n}{t}{o}
+is		{i}{s}
 not		{n}{o}{t}
 order		{o}{r}{d}{e}{r}
 rollback	{r}{o}{l}{l}{b}{a}{c}{k}
@@ -236,6 +238,7 @@ ident		{idchar0}{idchars}*
 {distinct}		return distinct
 {drop}			return drop
 {from}			return from
+{group}			return group
 {insert}		return insert
 {into}			return into
 {in}			return in

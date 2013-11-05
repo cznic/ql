@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"math/rand"
 	"os"
 	"path"
@@ -15,6 +16,10 @@ import (
 	"strings"
 	"testing"
 )
+
+func init() {
+	log.SetFlags(log.Flags() | log.Lshortfile)
+}
 
 func dbg(s string, va ...interface{}) {
 	_, fn, fl, _ := runtime.Caller(1)

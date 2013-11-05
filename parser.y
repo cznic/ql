@@ -35,7 +35,7 @@ import (
 	deleteKwd desc distinct drop
 	eq
 	falseKwd float float32Type float64Type floatLit from 
-	ge 
+	ge group
 	identifier imaginaryLit in insert intType int16Type int32Type int64Type int8Type is
 	into intLit 
 	le lsh 
@@ -64,18 +64,21 @@ import (
 
 %type	<item>	AlterTableStmt Assignment AssignmentList AssignmentList1
 		BeginTransactionStmt
-		Call Call1 ColumnDef ColumnName ColumnNameList ColumnNameList1 CommitStmt Conversion CreateTableStmt
-		CreateTableStmt1
+		Call Call1 ColumnDef ColumnName ColumnNameList ColumnNameList1
+		CommitStmt Conversion CreateTableStmt CreateTableStmt1
 		DeleteFromStmt DropTableStmt
 		EmptyStmt Expression ExpressionList ExpressionList1
 		Factor Factor1 Field Field1 FieldList
+		GroupByClause
 		Index InsertIntoStmt InsertIntoStmt1 InsertIntoStmt2
 		Literal
 		Operand OrderBy OrderBy1
 		QualifiedIdent
 		PrimaryExpression PrimaryFactor PrimaryTerm
 		RecordSet RecordSet1 RecordSet2 RollbackStmt
-		SelectStmt SelectStmt1 SelectStmt2 SelectStmt3 SelectStmt4 Slice Statement StatementList
+		SelectStmt SelectStmtDistinct SelectStmtFieldList
+		SelectStmtWhere SelectStmtGroup SelectStmtOrder Slice Statement
+		StatementList
 		TableName Term TruncateTableStmt Type
 		UnaryExpr UpdateStmt UpdateStmt1
 		WhereClause
@@ -374,6 +377,12 @@ FieldList:
 		$$ = append($1.([]*fld), $3.(*fld))
 	}
 
+GroupByClause:
+	group by ColumnNameList
+	{
+		$$ = &groupByRset{colNames: $3.([]string)}
+	}
+
 Index:
 	'[' Expression ']'
 	{
@@ -483,15 +492,16 @@ PrimaryExpression:
 	}
 |	PrimaryExpression Call
 	{
+		x := yylex.(*lexer)
 		f, ok := $1.(*ident)
 		if !ok {
-			yylex.(*lexer).err("expected identifier or qualified identifier")
+			x.err("expected identifier or qualified identifier")
 			goto ret1
 		}
 
 		var err error
-		if $$, err = newCall(f.s, $2.([]expression)); err != nil {
-			yylex.(*lexer).err("%v", err)
+		if $$, x.aggFn, err = newCall(f.s, $2.([]expression)); err != nil {
+			x.err("%v", err)
 			goto ret1
 		}
 	}
@@ -649,28 +659,36 @@ RollbackStmt:
 	}
 
 SelectStmt:
-	selectKwd SelectStmt1 SelectStmt2 from RecordSetList SelectStmt3 SelectStmt4
+	selectKwd SelectStmtDistinct SelectStmtFieldList from RecordSetList SelectStmtWhere SelectStmtGroup SelectStmtOrder
 	{
+		x := yylex.(*lexer)
 		$$ = &selectStmt{
-			distinct: $2.(bool),
-			flds:     $3.([]*fld),
-			from:     &crossJoinRset{sources: $5},
-			where:    $6.(*whereRset),
-			order:    $7.(*orderByRset),
+			distinct:      $2.(bool),
+			flds:          $3.([]*fld),
+			from:          &crossJoinRset{sources: $5},
+			hasAggregates: x.aggFn,
+			where:         $6.(*whereRset),
+			group:         $7.(*groupByRset),
+			order:         $8.(*orderByRset),
 		}
+		x.aggFn = false
 	}
-|	selectKwd SelectStmt1 SelectStmt2 from RecordSetList ',' SelectStmt3 SelectStmt4
+|	selectKwd SelectStmtDistinct SelectStmtFieldList from RecordSetList ',' SelectStmtWhere SelectStmtGroup SelectStmtOrder
 	{
+		x := yylex.(*lexer)
 		$$ = &selectStmt{
-			distinct: $2.(bool),
-			flds:     $3.([]*fld),
-			from:     &crossJoinRset{sources: $5},
-			where:    $7.(*whereRset),
-			order:    $8.(*orderByRset),
+			distinct:      $2.(bool),
+			flds:          $3.([]*fld),
+			from:          &crossJoinRset{sources: $5},
+			hasAggregates: x.aggFn,
+			where:         $7.(*whereRset),
+			group:         $8.(*groupByRset),
+			order:         $9.(*orderByRset),
 		}
+		x.aggFn = false
 	}
 
-SelectStmt1:
+SelectStmtDistinct:
 	/* EMPTY */
 	{
 		$$ = false
@@ -680,7 +698,7 @@ SelectStmt1:
 		$$ = true
 	}
 
-SelectStmt2:
+SelectStmtFieldList:
 	'*'
 	{
 		$$ = []*fld{}
@@ -694,14 +712,21 @@ SelectStmt2:
 		$$ = $1
 	}
 
-SelectStmt3:
+SelectStmtWhere:
 	/* EMPTY */
 	{
 		$$ = (*whereRset)(nil)
 	}
 |	WhereClause
 
-SelectStmt4:
+SelectStmtGroup:
+	/* EMPTY */
+	{
+		$$ = (*groupByRset)(nil)
+	}
+|	GroupByClause
+
+SelectStmtOrder:
 	/* EMPTY */
 	{
 		$$ = (*orderByRset)(nil)

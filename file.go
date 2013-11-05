@@ -27,9 +27,9 @@ const (
 )
 
 var (
-	_ btree         = (*fileBTree)(nil)
 	_ btreeIterator = (*fileBTreeIterator)(nil)
 	_ storage       = (*file)(nil)
+	_ temp          = (*fileTemp)(nil)
 )
 
 // OpenFile returns a DB backed by a named file. The back end limits the size
@@ -67,7 +67,7 @@ type Options struct {
 
 type fileBTreeIterator struct {
 	en *lldb.BTreeEnumerator
-	t  *fileBTree
+	t  *fileTemp
 }
 
 func (it *fileBTreeIterator) Next() (k, v []interface{}, err error) {
@@ -185,14 +185,95 @@ func infer(from []interface{}, to *[]*col) {
 	}
 }
 
-type fileBTree struct {
+func create2(a *lldb.Allocator, data ...interface{}) (h int64, err error) {
+	b, err := lldb.EncodeScalars(data...)
+	if err != nil {
+		return
+	}
+
+	return a.Alloc(b)
+}
+
+func read2(a *lldb.Allocator, dst []interface{}, h int64, cols ...*col) (data []interface{}, err error) {
+	b, err := a.Get(nil, h)
+	if err != nil {
+		return
+	}
+
+	rec, err := lldb.DecodeScalars(b)
+	if err != nil {
+		return
+	}
+
+	for _, col := range cols {
+		i := col.index + 2
+		switch col.typ {
+		case 0:
+		case qBool:
+		case qComplex64:
+			rec[i] = complex64(rec[i].(complex128))
+		case qComplex128:
+		case qFloat32:
+			rec[i] = float32(rec[i].(float64))
+		case qFloat64:
+		case qInt8:
+			rec[i] = int8(rec[i].(int64))
+		case qInt16:
+			rec[i] = int16(rec[i].(int64))
+		case qInt32:
+			rec[i] = int32(rec[i].(int64))
+		case qInt64:
+		case qString:
+		case qUint8:
+			rec[i] = uint8(rec[i].(uint64))
+		case qUint16:
+			rec[i] = uint16(rec[i].(uint64))
+		case qUint32:
+			rec[i] = uint32(rec[i].(uint64))
+		case qUint64:
+		default:
+			log.Panic("internal error")
+		}
+	}
+
+	return rec, nil
+}
+
+type fileTemp struct {
+	a     *lldb.Allocator
 	f     *os.File
 	t     *lldb.BTree
 	colsK []*col
 	colsV []*col
 }
 
-func (t *fileBTree) Drop() (err error) {
+func (t *fileTemp) BeginTransaction() error {
+	return nil
+}
+
+func (t *fileTemp) Get(k []interface{}) (v []interface{}, err error) {
+	bk, err := lldb.EncodeScalars(k...)
+	if err != nil {
+		return
+	}
+
+	bv, err := t.t.Get(nil, bk)
+	if err != nil {
+		return
+	}
+
+	return lldb.DecodeScalars(bv)
+}
+
+func (t *fileTemp) Create(data ...interface{}) (h int64, err error) {
+	return create2(t.a, data...)
+}
+
+func (t *fileTemp) Read(dst []interface{}, h int64, cols ...*col) (data []interface{}, err error) {
+	return read2(t.a, dst, h, cols...)
+}
+
+func (t *fileTemp) Drop() (err error) {
 	switch t.f == nil {
 	case true:
 		return nil
@@ -206,7 +287,7 @@ func (t *fileBTree) Drop() (err error) {
 	}
 }
 
-func (t *fileBTree) SeekFirst() (it btreeIterator, err error) {
+func (t *fileTemp) SeekFirst() (it btreeIterator, err error) {
 	en, err := t.t.SeekFirst()
 	if err != nil {
 		return
@@ -215,7 +296,7 @@ func (t *fileBTree) SeekFirst() (it btreeIterator, err error) {
 	return &fileBTreeIterator{t: t, en: en}, nil
 }
 
-func (t *fileBTree) Set(k, v []interface{}) (err error) {
+func (t *fileTemp) Set(k, v []interface{}) (err error) {
 	infer(k, &t.colsK)
 	infer(v, &t.colsV)
 
@@ -485,7 +566,7 @@ func (s *file) Verify() (allocs int64, err error) {
 	return
 }
 
-func (s *file) CreateTempBTree(asc bool) (bt btree, err error) {
+func (s *file) CreateTemp(asc bool) (bt temp, err error) {
 	f, err := ioutil.TempFile("", "ql-tmp-")
 	if err != nil {
 		return nil, err
@@ -507,7 +588,8 @@ func (s *file) CreateTempBTree(asc bool) (bt btree, err error) {
 		return nil, err
 	}
 
-	return &fileBTree{
+	return &fileTemp{
+		a: a,
 		f: f,
 		t: t,
 	}, nil
@@ -538,12 +620,7 @@ func (s *file) Create(data ...interface{}) (h int64, err error) {
 	if s.wal != nil {
 		defer s.Lock()()
 	}
-	b, err := lldb.EncodeScalars(data...)
-	if err != nil {
-		return
-	}
-
-	return s.a.Alloc(b)
+	return create2(s.a, data...)
 }
 
 func (s *file) Delete(h int64) (err error) {
@@ -577,48 +654,7 @@ func (s *file) Read(dst []interface{}, h int64, cols ...*col) (data []interface{
 	if s.wal != nil {
 		defer s.RLock()()
 	}
-	b, err := s.a.Get(nil, h)
-	if err != nil {
-		return
-	}
-
-	rec, err := lldb.DecodeScalars(b)
-	if err != nil {
-		return
-	}
-
-	for _, col := range cols {
-		i := col.index + 2
-		switch col.typ {
-		case 0:
-		case qBool:
-		case qComplex64:
-			rec[i] = complex64(rec[i].(complex128))
-		case qComplex128:
-		case qFloat32:
-			rec[i] = float32(rec[i].(float64))
-		case qFloat64:
-		case qInt8:
-			rec[i] = int8(rec[i].(int64))
-		case qInt16:
-			rec[i] = int16(rec[i].(int64))
-		case qInt32:
-			rec[i] = int32(rec[i].(int64))
-		case qInt64:
-		case qString:
-		case qUint8:
-			rec[i] = uint8(rec[i].(uint64))
-		case qUint16:
-			rec[i] = uint16(rec[i].(uint64))
-		case qUint32:
-			rec[i] = uint32(rec[i].(uint64))
-		case qUint64:
-		default:
-			log.Panic("internal error")
-		}
-	}
-
-	return rec, nil
+	return read2(s.a, dst, h, cols...)
 }
 
 func (s *file) Update(h int64, data ...interface{}) (err error) {

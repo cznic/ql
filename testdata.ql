@@ -2822,3 +2822,73 @@ BEGIN TRANSACTION;
 COMMIT;
 SELECT * FROM t;
 ||mismatched
+
+-- S 259
+SELECT count(none) FROM employee;
+||unknown
+
+-- S 260
+SELECT count() FROM employee;
+|l
+[6]
+
+-- S 261
+SELECT count() AS y FROM employee;
+|ly
+[6]
+
+-- S 262
+SELECT 3*count() AS y FROM employee;
+|ly
+[18]
+
+-- S 263
+SELECT count(LastName) FROM employee;
+|l
+[6]
+
+-- S 264
+SELECT count(DepartmentID) FROM employee;
+|l
+[5]
+
+-- S 265
+SELECT count() - count(DepartmentID) FROM employee;
+|l
+[1]
+
+-- S 266
+SELECT min(LastName), min(DepartmentID) FROM employee;
+|s, l
+[Heisenberg 31]
+
+-- S 267
+SELECT max(LastName), max(DepartmentID) FROM employee;
+|s, l
+[Smith 34]
+
+-- S 268
+SELECT sum(LastName), sum(DepartmentID) FROM employee;
+||cannot
+
+-- S 269
+SELECT sum(DepartmentID) FROM employee;
+|l
+[165]
+
+-- S 270
+SELECT avg(DepartmentID) FROM employee;
+|l
+[33]
+
+-- S 271
+SELECT DepartmentID FROM employee GROUP BY none;
+||unknown
+
+-- S 272
+SELECT DepartmentID, sum(DepartmentID) AS s FROM employee GROUP BY DepartmentID ORDER BY s DESC;
+|lDepartmentID, ls
+[34 68]
+[33 66]
+[31 31]
+[<nil> <nil>]

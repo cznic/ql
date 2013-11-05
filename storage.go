@@ -16,7 +16,7 @@ type storage interface {
 	Close() error
 	Commit() error
 	Create(data ...interface{}) (h int64, err error)
-	CreateTempBTree(asc bool) (bt btree, err error)
+	CreateTemp(asc bool) (bt temp, err error)
 	Delete(h int64) error
 	ID() (id int64, err error)
 	Name() string
@@ -31,8 +31,12 @@ type btreeIterator interface {
 	Next() (k, v []interface{}, err error)
 }
 
-type btree interface {
+type temp interface {
+	BeginTransaction() error
+	Create(data ...interface{}) (h int64, err error)
 	Drop() (err error)
+	Get(k []interface{}) (v []interface{}, err error)
+	Read(dst []interface{}, h int64, cols ...*col) (data []interface{}, err error)
 	SeekFirst() (e btreeIterator, err error)
 	Set(k, v []interface{}) (err error)
 }

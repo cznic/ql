@@ -44,7 +44,7 @@ type stmt interface {
 	String() string
 }
 
-type execCtx struct {
+type execCtx struct { //LATER +shared temp
 	db  *DB
 	arg []interface{}
 }
@@ -83,7 +83,7 @@ func (s *updateStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 		tcols[i] = col
 	}
 
-	m := map[string]interface{}{}
+	m := map[interface{}]interface{}{}
 	var nh int64
 	expr := s.where
 	for h := t.head; h != 0; h = nh {
@@ -159,7 +159,7 @@ func (s *deleteStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 		return nil, fmt.Errorf("DELETE FROM: table %s does not exist", s.tableName)
 	}
 
-	m := map[string]interface{}{}
+	m := map[interface{}]interface{}{}
 	var ph, h, nh int64
 	var pdata, data []interface{}
 	for h = t.head; h != 0; ph, h = h, nh {
@@ -314,11 +314,13 @@ func (s *alterTableAddStmt) exec(ctx *execCtx) (Recordset, error) {
 func (s *alterTableAddStmt) isUpdating() bool { return true }
 
 type selectStmt struct {
-	distinct bool
-	flds     []*fld
-	from     *crossJoinRset
-	where    *whereRset
-	order    *orderByRset
+	distinct      bool
+	flds          []*fld
+	from          *crossJoinRset
+	group         *groupByRset
+	hasAggregates bool
+	order         *orderByRset
+	where         *whereRset
 }
 
 func (s *selectStmt) String() string {
@@ -347,6 +349,10 @@ func (s *selectStmt) String() string {
 		b.WriteString(" WHERE ")
 		b.WriteString(s.where.expr.String())
 	}
+	if s.group != nil {
+		b.WriteString(" GROUP BY ")
+		b.WriteString(strings.Join(s.group.colNames, ", "))
+	}
 	if s.order != nil {
 		b.WriteString(" ORDER BY ")
 		b.WriteString(s.order.String())
@@ -368,6 +374,15 @@ func (s *selectStmt) exec0(ctx *execCtx) (r rset, err error) { //LATER overlappi
 	r = rset(s.from)
 	if s := s.where; s != nil {
 		r = &whereRset{expr: s.expr, src: r}
+	}
+	switch {
+	case !s.hasAggregates && s.group == nil: // nop
+	case !s.hasAggregates && s.group != nil:
+		r = &groupByRset{colNames: s.group.colNames, src: r}
+	case s.hasAggregates && s.group == nil:
+		r = &groupByRset{src: r}
+	case s.hasAggregates && s.group != nil:
+		r = &groupByRset{colNames: s.group.colNames, src: r}
 	}
 	if len(s.flds) != 0 {
 		r = &selectRset{flds: s.flds, src: r}

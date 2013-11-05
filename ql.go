@@ -8,7 +8,7 @@
 
 //MAYBE CROSSJOIN (explicit form), LEFT JOIN, INNER JOIN, OUTER JOIN equivalents.
 
-//MAYBE aggregate fns
+//DONE aggregate fns
 
 package ql
 
@@ -32,6 +32,7 @@ import (
 var (
 	_ rset = (*crossJoinRset)(nil)
 	_ rset = (*distinctRset)(nil)
+	_ rset = (*groupByRset)(nil)
 	_ rset = (*orderByRset)(nil)
 	_ rset = (*selectRset)(nil)
 	_ rset = (*selectStmt)(nil)
@@ -83,6 +84,91 @@ func (r recordset) Do(names bool, f func(data []interface{}) (more bool, err err
 	return r.ctx.db.do(r, names, f)
 }
 
+type groupByRset struct {
+	colNames []string
+	src      rset
+}
+
+func (r *groupByRset) do(ctx *execCtx, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
+	t, err := ctx.db.store.CreateTemp(true)
+	if err != nil {
+		return
+	}
+
+	defer func() {
+		if derr := t.Drop(); derr != nil && err == nil {
+			err = derr
+		}
+	}()
+
+	var flds []*fld
+	var gcols []*col
+	var cols []*col
+	ok := false
+	k := make([]interface{}, len(r.colNames)) //LATER optimize when len(r.cols) == 0
+	if err = r.src.do(ctx, func(rid interface{}, in []interface{}) (more bool, err error) {
+		if ok {
+			infer(in, &cols)
+			for i, c := range gcols {
+				k[i] = in[c.index]
+			}
+			h0, err := t.Get(k)
+			if err != nil {
+				return false, err
+			}
+
+			var h int64
+			if len(h0) != 0 {
+				h, _ = h0[0].(int64)
+			}
+			nh, err := t.Create(append([]interface{}{h, nil}, in...)...)
+			if err != nil {
+				return false, err
+			}
+
+			err = t.Set(k, []interface{}{nh})
+			if err != nil {
+				return false, err
+			}
+
+			return true, nil
+		}
+
+		ok = true
+		flds = in[0].([]*fld)
+		for _, c := range r.colNames {
+			i := findFldIndex(flds, c)
+			if i < 0 {
+				return false, fmt.Errorf("unknown column %s", c)
+			}
+
+			gcols = append(gcols, &col{name: c, index: i})
+		}
+		return true, nil
+	}); err != nil {
+		return
+	}
+
+	it, err := t.SeekFirst()
+	if err != nil {
+		return noEOF(err)
+	}
+
+	for i, v := range flds {
+		cols[i].name = v.name
+		cols[i].index = i
+	}
+	var data []interface{}
+	var more bool
+	for more, err = f(nil, []interface{}{t, cols}); more && err == nil; more, err = f(nil, data) {
+		_, data, err = it.Next()
+		if err != nil {
+			return noEOF(err)
+		}
+	}
+	return err
+}
+
 type tctx struct {
 	byte
 }
@@ -130,7 +216,7 @@ type distinctRset struct {
 }
 
 func (r *distinctRset) do(ctx *execCtx, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
-	t, err := ctx.db.store.CreateTempBTree(true)
+	t, err := ctx.db.store.CreateTemp(true)
 	if err != nil {
 		return
 	}
@@ -165,13 +251,14 @@ func (r *distinctRset) do(ctx *execCtx, f func(id interface{}, data []interface{
 	}
 
 	var data []interface{}
-	for more, err := f(nil, []interface{}{flds}); more && err == nil; more, err = f(nil, data) {
+	var more bool
+	for more, err = f(nil, []interface{}{flds}); more && err == nil; more, err = f(nil, data) {
 		data, _, err = it.Next()
 		if err != nil {
 			return noEOF(err)
 		}
 	}
-	return
+	return err
 }
 
 type orderByRset struct {
@@ -193,7 +280,7 @@ func (r *orderByRset) String() string {
 }
 
 func (r *orderByRset) do(ctx *execCtx, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
-	t, err := ctx.db.store.CreateTempBTree(r.asc)
+	t, err := ctx.db.store.CreateTemp(r.asc)
 	if err != nil {
 		return
 	}
@@ -204,7 +291,7 @@ func (r *orderByRset) do(ctx *execCtx, f func(id interface{}, data []interface{}
 		}
 	}()
 
-	m := map[string]interface{}{}
+	m := map[interface{}]interface{}{}
 	var flds []*fld
 	ok := false
 	k := make([]interface{}, len(r.by)+1)
@@ -247,7 +334,8 @@ func (r *orderByRset) do(ctx *execCtx, f func(id interface{}, data []interface{}
 	}
 
 	var data []interface{}
-	for more, err := f(nil, []interface{}{flds}); more && err == nil; more, err = f(nil, data) {
+	var more bool
+	for more, err = f(nil, []interface{}{flds}); more && err == nil; more, err = f(nil, data) {
 		_, data, err = it.Next()
 		if err != nil {
 			return noEOF(err)
@@ -264,7 +352,7 @@ type whereRset struct {
 }
 
 func (r *whereRset) do(ctx *execCtx, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
-	m := map[string]interface{}{}
+	m := map[interface{}]interface{}{}
 	var flds []*fld
 	ok := false
 	return r.src.do(ctx, func(rid interface{}, in []interface{}) (more bool, err error) {
@@ -307,9 +395,59 @@ type selectRset struct {
 	src  rset
 }
 
+func (r *selectRset) doGroup(grp *groupByRset, ctx *execCtx, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
+	var t temp
+	var cols []*col
+	out := make([]interface{}, len(r.flds))
+	ok := false
+	return r.src.do(ctx, func(rid interface{}, in []interface{}) (more bool, err error) {
+		if ok {
+			h := in[0].(int64)
+			m := map[interface{}]interface{}{}
+			for h != 0 {
+				in, err = t.Read(nil, h, cols...)
+				if err != nil {
+					return false, err
+				}
+
+				rec := in[2:]
+				for i, c := range cols {
+					if nm := c.name; nm != "" {
+						m[nm] = rec[i]
+					}
+				}
+				m["$id"] = rid
+				for _, fld := range r.flds {
+					if _, err = fld.expr.eval(m, ctx.arg); err != nil {
+						return false, err
+					}
+				}
+
+				h = in[0].(int64)
+			}
+			m["$agg"] = true
+			for i, fld := range r.flds {
+				if out[i], err = fld.expr.eval(m, ctx.arg); err != nil {
+					return false, err
+				}
+			}
+			return f(nil, out)
+		}
+
+		ok = true
+		t = in[0].(temp)
+		cols = in[1].([]*col)
+		return f(nil, []interface{}{r.flds})
+	})
+}
+
 func (r *selectRset) do(ctx *execCtx, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
+	if grp, ok := r.src.(*groupByRset); ok {
+		return r.doGroup(grp, ctx, f)
+	}
+
 	var flds []*fld
-	m := map[string]interface{}{}
+	m := map[interface{}]interface{}{}
 	out := make([]interface{}, len(r.flds))
 	ok := false
 	return r.src.do(ctx, func(rid interface{}, in []interface{}) (more bool, err error) {
@@ -467,6 +605,16 @@ func (r *crossJoinRset) do(ctx *execCtx, f func(id interface{}, data []interface
 type fld struct {
 	expr expression
 	name string
+}
+
+func findFldIndex(fields []*fld, name string) int {
+	for i, f := range fields {
+		if f.name == name {
+			return i
+		}
+	}
+
+	return -1
 }
 
 func findFld(fields []*fld, name string) (f *fld) {

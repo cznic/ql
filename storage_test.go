@@ -218,7 +218,7 @@ func test(t *testing.T, s testDB) (panicked error) {
 			}
 		}
 		if panicked != nil {
-			t.Errorf("%v\n%s", panicked, debug.Stack())
+			t.Errorf("PANIC: %v\n%s", panicked, debug.Stack())
 		}
 	}()
 

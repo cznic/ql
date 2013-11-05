@@ -353,7 +353,7 @@ func ideal(v interface{}) interface{} {
 	}
 }
 
-func eval(v expression, ctx map[string]interface{}, arg []interface{}) (y interface{}) {
+func eval(v expression, ctx map[interface{}]interface{}, arg []interface{}) (y interface{}) {
 	y, err := v.eval(ctx, arg)
 	if err != nil {
 		panic(err) // panic ok here
@@ -361,7 +361,7 @@ func eval(v expression, ctx map[string]interface{}, arg []interface{}) (y interf
 	return
 }
 
-func eval2(a, b expression, ctx map[string]interface{}, arg []interface{}) (x, y interface{}) {
+func eval2(a, b expression, ctx map[interface{}]interface{}, arg []interface{}) (x, y interface{}) {
 	return eval(a, ctx, arg), eval(b, ctx, arg)
 }
 

@@ -473,7 +473,7 @@
 //
 // The following functions are implicitly declared
 //
-// 	complex id imag len real
+// 	complex count id imag len min max real sum
 //
 // Expressions
 //
@@ -1178,9 +1178,10 @@
 // The result can be filtered using a WhereClause and orderd by the OrderBy
 // clause.
 //
-//  SelectStmt = "SELECT" [ "DISTINCT" ] ( "*" | FieldList ) "FROM" RecordSetList [ WhereClause ] [ OrderBy ] .
+//  SelectStmt = "SELECT" [ "DISTINCT" ] ( "*" | FieldList ) "FROM" RecordSetList
+//  	[ WhereClause ] [ GroupByClause ] [ OrderBy ] .
 //
-//  RecordSet = ( identifier | "(" SelectStmt [ ";" ] ")" ) [ "AS" identifier ] .
+//  RecordSet = ( TableName | "(" SelectStmt [ ";" ] ")" ) [ "AS" identifier ] .
 //  RecordSetList = RecordSet { "," RecordSet } [ "," ] .
 //
 // For example
@@ -1294,6 +1295,25 @@
 //
 //  WhereClause = "WHERE" Expression .
 //
+// Recordset grouping
+//
+// The GROUP BY clause is used to project rows having common values into a
+// smaller set of rows.
+//
+// For example
+//
+//	SELECT Country, sum(Qty) FROM Sales GROUP BY Country;
+//
+//	SELECT Country, Product FROM Sales GROUP BY Country, Product;
+//
+//	SELECT DISTINCT Country, Product FROM Sales;
+//
+// Using the GROUP BY without any aggregate functions in the selected fields is
+// in certain cases equal to using the DISTINCT modifier. The last two examples
+// above produce the same resultsets.
+//
+//  GroupByClause = "GROUP BY" ColumnNameList .
+//
 // Select statement evaluation order
 //
 // 1. The FROM clause is evaluated, producing a Cartesian product of its source
@@ -1301,11 +1321,13 @@
 //
 // 2. If present, the WHERE clause is evaluated.
 //
-// 3. The SELECT field expressions are evaluated.
+// 3. If present, the GROUP BY clause is evaluated.
 //
-// 4. If present, the DISTINCT modifier is evaluated.
+// 4. The SELECT field expressions are evaluated.
 //
-// 5. If present, the ORDER BY clause is evaluated.
+// 5. If present, the DISTINCT modifier is evaluated.
+//
+// 6. If present, the ORDER BY clause is evaluated.
 //
 // TRUNCATE TABLE
 //
@@ -1342,15 +1364,49 @@
 //
 // Built-in functions are predeclared.
 //
+// Avg
+//
+// The built-in aggregate function avg returns the average of the values in a
+// column.  Avg ignores NULL values, but returns NULL if all values of a column
+// are NULL.
+//
+// 	Call      Argument type    Result
+//
+// 	sum()     Column name      The average of the values in column.
+//
+// The column values must be of a numeric type.
+//
+//	SELECT salesperson, avg(sales) FROM salesforce GROUP BY salesperson;
+//
+// Count
+//
+// The built-in aggregate function count returns the number of non NULL items
+// or the number of rows in a record set.
+//
+// 	Call      Argument type    Result
+//
+// 	count()   N/A              The number of rows in a record set, int.
+// 	count()   Column name      The number of cases where the column is not NULL, int.
+//
+// For example
+//
+//	SELECT count() FROM department; // # of rows
+//
+//	SELECT count(DepartmentID) FROM department; // # of records with non NULL field DepartmentID
+//
+//	SELECT count()-count(DepartmentID) FROM department; // # of records with NULL field DepartmentID
+//
+//	SELECT count(foo+bar*3) AS y FROM t; // # of cases where 'foo+bar*3' is non NULL
+//
 // Record id
 //
 // The built-in function id takes no arguments and returns a table-unique
-// automatically assigned numeric identifier of type int64. Ids of deleted
+// automatically assigned numeric identifier of type int. Ids of deleted
 // records are not reused.
 //
 // 	Call      Argument type    Result
 //
-// 	id()      N/A              int64 or NULL
+// 	id()      N/A              int
 //
 // For example
 //
@@ -1390,6 +1446,50 @@
 //
 // If the argument to len is NULL the result is NULL.
 //
+// Max
+//
+// The built-in aggregate function max returns the largest value of a column.
+// Max ignores NULL values, but returns NULL if all values of a column are NULL.
+//
+// 	Call      Argument type    Result
+//
+// 	max()     Column name      The largest value in column.
+//
+// The column values must be of an ordered type.
+//
+// For example
+//
+//	SELECT department, max(sales) FROM t GROUP BY department;
+//
+// Min
+//
+// The built-in aggregate function min returns the smallest value of a column.
+// Min ignores NULL values, but returns NULL if all values of a column are NULL.
+//
+// 	Call      Argument type    Result
+//
+// 	min()     Column name      The smallest value in column.
+//
+// For example
+//
+//	SELECT a, min(b) FROM t GROUP BY a;
+//
+// The column values must be of an ordered type.
+//
+// Sum
+//
+// The built-in aggregate function sum returns the sum of the value of in a
+// column.  Sum ignores NULL values, but returns NULL if all values of a column
+// are NULL.
+//
+// 	Call      Argument type    Result
+//
+// 	sum()     Column name      The sum of the values in column.
+//
+// The column values must be of a numeric type.
+//
+//	SELECT salesperson, sum(sales) FROM salesforce GROUP BY salesperson;
+//
 // Manipulating complex numbers
 //
 // Three functions assemble and disassemble complex numbers. The built-in
@@ -1424,13 +1524,13 @@
 //
 // For the numeric types, the following sizes are guaranteed
 //
-// 	type                                 size in bytes
+// 	type                                            size in bytes
 //
-// 	byte, uint8, int8                     1
-// 	uint16, int16                         2
-// 	uint32, int32, float32                4
-// 	uint64, int64, float64, complex64     8
-// 	complex128                           16
+// 	byte, uint8, int8                                1
+// 	uint16, int16                                    2
+// 	uint32, int32, float32                           4
+// 	uint, uint64, int, int64, float64, complex64     8
+// 	complex128                                      16
 //
 // License
 //

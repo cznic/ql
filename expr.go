@@ -27,7 +27,7 @@ var (
 )
 
 type expression interface {
-	eval(ctx map[string]interface{}, arg []interface{}) (v interface{}, err error)
+	eval(ctx map[interface{}]interface{}, arg []interface{}) (v interface{}, err error)
 	isStatic() bool
 	String() string
 }
@@ -50,7 +50,7 @@ func (p *pexpr) String() string {
 	return fmt.Sprintf("(%s)", p.expr)
 }
 
-func (p *pexpr) eval(ctx map[string]interface{}, arg []interface{}) (v interface{}, err error) {
+func (p *pexpr) eval(ctx map[interface{}]interface{}, arg []interface{}) (v interface{}, err error) {
 	return p.expr.eval(ctx, arg)
 }
 
@@ -71,7 +71,7 @@ func (b *pBetween) String() string {
 
 //LATER newBetween and check all others have and use new*
 
-func (b *pBetween) eval(ctx map[string]interface{}, arg []interface{}) (v interface{}, err error) {
+func (b *pBetween) eval(ctx map[interface{}]interface{}, arg []interface{}) (v interface{}, err error) {
 	lhs, err := b.expr.eval(ctx, arg)
 	if err != nil {
 		return
@@ -163,7 +163,7 @@ func (o *binaryOperation) String() string {
 	return fmt.Sprintf("%s%s%s", o.l, iop(o.op), o.r)
 }
 
-func (o *binaryOperation) eval(ctx map[string]interface{}, arg []interface{}) (r interface{}, err error) {
+func (o *binaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{}) (r interface{}, err error) {
 	defer func() {
 		if e := recover(); e != nil {
 			switch x := e.(type) {
@@ -2292,7 +2292,7 @@ func (o *binaryOperation) eval(ctx map[string]interface{}, arg []interface{}) (r
 	}
 }
 
-func (o *binaryOperation) get2(ctx map[string]interface{}, arg []interface{}) (x, y interface{}) {
+func (o *binaryOperation) get2(ctx map[interface{}]interface{}, arg []interface{}) (x, y interface{}) {
 	x, y = eval2(o.l, o.r, ctx, arg)
 	//dbg("get2 pIn     - ", x, y)
 	//defer func() {dbg("get2 coerced ", x, y)}()
@@ -2307,7 +2307,7 @@ func (i *ident) isStatic() bool { return false }
 
 func (i *ident) String() string { return i.s }
 
-func (i *ident) eval(ctx map[string]interface{}, _ []interface{}) (v interface{}, err error) {
+func (i *ident) eval(ctx map[interface{}]interface{}, _ []interface{}) (v interface{}, err error) {
 	//defer func() { dbg("ident %q -> %v %v", i.s, v, err) }()
 	v, ok := ctx[i.s]
 	if !ok {
@@ -2349,7 +2349,7 @@ func (n *pIn) String() string {
 	return fmt.Sprintf("%s IN %s", n.expr, strings.Join(a, ","))
 }
 
-func (n *pIn) eval(ctx map[string]interface{}, arg []interface{}) (v interface{}, err error) {
+func (n *pIn) eval(ctx map[interface{}]interface{}, arg []interface{}) (v interface{}, err error) {
 	lhs, err := n.expr.eval(ctx, arg)
 	if err != nil {
 		return
@@ -2390,7 +2390,7 @@ func (l value) String() string {
 	}
 }
 
-func (l value) eval(ctx map[string]interface{}, _ []interface{}) (interface{}, error) {
+func (l value) eval(ctx map[interface{}]interface{}, _ []interface{}) (interface{}, error) {
 	return l.val, nil
 }
 
@@ -2409,7 +2409,7 @@ func (c *conversion) String() string {
 	return fmt.Sprintf("%s(%s)", typeStr(c.typ), c.val)
 }
 
-func (c *conversion) eval(ctx map[string]interface{}, arg []interface{}) (v interface{}, err error) {
+func (c *conversion) eval(ctx map[interface{}]interface{}, arg []interface{}) (v interface{}, err error) {
 	val, err := c.val.eval(ctx, arg)
 	if err != nil {
 		return
@@ -2446,7 +2446,7 @@ func (u *unaryOperation) isStatic() bool { return u.v.isStatic() }
 
 func (u *unaryOperation) String() string { return fmt.Sprintf("%s%s", iop(u.op), u.v) }
 
-func (u *unaryOperation) eval(ctx map[string]interface{}, arg []interface{}) (r interface{}, err error) {
+func (u *unaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{}) (r interface{}, err error) {
 	defer func() {
 		if e := recover(); e != nil {
 			switch x := e.(type) {
@@ -2629,18 +2629,19 @@ type call struct {
 	arg []expression
 }
 
-func newCall(f string, arg []expression) (v expression, err error) {
+func newCall(f string, arg []expression) (v expression, isAgg bool, err error) {
 	x := builtin[f]
 	if x.f == nil {
-		return nil, fmt.Errorf("undefined: %s", f)
+		return nil, false, fmt.Errorf("undefined: %s", f)
 	}
 
-	if g, e := len(arg), x.nArg; g != e {
+	isAgg = x.isAggregate
+	if g, min, max := len(arg), x.minArgs, x.maxArgs; g < min || g > max {
 		a := []interface{}{}
 		for _, v := range arg {
 			a = append(a, v)
 		}
-		return nil, badNArgs(e, f, a)
+		return nil, false, badNArgs(min, f, a)
 	}
 
 	c := call{f: f}
@@ -2652,13 +2653,13 @@ func newCall(f string, arg []expression) (v expression, err error) {
 
 		eval, err := val.eval(nil, nil)
 		if err != nil {
-			return nil, err
+			return nil, isAgg, err
 		}
 
 		c.arg = append(c.arg, value{eval})
 	}
 
-	return &c, nil
+	return &c, isAgg, nil
 }
 
 func (c *call) isStatic() bool {
@@ -2683,7 +2684,7 @@ func (c *call) String() string {
 	return fmt.Sprintf("%s(%s)", c.f, strings.Join(a, ", "))
 }
 
-func (c *call) eval(ctx map[string]interface{}, args []interface{}) (v interface{}, err error) {
+func (c *call) eval(ctx map[interface{}]interface{}, args []interface{}) (v interface{}, err error) {
 	f, ok := builtin[c.f]
 	if !ok {
 		return nil, fmt.Errorf("unknown function %s", c.f)
@@ -2698,10 +2699,10 @@ func (c *call) eval(ctx map[string]interface{}, args []interface{}) (v interface
 		a[i] = v
 	}
 
-	if c.f == "id" {
-		a = append(a, ctx)
+	if ctx != nil {
+		ctx["$fn"] = c
 	}
-	return f.f(a)
+	return f.f(a, ctx)
 }
 
 type parameter struct {
@@ -2712,7 +2713,7 @@ func (parameter) isStatic() bool { return false }
 
 func (p parameter) String() string { return fmt.Sprintf("$%d", p.n) }
 
-func (p parameter) eval(ctx map[string]interface{}, arg []interface{}) (v interface{}, err error) {
+func (p parameter) eval(ctx map[interface{}]interface{}, arg []interface{}) (v interface{}, err error) {
 	i := p.n - 1
 	if i < len(arg) {
 		return arg[i], nil
@@ -2739,7 +2740,7 @@ func (is *isNull) String() string {
 	return fmt.Sprintf("%s IS NULL", is.expr)
 }
 
-func (is *isNull) eval(ctx map[string]interface{}, arg []interface{}) (v interface{}, err error) {
+func (is *isNull) eval(ctx map[interface{}]interface{}, arg []interface{}) (v interface{}, err error) {
 	val, err := is.expr.eval(ctx, arg)
 	if err != nil {
 		return
@@ -2802,7 +2803,7 @@ func (x *index) isStatic() bool {
 
 func (x *index) String() string { return fmt.Sprintf("%s[%s]", x.expr, x.x) }
 
-func (x *index) eval(ctx map[string]interface{}, arg []interface{}) (v interface{}, err error) {
+func (x *index) eval(ctx map[interface{}]interface{}, arg []interface{}) (v interface{}, err error) {
 	s0, err := x.expr.eval(ctx, arg)
 	if err != nil {
 		return nil, runErr(err)
@@ -2882,7 +2883,7 @@ func newSlice(expr expression, lo, hi *expression) (v expression, err error) {
 	return &y, nil
 }
 
-func (s *slice) eval(ctx map[string]interface{}, arg []interface{}) (v interface{}, err error) {
+func (s *slice) eval(ctx map[interface{}]interface{}, arg []interface{}) (v interface{}, err error) {
 	s0, err := s.expr.eval(ctx, arg)
 	if err != nil {
 		return

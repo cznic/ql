@@ -15,9 +15,9 @@ import (
 )
 
 var (
-	_ storage       = (*mem)(nil)
-	_ btree         = (*memTempBTree)(nil)
 	_ btreeIterator = (*memBTreeIterator)(nil)
+	_ storage       = (*mem)(nil)
+	_ temp          = (*memTemp)(nil)
 )
 
 var memCollators = map[bool]func(a, b []interface{}) int{false: memCollateDesc, true: memCollate}
@@ -41,17 +41,47 @@ func (it *memBTreeIterator) Next() (k, v []interface{}, err error) {
 	return (*enumerator)(it).Next()
 }
 
-type memTempBTree tree
+type memTemp struct {
+	tree  *tree
+	store *mem
+}
 
-func (*memTempBTree) Drop() (err error) { return }
+func (t *memTemp) BeginTransaction() (err error) {
+	return nil
+}
 
-func (t *memTempBTree) Set(k, v []interface{}) (err error) {
-	(*tree)(t).Set(append([]interface{}(nil), k...), append([]interface{}(nil), v...))
+func (t *memTemp) Get(k []interface{}) (v []interface{}, err error) {
+	v, _ = t.tree.Get(k)
 	return
 }
 
-func (t *memTempBTree) SeekFirst() (e btreeIterator, err error) {
-	en, err := (*tree)(t).SeekFirst()
+func (t *memTemp) Create(data ...interface{}) (h int64, err error) {
+	s := t.store
+	switch n := len(s.recycler); {
+	case n != 0:
+		h = int64(s.recycler[n-1])
+		s.recycler = s.recycler[:n-1]
+		s.data[h] = append([]interface{}(nil), data...)
+	default:
+		h = int64(len(s.data))
+		s.data = append(s.data, append([]interface{}(nil), data...))
+	}
+	return
+}
+
+func (t *memTemp) Read(dst []interface{}, h int64, cols ...*col) (data []interface{}, err error) {
+	return t.store.Read(dst, h, cols...)
+}
+
+func (*memTemp) Drop() (err error) { return }
+
+func (t *memTemp) Set(k, v []interface{}) (err error) {
+	t.tree.Set(append([]interface{}(nil), k...), append([]interface{}(nil), v...))
+	return
+}
+
+func (t *memTemp) SeekFirst() (e btreeIterator, err error) {
+	en, err := t.tree.SeekFirst()
 	if err != nil {
 		return
 	}
@@ -158,8 +188,16 @@ func (s *mem) String() string {
 	return b.String()
 }
 
-func (s *mem) CreateTempBTree(asc bool) (bt btree, err error) {
-	return (*memTempBTree)(treeNew(memCollators[asc])), nil
+func (s *mem) CreateTemp(asc bool) (_ temp, err error) {
+	st, err := newMemStorage()
+	if err != nil {
+		return
+	}
+
+	return &memTemp{
+		tree:  treeNew(memCollators[asc]),
+		store: st,
+	}, nil
 }
 
 func (s *mem) ResetID() (err error) {
@@ -185,8 +223,7 @@ func (s *mem) Create(data ...interface{}) (h int64, err error) {
 		})
 	default:
 		h = int64(len(s.data))
-		s.data = append(s.data, data)
-		s.data[h] = append([]interface{}(nil), data...)
+		s.data = append(s.data, append([]interface{}(nil), data...))
 		r := s.rollback
 		r.list = append(r.list, undo{
 			tag: undoCreateNewHandle,
