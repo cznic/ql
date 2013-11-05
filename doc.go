@@ -132,11 +132,11 @@
 //
 // The following keywords are reserved and may not be used as identifiers.
 //
-// 	ADD    BETWEEN   complex128  DROP     FROM    int32  NULL    true      uint64
-// 	ALTER  bool      complex64   false    IN      int64  ORDER   TRUNCATE  uint8
-// 	AND    BY        CREATE      float    INSERT  int8   SELECT  uint      VALUES
-// 	AS     byte      DESC        float32  int     INTO   string  uint16    WHERE
-// 	ASC    COLUMN    DISTINCT    float64  int16   NOT    TABLE   uint32
+//	ADD    BETWEEN  complex128  DISTINCT  float64  int    INTO    string    uint16  VALUES
+//	ALTER  bool     complex64   DROP      FROM     int16  NOT     TABLE     uint32  WHERE
+//	AND    BY       CREATE      false     GROUP    int32  NULL    true      uint64
+//	AS     byte     DELETE      float     IN       int64  ORDER   TRUNCATE  uint8
+//	ASC    COLUMN   DESC        float32   INSERT   int8   SELECT  uint      UPDATE
 //
 // Keywords are not case sensitive.
 //
