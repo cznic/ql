@@ -11,10 +11,6 @@ import (
 	"strings"
 )
 
-// Aggregate functions:
-// 1st pass: $1, $2 -> ()
-// 2nd pass: $agg -> (val)
-
 var builtin = map[string]struct {
 	f           func([]interface{}, map[interface{}]interface{}) (interface{}, error)
 	minArgs     int

@@ -2892,3 +2892,34 @@ SELECT DepartmentID, sum(DepartmentID) AS s FROM employee GROUP BY DepartmentID 
 [33 66]
 [31 31]
 [<nil> <nil>]
+
+-- S 273
+SELECT DepartmentID, count(LastName+string(DepartmentID)) AS y FROM employee GROUP BY DepartmentID ORDER BY y DESC ;
+|lDepartmentID, ly
+[34 2]
+[33 2]
+[31 1]
+[<nil> 0]
+
+-- S 274
+SELECT DepartmentID, sum(2*DepartmentID) AS s FROM employee GROUP BY DepartmentID ORDER BY s DESC;
+|lDepartmentID, ls
+[34 136]
+[33 132]
+[31 62]
+[<nil> <nil>]
+
+-- S 275
+SELECT min(2*DepartmentID) FROM employee;
+|l
+[62]
+
+-- S 276
+SELECT max(2*DepartmentID) FROM employee;
+|l
+[68]
+
+-- S 277
+SELECT avg(2*DepartmentID) FROM employee;
+|l
+[66]

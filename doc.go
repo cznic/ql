@@ -473,7 +473,7 @@
 //
 // The following functions are implicitly declared
 //
-// 	complex count id imag len min max real sum
+// 	avg complex count id imag len min max real sum
 //
 // Expressions
 //
@@ -1078,7 +1078,7 @@
 //
 //	BEGIN TRANSACTION;
 //		DELETE FROM DepartmentID
-//		WHERE DepartmentName = "Ponies";
+//		WHERE DepartmentName == "Ponies";
 //	COMMIT;
 //
 // If the WhereClause is not present then all rows are removed and the
@@ -1145,7 +1145,7 @@
 //
 // The rollback statement closes the innermost transaction nesting level
 // discarding any updates to the DB made by it. If that's the outermost level
-// then the effects on the DB are as the transaction never happened.
+// then the effects on the DB are as if the transaction never happened.
 //
 //  RollbackStmt = "ROLLBACK" .
 //
@@ -1366,13 +1366,13 @@
 //
 // Avg
 //
-// The built-in aggregate function avg returns the average of the values in a
-// column.  Avg ignores NULL values, but returns NULL if all values of a column
-// are NULL.
+// The built-in aggregate function avg returns the average of values of an
+// expression.  Avg ignores NULL values, but returns NULL if all values of a
+// column are NULL.
 //
 // 	Call      Argument type    Result
 //
-// 	sum()     Column name      The average of the values in column.
+// 	avg()     expression       The average of the values of the expression.
 //
 // The column values must be of a numeric type.
 //
@@ -1380,13 +1380,13 @@
 //
 // Count
 //
-// The built-in aggregate function count returns the number of non NULL items
-// or the number of rows in a record set.
+// The built-in aggregate function count returns how many times an expression
+// has a non NULL values or the number of rows in a record set.
 //
 // 	Call      Argument type    Result
 //
 // 	count()   N/A              The number of rows in a record set, int.
-// 	count()   Column name      The number of cases where the column is not NULL, int.
+// 	count()   expression       The number of cases where the expression value is not NULL, int.
 //
 // For example
 //
@@ -1448,12 +1448,13 @@
 //
 // Max
 //
-// The built-in aggregate function max returns the largest value of a column.
-// Max ignores NULL values, but returns NULL if all values of a column are NULL.
+// The built-in aggregate function max returns the largest value of an
+// expression in a record set.  Max ignores NULL values, but returns NULL if
+// all values of a column are NULL.
 //
 // 	Call      Argument type    Result
 //
-// 	max()     Column name      The largest value in column.
+// 	max()     expression       The largest value of the expression.
 //
 // The column values must be of an ordered type.
 //
@@ -1463,12 +1464,13 @@
 //
 // Min
 //
-// The built-in aggregate function min returns the smallest value of a column.
-// Min ignores NULL values, but returns NULL if all values of a column are NULL.
+// The built-in aggregate function min returns the smallest value of an
+// expression in a record set.  Min ignores NULL values, but returns NULL if
+// all values of a column are NULL.
 //
 // 	Call      Argument type    Result
 //
-// 	min()     Column name      The smallest value in column.
+// 	min()     expression       The smallest value of the expression.
 //
 // For example
 //
@@ -1478,13 +1480,13 @@
 //
 // Sum
 //
-// The built-in aggregate function sum returns the sum of the value of in a
-// column.  Sum ignores NULL values, but returns NULL if all values of a column
-// are NULL.
+// The built-in aggregate function sum returns the sum of values of an
+// expression for all rows of a record set. Sum ignores NULL values, but
+// returns NULL if all values of a column are NULL.
 //
 // 	Call      Argument type    Result
 //
-// 	sum()     Column name      The sum of the values in column.
+// 	sum()     expression       The sum of the values of the expression.
 //
 // The column values must be of a numeric type.
 //
@@ -1543,7 +1545,7 @@
 //
 // References
 //
-// Links fom the above godocs
+// Links from the above documentation
 //
 // 	[1]: http://golang.org/ref/spec#Notation
 //	[2]: http://golang.org/ref/spec
@@ -1552,5 +1554,3 @@
 //	[5]: http://golang.org/LICENSE
 //
 package ql
-
-//DONE http://en.wikipedia.org/wiki/Insert_(SQL)#Multirow_inserts

@@ -796,7 +796,7 @@ func MustCompile(src string) list {
 //  | CC != nil |                     |                  |                  |     Execute(1)   |
 //  | TNL != 0  | if PC != CC         | DB.Commit        | DB.Rollback      |     RUnlock      |
 //  |           |     DB.Lock         | TNL--            | TNL--            | else if PC != CC |
-//  |           |     CC = PC         | TNL == 0         | TNL == 0         |     return error |
+//  |           |     CC = PC         | if TNL == 0      | if TNL == 0      |     return error |
 //  |           |                     |     CC = nil     |     CC = nil     | else             |
 //  |           | TNL++               |     State = RD   |     State = RD   |     Execute(2)   |
 //  |           | DB.BeginTransaction |     DB.Unlock    |     DB.Unlock    |                  |
