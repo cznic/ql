@@ -2923,3 +2923,39 @@ SELECT max(2*DepartmentID) FROM employee;
 SELECT avg(2*DepartmentID) FROM employee;
 |l
 [66]
+
+-- S 278
+SELECT * FROM employee GROUP BY DepartmentID;
+|sLastName, ?DepartmentID
+[John <nil>]
+[Rafferty 31]
+[Heisenberg 33]
+[Smith 34]
+
+-- S 279
+SELECT * FROM employee GROUP BY DepartmentID ORDER BY LastName DESC;
+|sLastName, lDepartmentID
+[Smith 34]
+[Rafferty 31]
+[John <nil>]
+[Heisenberg 33]
+
+-- S 280
+SELECT * FROM employee GROUP BY DepartmentID, LastName ORDER BY LastName DESC;
+|sLastName, lDepartmentID
+[Smith 34]
+[Robinson 34]
+[Rafferty 31]
+[Jones 33]
+[John <nil>]
+[Heisenberg 33]
+
+-- S 281
+SELECT * FROM employee GROUP BY LastName, DepartmentID  ORDER BY LastName DESC;
+|sLastName, lDepartmentID
+[Smith 34]
+[Robinson 34]
+[Rafferty 31]
+[Jones 33]
+[John <nil>]
+[Heisenberg 33]

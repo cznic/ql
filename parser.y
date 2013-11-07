@@ -500,9 +500,13 @@ PrimaryExpression:
 		}
 
 		var err error
-		if $$, x.aggFn, err = newCall(f.s, $2.([]expression)); err != nil {
+		var agg bool
+		if $$, agg, err = newCall(f.s, $2.([]expression)); err != nil {
 			x.err("%v", err)
 			goto ret1
+		}
+		if n := len(x.agg); n > 0 {
+			x.agg[n-1] = x.agg[n-1] || agg
 		}
 	}
 
@@ -662,30 +666,32 @@ SelectStmt:
 	selectKwd SelectStmtDistinct SelectStmtFieldList from RecordSetList SelectStmtWhere SelectStmtGroup SelectStmtOrder
 	{
 		x := yylex.(*lexer)
+		n := len(x.agg)
 		$$ = &selectStmt{
 			distinct:      $2.(bool),
 			flds:          $3.([]*fld),
 			from:          &crossJoinRset{sources: $5},
-			hasAggregates: x.aggFn,
+			hasAggregates: x.agg[n-1],
 			where:         $6.(*whereRset),
 			group:         $7.(*groupByRset),
 			order:         $8.(*orderByRset),
 		}
-		x.aggFn = false
+		x.agg = x.agg[:n-1]
 	}
 |	selectKwd SelectStmtDistinct SelectStmtFieldList from RecordSetList ',' SelectStmtWhere SelectStmtGroup SelectStmtOrder
 	{
 		x := yylex.(*lexer)
+		n := len(x.agg)
 		$$ = &selectStmt{
 			distinct:      $2.(bool),
 			flds:          $3.([]*fld),
 			from:          &crossJoinRset{sources: $5},
-			hasAggregates: x.aggFn,
+			hasAggregates: x.agg[n-1],
 			where:         $7.(*whereRset),
 			group:         $8.(*groupByRset),
 			order:         $9.(*orderByRset),
 		}
-		x.aggFn = false
+		x.agg = x.agg[:n-1]
 	}
 
 SelectStmtDistinct:

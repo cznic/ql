@@ -362,15 +362,10 @@ func (s *selectStmt) String() string {
 }
 
 func (s *selectStmt) do(ctx *execCtx, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
-	r, err := s.exec0(ctx)
-	if err != nil {
-		return
-	}
-
-	return r.do(ctx, f)
+	return s.exec0().do(ctx, f)
 }
 
-func (s *selectStmt) exec0(ctx *execCtx) (r rset, err error) { //LATER overlapping goroutines/pipelines
+func (s *selectStmt) exec0() (r rset) { //LATER overlapping goroutines/pipelines
 	r = rset(s.from)
 	if s := s.where; s != nil {
 		r = &whereRset{expr: s.expr, src: r}
@@ -384,9 +379,7 @@ func (s *selectStmt) exec0(ctx *execCtx) (r rset, err error) { //LATER overlappi
 	case s.hasAggregates && s.group != nil:
 		r = &groupByRset{colNames: s.group.colNames, src: r}
 	}
-	if len(s.flds) != 0 {
-		r = &selectRset{flds: s.flds, src: r}
-	}
+	r = &selectRset{flds: s.flds, src: r}
 	if s.distinct {
 		r = &distinctRset{src: r}
 	}
@@ -397,12 +390,7 @@ func (s *selectStmt) exec0(ctx *execCtx) (r rset, err error) { //LATER overlappi
 }
 
 func (s *selectStmt) exec(ctx *execCtx) (rs Recordset, err error) {
-	r, err := s.exec0(ctx)
-	if err != nil {
-		return
-	}
-
-	return recordset{ctx, r}, nil
+	return recordset{ctx, s.exec0()}, nil
 }
 
 func (s *selectStmt) isUpdating() bool { return false }
@@ -436,11 +424,7 @@ func (s *insertIntoStmt) String() string {
 }
 
 func (s *insertIntoStmt) execSelect(t *table, cols []*col, ctx *execCtx) (_ Recordset, err error) {
-	r, err := s.sel.exec0(ctx)
-	if err != nil {
-		return
-	}
-
+	r := s.sel.exec0()
 	ok := false
 	h, h0 := t.head, t.head
 	data0 := make([]interface{}, len(t.cols0)+2)

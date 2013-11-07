@@ -14,8 +14,8 @@ check: ql.y
 	go tool yacc -v /dev/null -o /dev/null $<
 
 clean:
-	@go clean
-	rm -f *~ y.output y.go y.tab.c
+	go clean
+	rm -f *~ y.output y.go y.tab.c *.out ql.test
 
 coerce.go: helper.go
 	if [ -f coerce.go ] ; then rm coerce.go ; fi
@@ -28,6 +28,17 @@ editor: check scanner.go parser.go
 	go fmt
 	go test -i
 	go test
+	go install
+
+cpu: ql.test
+	go test -c
+	./$< -test.bench . -test.cpuprofile cpu.out
+	go tool pprof $< cpu.out
+
+mem: ql.test
+	go test -c
+	./$< -test.bench . -test.memprofile mem.out
+	go tool pprof $< mem.out
 
 nuke:
 	go clean -i
@@ -35,6 +46,8 @@ nuke:
 parser.go: parser.y
 	go tool yacc -o $@ -v /dev/null $<
 	sed -i -e 's|//line.*||' -e 's/yyEofCode/yyEOFCode/' $@
+
+ql.test: all
 
 ql.y: doc.go
 	sed -n '1,/^package/ s/^\/\/  //p' < $< \

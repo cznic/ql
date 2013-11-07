@@ -21,19 +21,19 @@ import (
 )
 
 type lexer struct {
-	aggFn  bool
-	c      int
-	col    int
-	errs   []error
-	i      int
-	lcol   int
-	line   int
-	list   []stmt
-	ncol   int
-	nline  int
-	sc     int
-	src    string
-	val    []byte
+	agg   []bool
+	c     int
+	col   int
+	errs  []error
+	i     int
+	lcol  int
+	line  int
+	list  []stmt
+	ncol  int
+	nline int
+	sc    int
+	src   string
+	val   []byte
 }
 
 func newLexer(src string) (l *lexer) {
@@ -246,7 +246,10 @@ ident		{idchar0}{idchars}*
 {not}			return not
 {order}			return order
 {rollback}		return rollback
-{select}		return selectKwd
+
+{select}		l.agg = append(l.agg, false)
+			return selectKwd
+
 {table}			return tableKwd
 {transaction}		return transaction
 {truncate}		return truncate

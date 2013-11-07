@@ -41,6 +41,10 @@ func OpenFile(name string, opt *Options) (db *DB, err error) {
 			return nil, err
 		}
 
+		if !opt.CanCreate {
+			return
+		}
+
 		f, err = os.OpenFile(name, os.O_CREATE|os.O_EXCL|os.O_RDWR, 0666)
 		if err != nil {
 			return

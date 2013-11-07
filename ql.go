@@ -8,8 +8,6 @@
 
 //MAYBE CROSSJOIN (explicit form), LEFT JOIN, INNER JOIN, OUTER JOIN equivalents.
 
-//DONE aggregate fns
-
 package ql
 
 import (
@@ -437,6 +435,13 @@ func (r *selectRset) doGroup(grp *groupByRset, ctx *execCtx, f func(id interface
 		ok = true
 		t = in[0].(temp)
 		cols = in[1].([]*col)
+		if len(r.flds) == 0 {
+			r.flds = make([]*fld, len(cols))
+			for i, v := range cols {
+				r.flds[i] = &fld{expr: &ident{v.name}, name: v.name}
+			}
+			out = make([]interface{}, len(r.flds))
+		}
 		return f(nil, []interface{}{r.flds})
 	})
 }
@@ -444,6 +449,10 @@ func (r *selectRset) doGroup(grp *groupByRset, ctx *execCtx, f func(id interface
 func (r *selectRset) do(ctx *execCtx, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
 	if grp, ok := r.src.(*groupByRset); ok {
 		return r.doGroup(grp, ctx, f)
+	}
+
+	if len(r.flds) == 0 {
+		return r.src.do(ctx, f)
 	}
 
 	var flds []*fld

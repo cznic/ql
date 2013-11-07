@@ -488,7 +488,7 @@ out:
 		c = yyTok2[1] /* unknown char */
 	}
 	if yyDebug >= 3 {
-		__yyfmt__.Printf("lex %U %s\n", uint(char), yyTokname(c))
+		__yyfmt__.Printf("lex %s(%d)\n", yyTokname(c), uint(char))
 	}
 	return c
 }
@@ -585,7 +585,7 @@ yydefault:
 			Nerrs++
 			if yyDebug >= 1 {
 				__yyfmt__.Printf("%s", yyStatname(yystate))
-				__yyfmt__.Printf("saw %s\n", yyTokname(yychar))
+				__yyfmt__.Printf(" saw %s\n", yyTokname(yychar))
 			}
 			fallthrough
 
@@ -1047,9 +1047,13 @@ yydefault:
 			}
 
 			var err error
-			if yyVAL.item, x.aggFn, err = newCall(f.s, yyS[yypt-0].item.([]expression)); err != nil {
+			var agg bool
+			if yyVAL.item, agg, err = newCall(f.s, yyS[yypt-0].item.([]expression)); err != nil {
 				x.err("%v", err)
 				goto ret1
+			}
+			if n := len(x.agg); n > 0 {
+				x.agg[n-1] = x.agg[n-1] || agg
 			}
 		}
 	case 87:
@@ -1211,31 +1215,33 @@ yydefault:
 
 		{
 			x := yylex.(*lexer)
+			n := len(x.agg)
 			yyVAL.item = &selectStmt{
 				distinct:      yyS[yypt-6].item.(bool),
 				flds:          yyS[yypt-5].item.([]*fld),
 				from:          &crossJoinRset{sources: yyS[yypt-3].list},
-				hasAggregates: x.aggFn,
+				hasAggregates: x.agg[n-1],
 				where:         yyS[yypt-2].item.(*whereRset),
 				group:         yyS[yypt-1].item.(*groupByRset),
 				order:         yyS[yypt-0].item.(*orderByRset),
 			}
-			x.aggFn = false
+			x.agg = x.agg[:n-1]
 		}
 	case 113:
 
 		{
 			x := yylex.(*lexer)
+			n := len(x.agg)
 			yyVAL.item = &selectStmt{
 				distinct:      yyS[yypt-7].item.(bool),
 				flds:          yyS[yypt-6].item.([]*fld),
 				from:          &crossJoinRset{sources: yyS[yypt-4].list},
-				hasAggregates: x.aggFn,
+				hasAggregates: x.agg[n-1],
 				where:         yyS[yypt-2].item.(*whereRset),
 				group:         yyS[yypt-1].item.(*groupByRset),
 				order:         yyS[yypt-0].item.(*orderByRset),
 			}
-			x.aggFn = false
+			x.agg = x.agg[:n-1]
 		}
 	case 114:
 

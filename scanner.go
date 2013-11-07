@@ -19,7 +19,7 @@ import (
 )
 
 type lexer struct {
-	aggFn bool
+	agg   []bool
 	c     int
 	col   int
 	errs  []error
@@ -2947,6 +2947,7 @@ yyrule47: // {rollback}
 	}
 yyrule48: // {select}
 	{
+		l.agg = append(l.agg, false)
 		return selectKwd
 	}
 yyrule49: // {table}
