@@ -40,6 +40,29 @@ func caller(s string, va ...interface{}) {
 
 func use(...interface{}) {}
 
+func dumpTables3(r *root) {
+	fmt.Printf("---- r.head %d, r.thead %p\n", r.head, r.thead)
+	for k, v := range r.tables {
+		fmt.Printf("%p: %s->%+v\n", v, k, v)
+	}
+	fmt.Println("<exit>")
+}
+
+func dumpTables2(s storage) {
+	fmt.Println("****")
+	h := int64(1)
+	for h != 0 {
+		d, err := s.Read(nil, h)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		fmt.Printf("%d: %v\n", h, d)
+		h = d[0].(int64)
+	}
+	fmt.Println("<exit>")
+}
+
 func (db *DB) dumpTables() string {
 	var buf bytes.Buffer
 	for k, v := range db.root.tables {
@@ -520,12 +543,7 @@ func TestReopen(t *testing.T) {
 		return
 	}
 
-	if _, _, err = db.Run(NewRWCtx(), "BEGIN TRANSACTION; DROP TABLE b; COMMIT;"); err != nil {
-		t.Error(err)
-		return
-	}
-
-	for _, tn := range "ac" {
+	for _, tn := range "abc" {
 		ql := fmt.Sprintf(`
 BEGIN TRANSACTION;
 	CREATE TABLE %c (i int, s string);
@@ -557,7 +575,12 @@ COMMIT;
 		}
 	}()
 
-	for _, tn := range "abc" {
+	if _, _, err = db.Run(NewRWCtx(), "BEGIN TRANSACTION; DROP TABLE b; COMMIT;"); err != nil {
+		t.Error(err)
+		return
+	}
+
+	for _, tn := range "ac" {
 		ql := fmt.Sprintf("SELECT * FROM %c;", tn)
 		rs, i, err := db.Run(NewRWCtx(), ql)
 		if err != nil {

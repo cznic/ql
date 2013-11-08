@@ -262,11 +262,21 @@ func newRoot(store storage) (r *root, err error) {
 			tables: map[string]*table{},
 		}
 
+		var tprev *table
 		for p != 0 {
 			t := &table{
 				h:     p,
 				store: store,
+				tprev: tprev,
 			}
+
+			if r.thead == nil {
+				r.thead = t
+			}
+			if tprev != nil {
+				tprev.tnext = t
+			}
+			tprev = t
 
 			if err = t.load(); err != nil {
 				return nil, err
