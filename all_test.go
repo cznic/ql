@@ -520,7 +520,12 @@ func TestReopen(t *testing.T) {
 		return
 	}
 
-	for _, tn := range "abc" {
+	if _, _, err = db.Run(NewRWCtx(), "BEGIN TRANSACTION; DROP TABLE b; COMMIT;"); err != nil {
+		t.Error(err)
+		return
+	}
+
+	for _, tn := range "ac" {
 		ql := fmt.Sprintf(`
 BEGIN TRANSACTION;
 	CREATE TABLE %c (i int, s string);

@@ -2959,3 +2959,14 @@ SELECT * FROM employee GROUP BY LastName, DepartmentID  ORDER BY LastName DESC;
 [Jones 33]
 [John <nil>]
 [Heisenberg 33]
+
+-- 282
+BEGIN TRANSACTION;
+	CREATE TABLE s (i int);
+	CREATE TABLE t (i int);
+COMMIT;
+BEGIN TRANSACTION;
+	DROP TABLE s;
+COMMIT;
+SELECT * FROM t;
+|?i
