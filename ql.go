@@ -167,14 +167,17 @@ func (r *groupByRset) do(ctx *execCtx, f func(id interface{}, data []interface{}
 	return err
 }
 
-type tctx struct {
+// TCtx represents transaction context. It enables to execute multiple
+// statement lists in the same context. The same context guarantees the state
+// of the DB cannot change in between the separated executions.
+type TCtx struct {
 	byte
 }
 
 // NewRWCtx returns a new read/write transaction context.  NewRWCtx is safe for
 // concurrent use by multiple goroutines, every one of them will get a new,
 // unique conext.
-func NewRWCtx() *tctx { return &tctx{} }
+func NewRWCtx() *TCtx { return &TCtx{} }
 
 // Recordset is a result of a select statment. It can call a user function for
 // every row (record) in the set using the Do method.
@@ -698,7 +701,7 @@ func cols2meta(f []*col) (s string) {
 
 // DB represent the database capable of executing QL statements.
 type DB struct {
-	cc    *tctx // Current transaction context
+	cc    *TCtx // Current transaction context
 	mu    sync.Mutex
 	nest  int // ACID FSM
 	root  *root
@@ -738,7 +741,7 @@ func (db *DB) Name() string { return db.store.Name() }
 // For more details please see DB.Execute
 //
 // Run is safe for concurrent use by multiple goroutines.
-func (db *DB) Run(ctx *tctx, ql string, arg ...interface{}) (rs []Recordset, index int, err error) {
+func (db *DB) Run(ctx *TCtx, ql string, arg ...interface{}) (rs []Recordset, index int, err error) {
 	l, err := Compile(ql)
 	if err != nil {
 		return nil, -1, err
@@ -853,7 +856,7 @@ func MustCompile(src string) list {
 // Durability: Transactions are durable. A two phase commit protocol and a
 // write ahead log is used. Database is recovered after a crash from the write
 // ahead log automatically on open.
-func (db *DB) Execute(ctx *tctx, l list, arg ...interface{}) (rs []Recordset, index int, err error) {
+func (db *DB) Execute(ctx *TCtx, l list, arg ...interface{}) (rs []Recordset, index int, err error) {
 	tnl0 := -1
 
 	var s stmt
@@ -875,7 +878,7 @@ func (db *DB) Execute(ctx *tctx, l list, arg ...interface{}) (rs []Recordset, in
 	return
 }
 
-func (db *DB) run1(pc *tctx, tnl0 *int, s stmt, arg ...interface{}) (rs Recordset, err error) {
+func (db *DB) run1(pc *TCtx, tnl0 *int, s stmt, arg ...interface{}) (rs Recordset, err error) {
 	db.mu.Lock()
 	switch db.rw {
 	case false:
