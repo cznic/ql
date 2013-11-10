@@ -71,18 +71,6 @@ func (db *DB) dumpTables() string {
 	return buf.String()
 }
 
-func (s *file) stats() {
-	caller("(*file).stats")
-	fi, e := s.f0.Stat()
-	if e == nil {
-		dbg("f0 size %d", fi.Size())
-	}
-	sz, e := s.f.Size()
-	if e == nil {
-		dbg("filer size %d", sz)
-	}
-}
-
 func stStr(st int) string {
 	switch st {
 	case stDisabled:
@@ -204,12 +192,70 @@ func (m *fileTestDB) teardown() (err error) {
 	return
 }
 
+type osFileTestDB struct {
+	db   *DB
+	gmp0 int
+	m0   int64
+}
+
+func (m *osFileTestDB) setup() (db *DB, err error) {
+	m.gmp0 = runtime.GOMAXPROCS(0)
+	f, err := ioutil.TempFile("", "ql-test-osfile")
+	if err != nil {
+		return
+	}
+
+	if m.db, err = OpenFile("", &Options{OSFile: f}); err != nil {
+		return
+	}
+
+	return m.db, nil
+}
+
+func (m *osFileTestDB) mark() (err error) {
+	m.m0, err = m.db.store.Verify()
+	if err != nil {
+		m.m0 = -1
+	}
+	return
+}
+
+func (m *osFileTestDB) teardown() (err error) {
+	runtime.GOMAXPROCS(m.gmp0)
+	defer func() {
+		f := m.db.store.(*file)
+		errSet(&err, m.db.Close())
+		os.Remove(f.f0.Name())
+		if f.wal != nil {
+			os.Remove(f.wal.Name())
+		}
+	}()
+
+	if m.m0 < 0 {
+		return
+	}
+
+	n, err := m.db.store.Verify()
+	if err != nil {
+		return
+	}
+
+	if g, e := n, m.m0; g != e {
+		return fmt.Errorf("allocs: got %d, exp %d", g, e)
+	}
+	return
+}
+
 func TestMemStorage(t *testing.T) {
 	test(t, &memTestDB{})
 }
 
 func TestFileStorage(t *testing.T) {
 	test(t, &fileTestDB{})
+}
+
+func TestOSFileStorage(t *testing.T) {
+	test(t, &osFileTestDB{})
 }
 
 var (
@@ -334,18 +380,17 @@ func BenchmarkSelectOrderedFile1kBx1e4(b *testing.B) {
 }
 
 func TestString(t *testing.T) {
-	for i, v := range testdata {
+	for _, v := range testdata {
 		a := strings.Split(v, "\n|")
 		v = a[0]
 		v = strings.Replace(v, "&or;", "|", -1)
 		v = strings.Replace(v, "&oror;", "||", -1)
 		l, err := Compile(v)
 		if err != nil {
-			t.Logf("==== %d\n%s\n%v", i, v, err)
 			continue
 		}
 
-		t.Logf("==== %d\n%s\n....\n%s", i, v, l)
+		_ = l.String()
 	}
 }
 

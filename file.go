@@ -35,25 +35,35 @@ var (
 // OpenFile returns a DB backed by a named file. The back end limits the size
 // of a record to about 64 kB.
 func OpenFile(name string, opt *Options) (db *DB, err error) {
-	f, err := os.OpenFile(name, os.O_RDWR, 0666)
-	if err != nil {
-		if !os.IsNotExist(err) {
-			return nil, err
-		}
-
-		if !opt.CanCreate {
-			return
-		}
-
-		f, err = os.OpenFile(name, os.O_CREATE|os.O_EXCL|os.O_RDWR, 0666)
+	var f lldb.OSFile
+	if f = opt.OSFile; f == nil {
+		f, err = os.OpenFile(name, os.O_RDWR, 0666)
 		if err != nil {
-			return
+			if !os.IsNotExist(err) {
+				return nil, err
+			}
+
+			if !opt.CanCreate {
+				return nil, err
+			}
+
+			f, err = os.OpenFile(name, os.O_CREATE|os.O_EXCL|os.O_RDWR, 0666)
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 
-	fi, err := newFileFromFile(f, false) // always ACID
+	fi, err := newFileFromOSFile(f) // always ACID
 	if err != nil {
 		return
+	}
+
+	if fi.tempFile = opt.TempFile; fi.tempFile == nil {
+		fi.tempFile = func(dir, prefix string) (f lldb.OSFile, err error) {
+			f0, err := ioutil.TempFile(dir, prefix)
+			return f0, err
+		}
 	}
 
 	return newDB(fi)
@@ -65,8 +75,26 @@ func OpenFile(name string, opt *Options) (db *DB, err error) {
 //
 // The CanCreate option enables OpenFile to create the DB file if it does not
 // exists.
+//
+// OSFile
+//
+// OSFile allows to pass an os.File like back end providing, for example,
+// encrypted storage. If this field is nil then OpenFile uses the file named by
+// the 'name' parameter instead.
+//
+// TempFile
+//
+// TempFile provides a temporary file used for evaluating the GROUP BY, ORDER
+// BY, ... clauses. The hook is intended to be used by encrypted DB back ends
+// to avoid leaks of unecrypted data to such temp files by providing temp files
+// which are encrypted as well. Note that *os.File satisfies the lldb.OSFile
+// interface.
+//
+// If TempFile is nil it defaults to ioutil.TempFile.
 type Options struct {
 	CanCreate bool
+	OSFile    lldb.OSFile
+	TempFile  func(dir, prefix string) (f lldb.OSFile, err error)
 }
 
 type fileBTreeIterator struct {
@@ -245,7 +273,7 @@ func read2(a *lldb.Allocator, dst []interface{}, h int64, cols ...*col) (data []
 
 type fileTemp struct {
 	a     *lldb.Allocator
-	f     *os.File
+	f     lldb.OSFile
 	t     *lldb.BTree
 	colsK []*col
 	colsV []*col
@@ -278,17 +306,20 @@ func (t *fileTemp) Read(dst []interface{}, h int64, cols ...*col) (data []interf
 }
 
 func (t *fileTemp) Drop() (err error) {
-	switch t.f == nil {
-	case true:
-		return nil
-	default:
-		fn := t.f.Name()
-		if err = t.f.Close(); err != nil {
-			return
-		}
-
-		return os.Remove(fn)
+	if t.f == nil {
+		return
 	}
+
+	fn := t.f.Name()
+	if err = t.f.Close(); err != nil {
+		return
+	}
+
+	if fn == "" {
+		return
+	}
+
+	return os.Remove(fn)
 }
 
 func (t *fileTemp) SeekFirst() (it btreeIterator, err error) {
@@ -318,17 +349,18 @@ func (t *fileTemp) Set(k, v []interface{}) (err error) {
 }
 
 type file struct {
-	a    *lldb.Allocator
-	f    lldb.Filer
-	f0   *os.File
-	id   int64
-	lck  io.Closer
-	name string
-	rwmu sync.RWMutex
-	wal  *os.File
+	a        *lldb.Allocator
+	f        lldb.Filer
+	f0       lldb.OSFile
+	id       int64
+	lck      io.Closer
+	name     string
+	rwmu     sync.RWMutex
+	tempFile func(dir, prefix string) (f lldb.OSFile, err error)
+	wal      *os.File
 }
 
-func newFileFromFile(f *os.File, simple bool) (fi *file, err error) {
+func newFileFromOSFile(f lldb.OSFile) (fi *file, err error) {
 	nm := lockName(f.Name())
 	lck, err := lock.Lock(nm)
 	if err != nil {
@@ -347,39 +379,37 @@ func newFileFromFile(f *os.File, simple bool) (fi *file, err error) {
 
 	var w *os.File
 	closew := false
-	if !simple {
-		wn := walName(f.Name())
-		w, err = os.OpenFile(wn, os.O_CREATE|os.O_EXCL|os.O_RDWR, 0666)
-		closew = true
-		defer func() {
-			if closew {
-				nm := w.Name()
-				w.Close()
-				os.Remove(nm)
-				w = nil
-			}
-		}()
+	wn := walName(f.Name())
+	w, err = os.OpenFile(wn, os.O_CREATE|os.O_EXCL|os.O_RDWR, 0666)
+	closew = true
+	defer func() {
+		if closew {
+			nm := w.Name()
+			w.Close()
+			os.Remove(nm)
+			w = nil
+		}
+	}()
 
+	if err != nil {
+		if !os.IsExist(err) {
+			return nil, err
+		}
+
+		closew = false
+		w, err = os.OpenFile(wn, os.O_RDWR, 0666)
 		if err != nil {
-			if !os.IsExist(err) {
-				return nil, err
-			}
+			return nil, err
+		}
 
-			closew = false
-			w, err = os.OpenFile(wn, os.O_RDWR, 0666)
-			if err != nil {
-				return nil, err
-			}
+		closew = true
+		st, err := w.Stat()
+		if err != nil {
+			return nil, err
+		}
 
-			closew = true
-			st, err := w.Stat()
-			if err != nil {
-				return nil, err
-			}
-
-			if st.Size() != 0 {
-				return nil, fmt.Errorf("non empty WAL file %s exists", wn)
-			}
+		if st.Size() != 0 {
+			return nil, fmt.Errorf("non empty WAL file %s exists", wn)
 		}
 	}
 
@@ -396,24 +426,10 @@ func newFileFromFile(f *os.File, simple bool) (fi *file, err error) {
 			return nil, err
 		}
 
-		filer := lldb.Filer(lldb.NewSimpleFileFiler(f))
+		filer := lldb.Filer(lldb.NewOSFiler(f))
 		filer = lldb.NewInnerFiler(filer, 16)
-		switch simple {
-		case true:
-			f0 := filer
-			if filer, err = lldb.NewRollbackFiler(
-				filer,
-				func(sz int64) error {
-					return f0.Truncate(sz)
-				},
-				f0,
-			); err != nil {
-				return nil, err
-			}
-		default:
-			if filer, err = lldb.NewACIDFiler(filer, w); err != nil {
-				return nil, err
-			}
+		if filer, err = lldb.NewACIDFiler(filer, w); err != nil {
+			return nil, err
 		}
 
 		a, err := lldb.NewAllocator(filer, &lldb.Options{})
@@ -463,24 +479,10 @@ func newFileFromFile(f *os.File, simple bool) (fi *file, err error) {
 			return nil, fmt.Errorf("unknown file format")
 		}
 
-		filer := lldb.Filer(lldb.NewSimpleFileFiler(f))
+		filer := lldb.Filer(lldb.NewOSFiler(f))
 		filer = lldb.NewInnerFiler(filer, 16)
-		switch simple {
-		case true:
-			f0 := filer
-			if filer, err = lldb.NewRollbackFiler(
-				filer,
-				func(sz int64) error {
-					return f0.Truncate(sz)
-				},
-				f0,
-			); err != nil {
-				return nil, err
-			}
-		default:
-			if filer, err = lldb.NewACIDFiler(filer, w); err != nil {
-				return nil, err
-			}
+		if filer, err = lldb.NewACIDFiler(filer, w); err != nil {
+			return nil, err
 		}
 
 		a, err := lldb.NewAllocator(filer, &lldb.Options{})
@@ -546,13 +548,14 @@ func (s *file) Close() (err error) {
 		defer s.Lock()()
 	}
 
+	es := s.f0.Sync()
 	ef := s.f0.Close()
 	var ew error
 	if s.wal != nil {
 		ew = s.wal.Close()
 	}
 	el := s.lck.Close()
-	return errSet(&err, ef, ew, el)
+	return errSet(&err, es, ef, ew, el)
 }
 
 func (s *file) Name() string { return s.name }
@@ -571,13 +574,13 @@ func (s *file) Verify() (allocs int64, err error) {
 }
 
 func (s *file) CreateTemp(asc bool) (bt temp, err error) {
-	f, err := ioutil.TempFile("", "ql-tmp-")
+	f, err := s.tempFile("", "ql-tmp-")
 	if err != nil {
 		return nil, err
 	}
 
 	fn := f.Name()
-	filer := lldb.NewSimpleFileFiler(f)
+	filer := lldb.NewOSFiler(f)
 	a, err := lldb.NewAllocator(filer, &lldb.Options{})
 	if err != nil {
 		f.Close()
@@ -588,7 +591,9 @@ func (s *file) CreateTemp(asc bool) (bt temp, err error) {
 	t, _, err := lldb.CreateBTree(a, lldbCollators[asc])
 	if err != nil {
 		f.Close()
-		os.Remove(fn)
+		if fn != "" {
+			os.Remove(fn)
+		}
 		return nil, err
 	}
 
