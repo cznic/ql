@@ -57,11 +57,11 @@ scanner.go: scanner.l parser.go
 	golex -o $@ $<
 
 todo:
-	@grep -n ^[[:space:]]*_[[:space:]]*=[[:space:]][[:alpha:]][[:alnum:]]* *.go || true
-	@grep -n TODO *.go || true
-	@grep -n BUG *.go || true
-	@grep -n println *.go || true
+	@grep -n ^[[:space:]]*_[[:space:]]*=[[:space:]][[:alpha:]][[:alnum:]]* *.go *.l parser.y || true
+	@grep -n TODO *.go *.l parser.y || true
+	@grep -n BUG *.go *.l parser.y || true
+	@grep -n println *.go *.l parser.y || true
 
 later:
-	@grep -n LATER *.go || true
-	@grep -n MAYBE *.go || true
+	@grep -n LATER *.go *.l parser.y || true
+	@grep -n MAYBE *.go *.l parser.y || true
