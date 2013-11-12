@@ -426,7 +426,7 @@ func (s *insertIntoStmt) String() string {
 func (s *insertIntoStmt) execSelect(t *table, cols []*col, ctx *execCtx) (_ Recordset, err error) {
 	r := s.sel.exec0()
 	ok := false
-	h, h0 := t.head, t.head
+	h := t.head
 	data0 := make([]interface{}, len(t.cols0)+2)
 	if err = r.do(ctx, func(id interface{}, data []interface{}) (more bool, err error) {
 		if ok {
@@ -462,7 +462,7 @@ func (s *insertIntoStmt) execSelect(t *table, cols []*col, ctx *execCtx) (_ Reco
 		return
 	}
 
-	if err = t.store.Update(t.hhead, h0); err != nil {
+	if err = t.store.Update(t.hhead, h); err != nil {
 		return
 	}
 

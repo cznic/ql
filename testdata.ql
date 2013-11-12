@@ -3068,3 +3068,36 @@ COMMIT;
 SELECT sum(n) AS s FROM t WHERE n < 0;
 |?s
 [<nil>]
+
+-- 294
+BEGIN TRANSACTION;
+	CREATE TABLE t (n int);
+	INSERT INTO t SELECT count() FROM t;
+	INSERT INTO t SELECT count() FROM t;
+	INSERT INTO t SELECT count() FROM t;
+COMMIT;
+SELECT count() FROM t;
+|l
+[3]
+
+-- 295
+BEGIN TRANSACTION;
+	CREATE TABLE t (n int);
+	INSERT INTO t SELECT count() FROM t;
+	INSERT INTO t SELECT count() FROM t;
+	INSERT INTO t SELECT count() FROM t;
+	INSERT INTO t SELECT * FROM t;
+COMMIT;
+SELECT count() FROM t;
+|l
+[6]
+
+-- 296
+BEGIN TRANSACTION;
+	CREATE TABLE t (n int);
+	INSERT INTO t VALUES (0), (1), (2);
+	INSERT INTO t SELECT * FROM t;
+COMMIT;
+SELECT count() FROM t;
+|l
+[6]
