@@ -1364,11 +1364,11 @@
 //
 // Built-in functions are predeclared.
 //
-// Avg
+// Average
 //
 // The built-in aggregate function avg returns the average of values of an
 // expression.  Avg ignores NULL values, but returns NULL if all values of a
-// column are NULL.
+// column are NULL or if avg is applied to an empty record set.
 //
 // 	Call      Argument type    Result
 //
@@ -1381,7 +1381,8 @@
 // Count
 //
 // The built-in aggregate function count returns how many times an expression
-// has a non NULL values or the number of rows in a record set.
+// has a non NULL values or the number of rows in a record set. Note: count()
+// returns 0 for an empty record set.
 //
 // 	Call      Argument type    Result
 //
@@ -1450,7 +1451,7 @@
 //
 // The built-in aggregate function max returns the largest value of an
 // expression in a record set.  Max ignores NULL values, but returns NULL if
-// all values of a column are NULL.
+// all values of a column are NULL or if max is applied to an empty record set.
 //
 // 	Call      Argument type    Result
 //
@@ -1466,7 +1467,7 @@
 //
 // The built-in aggregate function min returns the smallest value of an
 // expression in a record set.  Min ignores NULL values, but returns NULL if
-// all values of a column are NULL.
+// all values of a column are NULL or if min is applied to an empty record set.
 //
 // 	Call      Argument type    Result
 //
@@ -1482,7 +1483,8 @@
 //
 // The built-in aggregate function sum returns the sum of values of an
 // expression for all rows of a record set. Sum ignores NULL values, but
-// returns NULL if all values of a column are NULL.
+// returns NULL if all values of a column are NULL or if sum is applied to an
+// empty record set.
 //
 // 	Call      Argument type    Result
 //

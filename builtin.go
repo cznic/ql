@@ -53,6 +53,10 @@ func builtinAvg(arg []interface{}, ctx map[interface{}]interface{}) (v interface
 		n   uint64
 	}
 
+	if _, ok := ctx["$agg0"]; ok {
+		return
+	}
+
 	fn := ctx["$fn"]
 	if _, ok := ctx["$agg"]; ok {
 		data, ok := ctx[fn].(avg)
@@ -132,6 +136,7 @@ func builtinAvg(arg []interface{}, ctx map[interface{}]interface{}) (v interface
 	ctx[fn] = data
 	return
 }
+
 func builtinComplex(arg []interface{}, _ map[interface{}]interface{}) (v interface{}, err error) {
 	re, im := arg[0], arg[1]
 	if re == nil || im == nil {
@@ -178,6 +183,10 @@ func builtinComplex(arg []interface{}, _ map[interface{}]interface{}) (v interfa
 }
 
 func builtinCount(arg []interface{}, ctx map[interface{}]interface{}) (v interface{}, err error) {
+	if _, ok := ctx["$agg0"]; ok {
+		return int64(0), nil
+	}
+
 	fn := ctx["$fn"]
 	if _, ok := ctx["$agg"]; ok {
 		return ctx[fn].(int64), nil
@@ -214,6 +223,10 @@ func builtinID(arg []interface{}, ctx map[interface{}]interface{}) (v interface{
 }
 
 func builtinMax(arg []interface{}, ctx map[interface{}]interface{}) (v interface{}, err error) {
+	if _, ok := ctx["$agg0"]; ok {
+		return
+	}
+
 	fn := ctx["$fn"]
 	if _, ok := ctx["$agg"]; ok {
 		if v, ok = ctx[fn]; ok {
@@ -286,6 +299,10 @@ func builtinMax(arg []interface{}, ctx map[interface{}]interface{}) (v interface
 }
 
 func builtinMin(arg []interface{}, ctx map[interface{}]interface{}) (v interface{}, err error) {
+	if _, ok := ctx["$agg0"]; ok {
+		return
+	}
+
 	fn := ctx["$fn"]
 	if _, ok := ctx["$agg"]; ok {
 		if v, ok = ctx[fn]; ok {
@@ -388,6 +405,10 @@ func builtinImag(arg []interface{}, _ map[interface{}]interface{}) (v interface{
 }
 
 func builtinSum(arg []interface{}, ctx map[interface{}]interface{}) (v interface{}, err error) {
+	if _, ok := ctx["$agg0"]; ok {
+		return
+	}
+
 	fn := ctx["$fn"]
 	if _, ok := ctx["$agg"]; ok {
 		if v, ok = ctx[fn]; ok {

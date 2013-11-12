@@ -2308,6 +2308,10 @@ func (i *ident) isStatic() bool { return false }
 func (i *ident) String() string { return i.s }
 
 func (i *ident) eval(ctx map[interface{}]interface{}, _ []interface{}) (v interface{}, err error) {
+	if _, ok := ctx["$agg0"]; ok {
+		return int64(0), nil
+	}
+
 	//defer func() { dbg("ident %q -> %v %v", i.s, v, err) }()
 	v, ok := ctx[i.s]
 	if !ok {

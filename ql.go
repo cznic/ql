@@ -401,7 +401,8 @@ func (r *selectRset) doGroup(grp *groupByRset, ctx *execCtx, f func(id interface
 	var cols []*col
 	out := make([]interface{}, len(r.flds))
 	ok := false
-	return r.src.do(ctx, func(rid interface{}, in []interface{}) (more bool, err error) {
+	rows := 0
+	if err = r.src.do(ctx, func(rid interface{}, in []interface{}) (more bool, err error) {
 		if ok {
 			h := in[0].(int64)
 			m := map[interface{}]interface{}{}
@@ -432,10 +433,12 @@ func (r *selectRset) doGroup(grp *groupByRset, ctx *execCtx, f func(id interface
 					return false, err
 				}
 			}
+			rows++
 			return f(nil, out)
 		}
 
 		ok = true
+		rows++
 		t = in[0].(temp)
 		cols = in[1].([]*col)
 		if len(r.flds) == 0 {
@@ -446,7 +449,28 @@ func (r *selectRset) doGroup(grp *groupByRset, ctx *execCtx, f func(id interface
 			out = make([]interface{}, len(r.flds))
 		}
 		return f(nil, []interface{}{r.flds})
-	})
+	}); err != nil {
+		return
+	}
+
+	switch rows {
+	case 0:
+		more, err := f(nil, []interface{}{r.flds})
+		if !more || err != nil {
+			return err
+		}
+
+		fallthrough
+	case 1:
+		m := map[interface{}]interface{}{"$agg0": true} // aggregate empty record set
+		for i, fld := range r.flds {
+			if out[i], err = fld.expr.eval(m, ctx.arg); err != nil {
+				return
+			}
+		}
+		_, err = f(nil, out)
+	}
+	return
 }
 
 func (r *selectRset) do(ctx *execCtx, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
