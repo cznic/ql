@@ -10,7 +10,6 @@ package ql
 
 import (
 	"crypto/sha1"
-	"encoding/gob"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -288,11 +287,9 @@ func (t *fileTemp) Set(k, v []interface{}) (err error) {
 
 type file struct {
 	a        *lldb.Allocator
-	dec      *gob.Decoder
-	enc      *gob.Encoder
+	codec    *gobCoder
 	f        lldb.Filer
 	f0       lldb.OSFile
-	gobmu    sync.Mutex
 	id       int64
 	lck      io.Closer
 	name     string
@@ -380,14 +377,13 @@ func newFileFromOSFile(f lldb.OSFile) (fi *file, err error) {
 
 		a.Compress = true
 		s := &file{
-			a:    a,
-			dec:  newGobDecoder(),
-			enc:  newGobEncoder(),
-			f0:   f,
-			f:    filer,
-			lck:  lck,
-			name: f.Name(),
-			wal:  w,
+			a:     a,
+			codec: newGobCoder(),
+			f0:    f,
+			f:     filer,
+			lck:   lck,
+			name:  f.Name(),
+			wal:   w,
 		}
 		if err = s.BeginTransaction(); err != nil {
 			return nil, err
@@ -449,15 +445,14 @@ func newFileFromOSFile(f lldb.OSFile) (fi *file, err error) {
 
 		a.Compress = true
 		s := &file{
-			a:    a,
-			dec:  newGobDecoder(),
-			enc:  newGobEncoder(),
-			f0:   f,
-			f:    filer,
-			id:   id,
-			lck:  lck,
-			name: f.Name(),
-			wal:  w,
+			a:     a,
+			codec: newGobCoder(),
+			f0:    f,
+			f:     filer,
+			id:    id,
+			lck:   lck,
+			name:  f.Name(),
+			wal:   w,
 		}
 
 		close, closew = false, false
@@ -478,19 +473,19 @@ func errSet(p *error, errs ...error) (err error) {
 	return
 }
 
-func (s *file) Lock() func() {
+func (s *file) lock() func() {
 	s.rwmu.Lock()
 	return s.rwmu.Unlock
 }
 
-func (s *file) RLock() func() {
+func (s *file) rLock() func() {
 	s.rwmu.RLock()
 	return s.rwmu.RUnlock
 }
 
 func (s *file) Close() (err error) {
 	if s.wal != nil {
-		defer s.Lock()()
+		defer s.lock()()
 	}
 
 	es := s.f0.Sync()
@@ -507,7 +502,7 @@ func (s *file) Name() string { return s.name }
 
 func (s *file) Verify() (allocs int64, err error) {
 	if s.wal != nil {
-		defer s.Lock()()
+		defer s.lock()()
 	}
 	var stat lldb.AllocStats
 	if err = s.a.Verify(lldb.NewMemFiler(), nil, &stat); err != nil {
@@ -552,28 +547,28 @@ func (s *file) CreateTemp(asc bool) (bt temp, err error) {
 
 func (s *file) BeginTransaction() (err error) {
 	if s.wal != nil {
-		defer s.Lock()()
+		defer s.lock()()
 	}
 	return s.f.BeginUpdate()
 }
 
 func (s *file) Rollback() (err error) {
 	if s.wal != nil {
-		defer s.Lock()()
+		defer s.lock()()
 	}
 	return s.f.Rollback()
 }
 
 func (s *file) Commit() (err error) {
 	if s.wal != nil {
-		defer s.Lock()()
+		defer s.lock()()
 	}
 	return s.f.EndUpdate()
 }
 
 func (s *file) Create(data ...interface{}) (h int64, err error) {
 	if s.wal != nil {
-		defer s.Lock()()
+		defer s.lock()()
 	}
 	b, err := lldb.EncodeScalars(data...)
 	if err != nil {
@@ -585,7 +580,7 @@ func (s *file) Create(data ...interface{}) (h int64, err error) {
 
 func (s *file) Delete(h int64) (err error) {
 	if s.wal != nil {
-		defer s.Lock()()
+		defer s.lock()()
 	}
 	return s.a.Free(h)
 }
@@ -597,7 +592,7 @@ func (s *file) ResetID() (err error) {
 
 func (s *file) ID() (int64, error) {
 	if s.wal != nil {
-		defer s.Lock()()
+		defer s.lock()()
 	}
 	s.id++
 	b := make([]byte, 8)
@@ -612,7 +607,7 @@ func (s *file) ID() (int64, error) {
 
 func (s *file) Read(dst []interface{}, h int64, cols ...*col) (data []interface{}, err error) {
 	if s.wal != nil {
-		defer s.RLock()()
+		defer s.rLock()()
 	}
 	b, err := s.a.Get(nil, h) //TODO +bufs
 	if err != nil {
@@ -660,7 +655,7 @@ func (s *file) Read(dst []interface{}, h int64, cols ...*col) (data []interface{
 
 func (s *file) Update(h int64, data ...interface{}) (err error) {
 	if s.wal != nil {
-		defer s.Lock()()
+		defer s.lock()()
 	}
 	b, err := lldb.EncodeScalars(data...)
 	if err != nil {
