@@ -87,7 +87,7 @@ func init() {
 	if gobInitTime, err = time.ParseInLocation(
 		"Jan 2, 2006 at 3:04pm (MST)",
 		"Jul 9, 2012 at 5:02am (CEST)",
-		time.FixedZone("UTC", 0),
+		time.FixedZone("XYZ", 1234),
 	); err != nil {
 		log.Panic(err)
 	}
@@ -158,7 +158,7 @@ func (g *gobCoder) encode(v interface{}) (b []byte, err error) {
 	case time.Time:
 		err = g.enc.Encode(x)
 	case time.Duration:
-		err = g.enc.Encode(x)
+		err = g.enc.Encode(int64(x))
 	default:
 		log.Panic("internal error")
 	}
@@ -188,9 +188,9 @@ func (g *gobCoder) decode(b []byte, typ int) (v interface{}, err error) {
 		err = g.dec.Decode(&x)
 		v = x
 	case qDuration:
-		var x time.Duration
+		var x int64
 		err = g.dec.Decode(&x)
-		v = x
+		v = time.Duration(x)
 	default:
 		log.Panic("internal error")
 	}

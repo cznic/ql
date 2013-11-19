@@ -10,6 +10,8 @@ import (
 	"bytes"
 	"fmt"
 	"log"
+	"math/big"
+	"time"
 
 	"github.com/cznic/exp/lldb"
 )
@@ -56,16 +58,15 @@ func (t *memTemp) Get(k []interface{}) (v []interface{}, err error) {
 }
 
 func (t *memTemp) Create(data ...interface{}) (h int64, err error) {
-	//TODO append(nil, ...) not enough with new types
 	s := t.store
 	switch n := len(s.recycler); {
 	case n != 0:
 		h = int64(s.recycler[n-1])
 		s.recycler = s.recycler[:n-1]
-		s.data[h] = append([]interface{}(nil), data...)
+		s.data[h] = s.clone(data...)
 	default:
 		h = int64(len(s.data))
-		s.data = append(s.data, append([]interface{}(nil), data...))
+		s.data = append(s.data, s.clone(data...))
 	}
 	return
 }
@@ -77,7 +78,7 @@ func (t *memTemp) Read(dst []interface{}, h int64, cols ...*col) (data []interfa
 func (*memTemp) Drop() (err error) { return }
 
 func (t *memTemp) Set(k, v []interface{}) (err error) {
-	t.tree.Set(append([]interface{}(nil), k...), append([]interface{}(nil), v...))
+	t.tree.Set(append([]interface{}(nil), k...), t.store.clone(v...))
 	return
 }
 
@@ -211,13 +212,78 @@ func (s *mem) ID() (id int64, err error) {
 	return s.id, nil
 }
 
+func (s *mem) clone(data ...interface{}) []interface{} {
+	r := make([]interface{}, len(data))
+	for i, v := range data {
+		switch x := v.(type) {
+		case nil:
+			// nop
+		case idealComplex:
+			r[i] = complex128(x)
+		case idealFloat:
+			r[i] = float64(x)
+		case idealInt:
+			r[i] = int64(x)
+		case idealRune:
+			r[i] = int32(x)
+		case idealUint:
+			r[i] = uint64(x)
+		case bool:
+			r[i] = x
+		case complex64:
+			r[i] = x
+		case complex128:
+			r[i] = x
+		case float32:
+			r[i] = x
+		case float64:
+			r[i] = x
+		case int:
+			r[i] = int64(x)
+		case int8:
+			r[i] = x
+		case int16:
+			r[i] = x
+		case int32:
+			r[i] = x
+		case int64:
+			r[i] = x
+		case string:
+			r[i] = x
+		case uint:
+			r[i] = uint64(x)
+		case uint8:
+			r[i] = x
+		case uint16:
+			r[i] = x
+		case uint32:
+			r[i] = x
+		case uint64:
+			r[i] = x
+		case []byte:
+			r[i] = append([]byte(nil), x...)
+		case *big.Int:
+			r[i] = big.NewInt(0).Set(x)
+		case *big.Rat:
+			r[i] = big.NewRat(1, 2).Set(x)
+		case time.Time:
+			t := x
+			r[i] = t
+		case time.Duration:
+			r[i] = x
+		default:
+			log.Panic("internal error")
+		}
+	}
+	return r
+}
+
 func (s *mem) Create(data ...interface{}) (h int64, err error) {
-	//TODO append(nil, ...) not enough with new types
 	switch n := len(s.recycler); {
 	case n != 0:
 		h = int64(s.recycler[n-1])
 		s.recycler = s.recycler[:n-1]
-		s.data[h] = append([]interface{}(nil), data...)
+		s.data[h] = s.clone(data...)
 		r := s.rollback
 		r.list = append(r.list, undo{
 			tag: undoCreateRecycledHandle,
@@ -225,7 +291,7 @@ func (s *mem) Create(data ...interface{}) (h int64, err error) {
 		})
 	default:
 		h = int64(len(s.data))
-		s.data = append(s.data, append([]interface{}(nil), data...))
+		s.data = append(s.data, s.clone(data...))
 		r := s.rollback
 		r.list = append(r.list, undo{
 			tag: undoCreateNewHandle,
@@ -236,9 +302,8 @@ func (s *mem) Create(data ...interface{}) (h int64, err error) {
 }
 
 func (s *mem) Read(dst []interface{}, h int64, cols ...*col) (data []interface{}, err error) {
-	//TODO append(nil, ...) not enough with new types
 	if i := int(h); i != 0 && i < len(s.data) {
-		return append(dst[:0], s.data[h]...), nil
+		return s.clone(s.data[h]...), nil
 	}
 
 	return nil, errNoDataForHandle
@@ -251,7 +316,7 @@ func (s *mem) Update(h int64, data ...interface{}) (err error) {
 		h:    h,
 		data: s.data[h],
 	})
-	s.data[h] = append([]interface{}(nil), data...)
+	s.data[h] = s.clone(data...)
 	return
 }
 
