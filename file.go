@@ -218,65 +218,10 @@ func infer(from []interface{}, to *[]*col) {
 	}
 }
 
-func create2(a *lldb.Allocator, data ...interface{}) (h int64, err error) {
-	b, err := lldb.EncodeScalars(data...)
-	if err != nil {
-		return
-	}
-
-	return a.Alloc(b)
-}
-
-func read2(a *lldb.Allocator, dst []interface{}, h int64, cols ...*col) (data []interface{}, err error) {
-	b, err := a.Get(nil, h)
-	if err != nil {
-		return
-	}
-
-	rec, err := lldb.DecodeScalars(b)
-	if err != nil {
-		return
-	}
-
-	for _, col := range cols {
-		i := col.index + 2
-		switch col.typ {
-		case 0:
-		case qBool:
-		case qComplex64:
-			rec[i] = complex64(rec[i].(complex128))
-		case qComplex128:
-		case qFloat32:
-			rec[i] = float32(rec[i].(float64))
-		case qFloat64:
-		case qInt8:
-			rec[i] = int8(rec[i].(int64))
-		case qInt16:
-			rec[i] = int16(rec[i].(int64))
-		case qInt32:
-			rec[i] = int32(rec[i].(int64))
-		case qInt64:
-		case qString:
-		case qUint8:
-			rec[i] = uint8(rec[i].(uint64))
-		case qUint16:
-			rec[i] = uint16(rec[i].(uint64))
-		case qUint32:
-			rec[i] = uint32(rec[i].(uint64))
-		case qUint64:
-		default:
-			log.Panic("internal error")
-		}
-	}
-
-	return rec, nil
-}
-
 type fileTemp struct {
-	a     *lldb.Allocator
+	*file
 	colsK []*col
 	colsV []*col
-	f     lldb.OSFile
 	t     *lldb.BTree
 }
 
@@ -298,21 +243,13 @@ func (t *fileTemp) Get(k []interface{}) (v []interface{}, err error) {
 	return lldb.DecodeScalars(bv)
 }
 
-func (t *fileTemp) Create(data ...interface{}) (h int64, err error) {
-	return create2(t.a, data...)
-}
-
-func (t *fileTemp) Read(dst []interface{}, h int64, cols ...*col) (data []interface{}, err error) {
-	return read2(t.a, dst, h, cols...)
-}
-
 func (t *fileTemp) Drop() (err error) {
-	if t.f == nil {
+	if t.f0 == nil {
 		return
 	}
 
-	fn := t.f.Name()
-	if err = t.f.Close(); err != nil {
+	fn := t.f0.Name()
+	if err = t.f0.Close(); err != nil {
 		return
 	}
 
@@ -605,11 +542,12 @@ func (s *file) CreateTemp(asc bool) (bt temp, err error) {
 		return nil, err
 	}
 
-	return &fileTemp{
-		a: a,
-		f: f,
-		t: t,
-	}, nil
+	x := &fileTemp{file: &file{
+		a:  a,
+		f0: f,
+	},
+		t: t}
+	return x, nil
 }
 
 func (s *file) BeginTransaction() (err error) {
@@ -637,7 +575,12 @@ func (s *file) Create(data ...interface{}) (h int64, err error) {
 	if s.wal != nil {
 		defer s.Lock()()
 	}
-	return create2(s.a, data...)
+	b, err := lldb.EncodeScalars(data...)
+	if err != nil {
+		return
+	}
+
+	return s.a.Alloc(b)
 }
 
 func (s *file) Delete(h int64) (err error) {
@@ -671,7 +614,48 @@ func (s *file) Read(dst []interface{}, h int64, cols ...*col) (data []interface{
 	if s.wal != nil {
 		defer s.RLock()()
 	}
-	return read2(s.a, dst, h, cols...)
+	b, err := s.a.Get(nil, h) //TODO +bufs
+	if err != nil {
+		return
+	}
+
+	rec, err := lldb.DecodeScalars(b)
+	if err != nil {
+		return
+	}
+
+	for _, col := range cols {
+		i := col.index + 2
+		switch col.typ {
+		case 0:
+		case qBool:
+		case qComplex64:
+			rec[i] = complex64(rec[i].(complex128))
+		case qComplex128:
+		case qFloat32:
+			rec[i] = float32(rec[i].(float64))
+		case qFloat64:
+		case qInt8:
+			rec[i] = int8(rec[i].(int64))
+		case qInt16:
+			rec[i] = int16(rec[i].(int64))
+		case qInt32:
+			rec[i] = int32(rec[i].(int64))
+		case qInt64:
+		case qString:
+		case qUint8:
+			rec[i] = uint8(rec[i].(uint64))
+		case qUint16:
+			rec[i] = uint16(rec[i].(uint64))
+		case qUint32:
+			rec[i] = uint32(rec[i].(uint64))
+		case qUint64:
+		default:
+			log.Panic("internal error")
+		}
+	}
+
+	return rec, nil
 }
 
 func (s *file) Update(h int64, data ...interface{}) (err error) {
