@@ -56,6 +56,7 @@ func (t *memTemp) Get(k []interface{}) (v []interface{}, err error) {
 }
 
 func (t *memTemp) Create(data ...interface{}) (h int64, err error) {
+	//TODO append(nil, ...) not enough with new types
 	s := t.store
 	switch n := len(s.recycler); {
 	case n != 0:
@@ -211,6 +212,7 @@ func (s *mem) ID() (id int64, err error) {
 }
 
 func (s *mem) Create(data ...interface{}) (h int64, err error) {
+	//TODO append(nil, ...) not enough with new types
 	switch n := len(s.recycler); {
 	case n != 0:
 		h = int64(s.recycler[n-1])
@@ -234,6 +236,7 @@ func (s *mem) Create(data ...interface{}) (h int64, err error) {
 }
 
 func (s *mem) Read(dst []interface{}, h int64, cols ...*col) (data []interface{}, err error) {
+	//TODO append(nil, ...) not enough with new types
 	if i := int(h); i != 0 && i < len(s.data) {
 		return append(dst[:0], s.data[h]...), nil
 	}

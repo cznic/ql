@@ -28,7 +28,11 @@ const (
 	qUint32     = 0x77 // 'w'
 	qUint64     = 0x78 // 'x', alias uint
 
-	//LATER Gob = 'o'
+	qBigInt   = 0x49 // 'I'
+	qBigRat   = 0x52 // 'R'
+	qBlob     = 0x42 // 'B'
+	qDuration = 0x44 // 'D'
+	qTime     = 0x54 // 'T'
 )
 
 var (

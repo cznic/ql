@@ -3101,3 +3101,22 @@ COMMIT;
 SELECT count() FROM t;
 |l
 [6]
+
+-- 297
+BEGIN TRANSACTION;
+	CREATE TABLE t(S string);
+	INSERT INTO t SELECT "perfect!" FROM (SELECT count() AS cnt FROM t WHERE S == "perfect!") WHERE cnt == 0;
+COMMIT;
+SELECT count() FROM t;
+|l
+[1]
+
+-- 298
+BEGIN TRANSACTION;
+	CREATE TABLE t(S string);
+	INSERT INTO t SELECT "perfect!" FROM (SELECT count() AS cnt FROM t WHERE S == "perfect!") WHERE cnt == 0;
+	INSERT INTO t SELECT "perfect!" FROM (SELECT count() AS cnt FROM t WHERE S == "perfect!") WHERE cnt == 0;
+COMMIT;
+SELECT count() FROM t;
+|l
+[1]

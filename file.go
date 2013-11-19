@@ -10,6 +10,7 @@ package ql
 
 import (
 	"crypto/sha1"
+	"encoding/gob"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -273,10 +274,10 @@ func read2(a *lldb.Allocator, dst []interface{}, h int64, cols ...*col) (data []
 
 type fileTemp struct {
 	a     *lldb.Allocator
-	f     lldb.OSFile
-	t     *lldb.BTree
 	colsK []*col
 	colsV []*col
+	f     lldb.OSFile
+	t     *lldb.BTree
 }
 
 func (t *fileTemp) BeginTransaction() error {
@@ -350,8 +351,11 @@ func (t *fileTemp) Set(k, v []interface{}) (err error) {
 
 type file struct {
 	a        *lldb.Allocator
+	dec      *gob.Decoder
+	enc      *gob.Encoder
 	f        lldb.Filer
 	f0       lldb.OSFile
+	gobmu    sync.Mutex
 	id       int64
 	lck      io.Closer
 	name     string
@@ -440,6 +444,8 @@ func newFileFromOSFile(f lldb.OSFile) (fi *file, err error) {
 		a.Compress = true
 		s := &file{
 			a:    a,
+			dec:  newGobDecoder(),
+			enc:  newGobEncoder(),
 			f0:   f,
 			f:    filer,
 			lck:  lck,
@@ -507,6 +513,8 @@ func newFileFromOSFile(f lldb.OSFile) (fi *file, err error) {
 		a.Compress = true
 		s := &file{
 			a:    a,
+			dec:  newGobDecoder(),
+			enc:  newGobEncoder(),
 			f0:   f,
 			f:    filer,
 			id:   id,
