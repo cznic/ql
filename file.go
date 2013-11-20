@@ -14,9 +14,11 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"math/big"
 	"os"
 	"path/filepath"
 	"sync"
+	"time"
 
 	"github.com/camlistore/lock"
 	"github.com/cznic/exp/lldb"
@@ -663,6 +665,30 @@ func (s *file) Update(h int64, data ...interface{}) (err error) {
 	}
 
 	return s.a.Realloc(h, b)
+}
+
+// blob type -> tag + []byte
+func (s *file) toBytes(v interface{}) (tag int, b []byte, err error) {
+	switch x := v.(type) {
+	case []byte:
+		tag = qBlob
+		b = x
+	case *big.Int:
+		tag = qBlob
+		b, err = s.codec.encode(x)
+	case *big.Rat:
+		tag = qBlob
+		b, err = s.codec.encode(x)
+	case time.Time:
+		tag = qBlob
+		b, err = s.codec.encode(x)
+	case time.Duration:
+		tag = qBlob
+		b, err = s.codec.encode(int64(x))
+	default:
+		log.Panic("internal error")
+	}
+	return
 }
 
 func lockName(dbname string) string {

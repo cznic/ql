@@ -73,7 +73,7 @@ import (
 	"time"
 )
 
-const shortBlob = 512 // bytes
+const shortBlob = 256 // bytes
 
 var (
 	gobInitDuration = time.Duration(278)

@@ -5,10 +5,13 @@
 package ql
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"log"
 	"math"
+	"math/big"
+	"time"
 )
 
 // QL types.
@@ -1158,4 +1161,218 @@ func typeCheck(rec []interface{}, cols []*col) (err error) {
 		}
 	}
 	return
+}
+
+func collate1(a, b interface{}) int {
+	switch x := a.(type) {
+	case nil:
+		if b != nil {
+			return -1
+		}
+
+		return 0
+	case float32:
+		switch y := b.(type) {
+		case float32:
+			if x < y {
+				return -1
+			}
+
+			if x == y {
+				return 0
+			}
+
+			return 1
+		}
+	case float64:
+		switch y := b.(type) {
+		case float64:
+			if x < y {
+				return -1
+			}
+
+			if x == y {
+				return 0
+			}
+
+			return 1
+		}
+	case int8:
+		switch y := b.(type) {
+		case int8:
+			if x < y {
+				return -1
+			}
+
+			if x == y {
+				return 0
+			}
+
+			return 1
+		}
+	case int16:
+		switch y := b.(type) {
+		case int16:
+			if x < y {
+				return -1
+			}
+
+			if x == y {
+				return 0
+			}
+
+			return 1
+		}
+	case int32:
+		switch y := b.(type) {
+		case int32:
+			if x < y {
+				return -1
+			}
+
+			if x == y {
+				return 0
+			}
+
+			return 1
+		}
+	case int64:
+		switch y := b.(type) {
+		case int64:
+			if x < y {
+				return -1
+			}
+
+			if x == y {
+				return 0
+			}
+
+			return 1
+		}
+	case uint8:
+		switch y := b.(type) {
+		case uint8:
+			if x < y {
+				return -1
+			}
+
+			if x == y {
+				return 0
+			}
+
+			return 1
+		}
+	case uint16:
+		switch y := b.(type) {
+		case uint16:
+			if x < y {
+				return -1
+			}
+
+			if x == y {
+				return 0
+			}
+
+			return 1
+		}
+	case uint32:
+		switch y := b.(type) {
+		case uint32:
+			if x < y {
+				return -1
+			}
+
+			if x == y {
+				return 0
+			}
+
+			return 1
+		}
+	case uint64:
+		switch y := b.(type) {
+		case uint64:
+			if x < y {
+				return -1
+			}
+
+			if x == y {
+				return 0
+			}
+
+			return 1
+		}
+	case []byte:
+		switch y := b.(type) {
+		case []byte:
+			return bytes.Compare(x, y)
+		}
+	case *big.Int:
+		switch y := b.(type) {
+		case *big.Int:
+			return x.Cmp(y)
+		}
+	case *big.Rat:
+		switch y := b.(type) {
+		case *big.Rat:
+			return x.Cmp(y)
+		}
+	case time.Time:
+		switch y := b.(type) {
+		case time.Time:
+			if x.Before(y) {
+				return -1
+			}
+
+			if x.Equal(y) {
+				return 0
+			}
+
+			return 1
+		}
+	case time.Duration:
+		switch y := b.(type) {
+		case time.Duration:
+			if x < y {
+				return -1
+			}
+
+			if x == y {
+				return 0
+			}
+
+			return 1
+		}
+	}
+	log.Panic("internal error")
+	panic("unreachable")
+}
+
+func collate(x, y []interface{}) (r int) {
+	nx, ny := len(x), len(y)
+
+	switch {
+	case nx == 0 && ny != 0:
+		return -1
+	case nx == 0 && ny == 0:
+		return 0
+	case nx != 0 && ny == 0:
+		return 1
+	}
+
+	r = 1
+	if nx > ny {
+		x, y, r = y, x, -r
+	}
+
+	for i, xi := range x {
+		if c := collate1(xi, y[i]); c != 0 {
+			return c * r
+		}
+	}
+
+	if nx == ny {
+		return 0
+	}
+
+	return -r
 }
