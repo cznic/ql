@@ -86,6 +86,7 @@ func (s *updateStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 	m := map[interface{}]interface{}{}
 	var nh int64
 	expr := s.where
+	blobCols := t.blobCols()
 	for h := t.head; h != 0; h = nh {
 		data, err := t.store.Read(nil, h, t.cols...)
 		if err != nil {
@@ -130,7 +131,7 @@ func (s *updateStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 			return nil, err
 		}
 
-		if err = t.store.Update(h, data...); err != nil {
+		if err = t.store.UpdateRow(h, blobCols, data...); err != nil { //TODO detect which blobs are actually affected
 			return nil, err
 		}
 	}
@@ -164,6 +165,14 @@ func (s *deleteStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 	var pdata, data []interface{}
 	blobCols := t.blobCols()
 	for h = t.head; h != 0; ph, h = h, nh {
+		for i, v := range data {
+			c, ok := v.(chunk)
+			if !ok {
+				continue
+			}
+
+			data[i] = c.b
+		}
 		pdata = append(pdata[:0], data...)
 		data, err = t.store.Read(nil, h, t.cols...)
 		if err != nil {

@@ -669,3 +669,5 @@ func recStr(data []interface{}) string {
 	}
 	return strings.Join(a, ", ")
 }
+
+//TODO +test long blob types (eg. 1MB)

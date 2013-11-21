@@ -292,6 +292,10 @@ func (s *mem) Read(dst []interface{}, h int64, cols ...*col) (data []interface{}
 	return nil, errNoDataForHandle
 }
 
+func (s *mem) UpdateRow(h int64, _ []*col, data ...interface{}) (err error) {
+	return s.Update(h, data...)
+}
+
 func (s *mem) Update(h int64, data ...interface{}) (err error) {
 	r := s.rollback
 	r.list = append(r.list, undo{

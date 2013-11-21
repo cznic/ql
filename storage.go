@@ -24,6 +24,7 @@ type storage interface {
 	ResetID() (err error)
 	Rollback() error
 	Update(h int64, data ...interface{}) error
+	UpdateRow(h int64, blobCols []*col, data ...interface{}) error
 	Verify() (allocs int64, err error)
 }
 

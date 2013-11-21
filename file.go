@@ -856,13 +856,21 @@ func (s *file) Update(h int64, data ...interface{}) (err error) {
 	if s.wal != nil {
 		defer s.lock()()
 	}
-	//TODO remove old chunks, flatten
 	b, err := lldb.EncodeScalars(data...)
 	if err != nil {
 		return
 	}
 
 	return s.a.Realloc(h, b)
+}
+
+func (s *file) UpdateRow(h int64, blobCols []*col, data ...interface{}) (err error) {
+	if len(blobCols) == 0 {
+		return s.Update(h, data...)
+	}
+
+	log.Panic("TODO")
+	panic("TODO")
 }
 
 // []interface{}{qltype, ...}->[]interface{}{lldb scalar type, ...}
