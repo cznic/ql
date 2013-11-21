@@ -6,6 +6,8 @@
 //MAYBE IN ( SELECT ... )
 //MAYBE +=, -=, ...
 
+//TODO verify there's a graceful failure for a 2G+ blob on a 32 bit machine.
+
 // Package ql is a pure Go embedded (S)QL database.
 //
 // QL is a SQL-like language. It is less complex and less powerful than SQL
@@ -397,7 +399,8 @@
 // A type determines the set of values and operations specific to values of
 // that type. A type is specified by a type name.
 //
-//  Type = "bool"
+//  Type = "blob"	// []byte
+//  	| "bool"
 //  	| "byte"	// alias for uint8
 //  	| "complex128"
 //  	| "complex64"
@@ -419,6 +422,10 @@
 //
 // Named instances of the boolean, numeric, and string types are keywords. The
 // names are not case sensitive.
+//
+// Note: The blob type is exchanged between the back end and the API as []byte.
+// On 32 bit platforms this limits the size which the implementation can handle
+// to 2G.
 //
 // Boolean types
 //
@@ -946,9 +953,9 @@
 // if the result type cannot represent the value the conversion succeeds but
 // the result value is implementation-dependent.
 //
-// Conversions to a string type
+// Conversions to and from a string type
 //
-// Converting a signed or unsigned integer value to a string type yields a
+// 1. Converting a signed or unsigned integer value to a string type yields a
 // string containing the UTF-8 representation of the integer. Values outside
 // the range of valid Unicode code points are converted to "\uFFFD".
 //
@@ -956,6 +963,19 @@
 // 	string(-1)        // "\ufffd" == "\xef\xbf\xbd"
 // 	string(0xf8)      // "\u00f8" == "ø" == "\xc3\xb8"
 // 	string(0x65e5)    // "\u65e5" == "日" == "\xe6\x97\xa5"
+//
+// 2. Converting a blob to a string type yields a string whose successive bytes
+// are the elements of the blob.
+//
+//	string(b /* []byte{'h', 'e', 'l', 'l', '\xc3', '\xb8'} */)   // "hellø"
+//	string(b /* []byte{} */)                                     // ""
+//	string(b /* []byte(nil) */)                                  // ""
+//
+// 3. Converting a value of a string type to a blob yields a blob whose
+// successive elements are the bytes of the string.
+//
+//	blob("hellø")   // []byte{'h', 'e', 'l', 'l', '\xc3', '\xb8'}
+//	blob("")        // []byte{}
 //
 // Order of evaluation
 //
@@ -1447,7 +1467,7 @@
 //
 // If the argument to len is NULL the result is NULL.
 //
-// Max
+// Maximum
 //
 // The built-in aggregate function max returns the largest value of an
 // expression in a record set.  Max ignores NULL values, but returns NULL if
@@ -1463,7 +1483,7 @@
 //
 //	SELECT department, max(sales) FROM t GROUP BY department;
 //
-// Min
+// Minimum
 //
 // The built-in aggregate function min returns the smallest value of an
 // expression in a record set.  Min ignores NULL values, but returns NULL if
