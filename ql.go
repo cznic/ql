@@ -679,7 +679,7 @@ func findCol(cols []*col, name string) (c *col) {
 	return nil
 }
 
-func (f *col) typeCheck(x interface{}) (ok bool) {
+func (f *col) typeCheck(x interface{}) (ok bool) { //NTYPE
 	switch x.(type) {
 	case nil:
 		return true
@@ -711,6 +711,8 @@ func (f *col) typeCheck(x interface{}) (ok bool) {
 		return f.typ == qUint32
 	case uint64:
 		return f.typ == qUint64
+	case []byte:
+		return f.typ == qBlob
 	}
 	return
 }

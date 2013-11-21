@@ -48,7 +48,7 @@ func init() {
 	}
 }
 
-func typeof(v interface{}) (r int) {
+func typeof(v interface{}) (r int) { //NTYPE
 	switch v.(type) {
 	case bool:
 		return qBool
@@ -78,6 +78,8 @@ func typeof(v interface{}) (r int) {
 		return qUint32
 	case uint64:
 		return qUint64
+	case []byte:
+		return qBlob
 	}
 	return
 }

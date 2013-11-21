@@ -30,11 +30,11 @@ import (
 }
 
 %token	add alter and andand andnot as asc
-	begin between boolType by byteType
+	begin between blobType boolType by byteType
 	column commit complex128Type complex64Type create
 	deleteKwd desc distinct drop
 	eq
-	falseKwd float float32Type float64Type floatLit from 
+	falseKwd floatType float32Type float64Type floatLit from 
 	ge group
 	identifier imaginaryLit in insert intType int16Type int32Type int64Type int8Type is
 	into intLit 
@@ -51,9 +51,9 @@ import (
 
 %token	<item>	floatLit imaginaryLit intLit stringLit
 
-%token	<item>	boolType byteType
+%token	<item>	blobType boolType byteType
 		complex64Type complex128Type
-		falseKwd float float32Type float64Type
+		falseKwd floatType float32Type float64Type
 		identifier intType int16Type int32Type int64Type int8Type 
 		null
 		qlParam
@@ -810,11 +810,12 @@ TruncateTableStmt:
 	}
 
 Type:
-	boolType
+	blobType
+|	boolType
 |	byteType
 |	complex128Type
 |	complex64Type
-|	float
+|	floatType
 |	float32Type
 |	float64Type
 |	intType

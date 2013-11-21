@@ -17,7 +17,7 @@ type storage interface {
 	Commit() error
 	Create(data ...interface{}) (h int64, err error)
 	CreateTemp(asc bool) (bt temp, err error)
-	Delete(h int64) error
+	Delete(h int64, blobCols ...*col) error //LATER split the nil blobCols case
 	ID() (id int64, err error)
 	Name() string
 	Read(dst []interface{}, h int64, cols ...*col) (data []interface{}, err error)
@@ -141,9 +141,20 @@ func newTable(store storage, name string, next int64, cols []*col, tprev, tnext 
 	return t.updateCols(), nil
 }
 
+func (t *table) blobCols() (r []*col) {
+	for _, c := range t.cols0 {
+		switch c.typ {
+		case qBlob, qBigInt, qBigRat:
+			r = append(r, c)
+		}
+	}
+	return
+}
+
 func (t *table) truncate() (err error) {
 	h := t.head
 	var rec []interface{}
+	blobCols := t.blobCols()
 	for h != 0 {
 		rec, err := t.store.Read(rec, h)
 		if err != nil {
@@ -151,7 +162,7 @@ func (t *table) truncate() (err error) {
 		}
 		nh := rec[0].(int64)
 
-		if err = t.store.Delete(h); err != nil {
+		if err = t.store.Delete(h, blobCols...); err != nil { //LATER remove double read for len(blobCols) != 0
 			return err
 		}
 

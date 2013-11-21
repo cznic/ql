@@ -114,12 +114,14 @@ f		[fF]
 g		[gG]
 h		[hH]
 i		[iI]
+j		[jJ]
 k		[kK]
 l		[lL]
 m		[mM]
 n		[nN]
 o		[oO]
 p		[pP]
+q		[qQ]
 r		[rR]
 s		[sS]
 t		[tT]
@@ -128,6 +130,7 @@ v		[vV]
 w		[wW]
 x		[xX]
 y		[yY]
+z		[zZ]
 
 add		{a}{d}{d}
 alter		{a}{l}{t}{e}{r}
@@ -165,6 +168,7 @@ null		{n}{u}{l}{l}
 false		{f}{a}{l}{s}{e}
 true		{t}{r}{u}{e}
 
+blob		{b}{l}{o}{b}
 bool		{b}{o}{o}{l}
 byte		{b}{y}{t}{e}
 complex		{c}{o}{m}{p}{l}{e}{x}
@@ -266,6 +270,9 @@ ident		{idchar0}{idchars}*
 {true}			lval.item = true
 			return trueKwd
 
+{blob}			lval.item = qBlob
+			return blobType
+
 {bool}			lval.item = qBool
 			return boolType
 
@@ -279,7 +286,7 @@ ident		{idchar0}{idchars}*
 			return complex64Type
 
 {float}			lval.item = qFloat64
-			return float
+			return floatType
 
 {float}32		lval.item = qFloat32
 			return float32Type

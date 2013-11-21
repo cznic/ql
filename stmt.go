@@ -162,6 +162,7 @@ func (s *deleteStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 	m := map[interface{}]interface{}{}
 	var ph, h, nh int64
 	var pdata, data []interface{}
+	blobCols := t.blobCols()
 	for h = t.head; h != 0; ph, h = h, nh {
 		pdata = append(pdata[:0], data...)
 		data, err = t.store.Read(nil, h, t.cols...)
@@ -193,7 +194,7 @@ func (s *deleteStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 		}
 
 		// hit
-		if err = t.store.Delete(h); err != nil {
+		if err = t.store.Delete(h, blobCols...); err != nil {
 			return nil, err
 		}
 

@@ -22,6 +22,7 @@ import (
 
 	"github.com/camlistore/lock"
 	"github.com/cznic/exp/lldb"
+	"github.com/cznic/mathutil"
 )
 
 const (
@@ -126,13 +127,13 @@ func (it *fileBTreeIterator) Next() (k, v []interface{}, err error) {
 	return
 }
 
-var lldbCollators = map[bool]func(a, b []byte) int{false: lldbCollateDesc, true: lldbCollate}
+var fileCollators = map[bool]func(a, b []byte) int{false: fileCollateDesc, true: fileCollate}
 
-func lldbCollateDesc(a, b []byte) int {
-	return -lldbCollate(a, b)
+func fileCollateDesc(a, b []byte) int {
+	return -fileCollate(a, b)
 }
 
-func lldbCollate(a, b []byte) (r int) {
+func fileCollate(a, b []byte) (r int) {
 	da, err := lldb.DecodeScalars(a)
 	if err != nil {
 		log.Panic(err)
@@ -530,7 +531,7 @@ func (s *file) CreateTemp(asc bool) (bt temp, err error) {
 		return nil, err
 	}
 
-	t, _, err := lldb.CreateBTree(a, lldbCollators[asc])
+	t, _, err := lldb.CreateBTree(a, fileCollators[asc])
 	if err != nil {
 		f.Close()
 		if fn != "" {
@@ -572,6 +573,10 @@ func (s *file) Create(data ...interface{}) (h int64, err error) {
 	if s.wal != nil {
 		defer s.lock()()
 	}
+	if err = s.flatten(data); err != nil {
+		return
+	}
+
 	b, err := lldb.EncodeScalars(data...)
 	if err != nil {
 		return
@@ -580,11 +585,16 @@ func (s *file) Create(data ...interface{}) (h int64, err error) {
 	return s.a.Alloc(b)
 }
 
-func (s *file) Delete(h int64) (err error) {
+func (s *file) Delete(h int64, blobCols ...*col) (err error) {
 	if s.wal != nil {
 		defer s.lock()()
 	}
-	return s.a.Free(h)
+	switch len(blobCols) {
+	case 0:
+		return s.a.Free(h)
+	default:
+		return s.free(h, blobCols)
+	}
 }
 
 func (s *file) ResetID() (err error) {
@@ -607,11 +617,39 @@ func (s *file) ID() (int64, error) {
 	return s.id, s.a.Realloc(2, b)
 }
 
-func (s *file) Read(dst []interface{}, h int64, cols ...*col) (data []interface{}, err error) {
+func (s *file) free(h int64, blobCols []*col) (err error) {
+	b, err := s.a.Get(nil, h) //LATER +bufs
+	if err != nil {
+		return
+	}
+
+	rec, err := lldb.DecodeScalars(b)
+	if err != nil {
+		return
+	}
+
+	for _, col := range blobCols {
+		if col.index >= len(rec) {
+			return fmt.Errorf("file.free: corrupted DB (record len)")
+		}
+
+		var ok bool
+		if b, ok = rec[col.index+2].([]byte); !ok {
+			return fmt.Errorf("file.free: corrupted DB (chunk []byte)")
+		}
+
+		if err = s.freeChunks(col.typ, b); err != nil {
+			return
+		}
+	}
+	return s.a.Free(h)
+}
+
+func (s *file) Read(dst []interface{}, h int64, cols ...*col) (data []interface{}, err error) { //NTYPE
 	if s.wal != nil {
 		defer s.rLock()()
 	}
-	b, err := s.a.Get(nil, h) //TODO +bufs
+	b, err := s.a.Get(nil, h) //LATER +bufs
 	if err != nil {
 		return
 	}
@@ -647,6 +685,10 @@ func (s *file) Read(dst []interface{}, h int64, cols ...*col) (data []interface{
 		case qUint32:
 			rec[i] = uint32(rec[i].(uint64))
 		case qUint64:
+		case qBlob, qBigInt, qBigRat, qTime, qDuration:
+			if rec[i], err = s.loadChunks(col.typ, rec[i].([]byte)); err != nil {
+				return
+			}
 		default:
 			log.Panic("internal error")
 		}
@@ -655,10 +697,136 @@ func (s *file) Read(dst []interface{}, h int64, cols ...*col) (data []interface{
 	return rec, nil
 }
 
+func (s *file) freeChunks(typ int, enc []byte) (err error) {
+	items, err := lldb.DecodeScalars(enc)
+	if err != nil {
+		return
+	}
+
+	var ok bool
+	var next int64
+	switch len(items) {
+	case 2:
+		return
+	case 3:
+		if next, ok = items[1].(int64); !ok || next == 0 {
+			return fmt.Errorf("corrupted DB: first chunk link")
+		}
+	default:
+		return fmt.Errorf("corrupted DB: first chunk")
+	}
+
+	rtag, ok := items[0].(int64)
+	if !ok {
+		return fmt.Errorf("corrupted DB: first chunk tag")
+	}
+
+	if int(rtag) != typ {
+		return fmt.Errorf("corrupted DB: first chunk type")
+	}
+
+	for next != 0 {
+		b, err := s.a.Get(nil, next)
+		if err != nil {
+			return err
+		}
+
+		if items, err = lldb.DecodeScalars(b); err != nil {
+			return err
+		}
+
+		var h int64
+		switch len(items) {
+		case 1:
+			// nop
+		case 2:
+			if h, ok = items[0].(int64); !ok {
+				return fmt.Errorf("corrupted DB: chunk link")
+			}
+
+		default:
+			return fmt.Errorf("corrupted DB: chunk items %d (%v)", len(items), items)
+		}
+
+		if err = s.a.Free(next); err != nil {
+			return err
+		}
+
+		next = h
+	}
+	return
+}
+
+func (s *file) loadChunks(typ int, enc []byte) (v interface{}, err error) {
+	items, err := lldb.DecodeScalars(enc)
+	if err != nil {
+		return
+	}
+
+	var ok bool
+	var next int64
+	switch len(items) {
+	case 2:
+		// nop
+	case 3:
+		if next, ok = items[1].(int64); !ok || next == 0 {
+			return nil, fmt.Errorf("corrupted DB: first chunk link")
+		}
+	default:
+		return nil, fmt.Errorf("corrupted DB: first chunk")
+	}
+
+	rtag, ok := items[0].(int64)
+	if !ok {
+		return nil, fmt.Errorf("corrupted DB: first chunk tag")
+	}
+
+	if int(rtag) != typ {
+		return nil, fmt.Errorf("corrupted DB: first chunk type")
+	}
+
+	buf, ok := items[len(items)-1].([]byte)
+	if !ok {
+		return nil, fmt.Errorf("corrupted DB: first chunk data")
+	}
+
+	for next != 0 {
+		b, err := s.a.Get(nil, next)
+		if err != nil {
+			return nil, err
+		}
+
+		if items, err = lldb.DecodeScalars(b); err != nil {
+			return nil, err
+		}
+
+		switch len(items) {
+		case 1:
+			next = 0
+		case 2:
+			if next, ok = items[0].(int64); !ok {
+				return nil, fmt.Errorf("corrupted DB: chunk link")
+			}
+
+			b = b[1:]
+		default:
+			return nil, fmt.Errorf("corrupted DB: chunk items %d (%v)", len(items), items)
+		}
+
+		if b, ok = items[0].([]byte); !ok {
+			return nil, fmt.Errorf("corrupted DB: chunk data")
+		}
+
+		buf = append(buf, b...)
+	}
+	return s.codec.decode(buf, typ)
+}
+
 func (s *file) Update(h int64, data ...interface{}) (err error) {
 	if s.wal != nil {
 		defer s.lock()()
 	}
+	//TODO remove old chunks, flatten
 	b, err := lldb.EncodeScalars(data...)
 	if err != nil {
 		return
@@ -667,26 +835,74 @@ func (s *file) Update(h int64, data ...interface{}) (err error) {
 	return s.a.Realloc(h, b)
 }
 
-// blob type -> tag + []byte
-func (s *file) toBytes(v interface{}) (tag int, b []byte, err error) {
-	switch x := v.(type) {
-	case []byte:
-		tag = qBlob
-		b = x
-	case *big.Int:
-		tag = qBlob
-		b, err = s.codec.encode(x)
-	case *big.Rat:
-		tag = qBlob
-		b, err = s.codec.encode(x)
-	case time.Time:
-		tag = qBlob
-		b, err = s.codec.encode(x)
-	case time.Duration:
-		tag = qBlob
-		b, err = s.codec.encode(int64(x))
-	default:
-		log.Panic("internal error")
+// []interface{}{qltype, ...}->[]interface{}{lldb scalar type, ...}
+// + long blobs are (pre)written to a chain of chunks.
+func (s *file) flatten(data []interface{}) (err error) {
+	for i, v := range data {
+		tag := 0
+		var b []byte
+		switch x := v.(type) {
+		case []byte:
+			tag = qBlob
+			b = x
+		case *big.Int:
+			tag = qBlob
+			b, err = s.codec.encode(x)
+		case *big.Rat:
+			tag = qBlob
+			b, err = s.codec.encode(x)
+		case time.Time:
+			tag = qBlob
+			b, err = s.codec.encode(x)
+		case time.Duration:
+			tag = qBlob
+			b, err = s.codec.encode(int64(x))
+		default:
+			continue
+		}
+		if err != nil {
+			return
+		}
+
+		const chunk = 1 << 16
+		chunks := 0
+		var next int64
+		var buf []byte
+		for rem := len(b); rem > shortBlob; {
+			n := mathutil.Min(rem, chunk)
+			part := b[rem-n:]
+			b = b[:rem-n]
+			rem -= n
+			switch next {
+			case 0: // last chunk
+				buf, err = lldb.EncodeScalars([]interface{}{part}...)
+			default: // middle chunk
+				buf, err = lldb.EncodeScalars([]interface{}{next, part}...)
+			}
+			if err != nil {
+				return
+			}
+
+			h, err := s.a.Alloc(buf)
+			if err != nil {
+				return err
+			}
+
+			next = h
+			chunks++
+		}
+
+		switch next {
+		case 0: // single chunk
+			buf, err = lldb.EncodeScalars([]interface{}{tag, b}...)
+		default: // multi chunks
+			buf, err = lldb.EncodeScalars([]interface{}{tag, next, b}...)
+		}
+		if err != nil {
+			return
+		}
+
+		data[i] = buf
 	}
 	return
 }

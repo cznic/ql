@@ -392,7 +392,7 @@ func truncConv(val interface{}) (interface{}, error) {
 	return nil, fmt.Errorf("constant %v truncated to integer", val)
 }
 
-func convert(val interface{}, typ int) (v interface{}, err error) {
+func convert(val interface{}, typ int) (v interface{}, err error) { //NTYPE
 	if val == nil {
 		return nil, nil
 	}
@@ -772,6 +772,8 @@ func convert(val interface{}, typ int) (v interface{}, err error) {
 			return string(x), nil
 		case uint64:
 			return string(x), nil
+		case []byte:
+			return string(x), nil
 		default:
 			return invConv(val, typ)
 		}
@@ -944,6 +946,13 @@ func convert(val interface{}, typ int) (v interface{}, err error) {
 			return uint64(x), nil
 		case uint64:
 			return uint64(x), nil
+		default:
+			return invConv(val, typ)
+		}
+	case qBlob:
+		switch x := val.(type) {
+		case string:
+			return []byte(x), nil
 		default:
 			return invConv(val, typ)
 		}
@@ -1173,6 +1182,8 @@ func collate1(a, b interface{}) int {
 		return 0
 	case float32:
 		switch y := b.(type) {
+		case nil:
+			return 1
 		case float32:
 			if x < y {
 				return -1
@@ -1186,6 +1197,8 @@ func collate1(a, b interface{}) int {
 		}
 	case float64:
 		switch y := b.(type) {
+		case nil:
+			return 1
 		case float64:
 			if x < y {
 				return -1
@@ -1199,6 +1212,8 @@ func collate1(a, b interface{}) int {
 		}
 	case int8:
 		switch y := b.(type) {
+		case nil:
+			return 1
 		case int8:
 			if x < y {
 				return -1
@@ -1212,6 +1227,8 @@ func collate1(a, b interface{}) int {
 		}
 	case int16:
 		switch y := b.(type) {
+		case nil:
+			return 1
 		case int16:
 			if x < y {
 				return -1
@@ -1225,6 +1242,8 @@ func collate1(a, b interface{}) int {
 		}
 	case int32:
 		switch y := b.(type) {
+		case nil:
+			return 1
 		case int32:
 			if x < y {
 				return -1
@@ -1238,6 +1257,8 @@ func collate1(a, b interface{}) int {
 		}
 	case int64:
 		switch y := b.(type) {
+		case nil:
+			return 1
 		case int64:
 			if x < y {
 				return -1
@@ -1251,6 +1272,8 @@ func collate1(a, b interface{}) int {
 		}
 	case uint8:
 		switch y := b.(type) {
+		case nil:
+			return 1
 		case uint8:
 			if x < y {
 				return -1
@@ -1264,6 +1287,8 @@ func collate1(a, b interface{}) int {
 		}
 	case uint16:
 		switch y := b.(type) {
+		case nil:
+			return 1
 		case uint16:
 			if x < y {
 				return -1
@@ -1277,6 +1302,8 @@ func collate1(a, b interface{}) int {
 		}
 	case uint32:
 		switch y := b.(type) {
+		case nil:
+			return 1
 		case uint32:
 			if x < y {
 				return -1
@@ -1290,7 +1317,24 @@ func collate1(a, b interface{}) int {
 		}
 	case uint64:
 		switch y := b.(type) {
+		case nil:
+			return 1
 		case uint64:
+			if x < y {
+				return -1
+			}
+
+			if x == y {
+				return 0
+			}
+
+			return 1
+		}
+	case string:
+		switch y := b.(type) {
+		case nil:
+			return 1
+		case string:
 			if x < y {
 				return -1
 			}
@@ -1303,21 +1347,29 @@ func collate1(a, b interface{}) int {
 		}
 	case []byte:
 		switch y := b.(type) {
+		case nil:
+			return 1
 		case []byte:
 			return bytes.Compare(x, y)
 		}
 	case *big.Int:
 		switch y := b.(type) {
+		case nil:
+			return 1
 		case *big.Int:
 			return x.Cmp(y)
 		}
 	case *big.Rat:
 		switch y := b.(type) {
+		case nil:
+			return 1
 		case *big.Rat:
 			return x.Cmp(y)
 		}
 	case time.Time:
 		switch y := b.(type) {
+		case nil:
+			return 1
 		case time.Time:
 			if x.Before(y) {
 				return -1
@@ -1331,6 +1383,8 @@ func collate1(a, b interface{}) int {
 		}
 	case time.Duration:
 		switch y := b.(type) {
+		case nil:
+			return 1
 		case time.Duration:
 			if x < y {
 				return -1
@@ -1375,4 +1429,10 @@ func collate(x, y []interface{}) (r int) {
 	}
 
 	return -r
+}
+
+var collators = map[bool]func(a, b []interface{}) int{false: collateDesc, true: collate}
+
+func collateDesc(a, b []interface{}) int {
+	return -collate(a, b)
 }

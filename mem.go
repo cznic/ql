@@ -12,8 +12,6 @@ import (
 	"log"
 	"math/big"
 	"time"
-
-	"github.com/cznic/exp/lldb"
 )
 
 var (
@@ -21,21 +19,6 @@ var (
 	_ storage       = (*mem)(nil)
 	_ temp          = (*memTemp)(nil)
 )
-
-var memCollators = map[bool]func(a, b []interface{}) int{false: memCollateDesc, true: memCollate}
-
-func memCollateDesc(a, b []interface{}) int {
-	return -memCollate(a, b)
-}
-
-func memCollate(a, b []interface{}) (r int) {
-	r, err := lldb.Collate(a, b, nil)
-	if err != nil {
-		log.Panic("internal error")
-	}
-
-	return
-}
 
 type memBTreeIterator enumerator
 
@@ -197,7 +180,7 @@ func (s *mem) CreateTemp(asc bool) (_ temp, err error) {
 	}
 
 	return &memTemp{
-		tree:  treeNew(memCollators[asc]),
+		tree:  treeNew(collators[asc]),
 		store: st,
 	}, nil
 }
@@ -320,7 +303,7 @@ func (s *mem) Update(h int64, data ...interface{}) (err error) {
 	return
 }
 
-func (s *mem) Delete(h int64) (err error) {
+func (s *mem) Delete(h int64, _ ...*col) (err error) {
 	r := s.rollback
 	r.list = append(r.list, undo{
 		tag:  undoDelete,
