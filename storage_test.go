@@ -78,8 +78,6 @@ func typeof(v interface{}) (r int) { //NTYPE
 		return qUint32
 	case uint64:
 		return qUint64
-	case []byte:
-		return qBlob
 	}
 	return
 }
@@ -138,6 +136,10 @@ func recSetDump(ctx *execCtx, rs Recordset) (s string, err error) {
 			state++
 			fallthrough
 		default:
+			if err = processChunks(rec); err != nil {
+				return false, err
+			}
+
 			a = append(a, fmt.Sprintf("%v", rec))
 		}
 		return true, nil

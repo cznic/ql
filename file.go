@@ -35,6 +35,37 @@ var (
 	_ temp          = (*fileTemp)(nil)
 )
 
+type chunk struct { // expanded to blob types lazily
+	f *file
+	b []byte
+}
+
+func (c chunk) expand() (v interface{}, err error) {
+	return c.f.loadChunks(c.b)
+}
+
+func processChunk(data interface{}, e error) (v interface{}, err error) {
+	if e != nil {
+		return nil, e
+	}
+
+	c, ok := data.(chunk)
+	if !ok {
+		return data, nil
+	}
+
+	return c.expand()
+}
+
+func processChunks(data []interface{}) (err error) {
+	for i, v := range data {
+		if data[i], err = processChunk(v, nil); err != nil {
+			return
+		}
+	}
+	return
+}
+
 // OpenFile returns a DB backed by a named file. The back end limits the size
 // of a record to about 64 kB.
 func OpenFile(name string, opt *Options) (db *DB, err error) {
@@ -686,9 +717,12 @@ func (s *file) Read(dst []interface{}, h int64, cols ...*col) (data []interface{
 			rec[i] = uint32(rec[i].(uint64))
 		case qUint64:
 		case qBlob, qBigInt, qBigRat, qTime, qDuration:
-			if rec[i], err = s.loadChunks(col.typ, rec[i].([]byte)); err != nil {
-				return
+			b, ok := rec[i].([]byte)
+			if !ok {
+				return nil, fmt.Errorf("corrupted DB: chunk type is not []byte")
 			}
+
+			rec[i] = chunk{f: s, b: b}
 		default:
 			log.Panic("internal error")
 		}
@@ -757,7 +791,7 @@ func (s *file) freeChunks(typ int, enc []byte) (err error) {
 	return
 }
 
-func (s *file) loadChunks(typ int, enc []byte) (v interface{}, err error) {
+func (s *file) loadChunks(enc []byte) (v interface{}, err error) {
 	items, err := lldb.DecodeScalars(enc)
 	if err != nil {
 		return
@@ -776,13 +810,9 @@ func (s *file) loadChunks(typ int, enc []byte) (v interface{}, err error) {
 		return nil, fmt.Errorf("corrupted DB: first chunk")
 	}
 
-	rtag, ok := items[0].(int64)
+	typ, ok := items[0].(int64)
 	if !ok {
 		return nil, fmt.Errorf("corrupted DB: first chunk tag")
-	}
-
-	if int(rtag) != typ {
-		return nil, fmt.Errorf("corrupted DB: first chunk type")
 	}
 
 	buf, ok := items[len(items)-1].([]byte)
@@ -819,7 +849,7 @@ func (s *file) loadChunks(typ int, enc []byte) (v interface{}, err error) {
 
 		buf = append(buf, b...)
 	}
-	return s.codec.decode(buf, typ)
+	return s.codec.decode(buf, int(typ))
 }
 
 func (s *file) Update(h int64, data ...interface{}) (err error) {

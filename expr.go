@@ -72,7 +72,7 @@ func (b *pBetween) String() string {
 //LATER newBetween and check all others have and use new*
 
 func (b *pBetween) eval(ctx map[interface{}]interface{}, arg []interface{}) (v interface{}, err error) {
-	lhs, err := b.expr.eval(ctx, arg)
+	lhs, err := processChunk(b.expr.eval(ctx, arg))
 	if err != nil {
 		return
 	}
@@ -177,14 +177,14 @@ func (o *binaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{
 
 	switch op := o.op; op {
 	case andand:
-		a, err := o.l.eval(ctx, arg)
+		a, err := processChunk(o.l.eval(ctx, arg))
 		if err != nil {
 			return nil, err
 		}
 
 		switch x := a.(type) {
 		case nil:
-			b, err := o.r.eval(ctx, arg)
+			b, err := processChunk(o.r.eval(ctx, arg))
 			if err != nil {
 				return nil, err
 			}
@@ -206,7 +206,7 @@ func (o *binaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{
 				return false, nil
 			}
 
-			b, err := o.r.eval(ctx, arg)
+			b, err := processChunk(o.r.eval(ctx, arg))
 			if err != nil {
 				return nil, err
 			}
@@ -223,14 +223,14 @@ func (o *binaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{
 			return undOp(x, op)
 		}
 	case oror:
-		a, err := o.l.eval(ctx, arg)
+		a, err := processChunk(o.l.eval(ctx, arg))
 		if err != nil {
 			return nil, err
 		}
 
 		switch x := a.(type) {
 		case nil:
-			b, err := o.r.eval(ctx, arg)
+			b, err := processChunk(o.r.eval(ctx, arg))
 			if err != nil {
 				return nil, err
 			}
@@ -252,7 +252,7 @@ func (o *binaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{
 				return x, nil
 			}
 
-			b, err := o.r.eval(ctx, arg)
+			b, err := processChunk(o.r.eval(ctx, arg))
 			if err != nil {
 				return nil, err
 			}
@@ -2354,7 +2354,7 @@ func (n *pIn) String() string {
 }
 
 func (n *pIn) eval(ctx map[interface{}]interface{}, arg []interface{}) (v interface{}, err error) {
-	lhs, err := n.expr.eval(ctx, arg)
+	lhs, err := processChunk(n.expr.eval(ctx, arg))
 	if err != nil {
 		return
 	}
@@ -2414,7 +2414,7 @@ func (c *conversion) String() string {
 }
 
 func (c *conversion) eval(ctx map[interface{}]interface{}, arg []interface{}) (v interface{}, err error) {
-	val, err := c.val.eval(ctx, arg)
+	val, err := processChunk(c.val.eval(ctx, arg))
 	if err != nil {
 		return
 	}
@@ -2696,7 +2696,7 @@ func (c *call) eval(ctx map[interface{}]interface{}, args []interface{}) (v inte
 
 	a := make([]interface{}, len(c.arg))
 	for i, arg := range c.arg {
-		if v, err = arg.eval(ctx, args); err != nil {
+		if v, err = processChunk(arg.eval(ctx, args)); err != nil {
 			return nil, err
 		}
 

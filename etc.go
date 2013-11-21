@@ -361,7 +361,7 @@ func ideal(v interface{}) interface{} {
 }
 
 func eval(v expression, ctx map[interface{}]interface{}, arg []interface{}) (y interface{}) {
-	y, err := v.eval(ctx, arg)
+	y, err := processChunk(v.eval(ctx, arg))
 	if err != nil {
 		panic(err) // panic ok here
 	}

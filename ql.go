@@ -1138,6 +1138,10 @@ func (db *DB) do(r recordset, names bool, f func(data []interface{}) (more bool,
 	ok := false
 	return r.do(r.ctx, func(id interface{}, data []interface{}) (more bool, err error) {
 		if ok {
+			if err = processChunks(data); err != nil {
+				return
+			}
+
 			return f(data)
 		}
 
