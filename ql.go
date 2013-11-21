@@ -216,6 +216,7 @@ type distinctRset struct {
 	src rset
 }
 
+//TODO blob support
 func (r *distinctRset) do(ctx *execCtx, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
 	t, err := ctx.db.store.CreateTemp(true)
 	if err != nil {
@@ -280,6 +281,7 @@ func (r *orderByRset) String() string {
 	return s
 }
 
+//TODO blob support
 func (r *orderByRset) do(ctx *execCtx, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
 	t, err := ctx.db.store.CreateTemp(r.asc)
 	if err != nil {

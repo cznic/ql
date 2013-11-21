@@ -3217,3 +3217,42 @@ COMMIT;
 SELECT * FROM t;
 |Bc
 [[]]
+
+-- 308
+BEGIN TRANSACTION;
+	CREATE TABLE t(i int, b blob);
+	INSERT INTO t VALUES
+		(0, blob("0")),
+	;
+COMMIT;
+SELECT * FROM t;
+|li, Bb
+[0 [48]]
+
+-- 309
+BEGIN TRANSACTION;
+	CREATE TABLE t(i int, b blob);
+	INSERT INTO t VALUES
+		(0, blob("0")),
+		(1, blob("1")),
+	;
+COMMIT;
+SELECT * FROM t;
+|li, Bb
+[1 [49]]
+[0 [48]]
+
+-- 310
+BEGIN TRANSACTION;
+	CREATE TABLE t(i int, b blob);
+	INSERT INTO t VALUES
+		(0, blob("0")),
+		(1, blob("1")),
+		(2, blob("2")),
+	;
+COMMIT;
+SELECT * FROM t;
+|li, Bb
+[2 [50]]
+[1 [49]]
+[0 [48]]
