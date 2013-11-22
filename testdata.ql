@@ -3476,3 +3476,101 @@ SELECT i, string(b) FROM t;
 |li, s
 [1 1123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef1123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef1123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef1123456789abcdef0123456789abcdef0123456789abcdef0123456789ABCDEF!]
 [0 0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789ABCDEF!]
+
+-- 323
+BEGIN TRANSACTION;
+	CREATE TABLE t (c bool);
+	INSERT INTO t VALUES (false), (true);
+COMMIT;
+SELECT * FROM t ORDER BY true, c, false;
+||cannot .* bool
+
+-- 324
+BEGIN TRANSACTION;
+	CREATE TABLE t (c bool, i int);
+	INSERT INTO t VALUES (false, 1), (true, 2), (false, 10), (true, 20);
+COMMIT;
+SELECT c, sum(i) FROM t GROUP BY c;
+|bc, l
+[false 11]
+[true 22]
+
+-- 325
+BEGIN TRANSACTION;
+	CREATE TABLE t (c int8);
+	INSERT INTO t VALUES (1), (2);
+COMMIT;
+SELECT * FROM t ORDER BY 42, c, 24;
+|ic
+[1]
+[2]
+
+-- 326
+BEGIN TRANSACTION;
+	CREATE TABLE t (c int8, i int);
+	INSERT INTO t VALUES (99, 1), (100, 2), (99, 10), (100, 20);
+COMMIT;
+SELECT c, sum(i) FROM t GROUP BY c;
+|ic, l
+[99 11]
+[100 22]
+
+-- 327
+BEGIN TRANSACTION;
+	CREATE TABLE t (c blob);
+	INSERT INTO t VALUES (blob("A")), (blob("B"));
+COMMIT;
+SELECT * FROM t ORDER BY 42, c, 24;
+||cannot .* \[\]uint8
+
+-- 328
+BEGIN TRANSACTION;
+	CREATE TABLE t (c blob, i int);
+	INSERT INTO t VALUES (blob("A"), 1), (blob("B"), 2);
+COMMIT;
+SELECT c, sum(i) FROM t GROUP BY c;
+|?c, l
+[[65] 1]
+[[66] 2]
+
+-- 329
+BEGIN TRANSACTION;
+	CREATE TABLE t (c blob, i int);
+	INSERT INTO t VALUES (blob("A"), 10), (blob("B"), 20);
+COMMIT;
+SELECT c, sum(i) FROM t GROUP BY c;
+|?c, l
+[[65] 10]
+[[66] 20]
+
+-- 330
+BEGIN TRANSACTION;
+	CREATE TABLE t (c blob, i int);
+	INSERT INTO t VALUES (blob("A"), 1), (blob("B"), 2), (blob("A"), 10), (blob("B"), 20);
+COMMIT;
+SELECT * FROM t;
+|?c, li
+[[66] 20]
+[[65] 10]
+[[66] 2]
+[[65] 1]
+
+-- 331
+BEGIN TRANSACTION;
+	CREATE TABLE t (c string, i int);
+	INSERT INTO t VALUES ("A", 1), ("B", 2), ("A", 10), ("B", 20);
+COMMIT;
+SELECT c, sum(i) FROM t GROUP BY c;
+|sc, l
+[A 11]
+[B 22]
+
+-- 332
+BEGIN TRANSACTION;
+	CREATE TABLE t (c blob, i int);
+	INSERT INTO t VALUES (blob("A"), 1), (blob("B"), 2), (blob("A"), 10), (blob("B"), 20);
+COMMIT;
+SELECT c, sum(i) FROM t GROUP BY c;
+|?c, l
+[[65] 11]
+[[66] 22]

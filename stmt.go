@@ -131,7 +131,7 @@ func (s *updateStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 			return nil, err
 		}
 
-		if err = t.store.UpdateRow(h, blobCols, data...); err != nil { //TODO detect which blobs are actually affected
+		if err = t.store.UpdateRow(h, blobCols, data...); err != nil { //LATER detect which blobs are actually affected
 			return nil, err
 		}
 	}

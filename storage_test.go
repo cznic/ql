@@ -136,7 +136,7 @@ func recSetDump(ctx *execCtx, rs Recordset) (s string, err error) {
 			state++
 			fallthrough
 		default:
-			if err = processChunks(rec); err != nil {
+			if err = expand(rec); err != nil {
 				return false, err
 			}
 

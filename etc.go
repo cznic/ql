@@ -40,20 +40,25 @@ const (
 
 var (
 	type2Str = map[int]string{
+		qBigInt:     "bigint",
+		qBigRat:     "bigrat",
+		qBlob:       "blob",
 		qBool:       "bool",
-		qComplex64:  "complex64",
 		qComplex128: "complex128",
+		qComplex64:  "complex64",
+		qDuration:   "duration",
 		qFloat32:    "float32",
 		qFloat64:    "float64",
-		qInt8:       "int8",
 		qInt16:      "int16",
 		qInt32:      "int32",
 		qInt64:      "int64",
+		qInt8:       "int8",
 		qString:     "string",
-		qUint8:      "uint8",
+		qTime:       "time",
 		qUint16:     "uint16",
 		qUint32:     "uint32",
 		qUint64:     "uint64",
+		qUint8:      "uint8",
 	}
 )
 
@@ -361,7 +366,7 @@ func ideal(v interface{}) interface{} {
 }
 
 func eval(v expression, ctx map[interface{}]interface{}, arg []interface{}) (y interface{}) {
-	y, err := processChunk(v.eval(ctx, arg))
+	y, err := expand1(v.eval(ctx, arg))
 	if err != nil {
 		panic(err) // panic ok here
 	}
@@ -953,6 +958,8 @@ func convert(val interface{}, typ int) (v interface{}, err error) { //NTYPE
 		switch x := val.(type) {
 		case string:
 			return []byte(x), nil
+		case []byte:
+			return x, nil
 		default:
 			return invConv(val, typ)
 		}
@@ -1172,6 +1179,7 @@ func typeCheck(rec []interface{}, cols []*col) (err error) {
 	return
 }
 
+//TODO collate1 should return errors instead of panicing
 func collate1(a, b interface{}) int {
 	switch x := a.(type) {
 	case nil:
@@ -1180,6 +1188,150 @@ func collate1(a, b interface{}) int {
 		}
 
 		return 0
+	case bool:
+		switch y := b.(type) {
+		case nil:
+			return 1
+		case bool:
+			if !x && y {
+				return -1
+			}
+
+			if x == y {
+				return 0
+			}
+
+			return 1
+		}
+	case idealComplex:
+		switch y := b.(type) {
+		case nil:
+			return 1
+		case idealComplex:
+			if x == y {
+				return 0
+			}
+
+			if real(x) < real(y) {
+				return -1
+			}
+
+			if real(x) > real(y) {
+				return 1
+			}
+
+			if imag(x) < imag(y) {
+				return -1
+			}
+
+			return 1
+		}
+	case idealUint:
+		switch y := b.(type) {
+		case nil:
+			return 1
+		case idealUint:
+			if x < y {
+				return -1
+			}
+
+			if x == y {
+				return 0
+			}
+
+			return 1
+		}
+	case idealRune:
+		switch y := b.(type) {
+		case nil:
+			return 1
+		case idealRune:
+			if x < y {
+				return -1
+			}
+
+			if x == y {
+				return 0
+			}
+
+			return 1
+		}
+	case idealInt:
+		switch y := b.(type) {
+		case nil:
+			return 1
+		case idealInt:
+			if x < y {
+				return -1
+			}
+
+			if x == y {
+				return 0
+			}
+
+			return 1
+		}
+	case idealFloat:
+		switch y := b.(type) {
+		case nil:
+			return 1
+		case idealFloat:
+			if x < y {
+				return -1
+			}
+
+			if x == y {
+				return 0
+			}
+
+			return 1
+		}
+	case complex64:
+		switch y := b.(type) {
+		case nil:
+			return 1
+		case complex64:
+			if x == y {
+				return 0
+			}
+
+			if real(x) < real(y) {
+				return -1
+			}
+
+			if real(x) > real(y) {
+				return 1
+			}
+
+			if imag(x) < imag(y) {
+				return -1
+			}
+
+			return 1
+		}
+	case complex128:
+		switch y := b.(type) {
+		case nil:
+			return 1
+		case complex128:
+			if x == y {
+				return 0
+			}
+
+			if real(x) < real(y) {
+				return -1
+			}
+
+			if real(x) > real(y) {
+				return 1
+			}
+
+			if imag(x) < imag(y) {
+				return -1
+			}
+
+			return 1
+		}
 	case float32:
 		switch y := b.(type) {
 		case nil:
@@ -1396,11 +1548,29 @@ func collate1(a, b interface{}) int {
 
 			return 1
 		}
+	case chunk:
+		switch y := b.(type) {
+		case nil:
+			return 1
+		case chunk:
+			a, err := x.expand()
+			if err != nil {
+				log.Panic(err)
+			}
+
+			b, err := y.expand()
+			if err != nil {
+				log.Panic(err)
+			}
+
+			return collate1(a, b)
+		}
 	}
-	log.Panic("internal error")
+	log.Panicf("internal error")
 	panic("unreachable")
 }
 
+//TODO collate should return errors from collate1
 func collate(x, y []interface{}) (r int) {
 	nx, ny := len(x), len(y)
 
@@ -1435,4 +1605,31 @@ var collators = map[bool]func(a, b []interface{}) int{false: collateDesc, true: 
 
 func collateDesc(a, b []interface{}) int {
 	return -collate(a, b)
+}
+
+func isOrderedType(v interface{}) (y interface{}, r bool, err error) {
+	//dbg("====")
+	//dbg("%T(%v)", v, v)
+	//defer func() { dbg("%T(%v)", y, y) }()
+	switch x := v.(type) {
+	case idealFloat, idealInt, idealRune, idealUint,
+		float32, float64,
+		int8, int16, int32, int64,
+		uint8, uint16, uint32, uint64,
+		string:
+		return v, true, nil
+	case chunk:
+		if y, err = x.expand(); err != nil {
+			return
+		}
+
+		switch x := y.(type) {
+		case *big.Int, *big.Rat, time.Time, time.Duration:
+			return x, true, nil
+		default:
+			return x, false, nil
+		}
+	}
+
+	return v, false, nil
 }

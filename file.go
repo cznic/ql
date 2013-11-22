@@ -44,7 +44,7 @@ func (c chunk) expand() (v interface{}, err error) {
 	return c.f.loadChunks(c.b)
 }
 
-func processChunk(data interface{}, e error) (v interface{}, err error) {
+func expand1(data interface{}, e error) (v interface{}, err error) {
 	if e != nil {
 		return nil, e
 	}
@@ -57,9 +57,9 @@ func processChunk(data interface{}, e error) (v interface{}, err error) {
 	return c.expand()
 }
 
-func processChunks(data []interface{}) (err error) {
+func expand(data []interface{}) (err error) {
 	for i, v := range data {
-		if data[i], err = processChunk(v, nil); err != nil {
+		if data[i], err = expand1(v, nil); err != nil {
 			return
 		}
 	}
@@ -146,6 +146,18 @@ func (it *fileBTreeIterator) Next() (k, v []interface{}, err error) {
 		return
 	}
 
+	for i, val := range k {
+		b, ok := val.([]byte)
+		if !ok {
+			continue
+		}
+
+		c := chunk{it.t.file, b}
+		if k[i], err = c.expand(); err != nil {
+			return nil, nil, err
+		}
+	}
+
 	if err = enforce(k, it.t.colsK); err != nil {
 		return
 	}
@@ -154,32 +166,19 @@ func (it *fileBTreeIterator) Next() (k, v []interface{}, err error) {
 		return
 	}
 
+	for i, val := range v {
+		b, ok := val.([]byte)
+		if !ok {
+			continue
+		}
+
+		c := chunk{it.t.file, b}
+		if v[i], err = c.expand(); err != nil {
+			return nil, nil, err
+		}
+	}
+
 	err = enforce(v, it.t.colsV)
-	return
-}
-
-var fileCollators = map[bool]func(a, b []byte) int{false: fileCollateDesc, true: fileCollate}
-
-func fileCollateDesc(a, b []byte) int {
-	return -fileCollate(a, b)
-}
-
-func fileCollate(a, b []byte) (r int) {
-	da, err := lldb.DecodeScalars(a)
-	if err != nil {
-		log.Panic(err)
-	}
-
-	db, err := lldb.DecodeScalars(b)
-	if err != nil {
-		log.Panic(err)
-	}
-
-	r, err = lldb.Collate(da, db, nil)
-	if err != nil {
-		log.Panic(err)
-	}
-
 	return
 }
 
@@ -192,6 +191,7 @@ func enforce(val []interface{}, cols []*col) (err error) {
 	return
 }
 
+//NTYPE
 func infer(from []interface{}, to *[]*col) {
 	if len(*to) == 0 {
 		*to = make([]*col, len(from))
@@ -246,6 +246,34 @@ func infer(from []interface{}, to *[]*col) {
 				c.typ = qUint32
 			case uint64:
 				c.typ = qUint64
+			case []byte:
+				c.typ = qBlob
+			case *big.Int:
+				c.typ = qBigInt
+			case *big.Rat:
+				c.typ = qBigRat
+			case time.Time:
+				c.typ = qTime
+			case time.Duration:
+				c.typ = qDuration
+			case chunk:
+				vals, err := lldb.DecodeScalars([]byte(x.b))
+				if err != nil {
+					log.Panic("err")
+				}
+
+				if len(vals) == 0 {
+					log.Panic("internal error")
+				}
+
+				i, ok := vals[0].(int64)
+				if !ok {
+					log.Panic("internal error")
+				}
+
+				c.typ = int(i)
+			default:
+				log.Panic("internal error")
 			}
 		}
 	}
@@ -263,6 +291,14 @@ func (t *fileTemp) BeginTransaction() error {
 }
 
 func (t *fileTemp) Get(k []interface{}) (v []interface{}, err error) {
+	if err = expand(k); err != nil {
+		return
+	}
+
+	if err = t.flatten(k); err != nil {
+		return nil, err
+	}
+
 	bk, err := lldb.EncodeScalars(k...)
 	if err != nil {
 		return
@@ -303,11 +339,27 @@ func (t *fileTemp) SeekFirst() (it btreeIterator, err error) {
 }
 
 func (t *fileTemp) Set(k, v []interface{}) (err error) {
+	if err = expand(k); err != nil {
+		return
+	}
+
+	if err = expand(v); err != nil {
+		return
+	}
+
 	infer(k, &t.colsK)
 	infer(v, &t.colsV)
 
+	if err = t.flatten(k); err != nil {
+		return
+	}
+
 	bk, err := lldb.EncodeScalars(k...)
 	if err != nil {
+		return
+	}
+
+	if err = t.flatten(v); err != nil {
 		return
 	}
 
@@ -547,6 +599,21 @@ func (s *file) Verify() (allocs int64, err error) {
 	return
 }
 
+func (s *file) expandBytes(d []interface{}) (err error) {
+	for i, v := range d {
+		b, ok := v.([]byte)
+		if !ok {
+			continue
+		}
+
+		d[i], err = s.loadChunks(b)
+		if err != nil {
+			return
+		}
+	}
+	return
+}
+
 func (s *file) CreateTemp(asc bool) (bt temp, err error) {
 	f, err := s.tempFile("", "ql-tmp-")
 	if err != nil {
@@ -562,7 +629,32 @@ func (s *file) CreateTemp(asc bool) (bt temp, err error) {
 		return nil, err
 	}
 
-	t, _, err := lldb.CreateBTree(a, fileCollators[asc])
+	k := 1
+	if !asc {
+		k = -1
+	}
+
+	t, _, err := lldb.CreateBTree(a, func(a, b []byte) int { //TODO w/ error return
+		da, err := lldb.DecodeScalars(a)
+		if err != nil {
+			log.Panic(err)
+		}
+
+		if err = s.expandBytes(da); err != nil {
+			log.Panic(err)
+		}
+
+		db, err := lldb.DecodeScalars(b)
+		if err != nil {
+			log.Panic(err)
+		}
+
+		if err = s.expandBytes(db); err != nil {
+			log.Panic(err)
+		}
+
+		return k * collate(da, db)
+	})
 	if err != nil {
 		f.Close()
 		if fn != "" {
@@ -572,8 +664,9 @@ func (s *file) CreateTemp(asc bool) (bt temp, err error) {
 	}
 
 	x := &fileTemp{file: &file{
-		a:  a,
-		f0: f,
+		a:     a,
+		codec: newGobCoder(),
+		f0:    f,
 	},
 		t: t}
 	return x, nil
@@ -604,6 +697,10 @@ func (s *file) Create(data ...interface{}) (h int64, err error) {
 	if s.wal != nil {
 		defer s.lock()()
 	}
+	if err = expand(data); err != nil {
+		return
+	}
+
 	if err = s.flatten(data); err != nil {
 		return
 	}
@@ -869,8 +966,7 @@ func (s *file) UpdateRow(h int64, blobCols []*col, data ...interface{}) (err err
 		return s.Update(h, data...)
 	}
 
-	log.Panic("TODO")
-	panic("TODO")
+	return fmt.Errorf("update statement doesn't yet support blob types") //TODO
 }
 
 // []interface{}{qltype, ...}->[]interface{}{lldb scalar type, ...}

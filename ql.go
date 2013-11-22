@@ -124,6 +124,9 @@ func (r *groupByRset) do(ctx *execCtx, f func(id interface{}, data []interface{}
 				return false, err
 			}
 
+			for i, c := range gcols {
+				k[i] = in[c.index]
+			}
 			err = t.Set(k, []interface{}{nh})
 			if err != nil {
 				return false, err
@@ -216,7 +219,6 @@ type distinctRset struct {
 	src rset
 }
 
-//TODO blob support
 func (r *distinctRset) do(ctx *execCtx, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
 	t, err := ctx.db.store.CreateTemp(true)
 	if err != nil {
@@ -281,7 +283,6 @@ func (r *orderByRset) String() string {
 	return s
 }
 
-//TODO blob support
 func (r *orderByRset) do(ctx *execCtx, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
 	t, err := ctx.db.store.CreateTemp(r.asc)
 	if err != nil {
@@ -312,6 +313,18 @@ func (r *orderByRset) do(ctx *execCtx, f func(id interface{}, data []interface{}
 				val, err := expr.eval(m, ctx.arg)
 				if err != nil {
 					return false, err
+				}
+
+				if val != nil {
+					val, ordered, err := isOrderedType(val)
+					if err != nil {
+						return false, err
+					}
+
+					if !ordered {
+						return false, fmt.Errorf("cannot order by %v (type %T)", val, val)
+
+					}
 				}
 
 				k[i] = val
@@ -1138,7 +1151,7 @@ func (db *DB) do(r recordset, names bool, f func(data []interface{}) (more bool,
 	ok := false
 	return r.do(r.ctx, func(id interface{}, data []interface{}) (more bool, err error) {
 		if ok {
-			if err = processChunks(data); err != nil {
+			if err = expand(data); err != nil {
 				return
 			}
 
