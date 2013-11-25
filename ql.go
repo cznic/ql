@@ -728,6 +728,8 @@ func (f *col) typeCheck(x interface{}) (ok bool) { //NTYPE
 		return f.typ == qUint64
 	case []byte:
 		return f.typ == qBlob
+	case chunk:
+		return true // was checked earlier
 	}
 	return
 }

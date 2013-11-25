@@ -766,7 +766,7 @@ func (s *file) free(h int64, blobCols []*col) (err error) {
 			return fmt.Errorf("file.free: corrupted DB (chunk []byte)")
 		}
 
-		if err = s.freeChunks(col.typ, b); err != nil {
+		if err = s.freeChunks(b); err != nil {
 			return
 		}
 	}
@@ -828,7 +828,7 @@ func (s *file) Read(dst []interface{}, h int64, cols ...*col) (data []interface{
 	return rec, nil
 }
 
-func (s *file) freeChunks(typ int, enc []byte) (err error) {
+func (s *file) freeChunks(enc []byte) (err error) {
 	items, err := lldb.DecodeScalars(enc)
 	if err != nil {
 		return
@@ -845,15 +845,6 @@ func (s *file) freeChunks(typ int, enc []byte) (err error) {
 		}
 	default:
 		return fmt.Errorf("corrupted DB: first chunk")
-	}
-
-	rtag, ok := items[0].(int64)
-	if !ok {
-		return fmt.Errorf("corrupted DB: first chunk tag")
-	}
-
-	if int(rtag) != typ {
-		return fmt.Errorf("corrupted DB: first chunk type")
 	}
 
 	for next != 0 {
@@ -966,7 +957,26 @@ func (s *file) UpdateRow(h int64, blobCols []*col, data ...interface{}) (err err
 		return s.Update(h, data...)
 	}
 
-	return fmt.Errorf("update statement doesn't yet support blob types") //TODO
+	if err = expand(data); err != nil {
+		return
+	}
+
+	data0, err := s.Read(nil, h, blobCols...)
+	if err != nil {
+		return
+	}
+
+	for _, c := range blobCols {
+		if err = s.freeChunks(data0[c.index+2].(chunk).b); err != nil {
+			return
+		}
+	}
+
+	if err = s.flatten(data); err != nil {
+		return
+	}
+
+	return s.Update(h, data...)
 }
 
 // []interface{}{qltype, ...}->[]interface{}{lldb scalar type, ...}
