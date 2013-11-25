@@ -180,7 +180,7 @@ func (g *gobCoder) decode(b []byte, typ int) (v interface{}, err error) {
 		err = g.dec.Decode(&x)
 		v = x
 	case qBigRat:
-		x := big.NewRat(1, 2)
+		x := big.NewRat(1, 1)
 		err = g.dec.Decode(&x)
 		v = x
 	case qTime:

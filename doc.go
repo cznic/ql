@@ -399,26 +399,27 @@
 // A type determines the set of values and operations specific to values of
 // that type. A type is specified by a type name.
 //
-//  Type = "blob"	// []byte
-//  	| "bool"
-//  	| "byte"	// alias for uint8
-//  	| "complex128"
-//  	| "complex64"
-//  	| "float"	// alias for float64
-//  	| "float32"
-//  	| "float64"
-//  	| "int"		// alias for int64
-//  	| "int16"
-//  	| "int32"
-//  	| "int64"
-//  	| "int8"
-//  	| "rune"	// alias for int32
-//  	| "string"
-//  	| "uint"	// alias for uint64
-//  	| "uint16"
-//  	| "uint32"
-//  	| "uint64"
-//  	| "uint8" .
+//  Type = "bigint"         // API: *math/big.Int
+//          | "blob"        // API: []byte
+//          | "bool"
+//          | "byte"        // alias for uint8
+//          | "complex128"
+//          | "complex64"
+//          | "float"       // alias for float64
+//          | "float32"
+//          | "float64"
+//          | "int"         // alias for int64
+//          | "int16"
+//          | "int32"
+//          | "int64"
+//          | "int8"
+//          | "rune"        // alias for int32
+//          | "string"
+//          | "uint"        // alias for uint64
+//          | "uint16"
+//          | "uint32"
+//          | "uint64"
+//          | "uint8" .
 //
 // Named instances of the boolean, numeric, and string types are keywords. The
 // names are not case sensitive.
@@ -446,6 +447,7 @@
 // 	int16       the set of all signed 16-bit integers (-32768 to 32767)
 // 	int32       the set of all signed 32-bit integers (-2147483648 to 2147483647)
 // 	int64       the set of all signed 64-bit integers (-9223372036854775808 to 9223372036854775807)
+//	bigint      the set of all integers
 //
 // 	float32     the set of all IEEE-754 32-bit floating-point numbers
 // 	float64     the set of all IEEE-754 64-bit floating-point numbers
@@ -540,8 +542,8 @@
 // denotes the element of a string indexed by x. It's type is byte. The value x
 // is called the index.  The following rules apply
 //
-// - The index x must be of integer type; it is in range if 0 <= x < len(s),
-// otherwise it is out of range.
+// - The index x must be of integer type except bigint; it is in range if 0 <=
+// x < len(s), otherwise it is out of range.
 //
 // - A constant index must be non-negative and representable by a value of type
 // int.
@@ -579,6 +581,8 @@
 // representable by a value of type int. If both indices are constant, they
 // must satisfy low <= high. If the indices are out of range at run time, a
 // run-time error occurs.
+//
+// Values of type bigint cannot be used as indices.
 //
 // If s is NULL the result is NULL. If low or high is not omitted and is NULL
 // then the result is NULL.
@@ -803,12 +807,15 @@
 // speaking, these unsigned integer operations discard high bits upon overflow,
 // and expressions may rely on ``wrap around''.
 //
-// For signed integers, the operations +, -, *, and << may legally overflow and
-// the resulting value exists and is deterministically defined by the signed
-// integer representation, the operation, and its operands. No exception is
-// raised as a result of overflow. An evaluator may not optimize an expression
-// under the assumption that overflow does not occur. For instance, it may not
-// assume that x < x + 1 is always true.
+// For signed integers with a finite bit width, the operations +, -, *, and <<
+// may legally overflow and the resulting value exists and is deterministically
+// defined by the signed integer representation, the operation, and its
+// operands. No exception is raised as a result of overflow. An evaluator may
+// not optimize an expression under the assumption that overflow does not
+// occur. For instance, it may not assume that x < x + 1 is always true.
+//
+// Integers of type bigint do not overflow but their handling is limited by the
+// memory resources available to the program.
 //
 // Comparison operators
 //
@@ -976,6 +983,20 @@
 //
 //	blob("hellø")   // []byte{'h', 'e', 'l', 'l', '\xc3', '\xb8'}
 //	blob("")        // []byte{}
+//
+// 4. Converting a value of a bigint type to a string yields a sting containing
+// the decimal decimal representation of the integer.
+//
+//	string(M9)	// "2305843009213693951"
+//
+// 5. Converting a value of a string type to a bigint yields a bigint value
+// containing the integer represented by the string value. A prefix of “0x” or
+// “0X” selects base 16; the “0” prefix selects base 8, and a “0b” or “0B”
+// prefix selects base 2. Otherwise the value is interpreted in base 10. If the
+// string value is not in any valid format an error occurs.
+//
+//	bigint("2305843009213693951")		// M9
+//	bigint("0x1ffffffffffffffffffffff")	// M10 == 2^89-1
 //
 // Order of evaluation
 //

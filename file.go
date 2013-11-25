@@ -990,16 +990,16 @@ func (s *file) flatten(data []interface{}) (err error) {
 			tag = qBlob
 			b = x
 		case *big.Int:
-			tag = qBlob
+			tag = qBigInt
 			b, err = s.codec.encode(x)
 		case *big.Rat:
-			tag = qBlob
+			tag = qBigRat
 			b, err = s.codec.encode(x)
 		case time.Time:
-			tag = qBlob
+			tag = qTime
 			b, err = s.codec.encode(x)
 		case time.Duration:
-			tag = qBlob
+			tag = qDuration
 			b, err = s.codec.encode(int64(x))
 		default:
 			continue

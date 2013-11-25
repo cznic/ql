@@ -529,6 +529,9 @@ func convert(val interface{}, typ int) (v interface{}, err error) { //NTYPE
 			return float32(x), nil
 		case uint64:
 			return float32(x), nil
+		case *big.Int:
+			v, _ := big.NewRat(1, 1).SetInt(x).Float64()
+			return float32(v), nil
 		default:
 			return invConv(val, typ)
 		}
@@ -568,6 +571,9 @@ func convert(val interface{}, typ int) (v interface{}, err error) { //NTYPE
 			return float64(x), nil
 		case uint64:
 			return float64(x), nil
+		case *big.Int:
+			v, _ := big.NewRat(1, 1).SetInt(x).Float64()
+			return v, nil
 		default:
 			return invConv(val, typ)
 		}
@@ -611,6 +617,8 @@ func convert(val interface{}, typ int) (v interface{}, err error) { //NTYPE
 			return int8(x), nil
 		case uint64:
 			return int8(x), nil
+		case *big.Int:
+			return int8(x.Int64()), nil
 		default:
 			return invConv(val, typ)
 		}
@@ -654,6 +662,8 @@ func convert(val interface{}, typ int) (v interface{}, err error) { //NTYPE
 			return int16(x), nil
 		case uint64:
 			return int16(x), nil
+		case *big.Int:
+			return int16(x.Int64()), nil
 		default:
 			return invConv(val, typ)
 		}
@@ -697,6 +707,8 @@ func convert(val interface{}, typ int) (v interface{}, err error) { //NTYPE
 			return int32(x), nil
 		case uint64:
 			return int32(x), nil
+		case *big.Int:
+			return int32(x.Int64()), nil
 		default:
 			return invConv(val, typ)
 		}
@@ -740,6 +752,8 @@ func convert(val interface{}, typ int) (v interface{}, err error) { //NTYPE
 			return int64(x), nil
 		case uint64:
 			return int64(x), nil
+		case *big.Int:
+			return x.Int64(), nil
 		default:
 			return invConv(val, typ)
 		}
@@ -779,6 +793,8 @@ func convert(val interface{}, typ int) (v interface{}, err error) { //NTYPE
 			return string(x), nil
 		case []byte:
 			return string(x), nil
+		case *big.Int:
+			return x.String(), nil
 		default:
 			return invConv(val, typ)
 		}
@@ -822,6 +838,8 @@ func convert(val interface{}, typ int) (v interface{}, err error) { //NTYPE
 			return uint8(x), nil
 		case uint64:
 			return uint8(x), nil
+		case *big.Int:
+			return uint8(x.Int64()), nil
 		default:
 			return invConv(val, typ)
 		}
@@ -865,6 +883,8 @@ func convert(val interface{}, typ int) (v interface{}, err error) { //NTYPE
 			return uint16(x), nil
 		case uint64:
 			return uint16(x), nil
+		case *big.Int:
+			return uint16(x.Int64()), nil
 		default:
 			return invConv(val, typ)
 		}
@@ -908,6 +928,8 @@ func convert(val interface{}, typ int) (v interface{}, err error) { //NTYPE
 			return uint32(x), nil
 		case uint64:
 			return uint32(x), nil
+		case *big.Int:
+			return uint32(x.Int64()), nil
 		default:
 			return invConv(val, typ)
 		}
@@ -951,6 +973,8 @@ func convert(val interface{}, typ int) (v interface{}, err error) { //NTYPE
 			return uint64(x), nil
 		case uint64:
 			return uint64(x), nil
+		case *big.Int:
+			return x.Uint64(), nil
 		default:
 			return invConv(val, typ)
 		}
@@ -959,6 +983,66 @@ func convert(val interface{}, typ int) (v interface{}, err error) { //NTYPE
 		case string:
 			return []byte(x), nil
 		case []byte:
+			return x, nil
+		default:
+			return invConv(val, typ)
+		}
+	case qBigInt:
+		switch x := val.(type) {
+		// case blob
+		// case bool
+		//case idealComplex:
+		case idealFloat:
+			if _, frac := math.Modf(float64(x)); frac != 0 {
+				return truncConv(x)
+			}
+
+			rr := big.NewRat(1, 1).SetFloat64(float64(x))
+			ii := big.NewInt(0).Set(rr.Num())
+			ii.Quo(ii, rr.Denom())
+			return ii, nil
+		case idealInt:
+			return big.NewInt(0).SetInt64(int64(x)), nil
+		case idealRune:
+			return big.NewInt(0).SetInt64(int64(x)), nil
+		case idealUint:
+			return big.NewInt(0).SetInt64(int64(x)), nil
+		//case complex64
+		//case complex128
+		case float32:
+			rr := big.NewRat(1, 1).SetFloat64(float64(x))
+			ii := big.NewInt(0).Set(rr.Num())
+			ii.Quo(ii, rr.Denom())
+			return ii, nil
+		case float64:
+			rr := big.NewRat(1, 1).SetFloat64(float64(x))
+			ii := big.NewInt(0).Set(rr.Num())
+			ii.Quo(ii, rr.Denom())
+			return ii, nil
+		case int8:
+			return big.NewInt(0).SetInt64(int64(x)), nil
+		case int16:
+			return big.NewInt(0).SetInt64(int64(x)), nil
+		case int32:
+			return big.NewInt(0).SetInt64(int64(x)), nil
+		case int64:
+			return big.NewInt(0).SetInt64(x), nil
+		case string:
+			y := big.NewInt(0)
+			if _, ok := y.SetString(x, 0); !ok {
+				return invConv(val, typ)
+			}
+
+			return y, nil
+		case uint8:
+			return big.NewInt(0).SetUint64(uint64(x)), nil
+		case uint16:
+			return big.NewInt(0).SetUint64(uint64(x)), nil
+		case uint32:
+			return big.NewInt(0).SetUint64(uint64(x)), nil
+		case uint64:
+			return big.NewInt(0).SetUint64(x), nil
+		case *big.Int:
 			return x, nil
 		default:
 			return invConv(val, typ)
@@ -1107,6 +1191,17 @@ func typeCheck(rec []interface{}, cols []*col) (err error) {
 
 					rec[i] = uint64(y)
 					continue
+				case qBigInt:
+					if math.Floor(y) != y {
+						return invTruncInt(y)
+					}
+
+					rr := big.NewRat(1, 1).SetFloat64(y)
+					ii := big.NewInt(0)
+					ii.Set(rr.Num())
+					ii.Quo(ii, rr.Denom())
+					rec[i] = ii
+					continue
 				default:
 					log.Panic("internal error")
 				}
@@ -1182,6 +1277,9 @@ func typeCheck(rec []interface{}, cols []*col) (err error) {
 					}
 
 					rec[i] = uint64(y)
+					continue
+				case qBigInt:
+					rec[i] = big.NewInt(y)
 					continue
 				default:
 					log.Panic("internal error")
@@ -1259,6 +1357,9 @@ func typeCheck(rec []interface{}, cols []*col) (err error) {
 
 					rec[i] = uint64(y)
 					continue
+				case qBigInt:
+					rec[i] = big.NewInt(y)
+					continue
 				default:
 					log.Panic("internal error")
 				}
@@ -1332,6 +1433,9 @@ func typeCheck(rec []interface{}, cols []*col) (err error) {
 					continue
 				case qUint64:
 					rec[i] = uint64(y)
+					continue
+				case qBigInt:
+					rec[i] = big.NewInt(0).SetUint64(y)
 					continue
 				default:
 					log.Panic("internal error")
@@ -1782,17 +1886,14 @@ func isOrderedType(v interface{}) (y interface{}, r bool, err error) {
 		uint8, uint16, uint32, uint64,
 		string:
 		return v, true, nil
+	case *big.Int, *big.Rat, time.Time, time.Duration:
+		return x, true, nil
 	case chunk:
 		if y, err = x.expand(); err != nil {
 			return
 		}
 
-		switch x := y.(type) {
-		case *big.Int, *big.Rat, time.Time, time.Duration:
-			return x, true, nil
-		default:
-			return x, false, nil
-		}
+		return isOrderedType(y)
 	}
 
 	return v, false, nil

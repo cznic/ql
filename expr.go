@@ -7,6 +7,7 @@ package ql
 import (
 	"fmt"
 	"log"
+	"math/big"
 	"strings"
 )
 
@@ -388,6 +389,13 @@ func (o *binaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{
 			default:
 				return invOp2(x, y, op)
 			}
+		case *big.Int:
+			switch y := b.(type) {
+			case *big.Int:
+				return x.Cmp(y) > 0, nil
+			default:
+				return invOp2(x, y, op)
+			}
 		default:
 			return invOp2(a, b, op)
 		}
@@ -508,6 +516,13 @@ func (o *binaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{
 			switch y := b.(type) {
 			case uint64:
 				return x < y, nil
+			default:
+				return invOp2(x, y, op)
+			}
+		case *big.Int:
+			switch y := b.(type) {
+			case *big.Int:
+				return x.Cmp(y) < 0, nil
 			default:
 				return invOp2(x, y, op)
 			}
@@ -634,6 +649,13 @@ func (o *binaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{
 			default:
 				return invOp2(x, y, op)
 			}
+		case *big.Int:
+			switch y := b.(type) {
+			case *big.Int:
+				return x.Cmp(y) <= 0, nil
+			default:
+				return invOp2(x, y, op)
+			}
 		default:
 			return invOp2(a, b, op)
 		}
@@ -754,6 +776,13 @@ func (o *binaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{
 			switch y := b.(type) {
 			case uint64:
 				return x >= y, nil
+			default:
+				return invOp2(x, y, op)
+			}
+		case *big.Int:
+			switch y := b.(type) {
+			case *big.Int:
+				return x.Cmp(y) >= 0, nil
 			default:
 				return invOp2(x, y, op)
 			}
@@ -900,6 +929,13 @@ func (o *binaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{
 			default:
 				return invOp2(x, y, op)
 			}
+		case *big.Int:
+			switch y := b.(type) {
+			case *big.Int:
+				return x.Cmp(y) != 0, nil
+			default:
+				return invOp2(x, y, op)
+			}
 		default:
 			return invOp2(a, b, op)
 		}
@@ -1043,6 +1079,13 @@ func (o *binaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{
 			default:
 				return invOp2(x, y, op)
 			}
+		case *big.Int:
+			switch y := b.(type) {
+			case *big.Int:
+				return x.Cmp(y) == 0, nil
+			default:
+				return invOp2(x, y, op)
+			}
 		default:
 			return invOp2(a, b, op)
 		}
@@ -1181,6 +1224,14 @@ func (o *binaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{
 			default:
 				return invOp2(x, y, op)
 			}
+		case *big.Int:
+			switch y := b.(type) {
+			case *big.Int:
+				var z big.Int
+				return z.Add(x, y), nil
+			default:
+				return invOp2(x, y, op)
+			}
 		default:
 			return invOp2(a, b, op)
 		}
@@ -1314,6 +1365,14 @@ func (o *binaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{
 			default:
 				return invOp2(x, y, op)
 			}
+		case *big.Int:
+			switch y := b.(type) {
+			case *big.Int:
+				var z big.Int
+				return z.Sub(x, y), nil
+			default:
+				return invOp2(x, y, op)
+			}
 		default:
 			return invOp2(a, b, op)
 		}
@@ -1408,6 +1467,9 @@ func (o *binaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{
 			return x >> cnt, nil
 		case uint64:
 			return x >> cnt, nil
+		case *big.Int:
+			var z big.Int
+			return z.Rsh(x, uint(cnt)), nil
 		default:
 			return invOp2(a, b, op)
 		}
@@ -1502,6 +1564,9 @@ func (o *binaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{
 			return x << cnt, nil
 		case uint64:
 			return x << cnt, nil
+		case *big.Int:
+			var z big.Int
+			return z.Lsh(x, uint(cnt)), nil
 		default:
 			return invOp2(a, b, op)
 		}
@@ -1602,6 +1667,14 @@ func (o *binaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{
 			switch y := b.(type) {
 			case uint64:
 				return x & y, nil
+			default:
+				return invOp2(x, y, op)
+			}
+		case *big.Int:
+			switch y := b.(type) {
+			case *big.Int:
+				var z big.Int
+				return z.And(x, y), nil
 			default:
 				return invOp2(x, y, op)
 			}
@@ -1708,6 +1781,14 @@ func (o *binaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{
 			default:
 				return invOp2(x, y, op)
 			}
+		case *big.Int:
+			switch y := b.(type) {
+			case *big.Int:
+				var z big.Int
+				return z.Or(x, y), nil
+			default:
+				return invOp2(x, y, op)
+			}
 		default:
 			return invOp2(a, b, op)
 		}
@@ -1808,6 +1889,14 @@ func (o *binaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{
 			switch y := b.(type) {
 			case uint64:
 				return x &^ y, nil
+			default:
+				return invOp2(x, y, op)
+			}
+		case *big.Int:
+			switch y := b.(type) {
+			case *big.Int:
+				var z big.Int
+				return z.AndNot(x, y), nil
 			default:
 				return invOp2(x, y, op)
 			}
@@ -1914,6 +2003,14 @@ func (o *binaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{
 			default:
 				return invOp2(x, y, op)
 			}
+		case *big.Int:
+			switch y := b.(type) {
+			case *big.Int:
+				var z big.Int
+				return z.Xor(x, y), nil
+			default:
+				return invOp2(x, y, op)
+			}
 		default:
 			return invOp2(a, b, op)
 		}
@@ -2014,6 +2111,14 @@ func (o *binaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{
 			switch y := b.(type) {
 			case uint64:
 				return x % y, nil
+			default:
+				return invOp2(x, y, op)
+			}
+		case *big.Int:
+			switch y := b.(type) {
+			case *big.Int:
+				var z big.Int
+				return z.Mod(x, y), nil
 			default:
 				return invOp2(x, y, op)
 			}
@@ -2150,6 +2255,14 @@ func (o *binaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{
 			default:
 				return invOp2(x, y, op)
 			}
+		case *big.Int:
+			switch y := b.(type) {
+			case *big.Int:
+				var z big.Int
+				return z.Quo(x, y), nil
+			default:
+				return invOp2(x, y, op)
+			}
 		default:
 			return invOp2(a, b, op)
 		}
@@ -2280,6 +2393,14 @@ func (o *binaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{
 			switch y := b.(type) {
 			case uint64:
 				return x * y, nil
+			default:
+				return invOp2(x, y, op)
+			}
+		case *big.Int:
+			switch y := b.(type) {
+			case *big.Int:
+				var z big.Int
+				return z.Mul(x, y), nil
 			default:
 				return invOp2(x, y, op)
 			}
@@ -2521,6 +2642,9 @@ func (u *unaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{}
 			return ^x, nil
 		case uint64:
 			return ^x, nil
+		case *big.Int:
+			var z big.Int
+			return z.Not(x), nil
 		default:
 			return undOp(a, op)
 		}
@@ -2570,6 +2694,9 @@ func (u *unaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{}
 			return +x, nil
 		case uint64:
 			return +x, nil
+		case *big.Int:
+			var z big.Int
+			return z.Set(x), nil
 		default:
 			return undOp(a, op)
 		}
@@ -2619,6 +2746,9 @@ func (u *unaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{}
 			return -x, nil
 		case uint64:
 			return -x, nil
+		case *big.Int:
+			var z big.Int
+			return z.Neg(x), nil
 		default:
 			return undOp(a, op)
 		}

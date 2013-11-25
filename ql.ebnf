@@ -160,7 +160,8 @@ StatementList = Statement { ";" Statement } .
 TableName = identifier .
 Term = Factor { andand Factor } .
 TruncateTableStmt = "TRUNCATE" "TABLE" TableName .
-Type = "blob"
+Type = "bigint"
+	| "blob"
 	| "bool"
 	| "byte"
 	| "complex128"

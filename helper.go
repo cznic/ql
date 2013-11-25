@@ -34,6 +34,9 @@ const (
 	qUint16
 	qUint32
 	qUint64
+	qBigInt
+
+	qEnd
 )
 
 func (n t) String() string {
@@ -78,6 +81,8 @@ func (n t) String() string {
 		return "uint32"
 	case qUint64:
 		return "uint64"
+	case qBigInt:
+		return "*big.Int"
 	default:
 		panic("internal error")
 	}
@@ -134,6 +139,8 @@ func coerceIdealInt(typ t) string {
 		return fmt.Sprintf("if x >= 0 && x<= math.MaxUint32 { return %s(int64(x)) }\n", typ)
 	case qUint64:
 		return fmt.Sprintf("if x >= 0 { return %s(int64(x)) }\n", typ)
+	case qBigInt:
+		return fmt.Sprintf("return big.NewInt(int64(x))\n")
 	default:
 		return ""
 	}
@@ -150,6 +157,8 @@ func coerceIdealRune(typ t) string {
 		return fmt.Sprintf("return %s(complex(float64(x), 0))\n", typ)
 	case idealFloat, idealInt, idealRune, idealUint, qFloat32, qFloat64, qInt8, qInt16, qInt32, qInt64, qUint8, qUint16, qUint32, qUint64:
 		return fmt.Sprintf("return %s(int64(x))\n", typ)
+	case qBigInt:
+		return fmt.Sprintf("return big.NewInt(int64(x))\n")
 	default:
 		return ""
 	}
@@ -182,6 +191,8 @@ func coerceIdealUint(typ t) string {
 		return fmt.Sprintf("if x >= 0 && x<= math.MaxUint16 { return %s(int64(x)) }\n", typ)
 	case qUint32:
 		return fmt.Sprintf("if x >= 0 && x<= math.MaxUint32 { return %s(int64(x)) }\n", typ)
+	case qBigInt:
+		return fmt.Sprintf("return big.NewInt(0).SetUint64(uint64(x))\n")
 	default:
 		return ""
 	}
@@ -192,7 +203,7 @@ func genCoerce1(w io.Writer, in t, f func(out t) string) {
 	fmt.Fprintf(w, "\tcase %s:\n", in)
 	fmt.Fprintf(w, "\t\tswitch otherVal.(type) {\n")
 
-	for i := idealComplex; i <= qUint64; i++ {
+	for i := idealComplex; i < qEnd; i++ {
 		s := f(i)
 		switch s {
 		case "":
@@ -263,6 +274,7 @@ func main() {
 
 import (
 	"math"
+	"math/big"
 	"reflect"
 )
 

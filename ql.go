@@ -15,6 +15,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"math/big"
 	"runtime"
 	"strconv"
 	"strings"
@@ -728,6 +729,14 @@ func (f *col) typeCheck(x interface{}) (ok bool) { //NTYPE
 		return f.typ == qUint64
 	case []byte:
 		return f.typ == qBlob
+	case *big.Int:
+		return f.typ == qBigInt
+	case *big.Rat:
+		return f.typ == qBigRat
+	case time.Time:
+		return f.typ == qTime
+	case time.Duration:
+		return f.typ == qDuration
 	case chunk:
 		return true // was checked earlier
 	}

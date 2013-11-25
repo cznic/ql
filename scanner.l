@@ -168,6 +168,7 @@ null		{n}{u}{l}{l}
 false		{f}{a}{l}{s}{e}
 true		{t}{r}{u}{e}
 
+bigint		{b}{i}{g}{i}{n}{t}
 blob		{b}{l}{o}{b}
 bool		{b}{o}{o}{l}
 byte		{b}{y}{t}{e}
@@ -269,6 +270,9 @@ ident		{idchar0}{idchars}*
 
 {true}			lval.item = true
 			return trueKwd
+
+{bigint}		lval.item = qBigInt
+			return bigIntType
 
 {blob}			lval.item = qBlob
 			return blobType

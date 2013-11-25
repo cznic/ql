@@ -30,7 +30,7 @@ import (
 }
 
 %token	add alter and andand andnot as asc
-	begin between blobType boolType by byteType
+	begin between bigIntType blobType boolType by byteType
 	column commit complex128Type complex64Type create
 	deleteKwd desc distinct drop
 	eq
@@ -51,7 +51,7 @@ import (
 
 %token	<item>	floatLit imaginaryLit intLit stringLit
 
-%token	<item>	blobType boolType byteType
+%token	<item>	bigIntType blobType boolType byteType
 		complex64Type complex128Type
 		falseKwd floatType float32Type float64Type
 		identifier intType int16Type int32Type int64Type int8Type 
@@ -810,7 +810,8 @@ TruncateTableStmt:
 	}
 
 Type:
-	blobType
+	bigIntType
+|	blobType
 |	boolType
 |	byteType
 |	complex128Type

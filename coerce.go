@@ -12,6 +12,7 @@ package ql
 
 import (
 	"math"
+	"math/big"
 	"reflect"
 )
 
@@ -75,6 +76,7 @@ func coerce1(inVal, otherVal interface{}) (coercedInVal interface{}) {
 			//case uint16:
 			//case uint32:
 			//case uint64:
+			//case *big.Int:
 		}
 	case idealFloat:
 		switch otherVal.(type) {
@@ -103,6 +105,7 @@ func coerce1(inVal, otherVal interface{}) (coercedInVal interface{}) {
 			//case uint16:
 			//case uint32:
 			//case uint64:
+			//case *big.Int:
 		}
 	case idealInt:
 		switch otherVal.(type) {
@@ -157,6 +160,8 @@ func coerce1(inVal, otherVal interface{}) (coercedInVal interface{}) {
 			if x >= 0 {
 				return uint64(int64(x))
 			}
+		case *big.Int:
+			return big.NewInt(int64(x))
 		}
 	case idealRune:
 		switch otherVal.(type) {
@@ -196,6 +201,8 @@ func coerce1(inVal, otherVal interface{}) (coercedInVal interface{}) {
 			return uint32(int64(x))
 		case uint64:
 			return uint64(int64(x))
+		case *big.Int:
+			return big.NewInt(int64(x))
 		}
 	case idealUint:
 		switch otherVal.(type) {
@@ -250,6 +257,8 @@ func coerce1(inVal, otherVal interface{}) (coercedInVal interface{}) {
 			}
 		case uint64:
 			return uint64(uint64(x))
+		case *big.Int:
+			return big.NewInt(0).SetUint64(uint64(x))
 		}
 	}
 	return
