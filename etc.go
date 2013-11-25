@@ -973,6 +973,14 @@ func invShiftRHS(lhs, rhs interface{}) (interface{}, error) {
 	return nil, fmt.Errorf("invalid operation: %v << %v (shift count type %T, must be unsigned integer)", lhs, rhs, rhs)
 }
 
+func invTruncInt(v interface{}) error {
+	return fmt.Errorf("constant %v truncated to integer", v)
+}
+
+func overflow(v interface{}, typ int) error {
+	return fmt.Errorf("constant %v overflows %s", v, typeStr(typ))
+}
+
 func typeCheck(rec []interface{}, cols []*col) (err error) {
 	for _, c := range cols {
 		i := c.index
@@ -1011,28 +1019,92 @@ func typeCheck(rec []interface{}, cols []*col) (err error) {
 					rec[i] = float64(y)
 					continue
 				case qInt8:
+					if math.Floor(y) != y {
+						return invTruncInt(y)
+					}
+
+					if y < math.MinInt8 || y > math.MaxInt8 {
+						return overflow(y, c.typ)
+					}
+
 					rec[i] = int8(y)
 					continue
 				case qInt16:
+					if math.Floor(y) != y {
+						return invTruncInt(y)
+					}
+
+					if y < math.MinInt16 || y > math.MaxInt16 {
+						return overflow(y, c.typ)
+					}
+
 					rec[i] = int16(y)
 					continue
 				case qInt32:
+					if math.Floor(y) != y {
+						return invTruncInt(y)
+					}
+
+					if y < math.MinInt32 || y > math.MaxInt32 {
+						return overflow(y, c.typ)
+					}
+
 					rec[i] = int32(y)
 					continue
 				case qInt64:
+					if math.Floor(y) != y {
+						return invTruncInt(y)
+					}
+
+					if y < math.MinInt64 || y > math.MaxInt64 {
+						return overflow(y, c.typ)
+					}
+
 					rec[i] = int64(y)
 					continue
 				case qString:
 				case qUint8:
+					if math.Floor(y) != y {
+						return invTruncInt(y)
+					}
+
+					if y < 0 || y > math.MaxUint8 {
+						return overflow(y, c.typ)
+					}
+
 					rec[i] = uint8(y)
 					continue
 				case qUint16:
+					if math.Floor(y) != y {
+						return invTruncInt(y)
+					}
+
+					if y < 0 || y > math.MaxUint16 {
+						return overflow(y, c.typ)
+					}
+
 					rec[i] = uint16(y)
 					continue
 				case qUint32:
+					if math.Floor(y) != y {
+						return invTruncInt(y)
+					}
+
+					if y < 0 || y > math.MaxUint32 {
+						return overflow(y, c.typ)
+					}
+
 					rec[i] = uint32(y)
 					continue
 				case qUint64:
+					if math.Floor(y) != y {
+						return invTruncInt(y)
+					}
+
+					if y < 0 || y > math.MaxUint64 {
+						return overflow(y, c.typ)
+					}
+
 					rec[i] = uint64(y)
 					continue
 				default:
@@ -1055,28 +1127,60 @@ func typeCheck(rec []interface{}, cols []*col) (err error) {
 					rec[i] = float64(y)
 					continue
 				case qInt8:
+					if y < math.MinInt8 || y > math.MaxInt8 {
+						return overflow(y, c.typ)
+					}
+
 					rec[i] = int8(y)
 					continue
 				case qInt16:
+					if y < math.MinInt16 || y > math.MaxInt16 {
+						return overflow(y, c.typ)
+					}
+
 					rec[i] = int16(y)
 					continue
 				case qInt32:
+					if y < math.MinInt32 || y > math.MaxInt32 {
+						return overflow(y, c.typ)
+					}
+
 					rec[i] = int32(y)
 					continue
 				case qInt64:
+					if y < math.MinInt64 || y > math.MaxInt64 {
+						return overflow(y, c.typ)
+					}
+
 					rec[i] = int64(y)
 					continue
 				case qString:
 				case qUint8:
+					if y < 0 || y > math.MaxUint8 {
+						return overflow(y, c.typ)
+					}
+
 					rec[i] = uint8(y)
 					continue
 				case qUint16:
+					if y < 0 || y > math.MaxUint16 {
+						return overflow(y, c.typ)
+					}
+
 					rec[i] = uint16(y)
 					continue
 				case qUint32:
+					if y < 0 || y > math.MaxUint32 {
+						return overflow(y, c.typ)
+					}
+
 					rec[i] = uint32(y)
 					continue
 				case qUint64:
+					if y < 0 {
+						return overflow(y, c.typ)
+					}
+
 					rec[i] = uint64(y)
 					continue
 				default:
@@ -1099,28 +1203,60 @@ func typeCheck(rec []interface{}, cols []*col) (err error) {
 					rec[i] = float64(y)
 					continue
 				case qInt8:
+					if y < math.MinInt8 || y > math.MaxInt8 {
+						return overflow(y, c.typ)
+					}
+
 					rec[i] = int8(y)
 					continue
 				case qInt16:
+					if y < math.MinInt16 || y > math.MaxInt16 {
+						return overflow(y, c.typ)
+					}
+
 					rec[i] = int16(y)
 					continue
 				case qInt32:
+					if y < math.MinInt32 || y > math.MaxInt32 {
+						return overflow(y, c.typ)
+					}
+
 					rec[i] = int32(y)
 					continue
 				case qInt64:
+					if y < math.MinInt64 || y > math.MaxInt64 {
+						return overflow(y, c.typ)
+					}
+
 					rec[i] = int64(y)
 					continue
 				case qString:
 				case qUint8:
+					if y < 0 || y > math.MaxUint8 {
+						return overflow(y, c.typ)
+					}
+
 					rec[i] = uint8(y)
 					continue
 				case qUint16:
+					if y < 0 || y > math.MaxUint16 {
+						return overflow(y, c.typ)
+					}
+
 					rec[i] = uint16(y)
 					continue
 				case qUint32:
+					if y < 0 {
+						return overflow(y, c.typ)
+					}
+
 					rec[i] = uint32(y)
 					continue
 				case qUint64:
+					if y < 0 {
+						return overflow(y, c.typ)
+					}
+
 					rec[i] = uint64(y)
 					continue
 				default:
@@ -1143,27 +1279,55 @@ func typeCheck(rec []interface{}, cols []*col) (err error) {
 					rec[i] = float64(y)
 					continue
 				case qInt8:
+					if y > math.MaxInt8 {
+						return overflow(y, c.typ)
+					}
+
 					rec[i] = int8(y)
 					continue
 				case qInt16:
+					if y > math.MaxInt16 {
+						return overflow(y, c.typ)
+					}
+
 					rec[i] = int16(y)
 					continue
 				case qInt32:
+					if y > math.MaxInt32 {
+						return overflow(y, c.typ)
+					}
+
 					rec[i] = int32(y)
 					continue
 				case qInt64:
+					if y > math.MaxInt64 {
+						return overflow(y, c.typ)
+					}
+
 					rec[i] = int64(y)
 					continue
 				case qString:
 					rec[i] = string(y)
 					continue
 				case qUint8:
+					if y > math.MaxUint8 {
+						return overflow(y, c.typ)
+					}
+
 					rec[i] = uint8(y)
 					continue
 				case qUint16:
+					if y > math.MaxUint16 {
+						return overflow(y, c.typ)
+					}
+
 					rec[i] = uint16(y)
 					continue
 				case qUint32:
+					if y > math.MaxUint32 {
+						return overflow(y, c.typ)
+					}
+
 					rec[i] = uint32(y)
 					continue
 				case qUint64:
