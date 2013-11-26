@@ -169,6 +169,7 @@ false		{f}{a}{l}{s}{e}
 true		{t}{r}{u}{e}
 
 bigint		{b}{i}{g}{i}{n}{t}
+bigrat		{b}{i}{g}{r}{a}{t}
 blob		{b}{l}{o}{b}
 bool		{b}{o}{o}{l}
 byte		{b}{y}{t}{e}
@@ -273,6 +274,9 @@ ident		{idchar0}{idchars}*
 
 {bigint}		lval.item = qBigInt
 			return bigIntType
+
+{bigrat}		lval.item = qBigRat
+			return bigRatType
 
 {blob}			lval.item = qBlob
 			return blobType

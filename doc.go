@@ -400,6 +400,7 @@
 // that type. A type is specified by a type name.
 //
 //  Type = "bigint"         // API: *math/big.Int
+//          | "bigrat"      // API: *math/big.Rat
 //          | "blob"        // API: []byte
 //          | "bool"
 //          | "byte"        // alias for uint8
@@ -449,6 +450,8 @@
 // 	int64       the set of all signed 64-bit integers (-9223372036854775808 to 9223372036854775807)
 //	bigint      the set of all integers
 //
+//	bigrat      the set of all rational numbers
+//
 // 	float32     the set of all IEEE-754 32-bit floating-point numbers
 // 	float64     the set of all IEEE-754 64-bit floating-point numbers
 //
@@ -465,9 +468,7 @@
 // complement arithmetic.
 //
 // Conversions are required when different numeric types are mixed in an
-// expression or assignment. For instance, int32 and int (alias for int64) are
-// not the same type and they have different size on every particular
-// architecture.
+// expression or assignment.
 //
 // String types
 //
@@ -720,10 +721,10 @@
 // /) apply to integer, floating-point, and complex types; + also applies to
 // strings.  All other arithmetic operators apply to integers only.
 //
-// 	+    sum                    integers, floats, complex values, strings
-// 	-    difference             integers, floats, complex values
-// 	*    product                integers, floats, complex values
-// 	/    quotient               integers, floats, complex values
+// 	+    sum                    integers, rationals, floats, complex values, strings
+// 	-    difference             integers, rationals, floats, complex values
+// 	*    product                integers, rationals, floats, complex values
+// 	/    quotient               integers, rationals, floats, complex values
 // 	%    remainder              integers
 //
 // 	&    bitwise AND            integers
@@ -814,8 +815,8 @@
 // not optimize an expression under the assumption that overflow does not
 // occur. For instance, it may not assume that x < x + 1 is always true.
 //
-// Integers of type bigint do not overflow but their handling is limited by the
-// memory resources available to the program.
+// Integers of type bigint and rationals do not overflow but their handling is
+// limited by the memory resources available to the program.
 //
 // Comparison operators
 //
@@ -839,6 +840,8 @@
 // either both true or both false.
 //
 // - Integer values are comparable and ordered, in the usual way.
+//
+// - Rational values are comparable and ordered, in the usual way.
 //
 // - Floating point values are comparable and ordered, as defined by the
 // IEEE-754 standard.
@@ -984,19 +987,34 @@
 //	blob("hellø")   // []byte{'h', 'e', 'l', 'l', '\xc3', '\xb8'}
 //	blob("")        // []byte{}
 //
-// 4. Converting a value of a bigint type to a string yields a sting containing
-// the decimal decimal representation of the integer.
+// 4. Converting a value of a bigint type to a string yields a string
+// containing the decimal decimal representation of the integer.
 //
 //	string(M9)	// "2305843009213693951"
 //
 // 5. Converting a value of a string type to a bigint yields a bigint value
 // containing the integer represented by the string value. A prefix of “0x” or
 // “0X” selects base 16; the “0” prefix selects base 8, and a “0b” or “0B”
-// prefix selects base 2. Otherwise the value is interpreted in base 10. If the
-// string value is not in any valid format an error occurs.
+// prefix selects base 2. Otherwise the value is interpreted in base 10. An
+// error occurs if the string value is not in any valid format.
 //
 //	bigint("2305843009213693951")		// M9
 //	bigint("0x1ffffffffffffffffffffff")	// M10 == 2^89-1
+//
+// 6. Converting a value of a rational type to a string yields a string
+// containing the decimal decimal representation of the rational in the form
+// "a/b" (even if b == 1).
+//
+//	string(bigrat(355)/bigrat(113))	// "355/113"
+//
+// 7. Converting a value of a string type to a bigrat yields a bigrat value
+// containing the rational represented by the string value. The string can be
+// given as a fraction "a/b" or as a floating-point number optionally followed
+// by an exponent. An error occurs if the string value is not in any valid
+// format.
+//
+//	bigrat("1.2e-34")
+//	bigrat("355/113")
 //
 // Order of evaluation
 //

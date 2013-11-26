@@ -161,6 +161,7 @@ TableName = identifier .
 Term = Factor { andand Factor } .
 TruncateTableStmt = "TRUNCATE" "TABLE" TableName .
 Type = "bigint"
+	| "bigrat"
 	| "blob"
 	| "bool"
 	| "byte"

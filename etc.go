@@ -1006,7 +1006,7 @@ func convert(val interface{}, typ int) (v interface{}, err error) { //NTYPE
 		case idealRune:
 			return big.NewInt(0).SetInt64(int64(x)), nil
 		case idealUint:
-			return big.NewInt(0).SetInt64(int64(x)), nil
+			return big.NewInt(0).SetUint64(uint64(x)), nil
 		//case complex64
 		//case complex128
 		case float32:
@@ -1043,6 +1043,59 @@ func convert(val interface{}, typ int) (v interface{}, err error) { //NTYPE
 		case uint64:
 			return big.NewInt(0).SetUint64(x), nil
 		case *big.Int:
+			return x, nil
+		case *big.Rat:
+			ii := big.NewInt(0).Set(x.Num())
+			ii.Div(ii, x.Denom())
+			return ii, nil
+		default:
+			return invConv(val, typ)
+		}
+	case qBigRat:
+		switch x := val.(type) {
+		// case blob
+		// case bool
+		//case idealComplex:
+		case idealFloat:
+			return big.NewRat(1, 1).SetFloat64(float64(x)), nil
+		case idealInt:
+			return big.NewRat(1, 1).SetInt64(int64(x)), nil
+		case idealRune:
+			return big.NewRat(1, 1).SetInt64(int64(x)), nil
+		case idealUint:
+			return big.NewRat(1, 1).SetInt(big.NewInt(0).SetUint64(uint64(x))), nil
+		//case complex64
+		//case complex128
+		case float32:
+			return big.NewRat(1, 1).SetFloat64(float64(x)), nil
+		case float64:
+			return big.NewRat(1, 1).SetFloat64(x), nil
+		case int8:
+			return big.NewRat(1, 1).SetInt64(int64(x)), nil
+		case int16:
+			return big.NewRat(1, 1).SetInt64(int64(x)), nil
+		case int32:
+			return big.NewRat(1, 1).SetInt64(int64(x)), nil
+		case int64:
+			return big.NewRat(1, 1).SetInt64(x), nil
+		case string:
+			y := big.NewRat(1, 1)
+			if _, ok := y.SetString(x); !ok {
+				return invConv(val, typ)
+			}
+
+			return y, nil
+		case uint8:
+			return big.NewRat(1, 1).SetInt64(int64(x)), nil
+		case uint16:
+			return big.NewRat(1, 1).SetInt64(int64(x)), nil
+		case uint32:
+			return big.NewRat(1, 1).SetInt64(int64(x)), nil
+		case uint64:
+			return big.NewRat(1, 1).SetInt(big.NewInt(0).SetUint64(x)), nil
+		case *big.Int:
+			return big.NewRat(1, 1).SetInt(x), nil
+		case *big.Rat:
 			return x, nil
 		default:
 			return invConv(val, typ)
@@ -1202,6 +1255,9 @@ func typeCheck(rec []interface{}, cols []*col) (err error) {
 					ii.Quo(ii, rr.Denom())
 					rec[i] = ii
 					continue
+				case qBigRat:
+					rec[i] = big.NewRat(1, 1).SetFloat64(y)
+					continue
 				default:
 					log.Panic("internal error")
 				}
@@ -1280,6 +1336,9 @@ func typeCheck(rec []interface{}, cols []*col) (err error) {
 					continue
 				case qBigInt:
 					rec[i] = big.NewInt(y)
+					continue
+				case qBigRat:
+					rec[i] = big.NewRat(1, 1).SetInt64(y)
 					continue
 				default:
 					log.Panic("internal error")
@@ -1360,6 +1419,9 @@ func typeCheck(rec []interface{}, cols []*col) (err error) {
 				case qBigInt:
 					rec[i] = big.NewInt(y)
 					continue
+				case qBigRat:
+					rec[i] = big.NewRat(1, 1).SetInt64(y)
+					continue
 				default:
 					log.Panic("internal error")
 				}
@@ -1437,10 +1499,15 @@ func typeCheck(rec []interface{}, cols []*col) (err error) {
 				case qBigInt:
 					rec[i] = big.NewInt(0).SetUint64(y)
 					continue
+				case qBigRat:
+					ii := big.NewInt(0).SetUint64(y)
+					rec[i] = big.NewRat(1, 1).SetInt(ii)
+					continue
 				default:
 					log.Panic("internal error")
 				}
 			}
+			//dbg("v %T(%v), typ %s", v, v, typeStr(c.typ))
 			return fmt.Errorf("cannot use %v (type %T) as %s in assignment to column %s", v, ideal(v), typeStr(c.typ), c.name)
 		}
 	}
