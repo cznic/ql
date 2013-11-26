@@ -832,7 +832,7 @@ func MustCompile(src string) list {
 // Execute executes statements in a list while substituting QL paramaters from
 // arg.
 //
-// The resulting []Recordset correspond to the SELECT FROM statements in the
+// The resulting []Recordset corresponds to the SELECT FROM statements in the
 // list.
 //
 // If err != nil then index is the zero based index of the failed QL statement.

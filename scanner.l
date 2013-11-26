@@ -174,10 +174,12 @@ blob		{b}{l}{o}{b}
 bool		{b}{o}{o}{l}
 byte		{b}{y}{t}{e}
 complex		{c}{o}{m}{p}{l}{e}{x}
+duration	{d}{u}{r}{a}{t}{i}{o}{n}
 float		{f}{l}{o}{a}{t}
 int		{i}{n}{t}
 rune		{r}{u}{n}{e}
 string		{s}{t}{r}{i}{n}{g}
+time		{t}{i}{m}{e}
 uint		{u}{i}{n}{t}
 
 idchar0		[a-zA-Z_]
@@ -293,6 +295,9 @@ ident		{idchar0}{idchars}*
 {complex}64		lval.item = qComplex64
 			return complex64Type
 
+{duration}		lval.item = qDuration
+			return durationType
+
 {float}			lval.item = qFloat64
 			return floatType
 
@@ -322,6 +327,9 @@ ident		{idchar0}{idchars}*
 
 {string}		lval.item = qString
 			return stringType
+
+{time}			lval.item = qTime
+			return timeType
 
 {uint}			lval.item = qUint64
 			return uintType

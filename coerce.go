@@ -14,6 +14,7 @@ import (
 	"math"
 	"math/big"
 	"reflect"
+	"time"
 )
 
 func coerce(a, b interface{}) (x, y interface{}) {
@@ -78,6 +79,8 @@ func coerce1(inVal, otherVal interface{}) (coercedInVal interface{}) {
 			//case uint64:
 			//case *big.Int:
 			//case *big.Rat:
+			//case time.Time:
+			//case time.Duration:
 		}
 	case idealFloat:
 		switch otherVal.(type) {
@@ -109,6 +112,8 @@ func coerce1(inVal, otherVal interface{}) (coercedInVal interface{}) {
 		//case *big.Int:
 		case *big.Rat:
 			return big.NewRat(1, 1).SetFloat64(float64(x))
+			//case time.Time:
+			//case time.Duration:
 		}
 	case idealInt:
 		switch otherVal.(type) {
@@ -167,6 +172,9 @@ func coerce1(inVal, otherVal interface{}) (coercedInVal interface{}) {
 			return big.NewInt(int64(x))
 		case *big.Rat:
 			return big.NewRat(1, 1).SetInt64(int64(x))
+		//case time.Time:
+		case time.Duration:
+			return time.Duration(int64(x))
 		}
 	case idealRune:
 		switch otherVal.(type) {
@@ -210,6 +218,9 @@ func coerce1(inVal, otherVal interface{}) (coercedInVal interface{}) {
 			return big.NewInt(int64(x))
 		case *big.Rat:
 			return big.NewRat(1, 1).SetInt64(int64(x))
+		//case time.Time:
+		case time.Duration:
+			return time.Duration(int64(x))
 		}
 	case idealUint:
 		switch otherVal.(type) {
@@ -268,6 +279,11 @@ func coerce1(inVal, otherVal interface{}) (coercedInVal interface{}) {
 			return big.NewInt(0).SetUint64(uint64(x))
 		case *big.Rat:
 			return big.NewRat(1, 1).SetInt(big.NewInt(0).SetUint64(uint64(x)))
+		//case time.Time:
+		case time.Duration:
+			if x <= math.MaxInt64 {
+				return time.Duration(int64(x))
+			}
 		}
 	}
 	return

@@ -36,6 +36,8 @@ const (
 	qUint64
 	qBigInt
 	qBigRat
+	qTime
+	qDuration
 
 	qEnd
 )
@@ -86,6 +88,10 @@ func (n t) String() string {
 		return "*big.Int"
 	case qBigRat:
 		return "*big.Rat"
+	case qTime:
+		return "time.Time"
+	case qDuration:
+		return "time.Duration"
 	default:
 		panic("internal error")
 	}
@@ -148,6 +154,8 @@ func coerceIdealInt(typ t) string {
 		return fmt.Sprintf("return big.NewInt(int64(x))\n")
 	case qBigRat:
 		return fmt.Sprintf("return big.NewRat(1, 1).SetInt64(int64(x))\n")
+	case qDuration:
+		return fmt.Sprintf("return time.Duration(int64(x))\n")
 	default:
 		return ""
 	}
@@ -168,6 +176,8 @@ func coerceIdealRune(typ t) string {
 		return fmt.Sprintf("return big.NewInt(int64(x))\n")
 	case qBigRat:
 		return fmt.Sprintf("return big.NewRat(1, 1).SetInt64(int64(x))\n")
+	case qDuration:
+		return fmt.Sprintf("return time.Duration(int64(x))\n")
 	default:
 		return ""
 	}
@@ -204,6 +214,8 @@ func coerceIdealUint(typ t) string {
 		return fmt.Sprintf("return big.NewInt(0).SetUint64(uint64(x))\n")
 	case qBigRat:
 		return fmt.Sprintf("return big.NewRat(1, 1).SetInt(big.NewInt(0).SetUint64(uint64(x)))\n")
+	case qDuration:
+		return fmt.Sprintf("if x <= math.MaxInt64 { return time.Duration(int64(x)) }\n")
 	default:
 		return ""
 	}
@@ -287,6 +299,7 @@ import (
 	"math"
 	"math/big"
 	"reflect"
+	"time"
 )
 
 func coerce(a, b interface{}) (x, y interface{}) {

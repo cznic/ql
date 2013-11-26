@@ -134,11 +134,11 @@
 //
 // The following keywords are reserved and may not be used as identifiers.
 //
-//	ADD    BETWEEN  complex128  DISTINCT  float64  int    INTO    string    uint16  VALUES
-//	ALTER  bool     complex64   DROP      FROM     int16  NOT     TABLE     uint32  WHERE
-//	AND    BY       CREATE      false     GROUP    int32  NULL    true      uint64
-//	AS     byte     DELETE      float     IN       int64  ORDER   TRUNCATE  uint8
-//	ASC    COLUMN   DESC        float32   INSERT   int8   SELECT  uint      UPDATE
+//	ADD    BETWEEN  BY          CREATE    duration  FROM    int16  NOT     TABLE     uint16  VALUES
+//	ALTER  bigint   byte        DELETE    false     GROUP   int32  NULL    time      uint32  WHERE
+//	AND    bigrat   COLUMN      DESC      float     IN      int64  ORDER   true      uint64
+//	AS     blob     complex128  DISTINCT  float32   INSERT  int8   SELECT  TRUNCATE  uint8
+//	ASC    bool     complex64   DROP      float64   int     INTO   string  uint      UPDATE
 //
 // Keywords are not case sensitive.
 //
@@ -399,28 +399,30 @@
 // A type determines the set of values and operations specific to values of
 // that type. A type is specified by a type name.
 //
-//  Type = "bigint"         // API: *math/big.Int
-//          | "bigrat"      // API: *math/big.Rat
-//          | "blob"        // API: []byte
-//          | "bool"
-//          | "byte"        // alias for uint8
-//          | "complex128"
-//          | "complex64"
-//          | "float"       // alias for float64
-//          | "float32"
-//          | "float64"
-//          | "int"         // alias for int64
-//          | "int16"
-//          | "int32"
-//          | "int64"
-//          | "int8"
-//          | "rune"        // alias for int32
-//          | "string"
-//          | "uint"        // alias for uint64
-//          | "uint16"
-//          | "uint32"
-//          | "uint64"
-//          | "uint8" .
+//  Type = "bigint"      // http://golang.org/pkg/math/big/#Int
+//       | "bigrat"      // http://golang.org/pkg/math/big/#Rat
+//       | "blob"        // []byte
+//       | "bool"
+//       | "byte"        // alias for uint8
+//       | "complex128"
+//       | "complex64"
+//       | "duration"    // http://golang.org/pkg/time/#Duration
+//       | "float"       // alias for float64
+//       | "float32"
+//       | "float64"
+//       | "int"         // alias for int64
+//       | "int16"
+//       | "int32"
+//       | "int64"
+//       | "int8"
+//       | "rune"        // alias for int32
+//       | "string"
+//       | "time"        // http://golang.org/pkg/time/#Time
+//       | "uint"        // alias for uint64
+//       | "uint16"
+//       | "uint32"
+//       | "uint64"
+//       | "uint8" .
 //
 // Named instances of the boolean, numeric, and string types are keywords. The
 // names are not case sensitive.
@@ -433,6 +435,12 @@
 //
 // A boolean type represents the set of Boolean truth values denoted by the
 // predeclared constants true and false. The predeclared boolean type is bool.
+//
+// Duration type
+//
+// A duration type represents the elapsed time between two instants as an int64
+// nanosecond count. The representation limits the largest representable
+// duration to approximately 290 years.
 //
 // Numeric types
 //
@@ -448,6 +456,7 @@
 // 	int16       the set of all signed 16-bit integers (-32768 to 32767)
 // 	int32       the set of all signed 32-bit integers (-2147483648 to 2147483647)
 // 	int64       the set of all signed 64-bit integers (-9223372036854775808 to 9223372036854775807)
+// 	duration    the set of all signed 64-bit integers (-9223372036854775808 to 9223372036854775807)
 //	bigint      the set of all integers
 //
 //	bigrat      the set of all rational numbers
@@ -478,6 +487,12 @@
 //
 // The length of a string (its size in bytes) can be discovered using the
 // built-in function len.
+//
+// Time types
+//
+// A time type represents an instant in time with nanosecond precision. Each
+// time has associated with it a location, consulted when computing the
+// presentation form of the time.
 //
 // Predeclared functions
 //
@@ -543,8 +558,8 @@
 // denotes the element of a string indexed by x. It's type is byte. The value x
 // is called the index.  The following rules apply
 //
-// - The index x must be of integer type except bigint; it is in range if 0 <=
-// x < len(s), otherwise it is out of range.
+// - The index x must be of integer type except bigint or duration; it is in
+// range if 0 <= x < len(s), otherwise it is out of range.
 //
 // - A constant index must be non-negative and representable by a value of type
 // int.
@@ -583,7 +598,7 @@
 // must satisfy low <= high. If the indices are out of range at run time, a
 // run-time error occurs.
 //
-// Values of type bigint cannot be used as indices.
+// Integer values of type bigint or duration cannot be used as indices.
 //
 // If s is NULL the result is NULL. If low or high is not omitted and is NULL
 // then the result is NULL.
@@ -718,11 +733,12 @@
 //
 // Arithmetic operators apply to numeric values and yield a result of the same
 // type as the first operand. The four standard arithmetic operators (+, -, *,
-// /) apply to integer, floating-point, and complex types; + also applies to
-// strings.  All other arithmetic operators apply to integers only.
+// /) apply to integer, rational, floating-point, and complex types; + also
+// applies to strings; +,- also applies to times.  All other arithmetic
+// operators apply to integers only.
 //
 // 	+    sum                    integers, rationals, floats, complex values, strings
-// 	-    difference             integers, rationals, floats, complex values
+// 	-    difference             integers, rationals, floats, complex values, times
 // 	*    product                integers, rationals, floats, complex values
 // 	/    quotient               integers, rationals, floats, complex values
 // 	%    remainder              integers
@@ -740,6 +756,14 @@
 // 	"hi" + string(c) + " and good bye"
 //
 // String addition creates a new string by concatenating the operands.
+//
+// A value of type time can be added with a value of type duration.
+//
+//	now() + duration("1h")	// time after 1 hour from now
+//
+// Times can subtracted from each other producing a value of type duration.
+//
+//	now() - t0	// elapsed time since t0
 //
 // For two integer values x and y, the integer quotient q = x / y and remainder
 // r = x % y satisfy the following relationships
@@ -839,17 +863,20 @@
 // - Boolean values are comparable. Two boolean values are equal if they are
 // either both true or both false.
 //
-// - Integer values are comparable and ordered, in the usual way.
+// - Complex values are comparable. Two complex values u and v are equal if
+// both real(u) == real(v) and imag(u) == imag(v).
 //
-// - Rational values are comparable and ordered, in the usual way.
+// - Integer values are comparable and ordered, in the usual way. Note that
+// durations are integers.
 //
 // - Floating point values are comparable and ordered, as defined by the
 // IEEE-754 standard.
 //
-// - Complex values are comparable. Two complex values u and v are equal if
-// both real(u) == real(v) and imag(u) == imag(v).
+// - Rational values are comparable and ordered, in the usual way.
 //
 // - String values are comparable and ordered, lexically byte-wise.
+//
+// - Time values are comparable and ordered.
 //
 // Whenever any operand of any comparison operation is NULL, the result is
 // NULL.
@@ -927,7 +954,7 @@
 //
 // - x's type and T are both complex types.
 //
-// - x is an integer and T is a string type.
+// - x is an integer, except bigint or duration, and T is a string type.
 //
 // Specific rules apply to (non-constant) conversions between numeric types or
 // to and from a string type. These conversions may change the representation
@@ -1015,6 +1042,22 @@
 //
 //	bigrat("1.2e-34")
 //	bigrat("355/113")
+//
+// 8. Converting a value of a duration type to a string returns a string
+// representing the duration in the form "72h3m0.5s". Leading zero units are
+// omitted. As a special case, durations less than one second format using a
+// smaller unit (milli-, micro-, or nanoseconds) to ensure that the leading
+// digit is non-zero. The zero duration formats as 0, with no unit.
+//
+//	string(elapsed)	// "1h", for example
+//
+// 9. Converting a string value to a duration yields a duration represented by
+// the string.  A duration string is a possibly signed sequence of decimal
+// numbers, each with optional fraction and a unit suffix, such as "300ms",
+// "-1.5h" or "2h45m". Valid time units are "ns", "us" (or "µs"), "ms", "s",
+// "m", "h".
+//
+//	duration("1m")	// http://golang.org/pkg/time/#Minute
 //
 // Order of evaluation
 //

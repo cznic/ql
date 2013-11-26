@@ -32,7 +32,7 @@ import (
 %token	add alter and andand andnot as asc
 	begin between bigIntType bigRatType blobType boolType by byteType
 	column commit complex128Type complex64Type create
-	deleteKwd desc distinct drop
+	deleteKwd desc distinct drop durationType
 	eq
 	falseKwd floatType float32Type float64Type floatLit from 
 	ge group
@@ -44,7 +44,7 @@ import (
 	qlParam
 	rollback rsh runeType
 	selectKwd stringType stringLit
-	tableKwd transaction trueKwd truncate
+	tableKwd timeType transaction trueKwd truncate
 	uintType uint16Type uint32Type uint64Type uint8Type update
 	values
 	where
@@ -53,13 +53,14 @@ import (
 
 %token	<item>	bigIntType bigRatType blobType boolType byteType
 		complex64Type complex128Type
+		durationType
 		falseKwd floatType float32Type float64Type
 		identifier intType int16Type int32Type int64Type int8Type 
 		null
 		qlParam
 		runeType
 		stringType
-		trueKwd
+		timeType trueKwd
 		uintType uint16Type uint32Type uint64Type uint8Type
 
 %type	<item>	AlterTableStmt Assignment AssignmentList AssignmentList1
@@ -817,6 +818,7 @@ Type:
 |	byteType
 |	complex128Type
 |	complex64Type
+|	durationType
 |	floatType
 |	float32Type
 |	float64Type
@@ -827,6 +829,7 @@ Type:
 |	int8Type
 |	runeType
 |	stringType
+|	timeType
 |	uintType
 |	uint16Type
 |	uint32Type
