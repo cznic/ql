@@ -4297,3 +4297,197 @@ SELECT * FROM t ORDER BY 15, c, 16;
 |?c
 [65/1]
 [66/1]
+
+-- 404
+BEGIN TRANSACTION;
+	CREATE TABLE t (c bigrat);
+	INSERT INTO t VALUES (bigrat("2/3")+bigrat("5/7"));
+COMMIT;
+SELECT * FROM t;
+|?c
+[29/21]
+
+-- 405
+BEGIN TRANSACTION;
+	CREATE TABLE t (c bigrat);
+	INSERT INTO t VALUES (bigrat("2/3")-bigrat("5/7"));
+COMMIT;
+SELECT * FROM t;
+|?c
+[-1/21]
+
+-- 406
+BEGIN TRANSACTION;
+	CREATE TABLE t (c bigrat);
+	INSERT INTO t VALUES (bigrat("2/3")*bigrat("5/7"));
+COMMIT;
+SELECT * FROM t;
+|?c
+[10/21]
+
+-- 407
+BEGIN TRANSACTION;
+	CREATE TABLE t (c bigint, d bigint);
+	INSERT INTO t VALUES (1, 0);
+COMMIT;
+SELECT c/d FROM t;
+||division .* zero
+
+-- 408
+BEGIN TRANSACTION;
+	CREATE TABLE t (c bigint, d bigint);
+	INSERT INTO t VALUES (1, 0);
+COMMIT;
+SELECT c%d FROM t;
+||division .* zero
+
+-- 409
+BEGIN TRANSACTION;
+	CREATE TABLE t (c bigrat, d bigrat);
+	INSERT INTO t VALUES (bigrat("2/3"), bigrat("5/7"));
+COMMIT;
+SELECT c == d FROM t;
+|b
+[false]
+
+-- 410
+BEGIN TRANSACTION;
+	CREATE TABLE t (c bigrat, d bigrat);
+	INSERT INTO t VALUES (bigrat("2/3"), bigrat("4/6"));
+COMMIT;
+SELECT c == d FROM t;
+|b
+[true]
+
+-- 411
+BEGIN TRANSACTION;
+	CREATE TABLE t (c bigrat, d bigrat);
+	INSERT INTO t VALUES (bigrat("2/3"), bigrat("5/7"));
+COMMIT;
+SELECT c != d FROM t;
+|b
+[true]
+
+-- 412
+BEGIN TRANSACTION;
+	CREATE TABLE t (c bigrat, d bigrat);
+	INSERT INTO t VALUES (bigrat("2/3"), bigrat("4/6"));
+COMMIT;
+SELECT c != d FROM t;
+|b
+[false]
+
+-- 413
+BEGIN TRANSACTION;
+	CREATE TABLE t (c bigrat, d bigrat);
+	INSERT INTO t VALUES (bigrat("2/3"), bigrat("5/7"));
+COMMIT;
+SELECT c < d FROM t;
+|b
+[true]
+
+-- 414
+BEGIN TRANSACTION;
+	CREATE TABLE t (c bigrat, d bigrat);
+	INSERT INTO t VALUES (bigrat("2/3"), bigrat("4/6"));
+COMMIT;
+SELECT c < d FROM t;
+|b
+[false]
+
+-- 415
+BEGIN TRANSACTION;
+	CREATE TABLE t (c bigrat, d bigrat);
+	INSERT INTO t VALUES (bigrat("2/3"), bigrat("5/7"));
+COMMIT;
+SELECT c <= d FROM t;
+|b
+[true]
+
+-- 416
+BEGIN TRANSACTION;
+	CREATE TABLE t (c bigrat, d bigrat);
+	INSERT INTO t VALUES (bigrat("2/3"), bigrat("4/6"));
+COMMIT;
+SELECT c <= d FROM t;
+|b
+[true]
+
+-- 415
+BEGIN TRANSACTION;
+	CREATE TABLE t (c bigrat, d bigrat);
+	INSERT INTO t VALUES (bigrat("2/3"), bigrat("5/7"));
+COMMIT;
+SELECT c > d FROM t;
+|b
+[false]
+
+-- 416
+BEGIN TRANSACTION;
+	CREATE TABLE t (c bigrat, d bigrat);
+	INSERT INTO t VALUES (bigrat("2/3"), bigrat("4/6"));
+COMMIT;
+SELECT c > d FROM t;
+|b
+[false]
+
+-- 417
+BEGIN TRANSACTION;
+	CREATE TABLE t (c bigrat, d bigrat);
+	INSERT INTO t VALUES (bigrat("2/3"), bigrat("5/7"));
+COMMIT;
+SELECT c >= d FROM t;
+|b
+[false]
+
+-- 418
+BEGIN TRANSACTION;
+	CREATE TABLE t (c bigrat, d bigrat);
+	INSERT INTO t VALUES (bigrat("2/3"), bigrat("4/6"));
+COMMIT;
+SELECT c >= d FROM t;
+|b
+[true]
+
+-- 419
+BEGIN TRANSACTION;
+	CREATE TABLE t (c bigrat, d bigrat);
+	INSERT INTO t VALUES (bigrat("2/3"), bigrat("5/7"));
+COMMIT;
+SELECT c / d FROM t;
+|?
+[14/15]
+
+-- 420
+BEGIN TRANSACTION;
+	CREATE TABLE t (c bigrat, d bigrat);
+	INSERT INTO t VALUES (bigrat("2/3"), bigrat("0"));
+COMMIT;
+SELECT c / d FROM t;
+||division .* zero
+
+-- 421
+BEGIN TRANSACTION;
+	CREATE TABLE t (c bigrat, d bigrat);
+	INSERT INTO t VALUES (bigrat("2/3"), bigrat("0"));
+COMMIT;
+SELECT c / (6-2*3) FROM t;
+||division .* zero
+
+-- 422
+BEGIN TRANSACTION;
+	CREATE TABLE t (c bigrat, d bigrat);
+	INSERT INTO t VALUES (bigrat("2/3"), bigrat("5/7"));
+COMMIT;
+SELECT +c, -d FROM t;
+|?, ?
+[2/3 -5/7]
+
+-- 423
+BEGIN TRANSACTION;
+	CREATE TABLE t (c bigrat, d bigrat);
+	INSERT INTO t VALUES (bigrat("2/3"), bigrat("5/7"));
+COMMIT;
+SELECT 1+c, d+1, 1.5+c, d+1.5 FROM t;
+|?, ?, ?, ?
+[5/3 12/7 13/6 31/14]

@@ -35,6 +35,7 @@ const (
 	qUint32
 	qUint64
 	qBigInt
+	qBigRat
 
 	qEnd
 )
@@ -83,6 +84,8 @@ func (n t) String() string {
 		return "uint64"
 	case qBigInt:
 		return "*big.Int"
+	case qBigRat:
+		return "*big.Rat"
 	default:
 		panic("internal error")
 	}
@@ -107,6 +110,8 @@ func coerceIdealFloat(typ t) string {
 		return fmt.Sprintf("return %s(complex(float64(x), 0))\n", typ)
 	case idealFloat, qFloat32, qFloat64:
 		return fmt.Sprintf("return %s(float64(x))\n", typ)
+	case qBigRat:
+		return fmt.Sprintf("return big.NewRat(1, 1).SetFloat64(float64(x))\n")
 	default:
 		return ""
 	}
@@ -141,6 +146,8 @@ func coerceIdealInt(typ t) string {
 		return fmt.Sprintf("if x >= 0 { return %s(int64(x)) }\n", typ)
 	case qBigInt:
 		return fmt.Sprintf("return big.NewInt(int64(x))\n")
+	case qBigRat:
+		return fmt.Sprintf("return big.NewRat(1, 1).SetInt64(int64(x))\n")
 	default:
 		return ""
 	}
@@ -159,6 +166,8 @@ func coerceIdealRune(typ t) string {
 		return fmt.Sprintf("return %s(int64(x))\n", typ)
 	case qBigInt:
 		return fmt.Sprintf("return big.NewInt(int64(x))\n")
+	case qBigRat:
+		return fmt.Sprintf("return big.NewRat(1, 1).SetInt64(int64(x))\n")
 	default:
 		return ""
 	}
@@ -193,6 +202,8 @@ func coerceIdealUint(typ t) string {
 		return fmt.Sprintf("if x >= 0 && x<= math.MaxUint32 { return %s(int64(x)) }\n", typ)
 	case qBigInt:
 		return fmt.Sprintf("return big.NewInt(0).SetUint64(uint64(x))\n")
+	case qBigRat:
+		return fmt.Sprintf("return big.NewRat(1, 1).SetInt(big.NewInt(0).SetUint64(uint64(x)))\n")
 	default:
 		return ""
 	}

@@ -77,6 +77,7 @@ func coerce1(inVal, otherVal interface{}) (coercedInVal interface{}) {
 			//case uint32:
 			//case uint64:
 			//case *big.Int:
+			//case *big.Rat:
 		}
 	case idealFloat:
 		switch otherVal.(type) {
@@ -96,16 +97,18 @@ func coerce1(inVal, otherVal interface{}) (coercedInVal interface{}) {
 			return float32(float64(x))
 		case float64:
 			return float64(float64(x))
-			//case int8:
-			//case int16:
-			//case int32:
-			//case int64:
-			//case string:
-			//case uint8:
-			//case uint16:
-			//case uint32:
-			//case uint64:
-			//case *big.Int:
+		//case int8:
+		//case int16:
+		//case int32:
+		//case int64:
+		//case string:
+		//case uint8:
+		//case uint16:
+		//case uint32:
+		//case uint64:
+		//case *big.Int:
+		case *big.Rat:
+			return big.NewRat(1, 1).SetFloat64(float64(x))
 		}
 	case idealInt:
 		switch otherVal.(type) {
@@ -162,6 +165,8 @@ func coerce1(inVal, otherVal interface{}) (coercedInVal interface{}) {
 			}
 		case *big.Int:
 			return big.NewInt(int64(x))
+		case *big.Rat:
+			return big.NewRat(1, 1).SetInt64(int64(x))
 		}
 	case idealRune:
 		switch otherVal.(type) {
@@ -203,6 +208,8 @@ func coerce1(inVal, otherVal interface{}) (coercedInVal interface{}) {
 			return uint64(int64(x))
 		case *big.Int:
 			return big.NewInt(int64(x))
+		case *big.Rat:
+			return big.NewRat(1, 1).SetInt64(int64(x))
 		}
 	case idealUint:
 		switch otherVal.(type) {
@@ -259,6 +266,8 @@ func coerce1(inVal, otherVal interface{}) (coercedInVal interface{}) {
 			return uint64(uint64(x))
 		case *big.Int:
 			return big.NewInt(0).SetUint64(uint64(x))
+		case *big.Rat:
+			return big.NewRat(1, 1).SetInt(big.NewInt(0).SetUint64(uint64(x)))
 		}
 	}
 	return

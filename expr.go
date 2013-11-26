@@ -396,6 +396,13 @@ func (o *binaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{
 			default:
 				return invOp2(x, y, op)
 			}
+		case *big.Rat:
+			switch y := b.(type) {
+			case *big.Rat:
+				return x.Cmp(y) > 0, nil
+			default:
+				return invOp2(x, y, op)
+			}
 		default:
 			return invOp2(a, b, op)
 		}
@@ -522,6 +529,13 @@ func (o *binaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{
 		case *big.Int:
 			switch y := b.(type) {
 			case *big.Int:
+				return x.Cmp(y) < 0, nil
+			default:
+				return invOp2(x, y, op)
+			}
+		case *big.Rat:
+			switch y := b.(type) {
+			case *big.Rat:
 				return x.Cmp(y) < 0, nil
 			default:
 				return invOp2(x, y, op)
@@ -656,6 +670,13 @@ func (o *binaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{
 			default:
 				return invOp2(x, y, op)
 			}
+		case *big.Rat:
+			switch y := b.(type) {
+			case *big.Rat:
+				return x.Cmp(y) <= 0, nil
+			default:
+				return invOp2(x, y, op)
+			}
 		default:
 			return invOp2(a, b, op)
 		}
@@ -782,6 +803,13 @@ func (o *binaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{
 		case *big.Int:
 			switch y := b.(type) {
 			case *big.Int:
+				return x.Cmp(y) >= 0, nil
+			default:
+				return invOp2(x, y, op)
+			}
+		case *big.Rat:
+			switch y := b.(type) {
+			case *big.Rat:
 				return x.Cmp(y) >= 0, nil
 			default:
 				return invOp2(x, y, op)
@@ -936,6 +964,13 @@ func (o *binaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{
 			default:
 				return invOp2(x, y, op)
 			}
+		case *big.Rat:
+			switch y := b.(type) {
+			case *big.Rat:
+				return x.Cmp(y) != 0, nil
+			default:
+				return invOp2(x, y, op)
+			}
 		default:
 			return invOp2(a, b, op)
 		}
@@ -1086,6 +1121,13 @@ func (o *binaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{
 			default:
 				return invOp2(x, y, op)
 			}
+		case *big.Rat:
+			switch y := b.(type) {
+			case *big.Rat:
+				return x.Cmp(y) == 0, nil
+			default:
+				return invOp2(x, y, op)
+			}
 		default:
 			return invOp2(a, b, op)
 		}
@@ -1232,6 +1274,14 @@ func (o *binaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{
 			default:
 				return invOp2(x, y, op)
 			}
+		case *big.Rat:
+			switch y := b.(type) {
+			case *big.Rat:
+				var z big.Rat
+				return z.Add(x, y), nil
+			default:
+				return invOp2(x, y, op)
+			}
 		default:
 			return invOp2(a, b, op)
 		}
@@ -1369,6 +1419,14 @@ func (o *binaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{
 			switch y := b.(type) {
 			case *big.Int:
 				var z big.Int
+				return z.Sub(x, y), nil
+			default:
+				return invOp2(x, y, op)
+			}
+		case *big.Rat:
+			switch y := b.(type) {
+			case *big.Rat:
+				var z big.Rat
 				return z.Sub(x, y), nil
 			default:
 				return invOp2(x, y, op)
@@ -2117,6 +2175,10 @@ func (o *binaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{
 		case *big.Int:
 			switch y := b.(type) {
 			case *big.Int:
+				if y.Sign() == 0 {
+					return nil, errDivByZero
+				}
+
 				var z big.Int
 				return z.Mod(x, y), nil
 			default:
@@ -2258,7 +2320,23 @@ func (o *binaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{
 		case *big.Int:
 			switch y := b.(type) {
 			case *big.Int:
+				if y.Sign() == 0 {
+					return nil, errDivByZero
+				}
+
 				var z big.Int
+				return z.Quo(x, y), nil
+			default:
+				return invOp2(x, y, op)
+			}
+		case *big.Rat:
+			switch y := b.(type) {
+			case *big.Rat:
+				if y.Sign() == 0 {
+					return nil, errDivByZero
+				}
+
+				var z big.Rat
 				return z.Quo(x, y), nil
 			default:
 				return invOp2(x, y, op)
@@ -2400,6 +2478,14 @@ func (o *binaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{
 			switch y := b.(type) {
 			case *big.Int:
 				var z big.Int
+				return z.Mul(x, y), nil
+			default:
+				return invOp2(x, y, op)
+			}
+		case *big.Rat:
+			switch y := b.(type) {
+			case *big.Rat:
+				var z big.Rat
 				return z.Mul(x, y), nil
 			default:
 				return invOp2(x, y, op)
@@ -2697,6 +2783,9 @@ func (u *unaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{}
 		case *big.Int:
 			var z big.Int
 			return z.Set(x), nil
+		case *big.Rat:
+			var z big.Rat
+			return z.Set(x), nil
 		default:
 			return undOp(a, op)
 		}
@@ -2748,6 +2837,9 @@ func (u *unaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{}
 			return -x, nil
 		case *big.Int:
 			var z big.Int
+			return z.Neg(x), nil
+		case *big.Rat:
+			var z big.Rat
 			return z.Neg(x), nil
 		default:
 			return undOp(a, op)
