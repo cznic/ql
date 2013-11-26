@@ -9,7 +9,10 @@ import (
 	"log"
 	"reflect"
 	"strings"
+	"time"
 )
+
+//TODO agg bigint, bigrat, time, duration
 
 var builtin = map[string]struct {
 	f           func([]interface{}, map[interface{}]interface{}) (interface{}, error)
@@ -21,6 +24,7 @@ var builtin = map[string]struct {
 	"avg":     {builtinAvg, 1, 1, false, true},
 	"complex": {builtinComplex, 2, 2, true, false},
 	"count":   {builtinCount, 0, 1, false, true},
+	"date":    {builtinDate, 8, 8, true, false},
 	"id":      {builtinID, 0, 0, false, false},
 	"imag":    {builtinImag, 1, 1, true, false},
 	"len":     {builtinLen, 1, 1, true, false},
@@ -205,6 +209,49 @@ func builtinCount(arg []interface{}, ctx map[interface{}]interface{}) (v interfa
 	}
 	ctx[fn] = n
 	return
+}
+
+func builtinDate(arg []interface{}, _ map[interface{}]interface{}) (v interface{}, err error) {
+	for i, v := range arg {
+		switch i {
+		case 7:
+			switch x := v.(type) {
+			case string:
+			default:
+				return nil, invArg(x, "date")
+			}
+		default:
+			switch x := v.(type) {
+			case int64:
+			case idealInt:
+				arg[i] = int64(x)
+			default:
+				return nil, invArg(x, "date")
+			}
+		}
+	}
+
+	sloc := arg[7].(string)
+	loc := time.Local
+	switch sloc {
+	case "local":
+	default:
+		loc, err = time.LoadLocation(sloc)
+		if err != nil {
+			return
+		}
+	}
+
+	return time.Date(
+		int(arg[0].(int64)),
+		time.Month(arg[1].(int64)),
+		int(arg[2].(int64)),
+		int(arg[3].(int64)),
+		int(arg[4].(int64)),
+		int(arg[5].(int64)),
+		int(arg[6].(int64)),
+		loc,
+	), nil
 }
 
 func builtinLen(arg []interface{}, _ map[interface{}]interface{}) (v interface{}, err error) {

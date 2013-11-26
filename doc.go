@@ -498,7 +498,7 @@
 //
 // The following functions are implicitly declared
 //
-// 	avg complex count id imag len min max real sum
+// 	avg complex count date id imag len min max real sum
 //
 // Expressions
 //
@@ -1059,6 +1059,11 @@
 //
 //	duration("1m")	// http://golang.org/pkg/time/#Minute
 //
+// 10. Converting a time value to a string returns the time formatted using the
+// format string
+//
+//	"2006-01-02 15:04:05.999999999 -0700 MST"
+//
 // Order of evaluation
 //
 // When evaluating the operands of an expression or of function calls,
@@ -1500,6 +1505,39 @@
 //	SELECT count()-count(DepartmentID) FROM department; // # of records with NULL field DepartmentID
 //
 //	SELECT count(foo+bar*3) AS y FROM t; // # of cases where 'foo+bar*3' is non NULL
+//
+// Date
+//
+// Date returns the time corresponding to
+//
+//	yyyy-mm-dd hh:mm:ss + nsec nanoseconds
+//
+// in the appropriate zone for that time in the given location.
+//
+// The month, day, hour, min, sec, and nsec values may be outside their usual
+// ranges and will be normalized during the conversion. For example, October 32
+// converts to November 1.
+//
+// A daylight savings time transition skips or repeats times. For example, in
+// the United States, March 13, 2011 2:15am never occurred, while November 6,
+// 2011 1:15am occurred twice. In such cases, the choice of time zone, and
+// therefore the time, is not well-defined. Date returns a time that is correct
+// in one of the two zones involved in the transition, but it does not
+// guarantee which.
+//
+// 	Call                                                Result
+//
+// 	date(year, month, day, hour, min, sec, nsec, loc)   time
+//
+// The type of all arguments except loc is int. loc must be of type string.  A
+// location maps time instants to the zone in use at that time. Typically, the
+// location represents the collection of time offsets in use in a geographical
+// area, such as "CEST" and "CET" for central Europe.  "local" represents the
+// system's local time zone. "UTC" represents Universal Coordinated Time (UTC).
+//
+// The month specifies a month of the year (January = 1, ...).
+//
+// If any of the arguments to date is NULL the result is NULL.
 //
 // Record id
 //
