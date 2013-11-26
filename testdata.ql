@@ -4491,3 +4491,12 @@ COMMIT;
 SELECT 1+c, d+1, 1.5+c, d+1.5 FROM t;
 |?, ?, ?, ?
 [5/3 12/7 13/6 31/14]
+
+-- 424
+BEGIN TRANSACTION;
+	CREATE TABLE t (c bigrat);
+	INSERT INTO t VALUES (bigrat("355/113"));
+COMMIT;
+SELECT float(c) FROM t;
+|g
+[3.1415929203539825]

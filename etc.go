@@ -532,6 +532,9 @@ func convert(val interface{}, typ int) (v interface{}, err error) { //NTYPE
 		case *big.Int:
 			v, _ := big.NewRat(1, 1).SetInt(x).Float64()
 			return float32(v), nil
+		case *big.Rat:
+			v, _ := x.Float64()
+			return float32(v), nil
 		default:
 			return invConv(val, typ)
 		}
@@ -573,6 +576,9 @@ func convert(val interface{}, typ int) (v interface{}, err error) { //NTYPE
 			return float64(x), nil
 		case *big.Int:
 			v, _ := big.NewRat(1, 1).SetInt(x).Float64()
+			return v, nil
+		case *big.Rat:
+			v, _ := x.Float64()
 			return v, nil
 		default:
 			return invConv(val, typ)
