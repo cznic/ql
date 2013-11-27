@@ -411,6 +411,13 @@ func (o *binaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{
 			default:
 				return invOp2(x, y, op)
 			}
+		case time.Time:
+			switch y := b.(type) {
+			case time.Time:
+				return x.After(y), nil
+			default:
+				return invOp2(x, y, op)
+			}
 		default:
 			return invOp2(a, b, op)
 		}
@@ -552,6 +559,13 @@ func (o *binaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{
 			switch y := b.(type) {
 			case time.Duration:
 				return x < y, nil
+			default:
+				return invOp2(x, y, op)
+			}
+		case time.Time:
+			switch y := b.(type) {
+			case time.Time:
+				return x.Before(y), nil
 			default:
 				return invOp2(x, y, op)
 			}
@@ -699,6 +713,13 @@ func (o *binaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{
 			default:
 				return invOp2(x, y, op)
 			}
+		case time.Time:
+			switch y := b.(type) {
+			case time.Time:
+				return x.Before(y) || x.Equal(y), nil
+			default:
+				return invOp2(x, y, op)
+			}
 		default:
 			return invOp2(a, b, op)
 		}
@@ -840,6 +861,13 @@ func (o *binaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{
 			switch y := b.(type) {
 			case time.Duration:
 				return x >= y, nil
+			default:
+				return invOp2(x, y, op)
+			}
+		case time.Time:
+			switch y := b.(type) {
+			case time.Time:
+				return x.After(y) || x.Equal(y), nil
 			default:
 				return invOp2(x, y, op)
 			}
@@ -1007,6 +1035,13 @@ func (o *binaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{
 			default:
 				return invOp2(x, y, op)
 			}
+		case time.Time:
+			switch y := b.(type) {
+			case time.Time:
+				return !x.Equal(y), nil
+			default:
+				return invOp2(x, y, op)
+			}
 		default:
 			return invOp2(a, b, op)
 		}
@@ -1171,6 +1206,13 @@ func (o *binaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{
 			default:
 				return invOp2(x, y, op)
 			}
+		case time.Time:
+			switch y := b.(type) {
+			case time.Time:
+				return x.Equal(y), nil
+			default:
+				return invOp2(x, y, op)
+			}
 		default:
 			return invOp2(a, b, op)
 		}
@@ -1329,6 +1371,15 @@ func (o *binaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{
 			switch y := b.(type) {
 			case time.Duration:
 				return x + y, nil
+			case time.Time:
+				return y.Add(x), nil
+			default:
+				return invOp2(x, y, op)
+			}
+		case time.Time:
+			switch y := b.(type) {
+			case time.Duration:
+				return x.Add(y), nil
 			default:
 				return invOp2(x, y, op)
 			}
@@ -1485,6 +1536,15 @@ func (o *binaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{
 			switch y := b.(type) {
 			case time.Duration:
 				return x - y, nil
+			default:
+				return invOp2(x, y, op)
+			}
+		case time.Time:
+			switch y := b.(type) {
+			case time.Duration:
+				return x.Add(-y), nil
+			case time.Time:
+				return x.Sub(y), nil
 			default:
 				return invOp2(x, y, op)
 			}

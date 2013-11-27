@@ -757,13 +757,17 @@
 //
 // String addition creates a new string by concatenating the operands.
 //
-// A value of type time can be added with a value of type duration.
+// A value of type duration can be added or subtracted from a value of type time.
 //
 //	now() + duration("1h")	// time after 1 hour from now
+//	duration("1h") + now()	// time after 1 hour from now
+//	now() - duration("1h")	// time after 1 hour before now
+//	duration("1h") - now()	// illegal, negative times do not exist
 //
 // Times can subtracted from each other producing a value of type duration.
 //
 //	now() - t0	// elapsed time since t0
+//	now + now()	// illegal, operator + not defined for times
 //
 // For two integer values x and y, the integer quotient q = x / y and remainder
 // r = x % y satisfy the following relationships

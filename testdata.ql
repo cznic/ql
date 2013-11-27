@@ -4741,7 +4741,7 @@ SELECT a/2, b/2, c/2 FROM t;
 |?, ?, ?
 [2h30m0s 1m30s 1s]
 
--- 440
+-- 446
 BEGIN TRANSACTION;
 	CREATE TABLE t (a duration, b duration, c duration);
 	INSERT INTO t VALUES (
@@ -4755,7 +4755,7 @@ SELECT a*2, 2*b, c*2 FROM t;
 |?, ?, ?
 [10h0m0s 6m0s 4s]
 
--- 441
+-- 447
 BEGIN TRANSACTION;
 	CREATE TABLE t (a duration, b duration, c duration);
 	INSERT INTO t VALUES (
@@ -4769,7 +4769,7 @@ SELECT ^a, ^b, ^c FROM t;
 |?, ?, ?
 [-2ns -4ns -6ns]
 
--- 442
+-- 448
 BEGIN TRANSACTION;
 	CREATE TABLE t (a duration, b duration, c duration);
 	INSERT INTO t VALUES (
@@ -4783,7 +4783,7 @@ SELECT +a, +b, +c FROM t;
 |?, ?, ?
 [1ns 3ns 5ns]
 
--- 443
+-- 449
 BEGIN TRANSACTION;
 	CREATE TABLE t (a duration, b duration, c duration);
 	INSERT INTO t VALUES (
@@ -4796,3 +4796,163 @@ COMMIT;
 SELECT -a, -b, -c FROM t;
 |?, ?, ?
 [-1ns -3ns -5ns]
+
+-- 450
+BEGIN TRANSACTION;
+	CREATE TABLE t (a time, b time, c time);
+	INSERT INTO t VALUES (
+			date(2013, 11, 27, 12, 1, 2, 999999994, "CET"),
+			date(2013, 11, 27, 12, 1, 2, 999999995, "CET"),
+			date(2013, 11, 27, 12, 1, 2, 999999996, "CET"),
+		),
+	;
+COMMIT;
+SELECT a > a, a > b, a > c, b > a, b > b, b > c, c > a, c > b, c > c FROM t;
+|b, b, b, b, b, b, b, b, b
+[false false false true false false true true false]
+
+-- 451
+BEGIN TRANSACTION;
+	CREATE TABLE t (a time, b time, c time);
+	INSERT INTO t VALUES (
+			date(2013, 11, 27, 12, 1, 2, 999999994, "CET"),
+			date(2013, 11, 27, 12, 1, 2, 999999995, "CET"),
+			date(2013, 11, 27, 12, 1, 2, 999999996, "CET"),
+		),
+	;
+COMMIT;
+SELECT a < a, a < b, a < c, b < a, b < b, b < c, c < a, c < b, c < c FROM t;
+|b, b, b, b, b, b, b, b, b
+[false true true false false true false false false]
+
+-- 452
+BEGIN TRANSACTION;
+	CREATE TABLE t (a time, b time, c time);
+	INSERT INTO t VALUES (
+			date(2013, 11, 27, 12, 1, 2, 999999994, "CET"),
+			date(2013, 11, 27, 12, 1, 2, 999999995, "CET"),
+			date(2013, 11, 27, 12, 1, 2, 999999996, "CET"),
+		),
+	;
+COMMIT;
+SELECT a <= a, a <= b, a <= c, b <= a, b <= b, b <= c, c <= a, c <= b, c <= c FROM t;
+|b, b, b, b, b, b, b, b, b
+[true true true false true true false false true]
+
+-- 453
+BEGIN TRANSACTION;
+	CREATE TABLE t (a time, b time, c time);
+	INSERT INTO t VALUES (
+			date(2013, 11, 27, 12, 1, 2, 999999994, "CET"),
+			date(2013, 11, 27, 12, 1, 2, 999999995, "CET"),
+			date(2013, 11, 27, 12, 1, 2, 999999996, "CET"),
+		),
+	;
+COMMIT;
+SELECT a >= a, a >= b, a >= c, b >= a, b >= b, b >= c, c >= a, c >= b, c >= c FROM t;
+|b, b, b, b, b, b, b, b, b
+[true false false true true false true true true]
+
+-- 454
+BEGIN TRANSACTION;
+	CREATE TABLE t (a time, b time, c time);
+	INSERT INTO t VALUES (
+			date(2013, 11, 27, 12, 1, 2, 999999994, "CET"),
+			date(2013, 11, 27, 12, 1, 2, 999999995, "CET"),
+			date(2013, 11, 27, 12, 1, 2, 999999996, "CET"),
+		),
+	;
+COMMIT;
+SELECT a != a, a != b, a != c, b != a, b != b, b != c, c != a, c != b, c != c FROM t;
+|b, b, b, b, b, b, b, b, b
+[false true true true false true true true false]
+
+-- 455
+BEGIN TRANSACTION;
+	CREATE TABLE t (a time, b time, c time);
+	INSERT INTO t VALUES (
+			date(2013, 11, 27, 12, 1, 2, 999999994, "CET"),
+			date(2013, 11, 27, 12, 1, 2, 999999995, "CET"),
+			date(2013, 11, 27, 12, 1, 2, 999999996, "CET"),
+		),
+	;
+COMMIT;
+SELECT a == a, a == b, a == c, b == a, b == b, b == c, c == a, c == b, c == c FROM t;
+|b, b, b, b, b, b, b, b, b
+[true false false false true false false false true]
+
+-- 456
+BEGIN TRANSACTION;
+	CREATE TABLE t (a time, b duration);
+	INSERT INTO t VALUES (
+			date(2013, 11, 27, 12, 1, 2, 999999999, "CET"),
+			duration("3h2m1s"),
+		),
+	;
+COMMIT;
+SELECT a+b FROM t;
+|?
+[2013-11-27 15:03:03.999999999 +0100 CET]
+
+-- 457
+BEGIN TRANSACTION;
+	CREATE TABLE t (a time, b duration);
+	INSERT INTO t VALUES (
+			date(2013, 11, 27, 12, 1, 2, 999999999, "CET"),
+			duration("3h2m1s"),
+		),
+	;
+COMMIT;
+SELECT b+a FROM t;
+|?
+[2013-11-27 15:03:03.999999999 +0100 CET]
+
+-- 458
+BEGIN TRANSACTION;
+	CREATE TABLE t (a time, b duration);
+	INSERT INTO t VALUES (
+			date(2013, 11, 27, 12, 1, 2, 999999999, "CET"),
+			duration("3h2m1s"),
+		),
+	;
+COMMIT;
+SELECT a+a FROM t;
+||invalid operation
+
+-- 459
+BEGIN TRANSACTION;
+	CREATE TABLE t (a time, b time);
+	INSERT INTO t VALUES (
+			date(2013, 11, 27, 13, 2, 3, 999999999, "CET"),
+			date(2013, 11, 27, 12, 1, 2, 999999999, "CET"),
+		),
+	;
+COMMIT;
+SELECT a-b FROM t;
+|?
+[1h1m1s]
+
+-- 460
+BEGIN TRANSACTION;
+	CREATE TABLE t (a time, b duration);
+	INSERT INTO t VALUES (
+			date(2013, 11, 27, 12, 1, 2, 999999999, "CET"),
+			duration("3h2m1s"),
+		),
+	;
+COMMIT;
+SELECT a-b FROM t;
+|?
+[2013-11-27 08:59:01.999999999 +0100 CET]
+
+-- 461
+BEGIN TRANSACTION;
+	CREATE TABLE t (a time, b duration);
+	INSERT INTO t VALUES (
+			date(2013, 11, 27, 12, 1, 2, 999999999, "CET"),
+			duration("3h2m1s"),
+		),
+	;
+COMMIT;
+SELECT b-a FROM t;
+||invalid operation
