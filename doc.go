@@ -502,6 +502,7 @@
 //	hours    id       imag        len          max     min         minute
 //	minutes  month    nanosecond  nanoseconds  now     parseTime   real
 //	second   seconds  since       sum          timeIn  weekday     year
+//	yearDay
 //
 // Expressions
 //
