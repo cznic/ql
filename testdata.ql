@@ -4413,30 +4413,12 @@ SELECT c <= d FROM t;
 |b
 [true]
 
--- 415
-BEGIN TRANSACTION;
-	CREATE TABLE t (c bigrat, d bigrat);
-	INSERT INTO t VALUES (bigrat("2/3"), bigrat("5/7"));
-COMMIT;
-SELECT c > d FROM t;
-|b
-[false]
-
--- 416
-BEGIN TRANSACTION;
-	CREATE TABLE t (c bigrat, d bigrat);
-	INSERT INTO t VALUES (bigrat("2/3"), bigrat("4/6"));
-COMMIT;
-SELECT c > d FROM t;
-|b
-[false]
-
 -- 417
 BEGIN TRANSACTION;
 	CREATE TABLE t (c bigrat, d bigrat);
 	INSERT INTO t VALUES (bigrat("2/3"), bigrat("5/7"));
 COMMIT;
-SELECT c >= d FROM t;
+SELECT c > d FROM t;
 |b
 [false]
 
@@ -4445,11 +4427,29 @@ BEGIN TRANSACTION;
 	CREATE TABLE t (c bigrat, d bigrat);
 	INSERT INTO t VALUES (bigrat("2/3"), bigrat("4/6"));
 COMMIT;
+SELECT c > d FROM t;
+|b
+[false]
+
+-- 419
+BEGIN TRANSACTION;
+	CREATE TABLE t (c bigrat, d bigrat);
+	INSERT INTO t VALUES (bigrat("2/3"), bigrat("5/7"));
+COMMIT;
+SELECT c >= d FROM t;
+|b
+[false]
+
+-- 420
+BEGIN TRANSACTION;
+	CREATE TABLE t (c bigrat, d bigrat);
+	INSERT INTO t VALUES (bigrat("2/3"), bigrat("4/6"));
+COMMIT;
 SELECT c >= d FROM t;
 |b
 [true]
 
--- 419
+-- 421
 BEGIN TRANSACTION;
 	CREATE TABLE t (c bigrat, d bigrat);
 	INSERT INTO t VALUES (bigrat("2/3"), bigrat("5/7"));
@@ -4458,7 +4458,7 @@ SELECT c / d FROM t;
 |?
 [14/15]
 
--- 420
+-- 422
 BEGIN TRANSACTION;
 	CREATE TABLE t (c bigrat, d bigrat);
 	INSERT INTO t VALUES (bigrat("2/3"), bigrat("0"));
@@ -4466,7 +4466,7 @@ COMMIT;
 SELECT c / d FROM t;
 ||division .* zero
 
--- 421
+-- 423
 BEGIN TRANSACTION;
 	CREATE TABLE t (c bigrat, d bigrat);
 	INSERT INTO t VALUES (bigrat("2/3"), bigrat("0"));
@@ -4474,7 +4474,7 @@ COMMIT;
 SELECT c / (6-2*3) FROM t;
 ||division .* zero
 
--- 422
+-- 424
 BEGIN TRANSACTION;
 	CREATE TABLE t (c bigrat, d bigrat);
 	INSERT INTO t VALUES (bigrat("2/3"), bigrat("5/7"));
@@ -4483,7 +4483,7 @@ SELECT +c, -d FROM t;
 |?, ?
 [2/3 -5/7]
 
--- 423
+-- 425
 BEGIN TRANSACTION;
 	CREATE TABLE t (c bigrat, d bigrat);
 	INSERT INTO t VALUES (bigrat("2/3"), bigrat("5/7"));
@@ -4492,7 +4492,7 @@ SELECT 1+c, d+1, 1.5+c, d+1.5 FROM t;
 |?, ?, ?, ?
 [5/3 12/7 13/6 31/14]
 
--- 424
+-- 426
 BEGIN TRANSACTION;
 	CREATE TABLE t (c bigrat);
 	INSERT INTO t VALUES (bigrat("355/113"));
@@ -4501,7 +4501,7 @@ SELECT float(c) FROM t;
 |g
 [3.1415929203539825]
 
--- 425
+-- 427
 BEGIN TRANSACTION;
 	CREATE TABLE t (c time);
 	INSERT INTO t VALUES (date(2006, 1, 2, 15, 4, 5, 999999999, "CET"));
@@ -4510,7 +4510,7 @@ SELECT c, string(c) FROM t;
 |?c, s
 [2006-01-02 15:04:05.999999999 +0100 CET 2006-01-02 15:04:05.999999999 +0100 CET]
 
--- 426
+-- 428
 BEGIN TRANSACTION;
 	CREATE TABLE t (c duration);
 	INSERT INTO t VALUES (duration("1s")), (duration("1m")), (duration("1h"));
@@ -4521,7 +4521,7 @@ SELECT c, string(c) FROM t ORDER BY c;
 [1m0s 1m0s]
 [1h0m0s 1h0m0s]
 
--- 427
+-- 429
 BEGIN TRANSACTION;
 	CREATE TABLE t (c time);
 	INSERT INTO t VALUES (date(2013, 11, 26, 10, 18, 5, 999999999, "CET"));
@@ -4529,3 +4529,270 @@ COMMIT;
 SELECT since(c) > duration("24h") FROM t;
 |b
 [true]
+
+-- 430
+BEGIN TRANSACTION;
+	CREATE TABLE t (c time);
+	INSERT INTO t VALUES (date(2013, 11, 26, 10, 32, 5, 999999999, "CET"));
+COMMIT;
+SELECT !(since(c) < duration("24h")) FROM t;
+|b
+[true]
+
+-- 431
+BEGIN TRANSACTION;
+	CREATE TABLE t (a duration, b duration, c duration);
+	INSERT INTO t VALUES (
+			duration("42h21m11.999999994s"),
+			duration("42h21m11.999999995s"),
+			duration("42h21m11.999999996s"),
+		),
+	;
+COMMIT;
+SELECT a > a, a > b, a > c, b > a, b > b, b > c, c > a, c > b, c > c FROM t;
+|b, b, b, b, b, b, b, b, b
+[false false false true false false true true false]
+
+-- 432
+BEGIN TRANSACTION;
+	CREATE TABLE t (a duration, b duration, c duration);
+	INSERT INTO t VALUES (
+			duration("42h21m11.999999994s"),
+			duration("42h21m11.999999995s"),
+			duration("42h21m11.999999996s"),
+		),
+	;
+COMMIT;
+SELECT a < a, a < b, a < c, b < a, b < b, b < c, c < a, c < b, c < c FROM t;
+|b, b, b, b, b, b, b, b, b
+[false true true false false true false false false]
+
+-- 433
+BEGIN TRANSACTION;
+	CREATE TABLE t (a duration, b duration, c duration);
+	INSERT INTO t VALUES (
+			duration("42h21m11.999999994s"),
+			duration("42h21m11.999999995s"),
+			duration("42h21m11.999999996s"),
+		),
+	;
+COMMIT;
+SELECT a <= a, a <= b, a <= c, b <= a, b <= b, b <= c, c <= a, c <= b, c <= c FROM t;
+|b, b, b, b, b, b, b, b, b
+[true true true false true true false false true]
+
+-- 434
+BEGIN TRANSACTION;
+	CREATE TABLE t (a duration, b duration, c duration);
+	INSERT INTO t VALUES (
+			duration("42h21m11.999999994s"),
+			duration("42h21m11.999999995s"),
+			duration("42h21m11.999999996s"),
+		),
+	;
+COMMIT;
+SELECT a >= a, a >= b, a >= c, b >= a, b >= b, b >= c, c >= a, c >= b, c >= c FROM t;
+|b, b, b, b, b, b, b, b, b
+[true false false true true false true true true]
+
+-- 435
+BEGIN TRANSACTION;
+	CREATE TABLE t (a duration, b duration, c duration);
+	INSERT INTO t VALUES (
+			duration("42h21m11.999999994s"),
+			duration("42h21m11.999999995s"),
+			duration("42h21m11.999999996s"),
+		),
+	;
+COMMIT;
+SELECT a != a, a != b, a != c, b != a, b != b, b != c, c != a, c != b, c != c FROM t;
+|b, b, b, b, b, b, b, b, b
+[false true true true false true true true false]
+
+-- 436
+BEGIN TRANSACTION;
+	CREATE TABLE t (a duration, b duration, c duration);
+	INSERT INTO t VALUES (
+			duration("42h21m11.999999994s"),
+			duration("42h21m11.999999995s"),
+			duration("42h21m11.999999996s"),
+		),
+	;
+COMMIT;
+SELECT a == a, a == b, a == c, b == a, b == b, b == c, c == a, c == b, c == c FROM t;
+|b, b, b, b, b, b, b, b, b
+[true false false false true false false false true]
+
+-- 437
+BEGIN TRANSACTION;
+	CREATE TABLE t (a duration, b duration, c duration);
+	INSERT INTO t VALUES (
+			duration("5h"),
+			duration("3m"),
+			duration("2s"),
+		),
+	;
+COMMIT;
+SELECT b+c, a+c, a+b, a+b+c FROM t;
+|?, ?, ?, ?
+[3m2s 5h0m2s 5h3m0s 5h3m2s]
+
+-- 438
+BEGIN TRANSACTION;
+	CREATE TABLE t (a duration, b duration, c duration);
+	INSERT INTO t VALUES (
+			duration("5h"),
+			duration("3m"),
+			duration("2s"),
+		),
+	;
+COMMIT;
+SELECT b-c, a-c, a-b, a-b-c FROM t;
+|?, ?, ?, ?
+[2m58s 4h59m58s 4h57m0s 4h56m58s]
+
+-- 439
+BEGIN TRANSACTION;
+	CREATE TABLE t (a duration, b duration, c duration);
+	INSERT INTO t VALUES (
+			duration("5h"),
+			duration("3m"),
+			duration("2s"),
+		),
+	;
+COMMIT;
+SELECT a>>1, b>>1, c>>1 FROM t;
+|?, ?, ?
+[2h30m0s 1m30s 1s]
+
+-- 440
+BEGIN TRANSACTION;
+	CREATE TABLE t (a duration, b duration, c duration);
+	INSERT INTO t VALUES (
+			duration("5h"),
+			duration("3m"),
+			duration("2s"),
+		),
+	;
+COMMIT;
+SELECT a<<1, b<<1, c<<1 FROM t;
+|?, ?, ?
+[10h0m0s 6m0s 4s]
+
+-- 441
+BEGIN TRANSACTION;
+	CREATE TABLE t (a duration);
+	INSERT INTO t VALUES (
+			duration("257ns"),
+		),
+	;
+COMMIT;
+SELECT a & 255 FROM t;
+|?
+[1ns]
+
+-- 442
+BEGIN TRANSACTION;
+	CREATE TABLE t (a duration);
+	INSERT INTO t VALUES (
+			duration("1ns"),
+		),
+	;
+COMMIT;
+SELECT a &or; 256 FROM t;
+|?
+[257ns]
+
+-- 443
+BEGIN TRANSACTION;
+	CREATE TABLE t (a duration);
+	INSERT INTO t VALUES (
+			duration(0x731),
+		),
+	;
+COMMIT;
+SELECT a &^ 0xd30 FROM t;
+|?
+[513ns]
+
+-- 444
+BEGIN TRANSACTION;
+	CREATE TABLE t (a duration);
+	INSERT INTO t VALUES (
+			duration("3h2m1s"),
+		),
+	;
+COMMIT;
+SELECT a % duration("2h"), a % duration("1m") FROM t;
+|?, ?
+[1h2m1s 1s]
+
+-- 445
+BEGIN TRANSACTION;
+	CREATE TABLE t (a duration, b duration, c duration);
+	INSERT INTO t VALUES (
+			duration("5h"),
+			duration("3m"),
+			duration("2s"),
+		),
+	;
+COMMIT;
+SELECT a/2, b/2, c/2 FROM t;
+|?, ?, ?
+[2h30m0s 1m30s 1s]
+
+-- 440
+BEGIN TRANSACTION;
+	CREATE TABLE t (a duration, b duration, c duration);
+	INSERT INTO t VALUES (
+			duration("5h"),
+			duration("3m"),
+			duration("2s"),
+		),
+	;
+COMMIT;
+SELECT a*2, 2*b, c*2 FROM t;
+|?, ?, ?
+[10h0m0s 6m0s 4s]
+
+-- 441
+BEGIN TRANSACTION;
+	CREATE TABLE t (a duration, b duration, c duration);
+	INSERT INTO t VALUES (
+			duration("1ns"),
+			duration("3ns"),
+			duration("5ns"),
+		),
+	;
+COMMIT;
+SELECT ^a, ^b, ^c FROM t;
+|?, ?, ?
+[-2ns -4ns -6ns]
+
+-- 442
+BEGIN TRANSACTION;
+	CREATE TABLE t (a duration, b duration, c duration);
+	INSERT INTO t VALUES (
+			duration("1ns"),
+			duration("3ns"),
+			duration("5ns"),
+		),
+	;
+COMMIT;
+SELECT +a, +b, +c FROM t;
+|?, ?, ?
+[1ns 3ns 5ns]
+
+-- 443
+BEGIN TRANSACTION;
+	CREATE TABLE t (a duration, b duration, c duration);
+	INSERT INTO t VALUES (
+			duration("1ns"),
+			duration("3ns"),
+			duration("5ns"),
+		),
+	;
+COMMIT;
+SELECT -a, -b, -c FROM t;
+|?, ?, ?
+[-1ns -3ns -5ns]
