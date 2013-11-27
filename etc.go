@@ -629,6 +629,8 @@ func convert(val interface{}, typ int) (v interface{}, err error) { //NTYPE
 			return int8(x), nil
 		case *big.Int:
 			return int8(x.Int64()), nil
+		case time.Duration:
+			return int8(x), nil
 		default:
 			return invConv(val, typ)
 		}
@@ -674,6 +676,8 @@ func convert(val interface{}, typ int) (v interface{}, err error) { //NTYPE
 			return int16(x), nil
 		case *big.Int:
 			return int16(x.Int64()), nil
+		case time.Duration:
+			return int16(x), nil
 		default:
 			return invConv(val, typ)
 		}
@@ -719,6 +723,8 @@ func convert(val interface{}, typ int) (v interface{}, err error) { //NTYPE
 			return int32(x), nil
 		case *big.Int:
 			return int32(x.Int64()), nil
+		case time.Duration:
+			return int32(x), nil
 		default:
 			return invConv(val, typ)
 		}
@@ -764,6 +770,8 @@ func convert(val interface{}, typ int) (v interface{}, err error) { //NTYPE
 			return int64(x), nil
 		case *big.Int:
 			return x.Int64(), nil
+		case time.Duration:
+			return int64(x), nil
 		default:
 			return invConv(val, typ)
 		}
@@ -854,6 +862,8 @@ func convert(val interface{}, typ int) (v interface{}, err error) { //NTYPE
 			return uint8(x), nil
 		case *big.Int:
 			return uint8(x.Int64()), nil
+		case time.Duration:
+			return uint8(x), nil
 		default:
 			return invConv(val, typ)
 		}
@@ -899,6 +909,8 @@ func convert(val interface{}, typ int) (v interface{}, err error) { //NTYPE
 			return uint16(x), nil
 		case *big.Int:
 			return uint16(x.Int64()), nil
+		case time.Duration:
+			return uint16(x), nil
 		default:
 			return invConv(val, typ)
 		}
@@ -944,6 +956,8 @@ func convert(val interface{}, typ int) (v interface{}, err error) { //NTYPE
 			return uint32(x), nil
 		case *big.Int:
 			return uint32(x.Int64()), nil
+		case time.Duration:
+			return uint32(x), nil
 		default:
 			return invConv(val, typ)
 		}
@@ -989,6 +1003,8 @@ func convert(val interface{}, typ int) (v interface{}, err error) { //NTYPE
 			return uint64(x), nil
 		case *big.Int:
 			return x.Uint64(), nil
+		case time.Duration:
+			return uint64(x), nil
 		default:
 			return invConv(val, typ)
 		}
@@ -1114,9 +1130,57 @@ func convert(val interface{}, typ int) (v interface{}, err error) { //NTYPE
 		default:
 			return invConv(val, typ)
 		}
+	case qDuration:
+		switch x := val.(type) {
+		// case blob
+		// case bool
+		//case idealComplex:
+		case idealFloat:
+			return time.Duration(x), nil
+		case idealInt:
+			return time.Duration(x), nil
+		case idealRune:
+			return time.Duration(x), nil
+		case idealUint:
+			return time.Duration(x), nil
+		//case complex64
+		//case complex128
+		case float32:
+			return time.Duration(x), nil
+		case float64:
+			return time.Duration(x), nil
+		case int8:
+			return time.Duration(x), nil
+		case int16:
+			return time.Duration(x), nil
+		case int32:
+			return time.Duration(x), nil
+		case int64:
+			return time.Duration(x), nil
+		case string:
+			return time.ParseDuration(x)
+		case uint8:
+			return time.Duration(x), nil
+		case uint16:
+			return time.Duration(x), nil
+		case uint32:
+			return time.Duration(x), nil
+		case uint64:
+			return time.Duration(x), nil
+		case *big.Int:
+			return time.Duration(x.Int64()), nil
+		case *big.Rat:
+			f, _ := x.Float64()
+			return time.Duration(f), nil
+		case time.Duration:
+			return x, nil
+		default:
+			return invConv(val, typ)
+		}
 	default:
 		log.Panic("internal error")
 	}
+	//dbg("%T(%v) %s", val, val, typeStr(typ))
 	panic("unreachable")
 }
 

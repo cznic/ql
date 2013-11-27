@@ -1619,6 +1619,14 @@
 //
 // The column values must be of an ordered type.
 //
+// Since
+//
+// The built-in function since returns the time elapsed since t. It is shorthand for now()-t.
+//
+// 	Call      Argument type    Result
+//
+// 	since(t)  time             Elapsed time since t.
+//
 // Sum
 //
 // The built-in aggregate function sum returns the sum of values of an

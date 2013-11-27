@@ -1000,7 +1000,7 @@ func (s *file) flatten(data []interface{}) (err error) {
 			b, err = s.codec.encode(x)
 		case time.Duration:
 			tag = qDuration
-			b, err = s.codec.encode(int64(x))
+			b, err = s.codec.encode(x)
 		default:
 			continue
 		}

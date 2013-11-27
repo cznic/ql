@@ -160,6 +160,7 @@ func (g *gobCoder) encode(v interface{}) (b []byte, err error) {
 	case time.Duration:
 		err = g.enc.Encode(int64(x))
 	default:
+		//dbg("%T(%v)", v, v)
 		log.Panic("internal error")
 	}
 	b = g.buf.Bytes()

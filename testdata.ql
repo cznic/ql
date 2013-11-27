@@ -4509,3 +4509,23 @@ COMMIT;
 SELECT c, string(c) FROM t;
 |?c, s
 [2006-01-02 15:04:05.999999999 +0100 CET 2006-01-02 15:04:05.999999999 +0100 CET]
+
+-- 426
+BEGIN TRANSACTION;
+	CREATE TABLE t (c duration);
+	INSERT INTO t VALUES (duration("1s")), (duration("1m")), (duration("1h"));
+COMMIT;
+SELECT c, string(c) FROM t ORDER BY c;
+|?c, s
+[1s 1s]
+[1m0s 1m0s]
+[1h0m0s 1h0m0s]
+
+-- 427
+BEGIN TRANSACTION;
+	CREATE TABLE t (c time);
+	INSERT INTO t VALUES (date(2013, 11, 26, 10, 18, 5, 999999999, "CET"));
+COMMIT;
+SELECT since(c) > duration("24h") FROM t;
+|b
+[true]

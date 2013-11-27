@@ -31,6 +31,7 @@ var builtin = map[string]struct {
 	"max":     {builtinMax, 1, 1, false, true},
 	"min":     {builtinMin, 1, 1, false, true},
 	"real":    {builtinReal, 1, 1, true, false},
+	"since":   {builtinSince, 1, 1, false, false},
 	"sum":     {builtinSum, 1, 1, false, true},
 }
 
@@ -446,6 +447,17 @@ func builtinImag(arg []interface{}, _ map[interface{}]interface{}) (v interface{
 		return imag(x), nil
 	case complex128:
 		return imag(x), nil
+	default:
+		return nil, invArg(x, "imag")
+	}
+}
+
+func builtinSince(arg []interface{}, ctx map[interface{}]interface{}) (v interface{}, err error) {
+	switch x := arg[0].(type) {
+	case nil:
+		return nil, nil
+	case time.Time:
+		return time.Since(x), nil
 	default:
 		return nil, invArg(x, "imag")
 	}

@@ -9,6 +9,7 @@ import (
 	"log"
 	"math/big"
 	"strings"
+	"time"
 )
 
 var (
@@ -400,6 +401,13 @@ func (o *binaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{
 			switch y := b.(type) {
 			case *big.Rat:
 				return x.Cmp(y) > 0, nil
+			default:
+				return invOp2(x, y, op)
+			}
+		case time.Duration:
+			switch y := b.(type) {
+			case time.Duration:
+				return x > y, nil
 			default:
 				return invOp2(x, y, op)
 			}
@@ -2487,6 +2495,13 @@ func (o *binaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{
 			case *big.Rat:
 				var z big.Rat
 				return z.Mul(x, y), nil
+			default:
+				return invOp2(x, y, op)
+			}
+		case time.Duration:
+			switch y := b.(type) {
+			case time.Duration:
+				return x * y, nil
 			default:
 				return invOp2(x, y, op)
 			}
