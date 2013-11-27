@@ -498,7 +498,9 @@
 //
 // The following functions are implicitly declared
 //
-// 	avg complex count date id imag len min max real sum
+// 	avg   complex  count  date     hours  id
+//	imag  len      min    minutes  max    nanoseconds
+//	real  seconds  since  sum
 //
 // Expressions
 //
@@ -757,11 +759,11 @@
 //
 // String addition creates a new string by concatenating the operands.
 //
-// A value of type duration can be added or subtracted from a value of type time.
+// A value of type duration can be added to or subtracted from a value of type time.
 //
 //	now() + duration("1h")	// time after 1 hour from now
 //	duration("1h") + now()	// time after 1 hour from now
-//	now() - duration("1h")	// time after 1 hour before now
+//	now() - duration("1h")	// time before 1 from now
 //	duration("1h") - now()	// illegal, negative times do not exist
 //
 // Times can subtracted from each other producing a value of type duration.
@@ -1543,6 +1545,15 @@
 //
 // If any of the arguments to date is NULL the result is NULL.
 //
+// Hours
+//
+// The built-in function hours returns the duration as a floating point number
+// of hours.
+//
+// 	Call      Argument type    Result
+//
+// 	hours(d)  duration         float
+//
 // Record id
 //
 // The built-in function id takes no arguments and returns a table-unique
@@ -1623,13 +1634,41 @@
 //
 // The column values must be of an ordered type.
 //
+// Minutes
+//
+// The built-in function minutes returns the duration as a floating point
+// number of minutes.
+//
+// 	Call        Argument type    Result
+//
+// 	minutes(d)  duration         float
+//
+// Nanoseconds
+//
+// The built-in function nanoseconds returns the duration as a integer
+// nanosecond count.
+//
+// 	Call            Argument type    Result
+//
+// 	nanoseconds(d)  duration         float
+//
+// Seconds
+//
+// The built-in function seconds returns the duration as a floating point
+// number of seconds.
+//
+// 	Call        Argument type    Result
+//
+// 	minutes(d)  duration         float
+//
 // Since
 //
-// The built-in function since returns the time elapsed since t. It is shorthand for now()-t.
+// The built-in function since returns the time elapsed since t. It is
+// shorthand for now()-t.
 //
 // 	Call      Argument type    Result
 //
-// 	since(t)  time             Elapsed time since t.
+// 	since(t)  time             duration
 //
 // Sum
 //

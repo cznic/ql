@@ -4956,3 +4956,15 @@ BEGIN TRANSACTION;
 COMMIT;
 SELECT b-a FROM t;
 ||invalid operation
+
+-- 462
+BEGIN TRANSACTION;
+	CREATE TABLE t (a duration);
+	INSERT INTO t VALUES (
+			duration("3h2m1.5s"),
+		),
+	;
+COMMIT;
+SELECT hours(a), minutes(a), seconds(a), nanoseconds(a) FROM t;
+|g, g, g, l
+[3.03375 182.025 10921.5 10921500000000]

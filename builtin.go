@@ -21,18 +21,22 @@ var builtin = map[string]struct {
 	isStatic    bool
 	isAggregate bool
 }{
-	"avg":     {builtinAvg, 1, 1, false, true},
-	"complex": {builtinComplex, 2, 2, true, false},
-	"count":   {builtinCount, 0, 1, false, true},
-	"date":    {builtinDate, 8, 8, true, false},
-	"id":      {builtinID, 0, 0, false, false},
-	"imag":    {builtinImag, 1, 1, true, false},
-	"len":     {builtinLen, 1, 1, true, false},
-	"max":     {builtinMax, 1, 1, false, true},
-	"min":     {builtinMin, 1, 1, false, true},
-	"real":    {builtinReal, 1, 1, true, false},
-	"since":   {builtinSince, 1, 1, false, false},
-	"sum":     {builtinSum, 1, 1, false, true},
+	"avg":         {builtinAvg, 1, 1, false, true},
+	"complex":     {builtinComplex, 2, 2, true, false},
+	"count":       {builtinCount, 0, 1, false, true},
+	"date":        {builtinDate, 8, 8, true, false},
+	"hours":       {builtinHours, 1, 1, true, false},
+	"id":          {builtinID, 0, 0, false, false},
+	"imag":        {builtinImag, 1, 1, true, false},
+	"len":         {builtinLen, 1, 1, true, false},
+	"max":         {builtinMax, 1, 1, false, true},
+	"min":         {builtinMin, 1, 1, false, true},
+	"minutes":     {builtinMinutes, 1, 1, true, false},
+	"nanoseconds": {builtinNanoseconds, 1, 1, true, false},
+	"real":        {builtinReal, 1, 1, true, false},
+	"seconds":     {builtinSeconds, 1, 1, true, false},
+	"since":       {builtinSince, 1, 1, false, false},
+	"sum":         {builtinSum, 1, 1, false, true},
 }
 
 func badNArgs(min int, s string, arg []interface{}) error {
@@ -266,6 +270,17 @@ func builtinLen(arg []interface{}, _ map[interface{}]interface{}) (v interface{}
 	}
 }
 
+func builtinHours(arg []interface{}, ctx map[interface{}]interface{}) (v interface{}, err error) {
+	switch x := arg[0].(type) {
+	case nil:
+		return nil, nil
+	case time.Duration:
+		return x.Hours(), nil
+	default:
+		return nil, invArg(x, "hours")
+	}
+}
+
 func builtinID(arg []interface{}, ctx map[interface{}]interface{}) (v interface{}, err error) {
 	return ctx["$id"], nil
 }
@@ -422,6 +437,28 @@ func builtinMin(arg []interface{}, ctx map[interface{}]interface{}) (v interface
 	return
 }
 
+func builtinMinutes(arg []interface{}, ctx map[interface{}]interface{}) (v interface{}, err error) {
+	switch x := arg[0].(type) {
+	case nil:
+		return nil, nil
+	case time.Duration:
+		return x.Minutes(), nil
+	default:
+		return nil, invArg(x, "hours")
+	}
+}
+
+func builtinNanoseconds(arg []interface{}, ctx map[interface{}]interface{}) (v interface{}, err error) {
+	switch x := arg[0].(type) {
+	case nil:
+		return nil, nil
+	case time.Duration:
+		return x.Nanoseconds(), nil
+	default:
+		return nil, invArg(x, "hours")
+	}
+}
+
 func builtinReal(arg []interface{}, _ map[interface{}]interface{}) (v interface{}, err error) {
 	switch x := arg[0].(type) {
 	case nil:
@@ -449,6 +486,17 @@ func builtinImag(arg []interface{}, _ map[interface{}]interface{}) (v interface{
 		return imag(x), nil
 	default:
 		return nil, invArg(x, "imag")
+	}
+}
+
+func builtinSeconds(arg []interface{}, ctx map[interface{}]interface{}) (v interface{}, err error) {
+	switch x := arg[0].(type) {
+	case nil:
+		return nil, nil
+	case time.Duration:
+		return x.Seconds(), nil
+	default:
+		return nil, invArg(x, "hours")
 	}
 }
 
