@@ -498,9 +498,10 @@
 //
 // The following functions are implicitly declared
 //
-// 	avg   complex  count  date     hours  id
-//	imag  len      min    minutes  max    nanoseconds
-//	real  seconds  since  sum
+//	avg      complex      count  date       hour  hours
+//	id       imag         len    max        min   minute
+//	minutes  nanoseconds  now    parseTime  real  second
+//	seconds  since        sum
 //
 // Expressions
 //
@@ -1483,9 +1484,7 @@
 // expression.  Avg ignores NULL values, but returns NULL if all values of a
 // column are NULL or if avg is applied to an empty record set.
 //
-// 	Call      Argument type    Result
-//
-// 	avg()     expression       The average of the values of the expression.
+// 	func avg(e numeric) typeof(e)
 //
 // The column values must be of a numeric type.
 //
@@ -1497,10 +1496,8 @@
 // has a non NULL values or the number of rows in a record set. Note: count()
 // returns 0 for an empty record set.
 //
-// 	Call      Argument type    Result
-//
-// 	count()   N/A              The number of rows in a record set, int.
-// 	count()   expression       The number of cases where the expression value is not NULL, int.
+//	func count() int             // The number of rows in a record set.
+// 	func count(e expression) int // The number of cases where the expression value is not NULL.
 //
 // For example
 //
@@ -1531,9 +1528,7 @@
 // in one of the two zones involved in the transition, but it does not
 // guarantee which.
 //
-// 	Call                                                Result
-//
-// 	date(year, month, day, hour, min, sec, nsec, loc)   time
+// 	func date(year, month, day, hour, min, sec, nsec int, loc string) time
 //
 // The type of all arguments except loc is int. loc must be of type string.  A
 // location maps time instants to the zone in use at that time. Typically, the
@@ -1543,16 +1538,25 @@
 //
 // The month specifies a month of the year (January = 1, ...).
 //
-// If any of the arguments to date is NULL the result is NULL.
+// If any argument to date is NULL the result is NULL.
+//
+// Hour
+//
+// The built-in function hour returns the hour within the day specified by t,
+// in the range [0, 23].
+//
+// 	func hour(t time) int
+//
+// If the argument to hour is NULL the result is NULL.
 //
 // Hours
 //
 // The built-in function hours returns the duration as a floating point number
 // of hours.
 //
-// 	Call      Argument type    Result
+// 	func hours(d duration) float
 //
-// 	hours(d)  duration         float
+// If the argument to hours is NULL the result is NULL.
 //
 // Record id
 //
@@ -1560,9 +1564,7 @@
 // automatically assigned numeric identifier of type int. Ids of deleted
 // records are not reused.
 //
-// 	Call      Argument type    Result
-//
-// 	id()      N/A              int
+// 	func id() int
 //
 // For example
 //
@@ -1591,12 +1593,10 @@
 //
 // Length
 //
-// The built-in function len takes a string argument and returns a result of
-// type int.
+// The built-in function len takes a string argument and returns the lentgh of
+// the string in bytes.
 //
-// 	Call      Argument type    Result
-//
-// 	len(s)    string           string length in bytes
+// 	func len(s string) int
 //
 // The expression len(s) is constant if s is a string constant.
 //
@@ -1608,11 +1608,9 @@
 // expression in a record set.  Max ignores NULL values, but returns NULL if
 // all values of a column are NULL or if max is applied to an empty record set.
 //
-// 	Call      Argument type    Result
+// 	func max(e expression) typeof(e) // The largest value of the expression.
 //
-// 	max()     expression       The largest value of the expression.
-//
-// The column values must be of an ordered type.
+// The expression values must be of an ordered type.
 //
 // For example
 //
@@ -1624,9 +1622,7 @@
 // expression in a record set.  Min ignores NULL values, but returns NULL if
 // all values of a column are NULL or if min is applied to an empty record set.
 //
-// 	Call      Argument type    Result
-//
-// 	min()     expression       The smallest value of the expression.
+// 	func min(e expression) typeof(e) // The smallest value of the expression.
 //
 // For example
 //
@@ -1634,41 +1630,103 @@
 //
 // The column values must be of an ordered type.
 //
+// Minute
+//
+// The built-in function minute returns the minute offset within the hour
+// specified by t, in the range [0, 59].
+//
+// 	func minute(t time) int
+//
+// If the argument to minute is NULL the result is NULL.
+//
 // Minutes
 //
 // The built-in function minutes returns the duration as a floating point
 // number of minutes.
 //
-// 	Call        Argument type    Result
+// 	func minutes(d duration) float
 //
-// 	minutes(d)  duration         float
+// If the argument to minutes is NULL the result is NULL.
 //
 // Nanoseconds
 //
-// The built-in function nanoseconds returns the duration as a integer
+// The built-in function nanoseconds returns the duration as an integer
 // nanosecond count.
 //
-// 	Call            Argument type    Result
+// 	func nanoseconds(d duration) float
 //
-// 	nanoseconds(d)  duration         float
+// If the argument to nanoseconds is NULL the result is NULL.
+//
+// Now
+//
+// The built-in function now returns the current local time.
+//
+// 	func now() time
+//
+// Parse time
+//
+// The built-in function parseTime parses a formatted string and returns the
+// time value it represents. The layout defines the format by showing how the
+// reference time,
+//
+//	Mon Jan 2 15:04:05 -0700 MST 2006
+//
+// would be interpreted if it were the value; it serves as an example of the
+// input format. The same interpretation will then be made to the input string.
+//
+// Elements omitted from the value are assumed to be zero or, when zero is
+// impossible, one, so parsing "3:04pm" returns the time corresponding to Jan
+// 1, year 0, 15:04:00 UTC (note that because the year is 0, this time is
+// before the zero Time). Years must be in the range 0000..9999. The day of the
+// week is checked for syntax but it is otherwise ignored.
+//
+// In the absence of a time zone indicator, parseTime returns a time in UTC.
+//
+// When parsing a time with a zone offset like -0700, if the offset corresponds
+// to a time zone used by the current location, then parseTime uses that
+// location and zone in the returned time. Otherwise it records the time as
+// being in a fabricated location with time fixed at the given zone offset.
+//
+// When parsing a time with a zone abbreviation like MST, if the zone
+// abbreviation has a defined offset in the current location, then that offset
+// is used. The zone abbreviation "UTC" is recognized as UTC regardless of
+// location. If the zone abbreviation is unknown, Parse records the time as
+// being in a fabricated location with the given zone abbreviation and a zero
+// offset. This choice means that such a time can be parses and reformatted
+// with the same layout losslessly, but the exact instant used in the
+// representation will differ by the actual zone offset. To avoid such
+// problems, prefer time layouts that use a numeric zone offset.
+//
+// 	func parseTime(layout, value string) time
+//
+// If any argument to parseTime is NULL the result is NULL.
+//
+// Second
+//
+// The built-in function second returns the second offset within the minute
+// specified by t, in the range [0, 59].
+//
+// 	func second(t time) int
+//
+// If the argument to second is NULL the result is NULL.
 //
 // Seconds
 //
 // The built-in function seconds returns the duration as a floating point
 // number of seconds.
 //
-// 	Call        Argument type    Result
+// 	func seconds(d duration) float
 //
-// 	minutes(d)  duration         float
+// If the argument to seconds is NULL the result is NULL.
 //
 // Since
 //
 // The built-in function since returns the time elapsed since t. It is
 // shorthand for now()-t.
 //
-// 	Call      Argument type    Result
+// 	func since(t time) duration
 //
-// 	since(t)  time             duration
+// If the argument to since is NULL the result is NULL.
 //
 // Sum
 //
@@ -1677,9 +1735,7 @@
 // returns NULL if all values of a column are NULL or if sum is applied to an
 // empty record set.
 //
-// 	Call      Argument type    Result
-//
-// 	sum()     expression       The sum of the values of the expression.
+// 	func sum(e expression) typeof(e) // The sum of the values of the expression.
 //
 // The column values must be of a numeric type.
 //

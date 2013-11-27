@@ -1177,6 +1177,36 @@ func convert(val interface{}, typ int) (v interface{}, err error) { //NTYPE
 		default:
 			return invConv(val, typ)
 		}
+	case qTime:
+		switch x := val.(type) {
+		// case blob
+		// case bool
+		//case idealComplex:
+		//case idealFloat:
+		//case idealInt:
+		//case idealRune:
+		//case idealUint:
+		//case complex64
+		//case complex128
+		//case float32:
+		//case float64:
+		//case int8:
+		//case int16:
+		//case int32:
+		//case int64:
+		//case string:
+		//case uint8:
+		//case uint16:
+		//case uint32:
+		//case uint64:
+		//case *big.Int:
+		//case *big.Rat:
+		//case time.Duration:
+		case time.Time:
+			return x, nil
+		default:
+			return invConv(val, typ)
+		}
 	default:
 		log.Panic("internal error")
 	}

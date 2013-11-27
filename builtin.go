@@ -25,15 +25,20 @@ var builtin = map[string]struct {
 	"complex":     {builtinComplex, 2, 2, true, false},
 	"count":       {builtinCount, 0, 1, false, true},
 	"date":        {builtinDate, 8, 8, true, false},
+	"hour":        {builtinHour, 1, 1, true, false},
 	"hours":       {builtinHours, 1, 1, true, false},
 	"id":          {builtinID, 0, 0, false, false},
 	"imag":        {builtinImag, 1, 1, true, false},
 	"len":         {builtinLen, 1, 1, true, false},
 	"max":         {builtinMax, 1, 1, false, true},
 	"min":         {builtinMin, 1, 1, false, true},
+	"minute":      {builtinMinute, 1, 1, true, false},
 	"minutes":     {builtinMinutes, 1, 1, true, false},
 	"nanoseconds": {builtinNanoseconds, 1, 1, true, false},
+	"now":         {builtinNow, 0, 0, false, false},
+	"parseTime":   {builtinParseTime, 2, 2, true, false},
 	"real":        {builtinReal, 1, 1, true, false},
+	"second":      {builtinSecond, 1, 1, true, false},
 	"seconds":     {builtinSeconds, 1, 1, true, false},
 	"since":       {builtinSince, 1, 1, false, false},
 	"sum":         {builtinSum, 1, 1, false, true},
@@ -270,6 +275,17 @@ func builtinLen(arg []interface{}, _ map[interface{}]interface{}) (v interface{}
 	}
 }
 
+func builtinHour(arg []interface{}, ctx map[interface{}]interface{}) (v interface{}, err error) {
+	switch x := arg[0].(type) {
+	case nil:
+		return nil, nil
+	case time.Time:
+		return int64(x.Hour()), nil
+	default:
+		return nil, invArg(x, "hour")
+	}
+}
+
 func builtinHours(arg []interface{}, ctx map[interface{}]interface{}) (v interface{}, err error) {
 	switch x := arg[0].(type) {
 	case nil:
@@ -283,6 +299,21 @@ func builtinHours(arg []interface{}, ctx map[interface{}]interface{}) (v interfa
 
 func builtinID(arg []interface{}, ctx map[interface{}]interface{}) (v interface{}, err error) {
 	return ctx["$id"], nil
+}
+
+func builtinImag(arg []interface{}, _ map[interface{}]interface{}) (v interface{}, err error) {
+	switch x := arg[0].(type) {
+	case nil:
+		return nil, nil
+	case idealComplex:
+		return imag(x), nil
+	case complex64:
+		return imag(x), nil
+	case complex128:
+		return imag(x), nil
+	default:
+		return nil, invArg(x, "imag")
+	}
 }
 
 func builtinMax(arg []interface{}, ctx map[interface{}]interface{}) (v interface{}, err error) {
@@ -437,6 +468,17 @@ func builtinMin(arg []interface{}, ctx map[interface{}]interface{}) (v interface
 	return
 }
 
+func builtinMinute(arg []interface{}, ctx map[interface{}]interface{}) (v interface{}, err error) {
+	switch x := arg[0].(type) {
+	case nil:
+		return nil, nil
+	case time.Time:
+		return int64(x.Minute()), nil
+	default:
+		return nil, invArg(x, "minute")
+	}
+}
+
 func builtinMinutes(arg []interface{}, ctx map[interface{}]interface{}) (v interface{}, err error) {
 	switch x := arg[0].(type) {
 	case nil:
@@ -444,7 +486,7 @@ func builtinMinutes(arg []interface{}, ctx map[interface{}]interface{}) (v inter
 	case time.Duration:
 		return x.Minutes(), nil
 	default:
-		return nil, invArg(x, "hours")
+		return nil, invArg(x, "minutes")
 	}
 }
 
@@ -455,8 +497,28 @@ func builtinNanoseconds(arg []interface{}, ctx map[interface{}]interface{}) (v i
 	case time.Duration:
 		return x.Nanoseconds(), nil
 	default:
-		return nil, invArg(x, "hours")
+		return nil, invArg(x, "nanoseconds")
 	}
+}
+
+func builtinNow(arg []interface{}, ctx map[interface{}]interface{}) (v interface{}, err error) {
+	return time.Now(), nil
+}
+
+func builtinParseTime(arg []interface{}, ctx map[interface{}]interface{}) (v interface{}, err error) {
+	var a [2]string
+	for i, v := range arg {
+		switch x := v.(type) {
+		case nil:
+			return nil, nil
+		case string:
+			a[i] = x
+		default:
+			return nil, invArg(x, "parseTime")
+		}
+	}
+
+	return time.Parse(a[0], a[1])
 }
 
 func builtinReal(arg []interface{}, _ map[interface{}]interface{}) (v interface{}, err error) {
@@ -474,18 +536,14 @@ func builtinReal(arg []interface{}, _ map[interface{}]interface{}) (v interface{
 	}
 }
 
-func builtinImag(arg []interface{}, _ map[interface{}]interface{}) (v interface{}, err error) {
+func builtinSecond(arg []interface{}, ctx map[interface{}]interface{}) (v interface{}, err error) {
 	switch x := arg[0].(type) {
 	case nil:
 		return nil, nil
-	case idealComplex:
-		return imag(x), nil
-	case complex64:
-		return imag(x), nil
-	case complex128:
-		return imag(x), nil
+	case time.Time:
+		return int64(x.Second()), nil
 	default:
-		return nil, invArg(x, "imag")
+		return nil, invArg(x, "second")
 	}
 }
 
@@ -496,7 +554,7 @@ func builtinSeconds(arg []interface{}, ctx map[interface{}]interface{}) (v inter
 	case time.Duration:
 		return x.Seconds(), nil
 	default:
-		return nil, invArg(x, "hours")
+		return nil, invArg(x, "seconds")
 	}
 }
 

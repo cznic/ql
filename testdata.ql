@@ -4968,3 +4968,64 @@ COMMIT;
 SELECT hours(a), minutes(a), seconds(a), nanoseconds(a) FROM t;
 |g, g, g, l
 [3.03375 182.025 10921.5 10921500000000]
+
+-- 463
+BEGIN TRANSACTION;
+	CREATE TABLE t (a time);
+	INSERT INTO t VALUES (now());
+COMMIT;
+SELECT a < now(), now() > a, a >= now(), now() <= a FROM t;
+|b, b, b, b
+[true true false false]
+
+-- 464
+BEGIN TRANSACTION;
+	CREATE TABLE t (a time);
+	INSERT INTO t VALUES
+		(parseTime("Jan 2, 2006 at 3:04pm (MST)", "Nov 27, 2013 at 2:07pm (CET)")),
+		(parseTime("2006-Jan-02", "2013-Nov-27")),
+	;
+COMMIT;
+SELECT * FROM t ORDER BY a;
+|?a
+[2013-11-27 00:00:00 +0000 UTC]
+[2013-11-27 14:07:00 +0100 CET]
+
+-- 465
+BEGIN TRANSACTION;
+	CREATE TABLE t (a time);
+	INSERT INTO t VALUES
+		(parseTime("Jan 2, 2006 at 3:04pm (MST)", "Nov 27, 2013 at 2:07pm (CET)")),
+		(parseTime("2006-Jan-02", "2013-Nov-27")),
+	;
+COMMIT;
+SELECT hour(a) AS y FROM t ORDER BY y;
+|ly
+[0]
+[14]
+
+-- 466
+BEGIN TRANSACTION;
+	CREATE TABLE t (a time);
+	INSERT INTO t VALUES
+		(parseTime("Jan 2, 2006 at 3:04pm (MST)", "Nov 27, 2013 at 2:07pm (CET)")),
+		(parseTime("2006-Jan-02", "2013-Nov-27")),
+	;
+COMMIT;
+SELECT minute(a) AS y FROM t ORDER BY y;
+|ly
+[0]
+[7]
+
+-- 467
+BEGIN TRANSACTION;
+	CREATE TABLE t (a time);
+	INSERT INTO t VALUES
+		(parseTime("Jan 2, 2006 at 3:04:05pm (MST)", "Nov 27, 2013 at 2:07:31pm (CET)")),
+		(parseTime("2006-Jan-02", "2013-Nov-27")),
+	;
+COMMIT;
+SELECT second(a) AS y FROM t ORDER BY y;
+|ly
+[0]
+[31]
