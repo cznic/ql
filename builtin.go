@@ -25,6 +25,7 @@ var builtin = map[string]struct {
 	"complex":     {builtinComplex, 2, 2, true, false},
 	"count":       {builtinCount, 0, 1, false, true},
 	"date":        {builtinDate, 8, 8, true, false},
+	"day":         {builtinDay, 1, 1, true, false},
 	"hour":        {builtinHour, 1, 1, true, false},
 	"hours":       {builtinHours, 1, 1, true, false},
 	"id":          {builtinID, 0, 0, false, false},
@@ -34,6 +35,8 @@ var builtin = map[string]struct {
 	"min":         {builtinMin, 1, 1, false, true},
 	"minute":      {builtinMinute, 1, 1, true, false},
 	"minutes":     {builtinMinutes, 1, 1, true, false},
+	"month":       {builtinMonth, 1, 1, true, false},
+	"nanosecond":  {builtinNanosecond, 1, 1, true, false},
 	"nanoseconds": {builtinNanoseconds, 1, 1, true, false},
 	"now":         {builtinNow, 0, 0, false, false},
 	"parseTime":   {builtinParseTime, 2, 2, true, false},
@@ -42,6 +45,8 @@ var builtin = map[string]struct {
 	"seconds":     {builtinSeconds, 1, 1, true, false},
 	"since":       {builtinSince, 1, 1, false, false},
 	"sum":         {builtinSum, 1, 1, false, true},
+	"weekday":     {builtinWeekday, 1, 1, true, false},
+	"year":        {builtinYear, 1, 1, true, false},
 }
 
 func badNArgs(min int, s string, arg []interface{}) error {
@@ -275,6 +280,17 @@ func builtinLen(arg []interface{}, _ map[interface{}]interface{}) (v interface{}
 	}
 }
 
+func builtinDay(arg []interface{}, ctx map[interface{}]interface{}) (v interface{}, err error) {
+	switch x := arg[0].(type) {
+	case nil:
+		return nil, nil
+	case time.Time:
+		return int64(x.Day()), nil
+	default:
+		return nil, invArg(x, "day")
+	}
+}
+
 func builtinHour(arg []interface{}, ctx map[interface{}]interface{}) (v interface{}, err error) {
 	switch x := arg[0].(type) {
 	case nil:
@@ -490,6 +506,28 @@ func builtinMinutes(arg []interface{}, ctx map[interface{}]interface{}) (v inter
 	}
 }
 
+func builtinMonth(arg []interface{}, ctx map[interface{}]interface{}) (v interface{}, err error) {
+	switch x := arg[0].(type) {
+	case nil:
+		return nil, nil
+	case time.Time:
+		return int64(x.Month()), nil
+	default:
+		return nil, invArg(x, "day")
+	}
+}
+
+func builtinNanosecond(arg []interface{}, ctx map[interface{}]interface{}) (v interface{}, err error) {
+	switch x := arg[0].(type) {
+	case nil:
+		return nil, nil
+	case time.Time:
+		return int64(x.Nanosecond()), nil
+	default:
+		return nil, invArg(x, "nanosecond")
+	}
+}
+
 func builtinNanoseconds(arg []interface{}, ctx map[interface{}]interface{}) (v interface{}, err error) {
 	switch x := arg[0].(type) {
 	case nil:
@@ -623,4 +661,26 @@ func builtinSum(arg []interface{}, ctx map[interface{}]interface{}) (v interface
 	}
 	ctx[fn] = sum
 	return
+}
+
+func builtinWeekday(arg []interface{}, ctx map[interface{}]interface{}) (v interface{}, err error) {
+	switch x := arg[0].(type) {
+	case nil:
+		return nil, nil
+	case time.Time:
+		return int64(x.Weekday()), nil
+	default:
+		return nil, invArg(x, "weekday")
+	}
+}
+
+func builtinYear(arg []interface{}, ctx map[interface{}]interface{}) (v interface{}, err error) {
+	switch x := arg[0].(type) {
+	case nil:
+		return nil, nil
+	case time.Time:
+		return int64(x.Year()), nil
+	default:
+		return nil, invArg(x, "year")
+	}
 }

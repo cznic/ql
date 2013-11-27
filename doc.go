@@ -498,10 +498,12 @@
 //
 // The following functions are implicitly declared
 //
-//	avg      complex      count  date       hour  hours
-//	id       imag         len    max        min   minute
-//	minutes  nanoseconds  now    parseTime  real  second
-//	seconds  since        sum
+//	avg         complex      count   date       day
+//	hour        hours        id      imag       len
+//	max         min          minute  minutes    month
+//	nanosecond  nanoseconds  now     parseTime  real
+//	second      seconds      since   sum        weekday
+//	year
 //
 // Expressions
 //
@@ -1530,15 +1532,23 @@
 //
 // 	func date(year, month, day, hour, min, sec, nsec int, loc string) time
 //
-// The type of all arguments except loc is int. loc must be of type string.  A
-// location maps time instants to the zone in use at that time. Typically, the
-// location represents the collection of time offsets in use in a geographical
-// area, such as "CEST" and "CET" for central Europe.  "local" represents the
-// system's local time zone. "UTC" represents Universal Coordinated Time (UTC).
+// A location maps time instants to the zone in use at that time. Typically,
+// the location represents the collection of time offsets in use in a
+// geographical area, such as "CEST" and "CET" for central Europe.  "local"
+// represents the system's local time zone. "UTC" represents Universal
+// Coordinated Time (UTC).
 //
 // The month specifies a month of the year (January = 1, ...).
 //
 // If any argument to date is NULL the result is NULL.
+//
+// Day
+//
+// The built-in function day returns the day of the month specified by t.
+//
+// 	func day(t time) int
+//
+// If the argument to day is NULL the result is NULL.
 //
 // Hour
 //
@@ -1648,6 +1658,23 @@
 //
 // If the argument to minutes is NULL the result is NULL.
 //
+// Month
+//
+// The built-in function month returns the month of the year specified by t.
+//
+// 	func month(t time) int
+//
+// If the argument to month is NULL the result is NULL.
+//
+// Nanosecond
+//
+// The built-in function nanosecond returns the nanosecond offset within the
+// second specified by t, in the range [0, 999999999].
+//
+// 	func nanosecond(t time) int
+//
+// If the argument to nanosecond is NULL the result is NULL.
+//
 // Nanoseconds
 //
 // The built-in function nanoseconds returns the duration as an integer
@@ -1740,6 +1767,23 @@
 // The column values must be of a numeric type.
 //
 //	SELECT salesperson, sum(sales) FROM salesforce GROUP BY salesperson;
+//
+// Weekday
+//
+// The built-in function weekday returns the day of the week specified by t.
+// Sunday == 0, Monday == 1, ...
+//
+// 	func weekday(t time) int
+//
+// If the argument to weekday is NULL the result is NULL.
+//
+// Year
+//
+// The built-in function year returns the year in which t occurs.
+//
+// 	func year(t time) int
+//
+// If the argument to year is NULL the result is NULL.
 //
 // Manipulating complex numbers
 //

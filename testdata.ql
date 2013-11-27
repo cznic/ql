@@ -5029,3 +5029,68 @@ SELECT second(a) AS y FROM t ORDER BY y;
 |ly
 [0]
 [31]
+
+-- 468
+BEGIN TRANSACTION;
+	CREATE TABLE t (a time);
+	INSERT INTO t VALUES
+		(parseTime("Jan 2, 2006 at 3:04:05pm (MST)", "Nov 27, 2013 at 2:07:31.123456789pm (CET)")),
+		(parseTime("2006-Jan-02", "2013-Nov-27")),
+	;
+COMMIT;
+SELECT nanosecond(a) AS y FROM t ORDER BY y;
+|ly
+[0]
+[123456789]
+
+-- 469
+BEGIN TRANSACTION;
+	CREATE TABLE t (a time);
+	INSERT INTO t VALUES
+		(parseTime("Jan 2, 2006 at 3:04:05pm (MST)", "Nov 27, 2013 at 2:07:31.123456789pm (CET)")),
+		(parseTime("2006-Jan-02", "2014-Nov-28")),
+	;
+COMMIT;
+SELECT year(a) AS y FROM t ORDER BY y;
+|ly
+[2013]
+[2014]
+
+-- 470
+BEGIN TRANSACTION;
+	CREATE TABLE t (a time);
+	INSERT INTO t VALUES
+		(parseTime("Jan 2, 2006 at 3:04:05pm (MST)", "Nov 27, 2013 at 2:07:31.123456789pm (CET)")),
+		(parseTime("2006-Jan-02", "2014-Nov-28")),
+	;
+COMMIT;
+SELECT day(a) AS y FROM t ORDER BY y;
+|ly
+[27]
+[28]
+
+-- 471
+BEGIN TRANSACTION;
+	CREATE TABLE t (a time);
+	INSERT INTO t VALUES
+		(parseTime("Jan 2, 2006 at 3:04:05pm (MST)", "Nov 27, 2013 at 2:07:31.123456789pm (CET)")),
+		(parseTime("2006-Jan-02", "2014-Dec-28")),
+	;
+COMMIT;
+SELECT month(a) AS y FROM t ORDER BY y;
+|ly
+[11]
+[12]
+
+-- 472
+BEGIN TRANSACTION;
+	CREATE TABLE t (a time);
+	INSERT INTO t VALUES
+		(parseTime("Jan 2, 2006 at 3:04:05pm (MST)", "Nov 27, 2013 at 2:07:31.123456789pm (CET)")),
+		(parseTime("2006-Jan-02", "2013-Sep-08")),
+	;
+COMMIT;
+SELECT weekday(a) AS y FROM t ORDER BY y;
+|ly
+[0]
+[3]
