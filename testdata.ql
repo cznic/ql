@@ -4972,7 +4972,7 @@ SELECT hours(a), minutes(a), seconds(a), nanoseconds(a) FROM t;
 -- 463
 BEGIN TRANSACTION;
 	CREATE TABLE t (a time);
-	INSERT INTO t VALUES (now());
+	INSERT INTO t VALUES (now()-duration("1s"));
 COMMIT;
 SELECT a < now(), now() > a, a >= now(), now() <= a FROM t;
 |b, b, b, b
@@ -5094,3 +5094,42 @@ SELECT weekday(a) AS y FROM t ORDER BY y;
 |ly
 [0]
 [3]
+
+-- 473
+BEGIN TRANSACTION;
+	CREATE TABLE t (a time);
+	INSERT INTO t VALUES
+		(parseTime("Jan 2, 2006 at 3:04:05pm (MST)", "Feb 1, 2013 at 2:07:31.123456789pm (CET)")),
+		(parseTime("2006-Jan-02", "2014-Feb-02")),
+	;
+COMMIT;
+SELECT yearDay(a) AS y FROM t ORDER BY y;
+|ly
+[32]
+[33]
+
+-- 474
+BEGIN TRANSACTION;
+	CREATE TABLE t (a time);
+	INSERT INTO t VALUES
+		(parseTime("Jan 2, 2006 at 3:04pm (MST)", "Feb 1, 2013 at 2:07pm (CET)")),
+		(parseTime("2006-Jan-02", "2014-Feb-02")),
+	;
+COMMIT;
+SELECT timeIn(a, ""), timeIn(a, "UTC") AS y FROM t ORDER BY y;
+|?, ?y
+[2013-02-01 13:07:00 +0000 UTC 2013-02-01 13:07:00 +0000 UTC]
+[2014-02-02 00:00:00 +0000 UTC 2014-02-02 00:00:00 +0000 UTC]
+
+-- 475
+BEGIN TRANSACTION;
+	CREATE TABLE t (a time);
+	INSERT INTO t VALUES
+		(parseTime("Jan 2, 2006 at 3:04pm (MST)", "Feb 1, 2013 at 2:07pm (CET)")),
+		(parseTime("2006-Jan-02", "2014-Feb-02")),
+	;
+COMMIT;
+SELECT formatTime(timeIn(a, "UTC"), "Jan 2, 2006 at 3:04pm (UTC)") AS y FROM t ORDER BY y;
+|sy
+[Feb 1, 2013 at 1:07pm (UTC)]
+[Feb 2, 2014 at 12:00am (UTC)]

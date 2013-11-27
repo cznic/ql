@@ -26,6 +26,7 @@ var builtin = map[string]struct {
 	"count":       {builtinCount, 0, 1, false, true},
 	"date":        {builtinDate, 8, 8, true, false},
 	"day":         {builtinDay, 1, 1, true, false},
+	"formatTime":  {builtinFormatTime, 2, 2, true, false},
 	"hour":        {builtinHour, 1, 1, true, false},
 	"hours":       {builtinHours, 1, 1, true, false},
 	"id":          {builtinID, 0, 0, false, false},
@@ -45,8 +46,10 @@ var builtin = map[string]struct {
 	"seconds":     {builtinSeconds, 1, 1, true, false},
 	"since":       {builtinSince, 1, 1, false, false},
 	"sum":         {builtinSum, 1, 1, false, true},
+	"timeIn":      {builtinTimeIn, 2, 2, true, false},
 	"weekday":     {builtinWeekday, 1, 1, true, false},
 	"year":        {builtinYear, 1, 1, true, false},
+	"yearDay":     {builtinYearday, 1, 1, true, false},
 }
 
 func badNArgs(min int, s string, arg []interface{}) error {
@@ -288,6 +291,24 @@ func builtinDay(arg []interface{}, ctx map[interface{}]interface{}) (v interface
 		return int64(x.Day()), nil
 	default:
 		return nil, invArg(x, "day")
+	}
+}
+
+func builtinFormatTime(arg []interface{}, ctx map[interface{}]interface{}) (v interface{}, err error) {
+	switch x := arg[0].(type) {
+	case nil:
+		return nil, nil
+	case time.Time:
+		switch y := arg[1].(type) {
+		case nil:
+			return nil, nil
+		case string:
+			return x.Format(y), nil
+		default:
+			return nil, invArg(y, "timeIn")
+		}
+	default:
+		return nil, invArg(x, "timeIn")
 	}
 }
 
@@ -663,6 +684,34 @@ func builtinSum(arg []interface{}, ctx map[interface{}]interface{}) (v interface
 	return
 }
 
+func builtinTimeIn(arg []interface{}, ctx map[interface{}]interface{}) (v interface{}, err error) {
+	switch x := arg[0].(type) {
+	case nil:
+		return nil, nil
+	case time.Time:
+		switch y := arg[1].(type) {
+		case nil:
+			return nil, nil
+		case string:
+			loc := time.Local
+			switch y {
+			case "local":
+			default:
+				loc, err = time.LoadLocation(y)
+				if err != nil {
+					return
+				}
+			}
+
+			return x.In(loc), nil
+		default:
+			return nil, invArg(x, "timeIn")
+		}
+	default:
+		return nil, invArg(x, "timeIn")
+	}
+}
+
 func builtinWeekday(arg []interface{}, ctx map[interface{}]interface{}) (v interface{}, err error) {
 	switch x := arg[0].(type) {
 	case nil:
@@ -682,5 +731,16 @@ func builtinYear(arg []interface{}, ctx map[interface{}]interface{}) (v interfac
 		return int64(x.Year()), nil
 	default:
 		return nil, invArg(x, "year")
+	}
+}
+
+func builtinYearday(arg []interface{}, ctx map[interface{}]interface{}) (v interface{}, err error) {
+	switch x := arg[0].(type) {
+	case nil:
+		return nil, nil
+	case time.Time:
+		return int64(x.YearDay()), nil
+	default:
+		return nil, invArg(x, "yearDay")
 	}
 }

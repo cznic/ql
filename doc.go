@@ -498,12 +498,10 @@
 //
 // The following functions are implicitly declared
 //
-//	avg         complex      count   date       day
-//	hour        hours        id      imag       len
-//	max         min          minute  minutes    month
-//	nanosecond  nanoseconds  now     parseTime  real
-//	second      seconds      since   sum        weekday
-//	year
+//	avg      complex  count       date         day     formatTime  hour
+//	hours    id       imag        len          max     min         minute
+//	minutes  month    nanosecond  nanoseconds  now     parseTime   real
+//	second   seconds  since       sum          timeIn  weekday     year
 //
 // Expressions
 //
@@ -1550,6 +1548,22 @@
 //
 // If the argument to day is NULL the result is NULL.
 //
+// Format time
+//
+// The built-in function formatTime returns a textual representation of the
+// time value formatted according to layout, which defines the format by
+// showing how the reference time,
+//
+//	Mon Jan 2 15:04:05 -0700 MST 2006
+//
+// would be displayed if it were the value; it serves as an example of the
+// desired output. The same display rules will then be applied to the time
+// value.
+//
+// 	func formatTime(t time, layout string) string
+//
+// If any argument to formatTime is NULL the result is NULL.
+//
 // Hour
 //
 // The built-in function hour returns the hour within the day specified by t,
@@ -1660,7 +1674,8 @@
 //
 // Month
 //
-// The built-in function month returns the month of the year specified by t.
+// The built-in function month returns the month of the year specified by t
+// (January = 1, ...).
 //
 // 	func month(t time) int
 //
@@ -1768,6 +1783,15 @@
 //
 //	SELECT salesperson, sum(sales) FROM salesforce GROUP BY salesperson;
 //
+// Time in a specific zone
+//
+// The built-in function timeIn returns t with the location information set to
+// loc. For discussion of the loc argument please see date().
+//
+// 	func timeIn(t time, loc string) time
+//
+// If any argument to timeIn is NULL the result is NULL.
+//
 // Weekday
 //
 // The built-in function weekday returns the day of the week specified by t.
@@ -1784,6 +1808,15 @@
 // 	func year(t time) int
 //
 // If the argument to year is NULL the result is NULL.
+//
+// Year day
+//
+// The built-in function yearDay returns the day of the year specified by t, in
+// the range [1,365] for non-leap years, and [1,366] in leap years.
+//
+// 	func yearDay(t time) int
+//
+// If the argument to yearDay is NULL the result is NULL.
 //
 // Manipulating complex numbers
 //
