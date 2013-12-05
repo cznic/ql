@@ -50,11 +50,12 @@ const (
 	stCollectingTriggered
 )
 
-type list struct {
+type List struct {
 	l []stmt
 }
 
-func (l list) String() string {
+// String implements fmt.Stringer
+func (l List) String() string {
 	var b bytes.Buffer
 	f := strutil.IndentFormatter(&b, "\t")
 	for _, s := range l.l {
@@ -806,13 +807,13 @@ func (db *DB) Run(ctx *TCtx, ql string, arg ...interface{}) (rs []Recordset, ind
 // DB.Execute or an error if any.
 //
 // Compile is safe for concurrent use by multiple goroutines.
-func Compile(src string) (list, error) {
+func Compile(src string) (List, error) {
 	l := newLexer(src)
 	if yyParse(l) != 0 {
-		return list{}, l.errs[0]
+		return List{}, l.errs[0]
 	}
 
-	return list{l.list}, nil
+	return List{l.list}, nil
 }
 
 // MustCompile is like Compile but panics if the ql statements in src cannot be
@@ -820,7 +821,7 @@ func Compile(src string) (list, error) {
 // compiled statement lists for DB.Execute.
 //
 // MustCompile is safe for concurrent use by multiple goroutines.
-func MustCompile(src string) list {
+func MustCompile(src string) List {
 	list, err := Compile(src)
 	if err != nil {
 		panic("ql: Compile(" + strconv.Quote(src) + "): " + err.Error()) // panic ok here
@@ -908,7 +909,7 @@ func MustCompile(src string) list {
 // Durability: Transactions are durable. A two phase commit protocol and a
 // write ahead log is used. Database is recovered after a crash from the write
 // ahead log automatically on open.
-func (db *DB) Execute(ctx *TCtx, l list, arg ...interface{}) (rs []Recordset, index int, err error) {
+func (db *DB) Execute(ctx *TCtx, l List, arg ...interface{}) (rs []Recordset, index int, err error) {
 	tnl0 := -1
 
 	var s stmt

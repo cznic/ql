@@ -187,7 +187,7 @@ const sample = `
      COMMIT;
 `
 
-func parse(t *testing.T, src string) (ls list, err error) {
+func parse(t *testing.T, src string) (ls List, err error) {
 	//dbg("----\n%s----\n", src)
 	//t.Log(src)
 
@@ -203,7 +203,7 @@ func parse(t *testing.T, src string) (ls list, err error) {
 		return
 	}
 
-	return list{l.list}, nil
+	return List{l.list}, nil
 }
 
 // Test provides a testing facility for alternative storage implementations.

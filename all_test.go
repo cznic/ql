@@ -276,7 +276,7 @@ func rnds16(rng *rand.Rand, n int) string {
 	return strings.Join(a, "")
 }
 
-func benchmarkSelect(b *testing.B, n int, sel list, ts testDB) {
+func benchmarkSelect(b *testing.B, n int, sel List, ts testDB) {
 	db, err := ts.setup()
 	if err != nil {
 		b.Error(err)
@@ -390,7 +390,9 @@ func TestString(t *testing.T) {
 			continue
 		}
 
-		_ = l.String()
+		if s := l.String(); len(s) == 0 {
+			t.Fatal("List.String() returned empty string")
+		}
 	}
 }
 
