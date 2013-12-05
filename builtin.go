@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-//DONE agg bigint, bigrat, time, duration
+//TODO agg bigint, bigrat, time, duration
 
 var builtin = map[string]struct {
 	f           func([]interface{}, map[interface{}]interface{}) (interface{}, error)

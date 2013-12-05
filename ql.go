@@ -50,6 +50,7 @@ const (
 	stCollectingTriggered
 )
 
+// List represents a group of compiled statements.
 type List struct {
 	l []stmt
 }
