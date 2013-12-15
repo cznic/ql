@@ -11,12 +11,16 @@
 //
 // Usage:
 //
-//	ql [-db name] [-fld] statement_list
+//	ql [-db name] [-schema regexp] [-tables regexp] [-fld] statement_list
 //
 // Options:
 //
 //	-db name	Name of the database to use. Defaults to "ql.db".
 //			If the DB file does not exists it is created automatically.
+//
+//	-schema re	If re != "" show the CREATE statements of matching tables and exit.
+//
+//	-tables re	If re != "" show the matching table names and exit.
 //
 //	-fld		First row of a query result set will show field names.
 //
@@ -51,6 +55,8 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/cznic/ql"
@@ -76,9 +82,83 @@ func main() {
 }
 
 func do() (err error) {
-	oDB := flag.String("db", "ql.db", "The DB file to open. It'll be created if missing")
+	oDB := flag.String("db", "ql.db", "The DB file to open. It'll be created if missing.")
 	oFlds := flag.Bool("fld", false, "Show recordset's field names.")
+	oSchema := flag.String("schema", "", "If non empty, show the CREATE statements of matching tables and exit.")
+	oTables := flag.String("tables", "", "If non empty, list matching table names and exit.")
 	flag.Parse()
+
+	db, err := ql.OpenFile(*oDB, &ql.Options{CanCreate: true})
+	if err != nil {
+		return err
+	}
+
+	defer func() {
+		ec := db.Close()
+		switch {
+		case ec != nil && err != nil:
+			log.Println(ec)
+		case ec != nil:
+			err = ec
+		}
+	}()
+
+	if pat := *oSchema; pat != "" {
+		re, err := regexp.Compile(pat)
+		if err != nil {
+			return err
+		}
+
+		nfo, err := db.Info()
+		if err != nil {
+			return err
+		}
+
+		r := []string{}
+		for _, ti := range nfo.Tables {
+			if !re.MatchString(ti.Name) {
+				continue
+			}
+
+			a := []string{}
+
+			for _, ci := range ti.Columns {
+				a = append(a, fmt.Sprintf("%s %s", ci.Name, ci.Type))
+			}
+			r = append(r, fmt.Sprintf("CREATE TABLE %s (%s);", ti.Name, strings.Join(a, ", ")))
+		}
+		sort.Strings(r)
+		if len(r) != 0 {
+			fmt.Println(strings.Join(r, "\n"))
+		}
+		return nil
+	}
+
+	if pat := *oTables; pat != "" {
+		re, err := regexp.Compile(pat)
+		if err != nil {
+			return err
+		}
+
+		nfo, err := db.Info()
+		if err != nil {
+			return err
+		}
+
+		r := []string{}
+		for _, ti := range nfo.Tables {
+			if !re.MatchString(ti.Name) {
+				continue
+			}
+
+			r = append(r, ti.Name)
+		}
+		sort.Strings(r)
+		if len(r) != 0 {
+			fmt.Println(strings.Join(r, "\n"))
+		}
+		return nil
+	}
 
 	var src string
 	switch n := flag.NArg(); n {
@@ -96,21 +176,6 @@ func do() (err error) {
 		}
 		src = strings.Join(a, " ")
 	}
-
-	db, err := ql.OpenFile(*oDB, &ql.Options{CanCreate: true})
-	if err != nil {
-		return err
-	}
-
-	defer func() {
-		ec := db.Close()
-		switch {
-		case ec != nil && err != nil:
-			log.Println(ec)
-		case ec != nil:
-			err = ec
-		}
-	}()
 
 	src = "BEGIN TRANSACTION; " + src + "; COMMIT;"
 	l, err := ql.Compile(src)

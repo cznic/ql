@@ -1204,3 +1204,69 @@ func (db *DB) rollback() {
 func (db *DB) commit() {
 	db.root.parent = db.root.parent.parent
 }
+
+// Type represents a QL type (bigint, int, string, ...)
+type Type int
+
+// Values of ColumnInfo.Type.
+const (
+	BigInt     Type = qBigInt
+	BigRat          = qBigRat
+	Blob            = qBlob
+	Bool            = qBool
+	Complex128      = qComplex128
+	Complex64       = qComplex64
+	Duration        = qDuration
+	Float32         = qFloat32
+	Float64         = qFloat64
+	Int16           = qInt16
+	Int32           = qInt32
+	Int64           = qInt64
+	Int8            = qInt8
+	String          = qString
+	Time            = qTime
+	Uint16          = qUint16
+	Uint32          = qUint32
+	Uint64          = qUint64
+	Uint8           = qUint8
+)
+
+// String implements fmt.Stringer.
+func (t Type) String() string {
+	return typeStr(int(t))
+}
+
+// ColumnInfo provides meta data describing a table column.
+type ColumnInfo struct {
+	Name string // Column name.
+	Type Type   // Column type (BigInt, BigRat, ...).
+}
+
+// TableInfo provides meta data describing a DB table.
+type TableInfo struct {
+	Name    string       // Table name.
+	Columns []ColumnInfo // Table schema.
+}
+
+// DbInfo provides meta data describing a DB.
+type DbInfo struct {
+	Name   string      // DB name.
+	Tables []TableInfo // Tables in the DB.
+}
+
+// Info provides meta data describing a DB or an error if any. It locks the DB
+// to obtain the result.
+func (db *DB) Info() (r *DbInfo, err error) {
+	db.mu.Lock()
+	defer db.mu.Unlock()
+
+	r = &DbInfo{Name: db.Name()}
+	for nm, t := range db.root.tables {
+		ti := TableInfo{Name: nm}
+		for _, c := range t.cols {
+			ti.Columns = append(ti.Columns, ColumnInfo{Name: c.name, Type: Type(c.typ)})
+		}
+		r.Tables = append(r.Tables, ti)
+	}
+	return
+}
