@@ -185,9 +185,8 @@ func (t *table) updated() (err error) {
 // 0: next record handle int64
 // 1: record id          int64
 // 2...: data row
-func (t *table) addRecord(r []interface{}) (err error) {
-	id, err := t.store.ID()
-	if err != nil {
+func (t *table) addRecord(r []interface{}) (id int64, err error) {
+	if id, err = t.store.ID(); err != nil {
 		return
 	}
 
@@ -226,11 +225,13 @@ func (t *table) updateCols() *table {
 // storage fields
 // 0: handle of first table in DB int64
 type root struct {
-	head   int64 // Single linked table list
-	parent *root
-	store  storage
-	tables map[string]*table
-	thead  *table
+	head         int64 // Single linked table list
+	lastInsertID int64
+	parent       *root
+	rowsAffected int64
+	store        storage
+	tables       map[string]*table
+	thead        *table
 }
 
 func newRoot(store storage) (r *root, err error) {

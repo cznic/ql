@@ -5133,3 +5133,19 @@ SELECT formatTime(timeIn(a, "UTC"), "Jan 2, 2006 at 3:04pm (UTC)") AS y FROM t O
 |sy
 [Feb 1, 2013 at 1:07pm (UTC)]
 [Feb 2, 2014 at 12:00am (UTC)]
+
+-- 476
+BEGIN TRANSACTION;
+	BEGIN TRANSACTION;
+	COMMIT;
+COMMIT;
+SELECT * FROM t;
+||does not exist
+
+-- 477
+BEGIN TRANSACTION;
+	BEGIN TRANSACTION;
+	ROLLBACK;
+COMMIT;
+SELECT * FROM t;
+||does not exist

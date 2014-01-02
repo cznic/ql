@@ -673,3 +673,109 @@ func recStr(data []interface{}) string {
 }
 
 //TODO +test long blob types with multiple inner chunks.
+
+func TestLastInsertID(t *testing.T) {
+	table := []struct {
+		ql string
+		id int
+	}{
+		// 0
+		{`BEGIN TRANSACTION; CREATE TABLE t (c int); COMMIT`, 0},
+		{`BEGIN TRANSACTION; INSERT INTO t VALUES (41); COMMIT`, 1},
+		{`BEGIN TRANSACTION; INSERT INTO t VALUES (42);`, 2},
+		{`INSERT INTO t VALUES (43)`, 3},
+		{`ROLLBACK; BEGIN TRANSACTION; INSERT INTO t VALUES (44); COMMIT`, 4},
+
+		//5
+		{`BEGIN TRANSACTION; INSERT INTO t VALUES (45); COMMIT`, 5},
+		{`
+		BEGIN TRANSACTION;
+			INSERT INTO t VALUES (46); // 6
+			BEGIN TRANSACTION;
+				INSERT INTO t VALUES (47); // 7
+				INSERT INTO t VALUES (48); // 8
+			ROLLBACK;
+			INSERT INTO t VALUES (49); // 9
+		COMMIT`, 9},
+		{`
+		BEGIN TRANSACTION;
+			INSERT INTO t VALUES (50); // 10
+			BEGIN TRANSACTION;
+				INSERT INTO t VALUES (51); // 11
+				INSERT INTO t VALUES (52); // 12
+			ROLLBACK;
+		COMMIT;`, 10},
+		{`BEGIN TRANSACTION; INSERT INTO t VALUES (53); ROLLBACK`, 10},
+		{`BEGIN TRANSACTION; INSERT INTO t VALUES (54); COMMIT`, 14},
+		// 10
+		{`BEGIN TRANSACTION; CREATE TABLE u (c int); COMMIT`, 14},
+		{`
+		BEGIN TRANSACTION;
+			INSERT INTO t SELECT * FROM u;
+		COMMIT;`, 14},
+		{`BEGIN TRANSACTION; INSERT INTO u VALUES (150); COMMIT`, 15},
+		{`
+		BEGIN TRANSACTION;
+			INSERT INTO t SELECT * FROM u;
+		COMMIT;`, 16},
+	}
+
+	db, err := OpenMem()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	ctx := NewRWCtx()
+	for i, test := range table {
+		l, err := Compile(test.ql)
+		if err != nil {
+			t.Fatal(i, err)
+		}
+
+		if _, _, err = db.Execute(ctx, l); err != nil {
+			t.Fatal(i, err)
+		}
+
+		if g, e := ctx.LastInsertID, int64(test.id); g != e {
+			t.Fatal(i, g, e)
+		}
+	}
+}
+
+func ExampleTCtx_lastInsertID() {
+	ins := MustCompile("BEGIN TRANSACTION; INSERT INTO t VALUES ($1); COMMIT;")
+
+	db, err := OpenMem()
+	if err != nil {
+		panic(err)
+	}
+
+	ctx := NewRWCtx()
+	if _, _, err = db.Run(ctx, `
+		BEGIN TRANSACTION;
+			CREATE TABLE t (c int);
+			INSERT INTO t VALUES (1), (2), (3);
+		COMMIT;
+	`); err != nil {
+		panic(err)
+	}
+
+	if _, _, err = db.Execute(ctx, ins, int64(42)); err != nil {
+		panic(err)
+	}
+
+	id := ctx.LastInsertID
+	rs, _, err := db.Run(ctx, `SELECT * FROM t WHERE id() == $1`, id)
+	if err != nil {
+		panic(err)
+	}
+
+	if err = rs[0].Do(false, func(data []interface{}) (more bool, err error) {
+		fmt.Println(data)
+		return true, nil
+	}); err != nil {
+		panic(err)
+	}
+	// Output:
+	// [42]
+}

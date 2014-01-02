@@ -458,6 +458,7 @@ func (s *insertIntoStmt) execSelect(t *table, cols []*col, ctx *execCtx) (_ Reco
 				return false, err
 			}
 
+			ctx.db.root.lastInsertID = id
 			return true, nil
 		}
 
@@ -512,6 +513,7 @@ func (s *insertIntoStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 	}
 
 	arg := ctx.arg
+	root := ctx.db.root
 	r := make([]interface{}, len(t.cols0))
 	for _, list := range s.lists {
 		for i, expr := range list {
@@ -526,9 +528,12 @@ func (s *insertIntoStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 			return
 		}
 
-		if err = t.addRecord(r); err != nil {
+		id, err := t.addRecord(r)
+		if err != nil {
 			return nil, err
 		}
+
+		root.lastInsertID = id
 	}
 	return
 }

@@ -176,8 +176,15 @@ func (r *groupByRset) do(ctx *execCtx, f func(id interface{}, data []interface{}
 // TCtx represents transaction context. It enables to execute multiple
 // statement lists in the same context. The same context guarantees the state
 // of the DB cannot change in between the separated executions.
+//
+// LastInsertID
+//
+// LastInsertID is updated by INSERT INTO statements. The value considers
+// performed ROLLBACK statements, if any, even though roll backed IDs are not
+// reused. QL clients should treat the field as read only.
+//
 type TCtx struct {
-	byte
+	LastInsertID int64
 }
 
 // NewRWCtx returns a new read/write transaction context.  NewRWCtx is safe for
@@ -912,6 +919,7 @@ func MustCompile(src string) List {
 // ahead log automatically on open.
 func (db *DB) Execute(ctx *TCtx, l List, arg ...interface{}) (rs []Recordset, index int, err error) {
 	tnl0 := -1
+	ctx.LastInsertID = 0
 
 	var s stmt
 	for index, s = range l.l {
@@ -1001,7 +1009,6 @@ func (db *DB) run1(pc *TCtx, tnl0 *int, s stmt, arg ...interface{}) (rs Recordse
 			return
 		case commitStmt:
 			defer db.mu.Unlock()
-			defer db.rwmu.Unlock()
 			if pc != db.cc {
 				return nil, fmt.Errorf("invalid passed transaction context")
 			}
@@ -1015,10 +1022,11 @@ func (db *DB) run1(pc *TCtx, tnl0 *int, s stmt, arg ...interface{}) (rs Recordse
 
 			db.cc = nil
 			db.rw = false
+			db.rwmu.Unlock()
 			return
 		case rollbackStmt:
 			defer db.mu.Unlock()
-			defer db.rwmu.Unlock()
+			defer func() { pc.LastInsertID = db.root.lastInsertID }()
 			if pc != db.cc {
 				return nil, fmt.Errorf("invalid passed transaction context")
 			}
@@ -1032,6 +1040,7 @@ func (db *DB) run1(pc *TCtx, tnl0 *int, s stmt, arg ...interface{}) (rs Recordse
 
 			db.cc = nil
 			db.rw = false
+			db.rwmu.Unlock()
 			return
 		default:
 			if pc == nil {
@@ -1047,6 +1056,7 @@ func (db *DB) run1(pc *TCtx, tnl0 *int, s stmt, arg ...interface{}) (rs Recordse
 			}
 
 			defer db.mu.Unlock()
+			defer func() { pc.LastInsertID = db.root.lastInsertID }()
 			if pc != db.cc {
 				return nil, fmt.Errorf("invalid passed transaction context")
 			}

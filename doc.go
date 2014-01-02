@@ -1587,7 +1587,8 @@
 //
 // The built-in function id takes no arguments and returns a table-unique
 // automatically assigned numeric identifier of type int. Ids of deleted
-// records are not reused.
+// records are not reused unless the DB becomes completely empty (has no
+// tables).
 //
 // 	func id() int
 //
