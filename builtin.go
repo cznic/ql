@@ -305,10 +305,10 @@ func builtinFormatTime(arg []interface{}, ctx map[interface{}]interface{}) (v in
 		case string:
 			return x.Format(y), nil
 		default:
-			return nil, invArg(y, "timeIn")
+			return nil, invArg(y, "formatTime")
 		}
 	default:
-		return nil, invArg(x, "timeIn")
+		return nil, invArg(x, "formatTime")
 	}
 }
 
@@ -534,7 +534,7 @@ func builtinMonth(arg []interface{}, ctx map[interface{}]interface{}) (v interfa
 	case time.Time:
 		return int64(x.Month()), nil
 	default:
-		return nil, invArg(x, "day")
+		return nil, invArg(x, "month")
 	}
 }
 
@@ -624,7 +624,7 @@ func builtinSince(arg []interface{}, ctx map[interface{}]interface{}) (v interfa
 	case time.Time:
 		return time.Since(x), nil
 	default:
-		return nil, invArg(x, "imag")
+		return nil, invArg(x, "since")
 	}
 }
 
