@@ -5149,3 +5149,57 @@ BEGIN TRANSACTION;
 COMMIT;
 SELECT * FROM t;
 ||does not exist
+
+-- 478 // https://github.com/cznic/ql/issues/23
+BEGIN TRANSACTION;
+	CREATE TABLE t (a int, b string, t time);
+	INSERT INTO t VALUES (1, "a", parseTime("Jan 2, 2006 at 3:04pm (MST)", "Jan 12, 2014 at 6:26pm (CET)"));
+	INSERT INTO t VALUES (2, "b", parseTime("Jan 2, 2006 at 3:04pm (MST)", "Jan 12, 2014 at 6:27pm (CET)"));
+	UPDATE t b = "hello" WHERE a == 1;
+COMMIT;
+SELECT * FROM t;
+|la, sb, ?t
+[2 b 2014-01-12 18:27:00 +0100 CET]
+[1 hello 2014-01-12 18:26:00 +0100 CET]
+
+-- 479 // https://github.com/cznic/ql/issues/23
+BEGIN TRANSACTION;
+	CREATE TABLE t (a int, b string, t time);
+	INSERT INTO t VALUES (1, "a", parseTime("Jan 2, 2006 at 3:04pm (MST)", "Jan 12, 2014 at 6:26pm (CET)"));
+	INSERT INTO t VALUES (2, "b", parseTime("Jan 2, 2006 at 3:04pm (MST)", "Jan 12, 2014 at 6:27pm (CET)"));
+	UPDATE t
+		b = "hello",
+		t = parseTime("Jan 2, 2006 at 3:04pm (MST)", "Jan 12, 2014 at 6:28pm (CET)"),
+	WHERE a == 1;
+COMMIT;
+SELECT * FROM t;
+|la, sb, ?t
+[2 b 2014-01-12 18:27:00 +0100 CET]
+[1 hello 2014-01-12 18:28:00 +0100 CET]
+
+-- 480 // https://github.com/cznic/ql/issues/23
+BEGIN TRANSACTION;
+	CREATE TABLE t (a int, b string, d duration);
+	INSERT INTO t VALUES (1, "a", duration("1m"));
+	INSERT INTO t VALUES (2, "b", duration("2m"));
+	UPDATE t b = "hello" WHERE a == 1;
+COMMIT;
+SELECT * FROM t;
+|la, sb, ?d
+[2 b 2m0s]
+[1 hello 1m0s]
+
+-- 481 // https://github.com/cznic/ql/issues/23
+BEGIN TRANSACTION;
+	CREATE TABLE t (a int, b string, d duration);
+	INSERT INTO t VALUES (1, "a", duration("1m"));
+	INSERT INTO t VALUES (2, "b", duration("2m"));
+	UPDATE t
+		b = "hello",
+		d = duration("3m"),
+	WHERE a == 1;
+COMMIT;
+SELECT * FROM t;
+|la, sb, ?d
+[2 b 2m0s]
+[1 hello 3m0s]

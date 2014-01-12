@@ -6,6 +6,7 @@ package ql
 
 import (
 	"bytes"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -23,6 +24,8 @@ var (
 	dropEmployee   = MustCompile("BEGIN TRANSACTION; DROP TABLE employee; COMMIT;")
 	dropP          = MustCompile("BEGIN TRANSACTION; DROP TABLE p; COMMIT;")
 	dropT          = MustCompile("BEGIN TRANSACTION; DROP TABLE t; COMMIT;")
+
+	oN = flag.Int("N", 0, "")
 )
 
 var testdata []string
@@ -258,7 +261,7 @@ func test(t *testing.T, s testDB) (panicked error) {
 		return true
 	}
 
-	for itest, test := range testdata {
+	for itest, test := range testdata[*oN:] {
 		//dbg("---------------------------------------- itest %d", itest)
 		var re *regexp.Regexp
 		a := strings.Split(test+"|", "|")

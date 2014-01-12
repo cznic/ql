@@ -145,7 +145,7 @@ func newTable(store storage, name string, next int64, cols []*col, tprev, tnext 
 func (t *table) blobCols() (r []*col) {
 	for _, c := range t.cols0 {
 		switch c.typ {
-		case qBlob, qBigInt, qBigRat:
+		case qBlob, qBigInt, qBigRat, qTime, qDuration:
 			r = append(r, c)
 		}
 	}
