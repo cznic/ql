@@ -1,6 +1,6 @@
 .PHONY: all clean nuke
 
-all: editor scanner.go parser.go coerce.go
+all: editor scanner.go parser.go
 	go build
 	go vet
 	go install
@@ -19,12 +19,12 @@ clean:
 
 coerce.go: helper.go
 	if [ -f coerce.go ] ; then rm coerce.go ; fi
-	go run helper.go -o $@
+	go run helper.go | gofmt > $@
 
 cover:
 	t=$(shell tempfile) ; go test -coverprofile $$t && go tool cover -html $$t && unlink $$t
 
-editor: check scanner.go parser.go
+editor: check scanner.go parser.go coerce.go
 	go fmt
 	go test -i
 	go test

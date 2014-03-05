@@ -5203,3 +5203,16 @@ SELECT * FROM t;
 |la, sb, ?d
 [2 b 2m0s]
 [1 hello 3m0s]
+
+-- 482 // https://github.com/cznic/ql/issues/24
+BEGIN TRANSACTION;
+	CREATE TABLE t (c complex128);
+	INSERT INTO t VALUES
+		(2+complex128(1)),
+		(22+complex(0, 1)),
+	;
+COMMIT;
+SELECT * FROM t ORDER BY real(c);
+|dc
+[(3+0i)]
+[(22+1i)]
