@@ -126,7 +126,7 @@ func recSetDump(ctx *execCtx, rs Recordset) (s string, err error) {
 	var state int
 	var a []string
 	var flds []*fld
-	if err = rs.(recordset).do(ctx, func(_ interface{}, rec []interface{}) (bool, error) {
+	if err = rs.(recordset).do(ctx, false, func(_ interface{}, rec []interface{}) (bool, error) {
 		switch state {
 		case 0:
 			flds = rec[0].([]*fld)
