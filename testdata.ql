@@ -5204,7 +5204,20 @@ SELECT * FROM t;
 [2 b 2m0s]
 [1 hello 3m0s]
 
--- 482
+-- 482 // https://github.com/cznic/ql/issues/24
+BEGIN TRANSACTION;
+	CREATE TABLE t (c complex128);
+	INSERT INTO t VALUES
+		(2+complex128(1)),
+		(22+complex(0, 1)),
+	;
+COMMIT;
+SELECT * FROM t ORDER BY real(c);
+|dc
+[(3+0i)]
+[(22+1i)]
+
+-- 483
 BEGIN TRANSACTION;
 	CREATE TABLE t (s string, substr string);
 	INSERT INTO t VALUES
@@ -5217,7 +5230,7 @@ COMMIT;
 SELECT id() as i, contains(42, substr) FROM t ORDER BY i;
 ||invalid .* 42
 
--- 483
+-- 484
 BEGIN TRANSACTION;
 	CREATE TABLE t (s string, substr string);
 	INSERT INTO t VALUES
@@ -5230,7 +5243,7 @@ COMMIT;
 SELECT id() as i, contains(s, true) FROM t ORDER BY i;
 ||invalid .* true
 
--- 484
+-- 485
 BEGIN TRANSACTION;
 	CREATE TABLE t (s string, substr string);
 	INSERT INTO t VALUES
@@ -5247,7 +5260,7 @@ SELECT id() as i, contains(s, substr) FROM t ORDER BY i;
 [3 true]
 [4 true]
 
--- 485
+-- 486
 BEGIN TRANSACTION;
 	CREATE TABLE t (s string, prefix string);
 	INSERT INTO t VALUES
@@ -5263,7 +5276,7 @@ COMMIT;
 SELECT id() as i, hasPrefix(42, prefix) FROM t ORDER BY i;
 ||invalid .* 42
 
--- 486
+-- 487
 BEGIN TRANSACTION;
 	CREATE TABLE t (s string, prefix string);
 	INSERT INTO t VALUES
@@ -5279,7 +5292,7 @@ COMMIT;
 SELECT id() as i, hasPrefix(s, false) FROM t ORDER BY i;
 ||invalid .* false
 
--- 487
+-- 488
 BEGIN TRANSACTION;
 	CREATE TABLE t (s string, prefix string);
 	INSERT INTO t VALUES
@@ -5302,7 +5315,7 @@ SELECT id() as i, hasPrefix(s, prefix) FROM t ORDER BY i;
 [6 true]
 [7 true]
 
--- 488
+-- 489
 BEGIN TRANSACTION;
 	CREATE TABLE t (s string, suffix string);
 	INSERT INTO t VALUES
@@ -5318,7 +5331,7 @@ COMMIT;
 SELECT id() as i, hasSuffix(42, suffix) FROM t ORDER BY i;
 ||invalid .* 42
 
--- 489
+-- 490
 BEGIN TRANSACTION;
 	CREATE TABLE t (s string, suffix string);
 	INSERT INTO t VALUES
@@ -5334,7 +5347,7 @@ COMMIT;
 SELECT id() as i, hasSuffix(s, true) FROM t ORDER BY i;
 ||invalid .* true
 
--- 490
+-- 491
 BEGIN TRANSACTION;
 	CREATE TABLE t (s string, suffix string);
 	INSERT INTO t VALUES

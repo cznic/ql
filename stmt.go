@@ -371,8 +371,8 @@ func (s *selectStmt) String() string {
 	return b.String()
 }
 
-func (s *selectStmt) do(ctx *execCtx, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
-	return s.exec0().do(ctx, f)
+func (s *selectStmt) do(ctx *execCtx, onlyNames bool, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
+	return s.exec0().do(ctx, onlyNames, f)
 }
 
 func (s *selectStmt) exec0() (r rset) { //LATER overlapping goroutines/pipelines
@@ -438,7 +438,7 @@ func (s *insertIntoStmt) execSelect(t *table, cols []*col, ctx *execCtx) (_ Reco
 	ok := false
 	h := t.head
 	data0 := make([]interface{}, len(t.cols0)+2)
-	if err = r.do(ctx, func(id interface{}, data []interface{}) (more bool, err error) {
+	if err = r.do(ctx, false, func(id interface{}, data []interface{}) (more bool, err error) {
 		if ok {
 			for i, d := range data {
 				data0[cols[i].index+2] = d

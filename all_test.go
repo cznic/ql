@@ -71,6 +71,14 @@ func (db *DB) dumpTables() string {
 	return buf.String()
 }
 
+func fldsString(f []*fld) string {
+	a := []string{}
+	for _, v := range f {
+		a = append(a, v.name)
+	}
+	return strings.Join(a, " ")
+}
+
 func stStr(st int) string {
 	switch st {
 	case stDisabled:
@@ -778,4 +786,89 @@ func ExampleTCtx_lastInsertID() {
 	}
 	// Output:
 	// [42]
+}
+
+func Example_recordsetFields() {
+	// See RecordSet.Fields documentation
+
+	db, err := OpenMem()
+	if err != nil {
+		panic(err)
+	}
+
+	ctx := NewRWCtx()
+	rs, _, err := db.Run(ctx, `
+		BEGIN TRANSACTION;
+			CREATE TABLE t (s string, i int);
+			CREATE TABLE u (s string, i int);
+			INSERT INTO t VALUES
+				("a", 1),
+				("a", 2),
+				("b", 3),
+				("b", 4),
+			;
+			INSERT INTO u VALUES
+				("A", 10),
+				("A", 20),
+				("B", 30),
+				("B", 40),
+			;
+		COMMIT;
+		
+		// [0]: Fields are not computable.
+		SELECT * FROM noTable;
+		
+		// [1]: Fields are computable even when Do will fail (table noTable does not exist).
+		SELECT X AS Y FROM noTable;
+		
+		// [2]: Both Fields and Do are okay.
+		SELECT t.s+u.s as a, t.i+u.i as b, "noName", "name" as Named FROM t, u;
+		
+		// [3]: Filds are computable even when Do will fail (uknown column a).
+		SELECT DISTINCT s as S, sum(i) as I FROM (
+			SELECT t.s+u.s as s, t.i+u.i, 3 as i FROM t, u;
+		)
+		GROUP BY a
+		ORDER BY d;
+		
+		// [4]: Fields are computable even when Do will fail on missing $1.
+		SELECT DISTINCT * FROM (
+			SELECT t.s+u.s as S, t.i+u.i, 3 as I FROM t, u;
+		)
+		WHERE I < $1
+		ORDER BY S;
+		` /* , 42 */) // <-- $1 missing
+	if err != nil {
+		panic(err)
+	}
+
+	for i, v := range rs {
+		fields, err := v.Fields()
+		switch {
+		case err != nil:
+			fmt.Printf("Fields[%d]: error: %s\n", i, err)
+		default:
+			fmt.Printf("Fields[%d]: %#v\n", i, fields)
+		}
+		if err = v.Do(
+			true,
+			func(data []interface{}) (more bool, err error) {
+				fmt.Printf("    Do[%d]: %#v\n", i, data)
+				return false, nil
+			},
+		); err != nil {
+			fmt.Printf("    Do[%d]: error: %s\n", i, err)
+		}
+	}
+	// Output:
+	// Fields[0]: error: table noTable does not exist
+	//     Do[0]: error: table noTable does not exist
+	// Fields[1]: []string{"Y"}
+	//     Do[1]: error: table noTable does not exist
+	// Fields[2]: []string{"a", "b", "", "Named"}
+	//     Do[2]: []interface {}{"a", "b", "", "Named"}
+	// Fields[3]: []string{"S", "I"}
+	//     Do[3]: error: unknown column a
+	// Fields[4]: []string{"S", "", "I"}
+	//     Do[4]: error: missing $1
 }

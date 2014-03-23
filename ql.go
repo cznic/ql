@@ -50,6 +50,12 @@ const (
 	stCollectingTriggered
 )
 
+const (
+	noNames = iota
+	returnNames
+	onlyNames
+)
+
 // List represents a group of compiled statements.
 type List struct {
 	l []stmt
@@ -73,7 +79,7 @@ func (l List) String() string {
 }
 
 type rset interface {
-	do(ctx *execCtx, f func(id interface{}, data []interface{}) (more bool, err error)) error
+	do(ctx *execCtx, onlyNames bool, f func(id interface{}, data []interface{}) (more bool, err error)) error
 }
 
 type recordset struct {
@@ -82,7 +88,29 @@ type recordset struct {
 }
 
 func (r recordset) Do(names bool, f func(data []interface{}) (more bool, err error)) (err error) {
-	return r.ctx.db.do(r, names, f)
+	nm := noNames
+	if names {
+		nm = returnNames
+	}
+	return r.ctx.db.do(r, nm, f)
+}
+
+func (r recordset) Fields() (names []string, err error) {
+	err = r.ctx.db.do(
+		r,
+		onlyNames,
+		func(data []interface{}) (more bool, err error) {
+			for _, v := range data {
+				s, ok := v.(string)
+				if !ok {
+					return false, fmt.Errorf("got %T(%v), expected string (RecordSet.Fields)", v, v)
+				}
+				names = append(names, s)
+			}
+			return false, nil
+		},
+	)
+	return
 }
 
 type groupByRset struct {
@@ -90,7 +118,7 @@ type groupByRset struct {
 	src      rset
 }
 
-func (r *groupByRset) do(ctx *execCtx, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
+func (r *groupByRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
 	t, err := ctx.db.store.CreateTemp(true)
 	if err != nil {
 		return
@@ -107,7 +135,7 @@ func (r *groupByRset) do(ctx *execCtx, f func(id interface{}, data []interface{}
 	var cols []*col
 	ok := false
 	k := make([]interface{}, len(r.colNames)) //LATER optimize when len(r.cols) == 0
-	if err = r.src.do(ctx, func(rid interface{}, in []interface{}) (more bool, err error) {
+	if err = r.src.do(ctx, onlyNames, func(rid interface{}, in []interface{}) (more bool, err error) {
 		if ok {
 			infer(in, &cols)
 			for i, c := range gcols {
@@ -148,9 +176,14 @@ func (r *groupByRset) do(ctx *execCtx, f func(id interface{}, data []interface{}
 
 			gcols = append(gcols, &col{name: c, index: i})
 		}
-		return true, nil
+		return !onlyNames, nil
 	}); err != nil {
 		return
+	}
+
+	if onlyNames {
+		_, err := f(nil, []interface{}{flds})
+		return err
 	}
 
 	it, err := t.SeekFirst()
@@ -162,6 +195,7 @@ func (r *groupByRset) do(ctx *execCtx, f func(id interface{}, data []interface{}
 		cols[i].name = v.name
 		cols[i].index = i
 	}
+
 	var data []interface{}
 	var more bool
 	for more, err = f(nil, []interface{}{t, cols}); more && err == nil; more, err = f(nil, data) {
@@ -212,8 +246,30 @@ func NewRWCtx() *TCtx { return &TCtx{} }
 // database.
 //
 // Do is safe for concurrent use by multiple goroutines.
+//
+// Fields
+//
+// The only reliable way, in the general case, how to get field names of a
+// recordset is to execute the Do method with the names parameter set to true.
+// Any SELECT can return different fields on different runs, provided the
+// columns of some of the underlying tables involved were altered in between
+// and the query sports the SELECT * form.  Then the fields are not really
+// known until the first query result row materializes.  The problem is that
+// some queries can be costly even before that first row is computed.  If only
+// the field names is what is required in some situation then executing such
+// costly query could be prohibitively expensive.
+//
+// The Fields method provides an alternative. It computes the recordset fields
+// while ignoring table data, WHERE clauses, predicates and without evaluating
+// any expressions nor any functions.
+//
+// The result of Fields can be obviously imprecise if tables are altered before
+// running Do later. In exchange, calling Fields is cheap - compared to
+// actually computing a first row of a query having, say cross joins on n
+// relations (1^n is always 1, n ∈ N).
 type Recordset interface {
 	Do(names bool, f func(data []interface{}) (more bool, err error)) error
+	Fields() (names []string, err error)
 }
 
 type assignment struct {
@@ -229,7 +285,7 @@ type distinctRset struct {
 	src rset
 }
 
-func (r *distinctRset) do(ctx *execCtx, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
+func (r *distinctRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
 	t, err := ctx.db.store.CreateTemp(true)
 	if err != nil {
 		return
@@ -243,7 +299,7 @@ func (r *distinctRset) do(ctx *execCtx, f func(id interface{}, data []interface{
 
 	var flds []*fld
 	ok := false
-	if err = r.src.do(ctx, func(id interface{}, in []interface{}) (more bool, err error) {
+	if err = r.src.do(ctx, onlyNames, func(id interface{}, in []interface{}) (more bool, err error) {
 		if ok {
 			if err = t.Set(in, nil); err != nil {
 				return false, err
@@ -254,9 +310,14 @@ func (r *distinctRset) do(ctx *execCtx, f func(id interface{}, data []interface{
 
 		flds = in[0].([]*fld)
 		ok = true
-		return true, nil
+		return true && !onlyNames, nil
 	}); err != nil {
 		return
+	}
+
+	if onlyNames {
+		_, err := f(nil, []interface{}{flds})
+		return noEOF(err)
 	}
 
 	it, err := t.SeekFirst()
@@ -293,7 +354,7 @@ func (r *orderByRset) String() string {
 	return s
 }
 
-func (r *orderByRset) do(ctx *execCtx, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
+func (r *orderByRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
 	t, err := ctx.db.store.CreateTemp(r.asc)
 	if err != nil {
 		return
@@ -310,7 +371,7 @@ func (r *orderByRset) do(ctx *execCtx, f func(id interface{}, data []interface{}
 	ok := false
 	k := make([]interface{}, len(r.by)+1)
 	id := int64(-1)
-	if err = r.src.do(ctx, func(rid interface{}, in []interface{}) (more bool, err error) {
+	if err = r.src.do(ctx, onlyNames, func(rid interface{}, in []interface{}) (more bool, err error) {
 		id++
 		if ok {
 			for i, fld := range flds {
@@ -347,11 +408,16 @@ func (r *orderByRset) do(ctx *execCtx, f func(id interface{}, data []interface{}
 			return true, nil
 		}
 
-		flds = in[0].([]*fld)
 		ok = true
-		return true, nil
+		flds = in[0].([]*fld)
+		return true && !onlyNames, nil
 	}); err != nil {
 		return
+	}
+
+	if onlyNames {
+		_, err = f(nil, []interface{}{flds})
+		return noEOF(err)
 	}
 
 	it, err := t.SeekFirst()
@@ -377,11 +443,11 @@ type whereRset struct {
 	src  rset
 }
 
-func (r *whereRset) do(ctx *execCtx, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
+func (r *whereRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
 	m := map[interface{}]interface{}{}
 	var flds []*fld
 	ok := false
-	return r.src.do(ctx, func(rid interface{}, in []interface{}) (more bool, err error) {
+	return r.src.do(ctx, onlyNames, func(rid interface{}, in []interface{}) (more bool, err error) {
 		if ok {
 			for i, fld := range flds {
 				if nm := fld.name; nm != "" {
@@ -412,7 +478,8 @@ func (r *whereRset) do(ctx *execCtx, f func(id interface{}, data []interface{}) 
 
 		flds = in[0].([]*fld)
 		ok = true
-		return f(nil, in)
+		m, err := f(nil, in)
+		return m && !onlyNames, err
 	})
 }
 
@@ -421,13 +488,22 @@ type selectRset struct {
 	src  rset
 }
 
-func (r *selectRset) doGroup(grp *groupByRset, ctx *execCtx, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
+func (r *selectRset) doGroup(grp *groupByRset, ctx *execCtx, onlyNames bool, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
+	if onlyNames {
+		if len(r.flds) != 0 {
+			_, err := f(nil, []interface{}{r.flds})
+			return err
+		}
+
+		return grp.do(ctx, true, f)
+	}
+
 	var t temp
 	var cols []*col
 	out := make([]interface{}, len(r.flds))
 	ok := false
 	rows := 0
-	if err = r.src.do(ctx, func(rid interface{}, in []interface{}) (more bool, err error) {
+	if err = r.src.do(ctx, onlyNames, func(rid interface{}, in []interface{}) (more bool, err error) {
 		if ok {
 			h := in[0].(int64)
 			m := map[interface{}]interface{}{}
@@ -473,8 +549,9 @@ func (r *selectRset) doGroup(grp *groupByRset, ctx *execCtx, f func(id interface
 			}
 			out = make([]interface{}, len(r.flds))
 		}
-		return f(nil, []interface{}{r.flds})
-	}); err != nil {
+		m, err := f(nil, []interface{}{r.flds})
+		return m && !onlyNames, err
+	}); err != nil || onlyNames {
 		return
 	}
 
@@ -498,20 +575,25 @@ func (r *selectRset) doGroup(grp *groupByRset, ctx *execCtx, f func(id interface
 	return
 }
 
-func (r *selectRset) do(ctx *execCtx, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
+func (r *selectRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
 	if grp, ok := r.src.(*groupByRset); ok {
-		return r.doGroup(grp, ctx, f)
+		return r.doGroup(grp, ctx, onlyNames, f)
 	}
 
 	if len(r.flds) == 0 {
-		return r.src.do(ctx, f)
+		return r.src.do(ctx, onlyNames, f)
+	}
+
+	if onlyNames {
+		_, err := f(nil, []interface{}{r.flds})
+		return err
 	}
 
 	var flds []*fld
 	m := map[interface{}]interface{}{}
 	out := make([]interface{}, len(r.flds))
 	ok := false
-	return r.src.do(ctx, func(rid interface{}, in []interface{}) (more bool, err error) {
+	return r.src.do(ctx, onlyNames, func(rid interface{}, in []interface{}) (more bool, err error) {
 		if ok {
 			for i, fld := range flds {
 				if nm := fld.name; nm != "" {
@@ -524,25 +606,32 @@ func (r *selectRset) do(ctx *execCtx, f func(id interface{}, data []interface{})
 					return false, err
 				}
 			}
-			return f(rid, out)
+			m, err := f(rid, out)
+			return m, err
+
 		}
 
-		flds = in[0].([]*fld)
 		ok = true
-		return f(nil, []interface{}{r.flds})
+		flds = in[0].([]*fld)
+		m, err := f(nil, []interface{}{r.flds})
+		return m && !onlyNames, err
 	})
 }
 
 type tableRset string
 
-func (r tableRset) do(ctx *execCtx, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
+func (r tableRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
 	t, ok := ctx.db.root.tables[string(r)]
 	if !ok {
 		return fmt.Errorf("table %s does not exist", r)
 	}
 
-	more, err := f(nil, []interface{}{t.flds()})
-	if !more || err != nil {
+	m, err := f(nil, []interface{}{t.flds()})
+	if onlyNames {
+		return err
+	}
+
+	if !m || err != nil {
 		return
 	}
 
@@ -559,8 +648,8 @@ func (r tableRset) do(ctx *execCtx, f func(id interface{}, data []interface{}) (
 		for i, c := range cols {
 			rec[2+i] = rec[2+c.index]
 		}
-		more, err := f(rec[1], rec[2:2+ncols]) // 0:next, 1:id
-		if !more || err != nil {
+		m, err := f(rec[1], rec[2:2+ncols]) // 0:next, 1:id
+		if !m || err != nil {
 			return err
 		}
 	}
@@ -593,7 +682,7 @@ func (r *crossJoinRset) String() string {
 	return strings.Join(a, ", ")
 }
 
-func (r *crossJoinRset) do(ctx *execCtx, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
+func (r *crossJoinRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
 	rsets := make([]rset, len(r.sources))
 	qualifiers := make([]string, len(r.sources))
 	for i, pair0 := range r.sources {
@@ -614,24 +703,34 @@ func (r *crossJoinRset) do(ctx *execCtx, f func(id interface{}, data []interface
 	}
 
 	if len(rsets) == 1 {
-		return rsets[0].do(ctx, f)
+		return rsets[0].do(ctx, onlyNames, f)
 	}
 
 	var flds []*fld
 	fldsSent := false
 	iq := 0
+	stop := false
 	var g func([]interface{}, []rset) error
 	g = func(prefix []interface{}, rsets []rset) (err error) {
 		rset := rsets[0]
 		rsets = rsets[1:]
 		ok := false
-		return rset.do(ctx, func(id interface{}, in []interface{}) (more bool, err error) {
+		return rset.do(ctx, onlyNames, func(id interface{}, in []interface{}) (more bool, err error) {
+			if onlyNames && fldsSent {
+				stop = true
+				return false, nil
+			}
+
 			if ok {
 				if len(rsets) != 0 {
 					return true, g(append(prefix, in...), rsets)
 				}
 
-				return f(nil, append(prefix, in...))
+				m, err := f(nil, append(prefix, in...))
+				if !m {
+					stop = true
+				}
+				return m && !stop, err
 			}
 
 			ok = true
@@ -654,10 +753,14 @@ func (r *crossJoinRset) do(ctx *execCtx, f func(id interface{}, data []interface
 			}
 			if len(rsets) == 0 && !fldsSent {
 				fldsSent = true
-				return f(nil, []interface{}{flds})
+				more, err = f(nil, []interface{}{flds})
+				if !more {
+					stop = true
+				}
+				return more && !stop, err
 			}
 
-			return true, nil
+			return !stop, nil
 		})
 	}
 	return g(nil, rsets)
@@ -1161,7 +1264,7 @@ func (db *DB) Close() (err error) {
 	return
 }
 
-func (db *DB) do(r recordset, names bool, f func(data []interface{}) (more bool, err error)) (err error) {
+func (db *DB) do(r recordset, names int, f func(data []interface{}) (more bool, err error)) (err error) {
 	db.mu.Lock()
 	switch db.rw {
 	case false:
@@ -1174,7 +1277,7 @@ func (db *DB) do(r recordset, names bool, f func(data []interface{}) (more bool,
 
 	defer db.rwmu.RUnlock()
 	ok := false
-	return r.do(r.ctx, func(id interface{}, data []interface{}) (more bool, err error) {
+	return r.do(r.ctx, names == onlyNames, func(id interface{}, data []interface{}) (more bool, err error) {
 		if ok {
 			if err = expand(data); err != nil {
 				return
@@ -1184,16 +1287,23 @@ func (db *DB) do(r recordset, names bool, f func(data []interface{}) (more bool,
 		}
 
 		ok = true
-		if !names {
+		done := false
+		switch names {
+		case noNames:
 			return true, nil
-		}
+		case onlyNames:
+			done = true
+			fallthrough
+		default: // returnNames
+			flds := data[0].([]*fld)
+			a := make([]interface{}, len(flds))
+			for i, v := range flds {
+				a[i] = v.name
+			}
+			more, err := f(a)
+			return more && !done, err
 
-		flds := data[0].([]*fld)
-		a := make([]interface{}, len(flds))
-		for i, v := range flds {
-			a[i] = v.name
 		}
-		return f(a)
 	})
 }
 
