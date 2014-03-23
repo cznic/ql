@@ -5203,3 +5203,156 @@ SELECT * FROM t;
 |la, sb, ?d
 [2 b 2m0s]
 [1 hello 3m0s]
+
+-- 482
+BEGIN TRANSACTION;
+	CREATE TABLE t (s string, substr string);
+	INSERT INTO t VALUES
+		("seafood", "foo"),
+		("seafood", "bar"),
+		("seafood", ""),
+		("", ""),
+	;
+COMMIT;
+SELECT id() as i, contains(42, substr) FROM t ORDER BY i;
+||invalid .* 42
+
+-- 483
+BEGIN TRANSACTION;
+	CREATE TABLE t (s string, substr string);
+	INSERT INTO t VALUES
+		("seafood", "foo"),
+		("seafood", "bar"),
+		("seafood", ""),
+		("", ""),
+	;
+COMMIT;
+SELECT id() as i, contains(s, true) FROM t ORDER BY i;
+||invalid .* true
+
+-- 484
+BEGIN TRANSACTION;
+	CREATE TABLE t (s string, substr string);
+	INSERT INTO t VALUES
+		("seafood", "foo"),
+		("seafood", "bar"),
+		("seafood", ""),
+		("", ""),
+	;
+COMMIT;
+SELECT id() as i, contains(s, substr) FROM t ORDER BY i;
+|li, b
+[1 true]
+[2 false]
+[3 true]
+[4 true]
+
+-- 485
+BEGIN TRANSACTION;
+	CREATE TABLE t (s string, prefix string);
+	INSERT INTO t VALUES
+		("", ""),
+		("f", ""),
+		("", "foo"),
+		("f", "foo"),
+		("fo", "foo"),
+		("foo", "foo"),
+		("fooo", "foo"),
+	;
+COMMIT;
+SELECT id() as i, hasPrefix(42, prefix) FROM t ORDER BY i;
+||invalid .* 42
+
+-- 486
+BEGIN TRANSACTION;
+	CREATE TABLE t (s string, prefix string);
+	INSERT INTO t VALUES
+		("", ""),
+		("f", ""),
+		("", "foo"),
+		("f", "foo"),
+		("fo", "foo"),
+		("foo", "foo"),
+		("fooo", "foo"),
+	;
+COMMIT;
+SELECT id() as i, hasPrefix(s, false) FROM t ORDER BY i;
+||invalid .* false
+
+-- 487
+BEGIN TRANSACTION;
+	CREATE TABLE t (s string, prefix string);
+	INSERT INTO t VALUES
+		("", ""),
+		("f", ""),
+		("", "foo"),
+		("f", "foo"),
+		("fo", "foo"),
+		("foo", "foo"),
+		("fooo", "foo"),
+	;
+COMMIT;
+SELECT id() as i, hasPrefix(s, prefix) FROM t ORDER BY i;
+|li, b
+[1 true]
+[2 true]
+[3 false]
+[4 false]
+[5 false]
+[6 true]
+[7 true]
+
+-- 488
+BEGIN TRANSACTION;
+	CREATE TABLE t (s string, suffix string);
+	INSERT INTO t VALUES
+		("", ""),
+		("f", ""),
+		("x", "foo"),
+		("xf", "foo"),
+		("xfo", "foo"),
+		("xfoo", "foo"),
+		("xfooo", "foo"),
+	;
+COMMIT;
+SELECT id() as i, hasSuffix(42, suffix) FROM t ORDER BY i;
+||invalid .* 42
+
+-- 489
+BEGIN TRANSACTION;
+	CREATE TABLE t (s string, suffix string);
+	INSERT INTO t VALUES
+		("", ""),
+		("f", ""),
+		("x", "foo"),
+		("xf", "foo"),
+		("xfo", "foo"),
+		("xfoo", "foo"),
+		("xfooo", "foo"),
+	;
+COMMIT;
+SELECT id() as i, hasSuffix(s, true) FROM t ORDER BY i;
+||invalid .* true
+
+-- 490
+BEGIN TRANSACTION;
+	CREATE TABLE t (s string, suffix string);
+	INSERT INTO t VALUES
+		("", ""),
+		("f", ""),
+		("x", "foo"),
+		("xf", "foo"),
+		("xfo", "foo"),
+		("xfoo", "foo"),
+		("xfooo", "foo"),
+	;
+COMMIT;
+SELECT id() as i, hasSuffix(s, suffix) FROM t ORDER BY i;
+|li, b
+[1 true]
+[2 true]
+[3 false]
+[4 false]
+[5 false]
+[6 true]
+[7 false]

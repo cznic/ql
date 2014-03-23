@@ -498,11 +498,13 @@
 //
 // The following functions are implicitly declared
 //
-//	avg      complex  count       date         day     formatTime  hour
-//	hours    id       imag        len          max     min         minute
-//	minutes  month    nanosecond  nanoseconds  now     parseTime   real
-//	second   seconds  since       sum          timeIn  weekday     year
-//	yearDay
+//	avg          complex     contains   count      date
+//	day          formatTime  hasPrefix  hasSuffix  hour
+//	hours        id          imag       len        max
+//	min          minute      minutes    month      nanosecond
+//	nanoseconds  now         parseTime  real       second
+//	seconds      since       sum        timeIn     weekday
+//	year         yearDay
 //
 // Expressions
 //
@@ -1491,6 +1493,12 @@
 //
 //	SELECT salesperson, avg(sales) FROM salesforce GROUP BY salesperson;
 //
+// Contains
+//
+// The built-in function contains returns true if substr is within s.
+//
+//	func contains(s, substr string) bool
+//
 // Count
 //
 // The built-in aggregate function count returns how many times an expression
@@ -1564,6 +1572,18 @@
 // 	func formatTime(t time, layout string) string
 //
 // If any argument to formatTime is NULL the result is NULL.
+//
+// HasPrefix
+//
+// The built-in function hasPrefix tests whether the string s begins with prefix.
+//
+//	func hasPrefix(s, prefix string) bool
+//
+// HasSuffix
+//
+// The built-in function hasSuffix tests whether the string s ends with suffix.
+//
+//	func hasSuffix(s, suffix string) bool
 //
 // Hour
 //

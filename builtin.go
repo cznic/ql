@@ -23,10 +23,13 @@ var builtin = map[string]struct {
 }{
 	"avg":         {builtinAvg, 1, 1, false, true},
 	"complex":     {builtinComplex, 2, 2, true, false},
+	"contains":    {builtinContains, 2, 2, true, false},
 	"count":       {builtinCount, 0, 1, false, true},
 	"date":        {builtinDate, 8, 8, true, false},
 	"day":         {builtinDay, 1, 1, true, false},
 	"formatTime":  {builtinFormatTime, 2, 2, true, false},
+	"hasPrefix":   {builtinHasPrefix, 2, 2, true, false},
+	"hasSuffix":   {builtinHasSuffix, 2, 2, true, false},
 	"hour":        {builtinHour, 1, 1, true, false},
 	"hours":       {builtinHours, 1, 1, true, false},
 	"id":          {builtinID, 0, 0, false, false},
@@ -204,6 +207,20 @@ func builtinComplex(arg []interface{}, _ map[interface{}]interface{}) (v interfa
 	}
 }
 
+func builtinContains(arg []interface{}, _ map[interface{}]interface{}) (v interface{}, err error) {
+	switch s := arg[0].(type) {
+	case string:
+		switch chars := arg[1].(type) {
+		case string:
+			return strings.Contains(s, chars), nil
+		default:
+			return nil, invArg(chars, "string")
+		}
+	default:
+		return nil, invArg(s, "string")
+	}
+}
+
 func builtinCount(arg []interface{}, ctx map[interface{}]interface{}) (v interface{}, err error) {
 	if _, ok := ctx["$agg0"]; ok {
 		return int64(0), nil
@@ -309,6 +326,34 @@ func builtinFormatTime(arg []interface{}, ctx map[interface{}]interface{}) (v in
 		}
 	default:
 		return nil, invArg(x, "formatTime")
+	}
+}
+
+func builtinHasPrefix(arg []interface{}, _ map[interface{}]interface{}) (v interface{}, err error) {
+	switch s := arg[0].(type) {
+	case string:
+		switch prefix := arg[1].(type) {
+		case string:
+			return strings.HasPrefix(s, prefix), nil
+		default:
+			return nil, invArg(prefix, "string")
+		}
+	default:
+		return nil, invArg(s, "string")
+	}
+}
+
+func builtinHasSuffix(arg []interface{}, _ map[interface{}]interface{}) (v interface{}, err error) {
+	switch s := arg[0].(type) {
+	case string:
+		switch suffix := arg[1].(type) {
+		case string:
+			return strings.HasSuffix(s, suffix), nil
+		default:
+			return nil, invArg(suffix, "string")
+		}
+	default:
+		return nil, invArg(s, "string")
 	}
 }
 
