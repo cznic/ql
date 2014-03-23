@@ -919,7 +919,9 @@ func MustCompile(src string) List {
 // ahead log automatically on open.
 func (db *DB) Execute(ctx *TCtx, l List, arg ...interface{}) (rs []Recordset, index int, err error) {
 	tnl0 := -1
-	ctx.LastInsertID = 0
+	if ctx != nil {
+		ctx.LastInsertID = 0
+	}
 
 	var s stmt
 	for index, s = range l.l {
