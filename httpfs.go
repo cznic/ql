@@ -48,7 +48,7 @@ type HTTPFile struct {
 // Close implements http.File.
 func (f *HTTPFile) Close() error {
 	if f.closed {
-		return fmt.Errorf("already closed: %s", f.name)
+		return os.ErrInvalid
 	}
 
 	f.closed = true
@@ -116,6 +116,10 @@ func (f *HTTPFile) Readdir(count int) ([]os.FileInfo, error) {
 
 // Read implements http.File.
 func (f *HTTPFile) Read(b []byte) (int, error) {
+	if f.closed {
+		return 0, os.ErrInvalid
+	}
+
 	n := copy(b, f.content[f.off:])
 	f.off += n
 	if n != 0 {
@@ -127,6 +131,10 @@ func (f *HTTPFile) Read(b []byte) (int, error) {
 
 // Seek implements http.File.
 func (f *HTTPFile) Seek(offset int64, whence int) (int64, error) {
+	if f.closed {
+		return 0, os.ErrInvalid
+	}
+
 	if offset < 0 {
 		return int64(f.off), fmt.Errorf("cannot seek before start of file")
 	}

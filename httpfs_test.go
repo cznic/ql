@@ -11,7 +11,7 @@ import (
 	"testing"
 )
 
-func TestHttp(t *testing.T) {
+func TestHTTP(t *testing.T) {
 	db, err := OpenMem()
 	if err != nil {
 		t.Fatal(err)
@@ -82,6 +82,34 @@ func TestHttp(t *testing.T) {
 
 		if err != io.EOF {
 			t.Fatal(err)
+		}
+
+		if n, err := f.Seek(0, 0); err != nil || n != 0 {
+			t.Fatal(n, err)
+		}
+
+		exp := []byte(nm + "-c")
+		b = make([]byte, 1)
+		for _, e := range exp {
+			n, err := f.Read(b)
+			if n != 1 || err != nil {
+				t.Fatal(n, err)
+			}
+
+			if g := b[0]; g != e {
+				t.Fatal(g, e)
+			}
+		}
+		if n, err := f.Read(b); n != 0 || err != io.EOF {
+			t.Fatal(n, err)
+		}
+
+		if err = f.Close(); err != nil {
+			t.Fatal(err)
+		}
+
+		if n, err := f.Seek(0, 0); err != os.ErrInvalid {
+			t.Fatal(n, err)
 		}
 	}
 
