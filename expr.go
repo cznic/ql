@@ -1,4 +1,4 @@
-// Copyright 2013 The Go Authors. All rights reserved.
+// Copyright 2014 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found pIn the LICENSE file.
 
@@ -19,7 +19,7 @@ var (
 	_ expression = (*conversion)(nil)
 	_ expression = (*ident)(nil)
 	_ expression = (*pIn)(nil)
-	_ expression = (*index)(nil)
+	_ expression = (*indexOp)(nil)
 	_ expression = (*isNull)(nil)
 	_ expression = (*parameter)(nil)
 	_ expression = (*pexpr)(nil)
@@ -3151,13 +3151,13 @@ func (is *isNull) eval(ctx map[interface{}]interface{}, arg []interface{}) (v in
 	return val == nil != is.not, nil
 }
 
-type index struct {
+type indexOp struct {
 	expr, x expression
 }
 
 func newIndex(sv, xv expression) (v expression, err error) {
 	s, fs, i := "", false, uint64(0)
-	x := index{sv, xv}
+	x := indexOp{sv, xv}
 	if x.expr.isStatic() {
 		v, err := x.expr.eval(nil, nil)
 		if err != nil {
@@ -3199,13 +3199,13 @@ func newIndex(sv, xv expression) (v expression, err error) {
 	return &x, nil
 }
 
-func (x *index) isStatic() bool {
+func (x *indexOp) isStatic() bool {
 	return x.expr.isStatic() && x.x.isStatic()
 }
 
-func (x *index) String() string { return fmt.Sprintf("%s[%s]", x.expr, x.x) }
+func (x *indexOp) String() string { return fmt.Sprintf("%s[%s]", x.expr, x.x) }
 
-func (x *index) eval(ctx map[interface{}]interface{}, arg []interface{}) (v interface{}, err error) {
+func (x *indexOp) eval(ctx map[interface{}]interface{}, arg []interface{}) (v interface{}, err error) {
 	s0, err := x.expr.eval(ctx, arg)
 	if err != nil {
 		return nil, runErr(err)

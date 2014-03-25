@@ -138,12 +138,12 @@ The table name is stored in field #3 (name).
 
 Indices
 
-Consider an index named N, indexing column named C. C has index X in scols.
-The encoding of this particular index is a string "<tag>N". <tag> is a string
-"n" for non unique indices and "u" for unique indices. There is this index
-information for all columns of scols. Where the column is not indexed, the
-index info is an empty string. Infos for all indexes are joined with "|". For
-example
+Consider an index named N, indexing column named C.  The encoding of this
+particular index is a string "<tag>N". <tag> is a string "n" for non unique
+indices and "u" for unique indices. There is this index information for the
+index possibly indexing the record id() and for all other columns of scols.
+Where the column is not indexed, the index info is an empty string. Infos for
+all indexes are joined with "|". For example
 
 	BEGIN TRANSACTION;
 		CREATE TABLE t (Foo int, Bar bool, Baz string);
@@ -154,18 +154,31 @@ example
 The values of fields #1 and #4 for the above is
 
 	  scols: "lFoo|bBar|sBaz"
-	indices: "uY||nX"
+	indices: "|uY||nX"
+
+Aligning properly the "|" split parts
+
+                     id   col #0   col#1    col#2
+	+----------+----+--------+--------+--------+
+	|   scols: |    | "lFoo" | "bBar" | "sBaz" |
+	+----------+----+--------+--------+--------+
+	| indices: | "" | "uY"   | ""     | "nX"   |
+	+----------+----+--------+--------+--------+
+
+shows that the record id() is not indexed for this table while the columns Foo
+and Baz are.
 
 Note that there cannot be two differently named indexes for the same column and
 it's intended. The indices are B+Trees[2]. The list of handles to their roots
 is pointed to by xroots with zeros for non indexed columns. For the previous
 example
 
-	tableMeta.xroots -> {y, 0, x}
+	tableMeta.xroots -> {0, y, 0, x}
 
 where x is the root of the B+Tree for the X index and y is the root of the
-B+Tree for the Y index. Similarly to hhead, xroots is never zero, even when
-there are no indices for a table.
+B+Tree for the Y index. If there would be an index for id(), its B+Tree root
+will be present where the first zero is. Similarly to hhead, xroots is never
+zero, even when there are no indices for a table.
 
 Table record
 

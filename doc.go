@@ -1,4 +1,4 @@
-// Copyright 2013 The Go Authors. All rights reserved.
+// Copyright 2014 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -134,11 +134,11 @@
 //
 // The following keywords are reserved and may not be used as identifiers.
 //
-//	ADD    BETWEEN  BY          CREATE    duration  FROM    int16  NOT     TABLE     uint16  VALUES
-//	ALTER  bigint   byte        DELETE    false     GROUP   int32  NULL    time      uint32  WHERE
-//	AND    bigrat   COLUMN      DESC      float     IN      int64  ORDER   true      uint64
-//	AS     blob     complex128  DISTINCT  float32   INSERT  int8   SELECT  TRUNCATE  uint8
-//	ASC    bool     complex64   DROP      float64   int     INTO   string  uint      UPDATE
+//	ADD    BETWEEN  BY          CREATE    duration  FROM    int    INTO   SELECT  TRUNCATE  uint8
+//	ALTER  bigint   byte        DELETE    false     GROUP   int16  NOT    string  uint      UNIQUE
+//	AND    bigrat   COLUMN      DESC      float     IN      int32  NULL   TABLE   uint16    UPDATE
+//	AS     blob     complex128  DISTINCT  float32   INDEX   int64  ON     time    uint32    VALUES
+//	ASC    bool     complex64   DROP      float64   INSERT  int8   ORDER  true    uint64    WHERE
 //
 // Keywords are not case sensitive.
 //
@@ -1095,8 +1095,9 @@
 // Statements control execution.
 //
 //  Statement =  EmptyStmt | AlterTableStmt | BeginTransactionStmt | CommitStmt
-//  	| CreateTableStmt | DeleteFromStmt | DropTableStmt | InsertIntoStmt
-//  	| RollbackStmt | SelectStmt | TruncateTableStmt | UpdateStmt .
+//  	| CreateIndexStmt | CreateTableStmt | DeleteFromStmt | DropIndexStmt
+//  	| DropTableStmt | InsertIntoStmt | RollbackStmt | SelectStmt
+//  	| TruncateTableStmt | UpdateStmt .
 //
 //  StatementList = Statement { ";" Statement } .
 //
@@ -1157,6 +1158,32 @@
 //		INSERT INTO AccountB (Amount) VALUES (-$1);
 //	COMMIT;
 //
+// CREATE INDEX
+//
+// Create index statements create new indices. Index is a named projection of
+// ordered values of a table column to the respective records. As a special
+// case the id() of the record can be indexed.
+//
+//  CreateIndexStmt = "CREATE" "INDEX" IndexName
+//  	"ON" TableName "(" ( ColumnName | "id" Call ) ")" .
+//
+// For example
+//
+//	BEGIN TRANSACTION;
+//		CREATE TABLE Orders (CustomerID int, Date time);
+//		CREATE INDEX OrdersID ON Orders (id());
+//		CREATE INDEX OrdersDate ON Orders (Date);
+//		CREATE TABLE Items (OrderID int, ProductID int, Qty int);
+//		CREATE INDEX ItemsOrderID ON Items (OrderID);
+//	COMMIT;
+//
+// Now certain SELECT statements may use the indices to speed up joins and/or
+// to speed up record set filtering when the WHERE clause is used; or the
+// indices might be used to improve the performance when the ORDER BY clause is
+// present.
+//
+//TODO Describe when an index will be used with examples. Show also how to circumvent the limitations.
+//
 // CREATE TABLE
 //
 // Create table statements create new tables. A column definition declares the
@@ -1198,8 +1225,21 @@
 //		WHERE DepartmentName == "Ponies";
 //	COMMIT;
 //
-// If the WhereClause is not present then all rows are removed and the
+// If the WHERE clause is not present then all rows are removed and the
 // statement is equivalent to the TRUNCATE TABLE statement.
+//
+// DROP INDEX
+//
+// Drop index statements remove indices from the DB. The index must exist.
+//
+//  DropIndexStmt = "DROP" "INDEX" IndexName .
+//  IndexName = identifier .
+//
+// For example
+//
+//	BEGIN TRANSACTION;
+//		DROP INDEX ItemsOrderID;
+//	COMMIT;
 //
 // DROP TABLE
 //

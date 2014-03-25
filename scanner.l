@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2013 Go Authors. All rights reserved.
+Copyright (c) 2014 Go Authors. All rights reserved.
 Use of this source code is governed by a BSD-style
 license that can be found in the LICENSE file.
 
@@ -150,16 +150,19 @@ drop		{d}{r}{o}{p}
 from		{f}{r}{o}{m}
 group		{g}{r}{o}{u}{p}
 in		{i}{n}
+index		{i}{n}{d}{e}{x}
 insert		{i}{n}{s}{e}{r}{t}
 into		{i}{n}{t}{o}
 is		{i}{s}
 not		{n}{o}{t}
+on		{o}{n}
 order		{o}{r}{d}{e}{r}
 rollback	{r}{o}{l}{l}{b}{a}{c}{k}
 select		{s}{e}{l}{e}{c}{t}
 table		{t}{a}{b}{l}{e}
 transaction	{t}{r}{a}{n}{s}{a}{c}{t}{i}{o}{n}
 truncate	{t}{r}{u}{n}{c}{a}{t}{e}
+unique		{u}{n}{i}{q}{u}{e}
 update		{u}{p}{d}{a}{t}{e}
 values		{v}{a}{l}{u}{e}{s}
 where		{w}{h}{e}{r}{e}
@@ -247,11 +250,13 @@ ident		{idchar0}{idchars}*
 {drop}			return drop
 {from}			return from
 {group}			return group
+{index}			return index
 {insert}		return insert
 {into}			return into
 {in}			return in
 {is}			return is
 {not}			return not
+{on}			return on
 {order}			return order
 {rollback}		return rollback
 
@@ -262,6 +267,7 @@ ident		{idchar0}{idchars}*
 {transaction}		return transaction
 {truncate}		return truncate
 {update}		return update
+{unique}                return unique
 {values}		return values
 {where}			return where
 

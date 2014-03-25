@@ -1,4 +1,4 @@
-// Copyright (c) 2013 Go Authors. All rights reserved.
+// Copyright (c) 2014 Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -17,8 +17,10 @@ import (
 var (
 	_ stmt = (*alterTableAddStmt)(nil)
 	_ stmt = (*alterTableDropColumnStmt)(nil)
+	_ stmt = (*createIndexStmt)(nil)
 	_ stmt = (*createTableStmt)(nil)
 	_ stmt = (*deleteStmt)(nil)
+	_ stmt = (*dropIndexStmt)(nil)
 	_ stmt = (*dropTableStmt)(nil)
 	_ stmt = (*insertIntoStmt)(nil)
 	_ stmt = (*selectStmt)(nil)
@@ -249,6 +251,18 @@ func (s *truncateTableStmt) exec(ctx *execCtx) (Recordset, error) {
 }
 
 func (s *truncateTableStmt) isUpdating() bool { return true }
+
+type dropIndexStmt struct {
+	indexName string
+}
+
+func (s *dropIndexStmt) String() string { return fmt.Sprintf("DROP INDEX %s;", s.indexName) }
+
+func (s *dropIndexStmt) exec(ctx *execCtx) (Recordset, error) {
+	panic("TODO")
+}
+
+func (s *dropIndexStmt) isUpdating() bool { return true }
 
 type dropTableStmt struct {
 	tableName string
@@ -563,6 +577,22 @@ func (rollbackStmt) exec(*execCtx) (Recordset, error) {
 	panic("unreachable")
 }
 func (rollbackStmt) isUpdating() bool { log.Panic("internal error"); panic("unreachable") }
+
+type createIndexStmt struct {
+	indexName string
+	tableName string
+	colName   string // alt. "id()" for index on id()
+}
+
+func (s *createIndexStmt) String() string {
+	return fmt.Sprintf("CREATE INDEX %s ON %s (%s);", s.indexName, s.tableName, s.colName)
+}
+
+func (s *createIndexStmt) exec(ctx *execCtx) (_ Recordset, err error) {
+	panic("TODO")
+}
+
+func (s *createIndexStmt) isUpdating() bool { return true }
 
 type createTableStmt struct {
 	tableName string
