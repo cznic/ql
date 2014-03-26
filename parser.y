@@ -193,9 +193,10 @@ CreateIndexStmt:
 	}
 |	create index identifier on identifier '(' identifier '(' ')' ')'
 	{
-		$$ = &createIndexStmt{$3.(string), $5.(string), $7.(string)}
+		$$ = &createIndexStmt{$3.(string), $5.(string), $7.(string)+"()"}
 		if $7.(string) != "id" {
 			yylex.(*lexer).err("only the built-in id() can be indexed on")
+			goto ret1
 		}
 	}
 

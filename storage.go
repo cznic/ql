@@ -17,9 +17,11 @@ type storage interface {
 	Commit() error
 	Create(data ...interface{}) (h int64, err error)
 	CreateTemp(asc bool) (bt temp, err error)
+	//CreateIndex(unique bool) (handle int64, btreeIndex)
 	Delete(h int64, blobCols ...*col) error //LATER split the nil blobCols case
 	ID() (id int64, err error)
 	Name() string
+	//OpenIndex(unique bool, handle int64) (btreeIndex) // Never called on the memory backend.
 	Read(dst []interface{}, h int64, cols ...*col) (data []interface{}, err error)
 	ResetID() (err error)
 	Rollback() error
@@ -42,22 +44,75 @@ type temp interface {
 	Set(k, v []interface{}) (err error)
 }
 
+type btreeIndex interface {
+	Clear() error                                                            // supports truncate table
+	Create(indexedValue interface{}, h int64) error                          // supports insert record
+	Delete(indexedValue interface{}, h int64) error                          // supports delete record
+	Drop() error                                                             // supports drop table
+	Seek(indexedValue interface{}) (iter btreeIterator, hit bool, err error) // supports where/order by
+	Update(oldIndexedValue, newIndexedValue interface{}, h int64) error      // supports update record
+}
+
+type indexedCol struct {
+	name   string
+	unique bool
+	xroot  int64
+}
+
 // storage fields
 // 0: next  int64
 // 1: scols string
 // 2: hhead int64
 // 3: name  string
+// 4: indices string - optional
+// 5: hxroots int64 - optional
 type table struct {
-	cols  []*col // logical
-	cols0 []*col // physical
-	h     int64  //
-	head  int64  // head of the single linked record list
-	hhead int64  // handle of the head of the single linked record list
-	name  string
-	next  int64 // single linked table list
-	store storage
-	tprev *table
-	tnext *table
+	cols    []*col // logical
+	cols0   []*col // physical
+	h       int64  //
+	head    int64  // head of the single linked record list
+	hhead   int64  // handle of the head of the single linked record list
+	hxroots int64
+	indices []*indexedCol
+	name    string
+	next    int64 // single linked table list
+	store   storage
+	tnext   *table
+	tprev   *table
+}
+
+func (t *table) clone() *table {
+	r := &table{}
+	*r = *t
+	r.cols = make([]*col, len(t.cols))
+	for i, v := range t.cols {
+		c := &col{}
+		*c = *v
+		r.cols[i] = c
+	}
+	r.cols0 = make([]*col, len(t.cols0))
+	for i, v := range t.cols0 {
+		c := &col{}
+		*c = *v
+		r.cols0[i] = c
+	}
+	r.indices = make([]*indexedCol, len(t.indices))
+	for i, v := range t.indices {
+		c := &indexedCol{}
+		*c = *v
+		r.indices[i] = c
+	}
+	r.tnext, r.tprev = nil, nil
+	return r
+}
+
+func (t *table) findIndexByName(name string) *indexedCol {
+	for _, v := range t.indices {
+		if v.name == name {
+			return v
+		}
+	}
+	return nil
 }
 
 func (t *table) load() (err error) {
@@ -177,8 +232,25 @@ func (t *table) truncate() (err error) {
 	return t.updated()
 }
 
+func (t *table) addIndex(indexName string, colIndex int) error {
+	panic("TODO")
+}
+
 func (t *table) updated() (err error) {
-	return t.store.Update(t.h, t.next, cols2meta(t.updateCols().cols), t.hhead, t.name)
+	switch {
+	case len(t.indices) != 0:
+		a := []string{}
+		for _, v := range t.indices {
+			s := "n"
+			if v.unique {
+				s = "u"
+			}
+			a = append(a, s+v.name)
+		}
+		return t.store.Update(t.h, t.next, cols2meta(t.updateCols().cols), t.hhead, t.name, strings.Join(a, "|"), t.hxroots)
+	default:
+		return t.store.Update(t.h, t.next, cols2meta(t.updateCols().cols), t.hhead, t.name)
+	}
 }
 
 // storage fields
@@ -228,7 +300,7 @@ type root struct {
 	head         int64 // Single linked table list
 	lastInsertID int64
 	parent       *root
-	rowsAffected int64
+	rowsAffected int64 //LATER implement
 	store        storage
 	tables       map[string]*table
 	thead        *table
@@ -306,6 +378,16 @@ func newRoot(store storage) (r *root, err error) {
 	default:
 		return nil, errIncompatibleDBFormat
 	}
+}
+
+func (r *root) findIndexByName(name string) (*table, *indexedCol) {
+	for _, t := range r.tables {
+		if i := t.findIndexByName(name); i != nil {
+			return t, i
+		}
+	}
+
+	return nil, nil
 }
 
 func (r *root) updated() (err error) {

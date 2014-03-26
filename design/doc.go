@@ -41,17 +41,16 @@ Table meta data is a 6-scalar.
 	| 2 | hhead   | handle | -> head -> first record  |
 	| 3 | name    | string | Table name               |
 	| 4 | indices | string | Index definitions        |
-	| 5 | xroots  | handle | Index B+Trees roots list |
+	| 5 | hxroots | handle | Index B+Trees roots list |
 	+---+---------+--------+--------------------------+
 
 Fields #4 and #5 are optional for backward compatibility with existing
-databases.  OTOH, forward compatibility will not work. If the DB is created or
-indices added using a newer version of QL which supports indexing then older
-versions of QL, expecting only 4 fields of meta data will not be able to use
-the DB. That's the intended behavior because the older versions of QL cannot
-update the indexes, which can break queries runned by the newer QL version
-which expect indices to be always actualized on any table-with-indices
-mutation.
+databases.  OTOH, forward compatibility will not work. Once any indices are
+created using a newer QL version the older versions of QL, expecting only 4
+fields of meta data will not be able to use the DB. That's the intended
+behavior because the older versions of QL cannot update the indexes, which can
+break queries runned by the newer QL version which expect indices to be always
+actualized on any table-with-indices mutation.
 
 The handle of the next table meta data is in the field #0 (next). If there is
 no next table meta data, the field is zero. Names and types of table columns
@@ -124,7 +123,7 @@ records of a table around:
 This is not very time/space effective and for Big Data it can cause an OOM
 because transactions are limited by memory resources available to the process.
 Perhaps a method and/or QL statement to do this in-place should be added
-(MAYBE).
+(MAYBE consider adopting MySQL's OPTIMIZE TABLE syntax).
 
 Field #2 (hhead) is a handle to a head of table records, i.e. not a handle to
 the first record in the table. It is thus always non zero even for a table
@@ -170,7 +169,7 @@ and Baz are.
 
 Note that there cannot be two differently named indexes for the same column and
 it's intended. The indices are B+Trees[2]. The list of handles to their roots
-is pointed to by xroots with zeros for non indexed columns. For the previous
+is pointed to by hxroots with zeros for non indexed columns. For the previous
 example
 
 	tableMeta.xroots -> {0, y, 0, x}
@@ -203,16 +202,31 @@ the insertion order.
 
 Non unique index
 
-The index is a B+Tree[2]. The composite key of the B+Tree is {V, H}, where V is
-the value of the indexed column of record with handle H. The B+Tree value is
-not used.
+The composite key of the B+Tree is {indexed value, record handle}. The B+Tree
+value is not used.
+
+	           B+Tree key                    B+Tree value
+	+---------------+---------------+      +--------------+
+	| Indexed Value | Record Handle |  ->  |   not used   |
+	+---------------+---------------+      +--------------+
 
 Unique index
 
-The index is a B+Tree[2]. If the indexed value V is not NULL then key of the
-B+Tree key is V and the B+Tree value is H, where H is the handle of the indexed
-record: V -> H. If the indexed value is NULL then the composite B+Tree key is
-{nil, H} and the B+Tree value is not used.
+If the indexed value is NULL then the composite B+Tree key is {nil, record
+handle} and the B+Tree value is not used.
+
+	        B+Tree key                B+Tree value
+	+------+-----------------+      +--------------+
+	| NULL |  Record Handle  |  ->  |   not used   |
+	+------+-----------------+      +--------------+
+
+If the indexed value is not NULL then key of the B+Tree key is the indexed
+value and the B+Tree value is the record handle. 
+
+	        B+Tree key                B+Tree value
+	+------------------------+      +---------------+
+	| Non NULL Indexed Value |  ->  | Record Handle |
+	+------------------------+      +---------------+
 
 Non scalar types
 

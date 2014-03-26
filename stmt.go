@@ -298,6 +298,10 @@ func (s *alterTableDropColumnStmt) exec(ctx *execCtx) (Recordset, error) {
 	cols := t.cols
 	for _, c := range cols {
 		if c.name == s.colName {
+			if len(cols) == 1 {
+				return nil, fmt.Errorf("ALTER TABLE %s DROP COLUMN: cannot drop the only column: %s", s.tableName, s.colName)
+			}
+
 			c.name = ""
 			return nil, t.updated()
 		}
@@ -588,8 +592,31 @@ func (s *createIndexStmt) String() string {
 	return fmt.Sprintf("CREATE INDEX %s ON %s (%s);", s.indexName, s.tableName, s.colName)
 }
 
-func (s *createIndexStmt) exec(ctx *execCtx) (_ Recordset, err error) {
-	panic("TODO")
+func (s *createIndexStmt) exec(ctx *execCtx) (Recordset, error) {
+	if t, i := ctx.db.root.findIndexByName(s.indexName); i != nil {
+		return nil, fmt.Errorf("CREATE INDEX: table %s already has an index named %s", t.name, i.name)
+	}
+
+	t, ok := ctx.db.root.tables[s.tableName]
+	if !ok {
+		return nil, fmt.Errorf("CREATE INDEX: table does not exist %s", s.tableName)
+	}
+
+	if s.colName == "id()" {
+		log.Panic("TODO")
+		panic("unreachable")
+	}
+
+	cols := t.cols
+	for _, c := range cols {
+		if c.name == s.colName {
+			c.name = ""
+			log.Panic("TODO")
+			panic("unreachable")
+		}
+	}
+
+	return nil, fmt.Errorf("CREATE INDEX: column does not exist: %s", s.colName)
 }
 
 func (s *createIndexStmt) isUpdating() bool { return true }

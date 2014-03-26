@@ -779,9 +779,10 @@ yydefault:
 	case 23:
 
 		{
-			yyVAL.item = &createIndexStmt{yyS[yypt-7].item.(string), yyS[yypt-5].item.(string), yyS[yypt-3].item.(string)}
+			yyVAL.item = &createIndexStmt{yyS[yypt-7].item.(string), yyS[yypt-5].item.(string), yyS[yypt-3].item.(string) + "()"}
 			if yyS[yypt-3].item.(string) != "id" {
 				yylex.(*lexer).err("only the built-in id() can be indexed on")
+				goto ret1
 			}
 		}
 	case 24:

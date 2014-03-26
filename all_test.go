@@ -22,6 +22,9 @@ func init() {
 }
 
 func dbg(s string, va ...interface{}) {
+	if s == "" {
+		s = strings.Repeat("%v ", len(va))
+	}
 	_, fn, fl, _ := runtime.Caller(1)
 	fmt.Printf("dbg %s:%d: ", path.Base(fn), fl)
 	fmt.Printf(s, va...)

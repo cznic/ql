@@ -1111,7 +1111,9 @@
 //
 // Alter table statements modify existing tables.  With the ADD clause it adds
 // a new column to the table. The column must not exist. With the DROP clause
-// it removes an existing column from a table. The column must exist.
+// it removes an existing column from a table. The column must exist and it
+// must be not the only (last) column of the table. IOW, there cannot be a
+// table with no columns.
 //
 //  AlterTableStmt = "ALTER" "TABLE" TableName ( "ADD" ColumnDef | "DROP" "COLUMN"  ColumnName ) .
 //

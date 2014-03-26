@@ -15,10 +15,79 @@ import (
 )
 
 var (
+	_ btreeIndex    = (*memIndex)(nil)
 	_ btreeIterator = (*memBTreeIterator)(nil)
 	_ storage       = (*mem)(nil)
 	_ temp          = (*memTemp)(nil)
 )
+
+type memIndex struct {
+	t      *tree
+	unique bool
+}
+
+func newMemIndex(unique bool) *memIndex {
+	return &memIndex{t: treeNew(collators[true]), unique: unique}
+}
+
+func (x *memIndex) Clear() error {
+	x.t.Clear()
+	return nil
+}
+
+func (x *memIndex) Create(indexedValue interface{}, h int64) error {
+	t := x.t
+	switch {
+	case !x.unique:
+		t.Set([]interface{}{indexedValue, h}, nil)
+	case indexedValue == nil: // unique, NULL
+		t.Set([]interface{}{nil, h}, nil)
+	default: // unique, non NULL
+		k := []interface{}{indexedValue}
+		if _, ok := t.Get(k); ok {
+			return fmt.Errorf("cannot insert into unique index: duplicate value: %v", indexedValue)
+		}
+
+		t.Set(k, []interface{}{h})
+	}
+	return nil
+}
+
+func (x *memIndex) Delete(indexedValue interface{}, h int64) error {
+	t := x.t
+	var ok bool
+	switch {
+	case !x.unique:
+		ok = t.Delete([]interface{}{indexedValue, h})
+	case indexedValue == nil: // unique, NULL
+		ok = t.Delete([]interface{}{nil, h})
+	default: // unique, non NULL
+		ok = t.Delete([]interface{}{indexedValue})
+	}
+	if ok {
+		return nil
+	}
+
+	return fmt.Errorf("internal error ondelete from index, value not found: %v", indexedValue)
+}
+
+func (x *memIndex) Drop() error {
+	x.t = nil
+	return nil
+}
+
+func (x *memIndex) Seek(indexedValue interface{}) (btreeIterator, bool, error) {
+	it, hit := x.t.Seek([]interface{}{indexedValue})
+	return it, hit, nil
+}
+
+func (x *memIndex) Update(oldIndexedValue, newIndexedValue interface{}, h int64) error {
+	if err := x.Delete(oldIndexedValue, h); err != nil {
+		return err
+	}
+
+	return x.Create(newIndexedValue, h)
+}
 
 type memBTreeIterator enumerator
 
@@ -123,6 +192,10 @@ func (s *mem) Acid() bool { return false }
 func (s *mem) Close() (err error) {
 	*s = mem{}
 	return
+}
+
+func (s *mem) CreateIndex(unique bool) ( /* handle */ int64, btreeIndex) {
+	return -1, newMemIndex(unique) // handle of memIndex should never by used
 }
 
 func (s *mem) Name() string { return fmt.Sprintf("/proc/self/mem/%p", s) } // fake, non existing name

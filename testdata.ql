@@ -1,4 +1,4 @@
-// Copyright (c) 2013 Go Authors. All rights reserved.
+// Copyright (c) 2014 Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -5369,3 +5369,71 @@ SELECT id() as i, hasSuffix(s, suffix) FROM t ORDER BY i;
 [5 false]
 [6 true]
 [7 false]
+
+-- 492 // new spec rule: table must have at least 1 column
+BEGIN TRANSACTION;
+	CREATE TABLE t (c int);
+COMMIT;
+BEGIN TRANSACTION;
+	ALTER TABLE t DROP COLUMN c;
+COMMIT;
+SELECT * FROM t;
+||cannot drop.*column
+
+-- 493 // fixed bug
+BEGIN TRANSACTION;
+	CREATE TABLE t (c int, s string);
+COMMIT;
+BEGIN TRANSACTION;
+	ALTER TABLE t DROP COLUMN s;
+ROLLBACK;
+SELECT * FROM t;
+|?c, ?s
+
+-- 494 // fixed bug
+BEGIN TRANSACTION;
+	CREATE TABLE t (c int, s string);
+COMMIT;
+BEGIN TRANSACTION;
+	ALTER TABLE t ADD b bool;
+ROLLBACK;
+SELECT * FROM t;
+|?c, ?s
+
+-- 495 // fixed bug
+BEGIN TRANSACTION;
+	CREATE TABLE t (c int, s string);
+COMMIT;
+BEGIN TRANSACTION;
+	DROP TABLE t;
+ROLLBACK;
+SELECT * FROM t;
+|?c, ?s
+
+-- 496 // fixed bug
+BEGIN TRANSACTION;
+	CREATE INDEX x ON t (qty());
+COMMIT;
+||only .* id
+
+-- 497
+BEGIN TRANSACTION;
+	CREATE INDEX x ON t (qty);
+COMMIT;
+||table.*not exist
+
+-- 498
+BEGIN TRANSACTION;
+	CREATE TABLE t (c int);
+	CREATE INDEX x ON t (qty);
+COMMIT;
+||column.*not exist
+
+-- 499
+BEGIN TRANSACTION;
+	CREATE TABLE t (c int);
+	//CREATE INDEX x ON t (id());
+	//CREATE INDEX y ON t (c);
+COMMIT;
+SELECT * FROM t;
+|?c
