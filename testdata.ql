@@ -5432,7 +5432,7 @@ COMMIT;
 -- 499
 BEGIN TRANSACTION;
 	CREATE TABLE t (c int);
-	//CREATE INDEX x ON t (id());
+	CREATE INDEX x ON t (id());
 	//CREATE INDEX y ON t (c);
 COMMIT;
 SELECT * FROM t;

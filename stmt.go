@@ -603,20 +603,23 @@ func (s *createIndexStmt) exec(ctx *execCtx) (Recordset, error) {
 	}
 
 	if s.colName == "id()" {
-		log.Panic("TODO")
-		panic("unreachable")
-	}
-
-	cols := t.cols
-	for _, c := range cols {
-		if c.name == s.colName {
-			c.name = ""
-			log.Panic("TODO")
-			panic("unreachable")
+		if err := t.addIndex(s.indexName, -1); err != nil {
+			return nil, fmt.Errorf("CREATE INDEX: %v", err)
 		}
+
+		return nil, t.updated()
 	}
 
-	return nil, fmt.Errorf("CREATE INDEX: column does not exist: %s", s.colName)
+	c := findCol(t.cols, s.colName)
+	if c == nil {
+		return nil, fmt.Errorf("CREATE INDEX: column does not exist: %s", s.colName)
+	}
+
+	if err := t.addIndex(s.indexName, c.index); err != nil {
+		return nil, fmt.Errorf("CREATE INDEX: %v", err)
+	}
+
+	return nil, t.updated()
 }
 
 func (s *createIndexStmt) isUpdating() bool { return true }

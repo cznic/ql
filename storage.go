@@ -56,6 +56,7 @@ type btreeIndex interface {
 type indexedCol struct {
 	name   string
 	unique bool
+	x      btreeIndex
 	xroot  int64
 }
 
@@ -233,6 +234,13 @@ func (t *table) truncate() (err error) {
 }
 
 func (t *table) addIndex(indexName string, colIndex int) error {
+	switch len(t.indices) {
+	case 0:
+		t.indices = make([]*indexedCol, len(t.cols0))
+		//t.indices[colIndex+1] = &indexedCol
+	default:
+	}
+
 	panic("TODO")
 }
 
@@ -241,6 +249,11 @@ func (t *table) updated() (err error) {
 	case len(t.indices) != 0:
 		a := []string{}
 		for _, v := range t.indices {
+			if v == nil {
+				a = append(a, "")
+				continue
+			}
+
 			s := "n"
 			if v.unique {
 				s = "u"
