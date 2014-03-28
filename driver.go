@@ -265,7 +265,7 @@ func driverExec(db *driverDB, list List, args []driver.Value) (driver.Result, er
 
 	r := &driverResult{}
 	if db.ctx != nil {
-		r.lastInsertID, r.rowsAffected = db.ctx.LastInsertID, db.ctx.LastInsertID
+		r.lastInsertID, r.rowsAffected = db.ctx.LastInsertID, db.ctx.RowsAffected
 	}
 	return r, nil
 }
