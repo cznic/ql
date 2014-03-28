@@ -58,7 +58,8 @@ const (
 
 // List represents a group of compiled statements.
 type List struct {
-	l []stmt
+	l      []stmt
+	params int
 }
 
 // String implements fmt.Stringer
@@ -217,8 +218,14 @@ func (r *groupByRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, da
 // performed ROLLBACK statements, if any, even though roll backed IDs are not
 // reused. QL clients should treat the field as read only.
 //
+// RowsAffected
+//
+// RowsAffected is updated by INSERT INTO, DELETE FROM and UPDATE statements.
+// The value does not (yet) consider any ROLLBACK statements involved.  QL
+// clients should treat the field as read only.
 type TCtx struct {
 	LastInsertID int64
+	RowsAffected int64
 }
 
 // NewRWCtx returns a new read/write transaction context.  NewRWCtx is safe for
@@ -924,7 +931,7 @@ func Compile(src string) (List, error) {
 		return List{}, l.errs[0]
 	}
 
-	return List{l.list}, nil
+	return List{l.list, l.params}, nil
 }
 
 // MustCompile is like Compile but panics if the ql statements in src cannot be
@@ -1023,7 +1030,7 @@ func MustCompile(src string) List {
 func (db *DB) Execute(ctx *TCtx, l List, arg ...interface{}) (rs []Recordset, index int, err error) {
 	tnl0 := -1
 	if ctx != nil {
-		ctx.LastInsertID = 0
+		ctx.LastInsertID, ctx.RowsAffected = 0, 0
 	}
 
 	var s stmt

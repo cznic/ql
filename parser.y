@@ -18,6 +18,8 @@ package ql
 
 import (
 	"fmt"
+
+	"github.com/cznic/mathutil"
 )
 
 %}
@@ -49,40 +51,43 @@ import (
 	values
 	where
 
-%token	<item>	floatLit imaginaryLit intLit stringLit
+%token	<item>
+	floatLit imaginaryLit intLit stringLit
 
-%token	<item>	bigIntType bigRatType blobType boolType byteType
-		complex64Type complex128Type
-		durationType
-		falseKwd floatType float32Type float64Type
-		identifier intType int16Type int32Type int64Type int8Type 
-		null
-		qlParam
-		runeType
-		stringType
-		timeType trueKwd
-		uintType uint16Type uint32Type uint64Type uint8Type
+%token	<item>
+	bigIntType bigRatType blobType boolType byteType
+	complex64Type complex128Type
+	durationType
+	falseKwd floatType float32Type float64Type
+	identifier intType int16Type int32Type int64Type int8Type 
+	null
+	qlParam
+	runeType
+	stringType
+	timeType trueKwd
+	uintType uint16Type uint32Type uint64Type uint8Type
 
-%type	<item>	AlterTableStmt Assignment AssignmentList AssignmentList1
-		BeginTransactionStmt
-		Call Call1 ColumnDef ColumnName ColumnNameList ColumnNameList1
-		CommitStmt Conversion CreateTableStmt CreateTableStmt1
-		DeleteFromStmt DropTableStmt
-		EmptyStmt Expression ExpressionList ExpressionList1
-		Factor Factor1 Field Field1 FieldList
-		GroupByClause
-		Index InsertIntoStmt InsertIntoStmt1 InsertIntoStmt2
-		Literal
-		Operand OrderBy OrderBy1
-		QualifiedIdent
-		PrimaryExpression PrimaryFactor PrimaryTerm
-		RecordSet RecordSet1 RecordSet2 RollbackStmt
-		SelectStmt SelectStmtDistinct SelectStmtFieldList
-		SelectStmtWhere SelectStmtGroup SelectStmtOrder Slice Statement
-		StatementList
-		TableName Term TruncateTableStmt Type
-		UnaryExpr UpdateStmt UpdateStmt1
-		WhereClause
+%type	<item>
+	AlterTableStmt Assignment AssignmentList AssignmentList1
+	BeginTransactionStmt
+	Call Call1 ColumnDef ColumnName ColumnNameList ColumnNameList1
+	CommitStmt Conversion CreateTableStmt CreateTableStmt1
+	DeleteFromStmt DropTableStmt
+	EmptyStmt Expression ExpressionList ExpressionList1
+	Factor Factor1 Field Field1 FieldList
+	GroupByClause
+	Index InsertIntoStmt InsertIntoStmt1 InsertIntoStmt2
+	Literal
+	Operand OrderBy OrderBy1
+	QualifiedIdent
+	PrimaryExpression PrimaryFactor PrimaryTerm
+	RecordSet RecordSet1 RecordSet2 RollbackStmt
+	SelectStmt SelectStmtDistinct SelectStmtFieldList
+	SelectStmtWhere SelectStmtGroup SelectStmtOrder Slice Statement
+	StatementList
+	TableName Term TruncateTableStmt Type
+	UnaryExpr UpdateStmt UpdateStmt1
+	WhereClause
 
 %type	<list>	RecordSetList //TODO-
 
@@ -440,7 +445,10 @@ Operand:
 	}
 |	qlParam
 	{
-		$$ = parameter{$1.(int)}
+		n := $1.(int)
+		$$ = parameter{n}
+		l := yylex.(*lexer)
+		l.params = mathutil.Max(l.params, n)
 	}
 |	QualifiedIdent
 	{

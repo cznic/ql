@@ -206,7 +206,7 @@ func parse(t *testing.T, src string) (ls List, err error) {
 		return
 	}
 
-	return List{l.list}, nil
+	return List{l.list, l.params}, nil
 }
 
 // Test provides a testing facility for alternative storage implementations.

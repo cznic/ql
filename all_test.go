@@ -872,3 +872,93 @@ func Example_recordsetFields() {
 	// Fields[4]: []string{"S", "", "I"}
 	//     Do[4]: error: missing $1
 }
+
+func TestRowsAffected(t *testing.T) {
+	db, err := OpenMem()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	ctx := NewRWCtx()
+	ctx.LastInsertID, ctx.RowsAffected = -1, -1
+	if _, _, err = db.Run(ctx, `
+	BEGIN TRANSACTION;
+		CREATE TABLE t (i int);
+	COMMIT;
+	`); err != nil {
+		t.Fatal(err)
+	}
+
+	if g, e := ctx.LastInsertID, int64(0); g != e {
+		t.Fatal(g, e)
+	}
+
+	if g, e := ctx.RowsAffected, int64(0); g != e {
+		t.Fatal(g, e)
+	}
+
+	if _, _, err = db.Run(ctx, `
+	BEGIN TRANSACTION;
+		INSERT INTO t VALUES (1), (2), (3);
+	COMMIT;
+	`); err != nil {
+		t.Fatal(err)
+	}
+
+	if g, e := ctx.LastInsertID, int64(3); g != e {
+		t.Fatal(g, e)
+	}
+
+	if g, e := ctx.RowsAffected, int64(3); g != e {
+		t.Fatal(g, e)
+	}
+
+	if _, _, err = db.Run(ctx, `
+	BEGIN TRANSACTION;
+		INSERT INTO t
+		SELECT * FROM t WHERE i == 2;
+	COMMIT;
+	`); err != nil {
+		t.Fatal(err)
+	}
+
+	if g, e := ctx.LastInsertID, int64(4); g != e {
+		t.Fatal(g, e)
+	}
+
+	if g, e := ctx.RowsAffected, int64(1); g != e {
+		t.Fatal(g, e)
+	}
+
+	if _, _, err = db.Run(ctx, `
+	BEGIN TRANSACTION;
+		DELETE FROM t WHERE i == 2;
+	COMMIT;
+	`); err != nil {
+		t.Fatal(err)
+	}
+
+	if g, e := ctx.LastInsertID, int64(4); g != e {
+		t.Fatal(g, e)
+	}
+
+	if g, e := ctx.RowsAffected, int64(2); g != e {
+		t.Fatal(g, e)
+	}
+
+	if _, _, err = db.Run(ctx, `
+	BEGIN TRANSACTION;
+		UPDATE t i = 42 WHERE i == 3;
+	COMMIT;
+	`); err != nil {
+		t.Fatal(err)
+	}
+
+	if g, e := ctx.LastInsertID, int64(4); g != e {
+		t.Fatal(g, e)
+	}
+
+	if g, e := ctx.RowsAffected, int64(1); g != e {
+		t.Fatal(g, e)
+	}
+}

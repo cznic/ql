@@ -18,6 +18,8 @@ import __yyfmt__ "fmt"
 
 import (
 	"fmt"
+
+	"github.com/cznic/mathutil"
 )
 
 type yySymType struct {
@@ -1001,7 +1003,10 @@ yydefault:
 	case 75:
 
 		{
-			yyVAL.item = parameter{yyS[yypt-0].item.(int)}
+			n := yyS[yypt-0].item.(int)
+			yyVAL.item = parameter{n}
+			l := yylex.(*lexer)
+			l.params = mathutil.Max(l.params, n)
 		}
 	case 76:
 

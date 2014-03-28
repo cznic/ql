@@ -19,19 +19,20 @@ import (
 )
 
 type lexer struct {
-	agg   []bool
-	c     int
-	col   int
-	errs  []error
-	i     int
-	lcol  int
-	line  int
-	list  []stmt
-	ncol  int
-	nline int
-	sc    int
-	src   string
-	val   []byte
+	agg    []bool
+	c      int
+	col    int
+	errs   []error
+	i      int
+	lcol   int
+	line   int
+	list   []stmt
+	ncol   int
+	nline  int
+	params int
+	sc     int
+	src    string
+	val    []byte
 }
 
 func newLexer(src string) (l *lexer) {

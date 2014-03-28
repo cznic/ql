@@ -87,6 +87,7 @@ func (s *updateStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 	var nh int64
 	expr := s.where
 	blobCols := t.blobCols()
+	cc := ctx.db.cc
 	for h := t.head; h != 0; h = nh {
 		data, err := t.store.Read(nil, h, t.cols...)
 		if err != nil {
@@ -134,6 +135,8 @@ func (s *updateStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 		if err = t.store.UpdateRow(h, blobCols, data...); err != nil { //LATER detect which blobs are actually affected
 			return nil, err
 		}
+
+		cc.RowsAffected++
 	}
 	return
 }
@@ -164,6 +167,7 @@ func (s *deleteStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 	var ph, h, nh int64
 	var pdata, data []interface{}
 	blobCols := t.blobCols()
+	cc := ctx.db.cc
 	for h = t.head; h != 0; ph, h = h, nh {
 		for i, v := range data {
 			c, ok := v.(chunk)
@@ -207,6 +211,7 @@ func (s *deleteStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 			return nil, err
 		}
 
+		cc.RowsAffected++
 		switch {
 		case ph == 0 && nh == 0: // "only"
 			fallthrough
@@ -438,6 +443,7 @@ func (s *insertIntoStmt) execSelect(t *table, cols []*col, ctx *execCtx) (_ Reco
 	ok := false
 	h := t.head
 	data0 := make([]interface{}, len(t.cols0)+2)
+	cc := ctx.db.cc
 	if err = r.do(ctx, false, func(id interface{}, data []interface{}) (more bool, err error) {
 		if ok {
 			for i, d := range data {
@@ -458,6 +464,7 @@ func (s *insertIntoStmt) execSelect(t *table, cols []*col, ctx *execCtx) (_ Reco
 				return false, err
 			}
 
+			cc.RowsAffected++
 			ctx.db.root.lastInsertID = id
 			return true, nil
 		}
@@ -514,6 +521,7 @@ func (s *insertIntoStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 
 	arg := ctx.arg
 	root := ctx.db.root
+	cc := ctx.db.cc
 	r := make([]interface{}, len(t.cols0))
 	for _, list := range s.lists {
 		for i, expr := range list {
@@ -533,6 +541,7 @@ func (s *insertIntoStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 			return nil, err
 		}
 
+		cc.RowsAffected++
 		root.lastInsertID = id
 	}
 	return
