@@ -5251,6 +5251,11 @@ BEGIN TRANSACTION;
 		("seafood", "bar"),
 		("seafood", ""),
 		("", ""),
+		("", NULL),
+		("foo", NULL),
+		(NULL, ""),
+		(NULL, "foo"),
+		(NULL, NULL),
 	;
 COMMIT;
 SELECT id() as i, contains(s, substr) FROM t ORDER BY i;
@@ -5259,6 +5264,11 @@ SELECT id() as i, contains(s, substr) FROM t ORDER BY i;
 [2 false]
 [3 true]
 [4 true]
+[5 <nil>]
+[6 <nil>]
+[7 <nil>]
+[8 <nil>]
+[9 <nil>]
 
 -- 486
 BEGIN TRANSACTION;
@@ -5303,6 +5313,11 @@ BEGIN TRANSACTION;
 		("fo", "foo"),
 		("foo", "foo"),
 		("fooo", "foo"),
+		("", NULL),
+		("foo", NULL),
+		(NULL, ""),
+		(NULL, "foo"),
+		(NULL, NULL),
 	;
 COMMIT;
 SELECT id() as i, hasPrefix(s, prefix) FROM t ORDER BY i;
@@ -5314,6 +5329,11 @@ SELECT id() as i, hasPrefix(s, prefix) FROM t ORDER BY i;
 [5 false]
 [6 true]
 [7 true]
+[8 <nil>]
+[9 <nil>]
+[10 <nil>]
+[11 <nil>]
+[12 <nil>]
 
 -- 489
 BEGIN TRANSACTION;
@@ -5358,6 +5378,11 @@ BEGIN TRANSACTION;
 		("xfo", "foo"),
 		("xfoo", "foo"),
 		("xfooo", "foo"),
+		("", NULL),
+		("foo", NULL),
+		(NULL, ""),
+		(NULL, "foo"),
+		(NULL, NULL),
 	;
 COMMIT;
 SELECT id() as i, hasSuffix(s, suffix) FROM t ORDER BY i;
@@ -5369,3 +5394,8 @@ SELECT id() as i, hasSuffix(s, suffix) FROM t ORDER BY i;
 [5 false]
 [6 true]
 [7 false]
+[8 <nil>]
+[9 <nil>]
+[10 <nil>]
+[11 <nil>]
+[12 <nil>]

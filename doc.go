@@ -1499,6 +1499,8 @@
 //
 //	func contains(s, substr string) bool
 //
+// If any argument to contains is NULL the result is NULL.
+//
 // Count
 //
 // The built-in aggregate function count returns how many times an expression
@@ -1579,11 +1581,15 @@
 //
 //	func hasPrefix(s, prefix string) bool
 //
+// If any argument to hasPrefix is NULL the result is NULL.
+//
 // HasSuffix
 //
 // The built-in function hasSuffix tests whether the string s ends with suffix.
 //
 //	func hasSuffix(s, suffix string) bool
+//
+// If any argument to hasSuffix is NULL the result is NULL.
 //
 // Hour
 //

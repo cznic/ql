@@ -209,8 +209,12 @@ func builtinComplex(arg []interface{}, _ map[interface{}]interface{}) (v interfa
 
 func builtinContains(arg []interface{}, _ map[interface{}]interface{}) (v interface{}, err error) {
 	switch s := arg[0].(type) {
+	case nil:
+		return nil, nil
 	case string:
 		switch chars := arg[1].(type) {
+		case nil:
+			return nil, nil
 		case string:
 			return strings.Contains(s, chars), nil
 		default:
@@ -331,8 +335,12 @@ func builtinFormatTime(arg []interface{}, ctx map[interface{}]interface{}) (v in
 
 func builtinHasPrefix(arg []interface{}, _ map[interface{}]interface{}) (v interface{}, err error) {
 	switch s := arg[0].(type) {
+	case nil:
+		return nil, nil
 	case string:
 		switch prefix := arg[1].(type) {
+		case nil:
+			return nil, nil
 		case string:
 			return strings.HasPrefix(s, prefix), nil
 		default:
@@ -345,8 +353,12 @@ func builtinHasPrefix(arg []interface{}, _ map[interface{}]interface{}) (v inter
 
 func builtinHasSuffix(arg []interface{}, _ map[interface{}]interface{}) (v interface{}, err error) {
 	switch s := arg[0].(type) {
+	case nil:
+		return nil, nil
 	case string:
 		switch suffix := arg[1].(type) {
+		case nil:
+			return nil, nil
 		case string:
 			return strings.HasSuffix(s, suffix), nil
 		default:
