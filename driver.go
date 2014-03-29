@@ -73,11 +73,31 @@ func params(args []driver.Value) []interface{} {
 	return r
 }
 
-// RegisterDriver registers a QL database/sql/driver[0] named "ql".
+// RegisterDriver registers a QL database/sql/driver[0] named "ql". The name
+// parameter of
+//
+//	sql.Open("ql", name)
+//
+// is interpreted as a path name to a named DB file which will be created if
+// not present. The underlying QL database data are persisted on db.Close()
 //
 //  [0]: http://golang.org/pkg/database/sql/driver/
 func RegisterDriver() {
 	sql.Register("ql", &sqlDriver{dbs: map[string]*driverDB{}})
+}
+
+// RegisterMemDriver registers a QL memory database/sql/driver[0] named
+// "ql-mem".  The name parameter of
+//
+//	sql.Open("ql-mem", name)
+//
+// is interpreted as an unique memory DB name which will be created if not
+// present. The underlying QL memory database data are not persisted on
+// db.Close()
+//
+//  [0]: http://golang.org/pkg/database/sql/driver/
+func RegisterMemDriver() {
+	sql.Register("ql-mem", &sqlDriver{isMem: true, dbs: map[string]*driverDB{}})
 }
 
 type driverDB struct {
@@ -94,8 +114,14 @@ func newDriverDB(db *DB, name string) *driverDB {
 
 // sqlDriver implements the interface required by database/sql/driver.
 type sqlDriver struct {
-	dbs map[string]*driverDB
-	mu  sync.Mutex
+	dbs   map[string]*driverDB
+	isMem bool
+	mu    sync.Mutex
+}
+
+func (d *sqlDriver) lock() func() {
+	d.mu.Lock()
+	return d.mu.Unlock
 }
 
 // Open returns a new connection to the database.  The name is a string in a
@@ -107,17 +133,23 @@ type sqlDriver struct {
 //
 // The returned connection is only used by one goroutine at a time.
 func (d *sqlDriver) Open(name string) (driver.Conn, error) {
-	d.mu.Lock()
-	defer d.mu.Unlock()
 
 	name = filepath.Clean(name)
 	if name == "" || name == "." || name == string(os.PathSeparator) {
 		return nil, fmt.Errorf("invalid DB name %q", name)
 	}
 
+	defer d.lock()()
 	db := d.dbs[name]
 	if db == nil {
-		db0, err := OpenFile(name, &Options{CanCreate: true})
+		var err error
+		var db0 *DB
+		switch d.isMem {
+		case true:
+			db0, err = OpenMem()
+		default:
+			db0, err = OpenFile(name, &Options{CanCreate: true})
+		}
 		if err != nil {
 			return nil, err
 		}
@@ -175,6 +207,7 @@ func (c *driverConn) Close() error {
 	for s := range c.stop {
 		err.append(s.Close())
 	}
+	defer c.driver.lock()()
 	dbs, name := c.driver.dbs, c.db.name
 	v := dbs[name]
 	v.refcount--

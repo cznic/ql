@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 /*
-Package driver registers a QL sql/driver named "ql".
+Package driver registers a QL sql/driver named "ql" and a memory driver named "ql-mem".
 
 See also [0], [1] and [3].
 
@@ -22,6 +22,8 @@ A skeleton program using ql/driver.
 	func main() {
 		...
 		db, err := sql.Open("ql", "ql.db")  // [2]
+		// and/or
+		mdb, err := sql.Open("ql-mem", "mem.db")
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -45,4 +47,7 @@ package driver
 
 import "github.com/cznic/ql"
 
-func init() { ql.RegisterDriver() }
+func init() {
+	ql.RegisterDriver()
+	ql.RegisterMemDriver()
+}
