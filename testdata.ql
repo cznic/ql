@@ -5399,3 +5399,32 @@ SELECT id() as i, hasSuffix(s, suffix) FROM t ORDER BY i;
 [10 <nil>]
 [11 <nil>]
 [12 <nil>]
+
+-- 492 // issue #27
+BEGIN TRANSACTION;
+	DROP TABLE nonexistent;
+COMMIT;
+||does not exist
+
+-- 493 // issue #27
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	DROP TABLE IF EXISTS nonexistent;
+COMMIT;
+SELECT * FROM t;
+|?i
+
+-- 494 // issue #27
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	CREATE TABLE t (i int);
+COMMIT;
+||exist
+
+-- 495 // issue #27
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	CREATE TABLE IF NOT EXISTS t (s string);
+COMMIT;
+SELECT * FROM t;
+|?i

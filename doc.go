@@ -134,11 +134,11 @@
 //
 // The following keywords are reserved and may not be used as identifiers.
 //
-//	ADD    BETWEEN  BY          CREATE    duration  FROM    int16  NOT     TABLE     uint16  VALUES
-//	ALTER  bigint   byte        DELETE    false     GROUP   int32  NULL    time      uint32  WHERE
-//	AND    bigrat   COLUMN      DESC      float     IN      int64  ORDER   true      uint64
-//	AS     blob     complex128  DISTINCT  float32   INSERT  int8   SELECT  TRUNCATE  uint8
-//	ASC    bool     complex64   DROP      float64   int     INTO   string  uint      UPDATE
+//	ADD    BETWEEN  BY          CREATE    duration  float64  INSERT  int8   SELECT  TRUNCATE  uint8
+//	ALTER  bigint   byte        DELETE    EXISTS    FROM     int     INTO   string  uint      UPDATE
+//	AND    bigrat   COLUMN      DESC      false     GROUP    int16   NOT    TABLE   uint16    VALUES
+//	AS     blob     complex128  DISTINCT  float     IF       int32   NULL   time    uint32    WHERE
+//	ASC    bool     complex64   DROP      float32   IN       int64   ORDER  true    uint64
 //
 // Keywords are not case sensitive.
 //
@@ -1163,7 +1163,8 @@
 // column name and type. Table names and column names are case sensitive. The
 // table must not exist before.
 //
-//  CreateTableStmt = "CREATE" "TABLE" TableName "(" ColumnDef { "," ColumnDef } [ "," ] ")" .
+//  CreateTableStmt = "CREATE" "TABLE" [ "IF" "NOT" "EXISTS" ] TableName
+//  	"(" ColumnDef { "," ColumnDef } [ "," ] ")" .
 //
 //  ColumnDef = ColumnName Type .
 //  ColumnName = identifier .
@@ -1184,6 +1185,8 @@
 // 		);
 //	COMMIT;
 //
+// The optional IF NOT EXISTS makes the statement a no operation if the table
+// already exists.
 //
 // DELETE FROM
 //
@@ -1205,13 +1208,16 @@
 //
 // Drop table statements remove tables from the DB. The table must exist.
 //
-//  DropTableStmt = "DROP" "TABLE" TableName .
+//  DropTableStmt = "DROP" "TABLE" [ "IF" "EXISTS" ] TableName .
 //
 // For example
 //
 //	BEGIN TRANSACTION;
 // 		DROP TABLE Inventory;
 //	COMMIT;
+//
+// The optional IF EXISTS clause makes the statement a no operation if the
+// table does not exist.
 //
 // INSERT INTO
 //

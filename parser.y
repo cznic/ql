@@ -35,11 +35,11 @@ import (
 	begin between bigIntType bigRatType blobType boolType by byteType
 	column commit complex128Type complex64Type create
 	deleteKwd desc distinct drop durationType
-	eq
+	eq exists
 	falseKwd floatType float32Type float64Type floatLit from 
 	ge group
-	identifier imaginaryLit in insert intType int16Type int32Type int64Type int8Type is
-	into intLit 
+	identifier ifKwd imaginaryLit in insert intType int16Type int32Type
+	int64Type int8Type into intLit is
 	le lsh 
 	neq not null 
 	order oror
@@ -196,6 +196,10 @@ CreateTableStmt:
 	{
 		$$ = &createTableStmt{tableName: $3.(string), cols: append([]*col{$5.(*col)}, $6.([]*col)...)}
 	}
+|	create tableKwd ifKwd not exists TableName '(' ColumnDef CreateTableStmt1 CreateTableStmt2 ')'
+	{
+		$$ = &createTableStmt{ifNotExists: true, tableName: $6.(string), cols: append([]*col{$8.(*col)}, $9.([]*col)...)}
+	}
 
 CreateTableStmt1:
 	/* EMPTY */
@@ -225,6 +229,10 @@ DropTableStmt:
 	drop tableKwd TableName
 	{
 		$$ = &dropTableStmt{tableName: $3.(string)}
+	}
+|	drop tableKwd ifKwd exists TableName
+	{
+		$$ = &dropTableStmt{ifExists: true, tableName: $5.(string)}
 	}
 
 EmptyStmt:

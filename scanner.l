@@ -148,8 +148,10 @@ delete		{d}{e}{l}{e}{t}{e}
 desc		{d}{e}{s}{c}
 distinct	{d}{i}{s}{t}{i}{n}{c}{t}
 drop		{d}{r}{o}{p}
+exists		{e}{x}{i}{s}{t}{s}
 from		{f}{r}{o}{m}
 group		{g}{r}{o}{u}{p}
+if		{i}{f}
 in		{i}{n}
 insert		{i}{n}{s}{e}{r}{t}
 into		{i}{n}{t}{o}
@@ -246,8 +248,10 @@ ident		{idchar0}{idchars}*
 {desc}			return desc
 {distinct}		return distinct
 {drop}			return drop
+{exists}                return exists
 {from}			return from
 {group}			return group
+{if}                    return ifKwd
 {insert}		return insert
 {into}			return into
 {in}			return in

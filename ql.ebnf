@@ -69,9 +69,11 @@ ColumnName = identifier .
 ColumnNameList = ColumnName { "," ColumnName } [ "," ] .
 CommitStmt = "COMMIT" .
 Conversion = Type "(" Expression ")" .
-CreateTableStmt = "CREATE" "TABLE" TableName "(" ColumnDef { "," ColumnDef } [ "," ] ")" .
+CreateTableStmt = "CREATE" "TABLE" [
+		 "IF" "NOT" "EXISTS"
+	  ] TableName "(" ColumnDef { "," ColumnDef } [ "," ] ")" .
 DeleteFromStmt = "DELETE" "FROM" TableName [ WhereClause ] .
-DropTableStmt = "DROP" "TABLE" TableName .
+DropTableStmt = "DROP" "TABLE" [ "IF" "EXISTS" ] TableName .
 EmptyStmt = .
 Expression = Term { oror Term } .
 ExpressionList = Expression { "," Expression } [ "," ] .

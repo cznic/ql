@@ -256,6 +256,7 @@ func (s *truncateTableStmt) exec(ctx *execCtx) (Recordset, error) {
 func (s *truncateTableStmt) isUpdating() bool { return true }
 
 type dropTableStmt struct {
+	ifExists  bool
 	tableName string
 }
 
@@ -264,6 +265,10 @@ func (s *dropTableStmt) String() string { return fmt.Sprintf("DROP TABLE %s;", s
 func (s *dropTableStmt) exec(ctx *execCtx) (Recordset, error) {
 	t, ok := ctx.db.root.tables[s.tableName]
 	if !ok {
+		if s.ifExists {
+			return nil, nil
+		}
+
 		return nil, fmt.Errorf("DROP TABLE: table %s does not exist", s.tableName)
 	}
 
@@ -574,8 +579,9 @@ func (rollbackStmt) exec(*execCtx) (Recordset, error) {
 func (rollbackStmt) isUpdating() bool { log.Panic("internal error"); panic("unreachable") }
 
 type createTableStmt struct {
-	tableName string
-	cols      []*col
+	ifNotExists bool
+	tableName   string
+	cols        []*col
 }
 
 func (s *createTableStmt) String() string {
@@ -588,6 +594,10 @@ func (s *createTableStmt) String() string {
 
 func (s *createTableStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 	if _, ok := ctx.db.root.tables[s.tableName]; ok {
+		if s.ifNotExists {
+			return nil, nil
+		}
+
 		return nil, fmt.Errorf("CREATE TABLE: table exists %s", s.tableName)
 	}
 
