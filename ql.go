@@ -1108,7 +1108,7 @@ func (db *DB) run1(pc *TCtx, tnl0 *int, s stmt, arg ...interface{}) (rs Recordse
 
 			if pc != db.cc {
 				for db.rw == true {
-					db.mu.Unlock()
+					db.mu.Unlock() // Transaction isolation
 					db.mu.Lock()
 				}
 
@@ -1320,14 +1320,25 @@ func (db *DB) do(r recordset, names int, f func(data []interface{}) (more bool, 
 	})
 }
 
-func (db *DB) beginTransaction() { //LATER smaller undo info
+func (db *DB) beginTransaction() { //LATER smaller undo info (CRUD Tx)
 	p := db.root
 	r := &root{}
 	*r = *p
 	r.parent = p
+	a := make([]*table, 0, len(p.tables))
 	r.tables = make(map[string]*table, len(p.tables))
 	for k, v := range p.tables {
-		r.tables[k] = v
+		c := v.clone()
+		a = append(a, c)
+		r.tables[k] = c
+	}
+	for i := 0; i < len(a)-1; i++ {
+		l, p := a[i], a[i+1]
+		l.tnext = p
+		p.tprev = l
+	}
+	if len(a) != 0 {
+		r.thead = a[0]
 	}
 	db.root = r
 }

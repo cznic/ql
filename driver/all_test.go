@@ -40,11 +40,11 @@ func Example_testFile() {
 		return
 	}
 
-	if _, err := db.Exec("CREATE TABLE t (Qty int, Name string);"); err != nil {
+	if _, err := tx.Exec("CREATE TABLE t (Qty int, Name string);"); err != nil {
 		return
 	}
 
-	result, err := db.Exec(`
+	result, err := tx.Exec(`
 	INSERT INTO t VALUES
 		($1, $2),
 		($3, $4),
@@ -130,11 +130,11 @@ func Example_testMem() {
 		return
 	}
 
-	if _, err := db.Exec("CREATE TABLE t (Qty int, Name string);"); err != nil {
+	if _, err := tx.Exec("CREATE TABLE t (Qty int, Name string);"); err != nil {
 		return
 	}
 
-	result, err := db.Exec(`
+	result, err := tx.Exec(`
 	INSERT INTO t VALUES
 		($1, $2),
 		($3, $4),

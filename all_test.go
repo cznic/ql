@@ -962,3 +962,38 @@ func TestRowsAffected(t *testing.T) {
 		t.Fatal(g, e)
 	}
 }
+
+func TestTxNext(t *testing.T) {
+	db, err := OpenMem()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	ctx := NewRWCtx()
+	e := func(q string) {
+		if _, _, err = db.Run(ctx, q); err != nil {
+			t.Fatal(err)
+		}
+
+		t.Logf("----\npost %q", q)
+		for nm, tab := range db.root.tables {
+			h := tab.head
+			t.Logf("%q: head %d", nm, h)
+			for h != 0 {
+				rec, err := db.store.Read(nil, h, nil)
+				if err != nil {
+					t.Fatal(err)
+				}
+				t.Logf("%d: %v", h, rec)
+				h = rec[0].(int64)
+			}
+		}
+	}
+
+	e("BEGIN TRANSACTION; CREATE TABLE t (i int); COMMIT;")
+	e("BEGIN TRANSACTION; INSERT INTO t VALUES(1000);")
+	e("	BEGIN TRANSACTION; INSERT INTO t VALUES(2000);")
+	e("	ROLLBACK;")
+	e("INSERT INTO t VALUES(3000);")
+	e("COMMIT;")
+}

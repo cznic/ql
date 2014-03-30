@@ -60,6 +60,25 @@ type table struct {
 	tnext *table
 }
 
+func (t *table) clone() *table {
+	r := &table{}
+	*r = *t
+	r.cols = make([]*col, len(t.cols))
+	for i, v := range t.cols {
+		c := &col{}
+		*c = *v
+		r.cols[i] = c
+	}
+	r.cols0 = make([]*col, len(t.cols0))
+	for i, v := range t.cols0 {
+		c := &col{}
+		*c = *v
+		r.cols0[i] = c
+	}
+	r.tnext, r.tprev = nil, nil
+	return r
+}
+
 func (t *table) load() (err error) {
 	data, err := t.store.Read(nil, t.h)
 	if err != nil {

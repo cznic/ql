@@ -101,11 +101,9 @@ func RegisterMemDriver() {
 }
 
 type driverDB struct {
-	ctx      *TCtx
 	db       *DB
 	name     string
 	refcount int
-	tnl      int
 }
 
 func newDriverDB(db *DB, name string) *driverDB {
@@ -170,9 +168,11 @@ var zDriverConn driverConn
 //
 // Conn is assumed to be stateful.
 type driverConn struct {
+	ctx    *TCtx
 	db     *driverDB
 	driver *sqlDriver
 	stop   map[*driverStmt]struct{}
+	tnl    int
 }
 
 func newDriverConn(d *sqlDriver, ddb *driverDB) driver.Conn {
@@ -221,49 +221,46 @@ func (c *driverConn) Close() error {
 
 // Begin starts and returns a new transaction.
 func (c *driverConn) Begin() (driver.Tx, error) {
-	db := c.db
-	if db.ctx == nil {
-		db.ctx = NewRWCtx()
+	if c.ctx == nil {
+		c.ctx = NewRWCtx()
 	}
 
-	if _, _, err := db.db.Execute(db.ctx, txBegin); err != nil {
+	if _, _, err := c.db.db.Execute(c.ctx, txBegin); err != nil {
 		return nil, err
 	}
 
-	db.tnl++
+	c.tnl++
 	return c, nil
 }
 
 func (c *driverConn) Commit() error {
-	db := c.db
-	if db.tnl == 0 || db.ctx == nil {
+	if c.tnl == 0 || c.ctx == nil {
 		return errCommitNotInTransaction
 	}
 
-	if _, _, err := db.db.Execute(db.ctx, txCommit); err != nil {
+	if _, _, err := c.db.db.Execute(c.ctx, txCommit); err != nil {
 		return err
 	}
 
-	db.tnl--
-	if db.tnl == 0 {
-		db.ctx = nil
+	c.tnl--
+	if c.tnl == 0 {
+		c.ctx = nil
 	}
 	return nil
 }
 
 func (c *driverConn) Rollback() error {
-	db := c.db
-	if db.tnl == 0 || db.ctx == nil {
+	if c.tnl == 0 || c.ctx == nil {
 		return errRollbackNotInTransaction
 	}
 
-	if _, _, err := db.db.Execute(db.ctx, txRollback); err != nil {
+	if _, _, err := c.db.db.Execute(c.ctx, txRollback); err != nil {
 		return err
 	}
 
-	db.tnl--
-	if db.tnl == 0 {
-		db.ctx = nil
+	c.tnl--
+	if c.tnl == 0 {
+		c.ctx = nil
 	}
 	return nil
 }
@@ -280,11 +277,11 @@ func (c *driverConn) Exec(query string, args []driver.Value) (driver.Result, err
 		return nil, err
 	}
 
-	return driverExec(c.db, list, args)
+	return driverExec(c.db, c.ctx, list, args)
 }
 
-func driverExec(db *driverDB, list List, args []driver.Value) (driver.Result, error) {
-	if _, _, err := db.db.Execute(db.ctx, list, params(args)...); err != nil {
+func driverExec(db *driverDB, ctx *TCtx, list List, args []driver.Value) (driver.Result, error) {
+	if _, _, err := db.db.Execute(ctx, list, params(args)...); err != nil {
 		return nil, err
 	}
 
@@ -297,8 +294,8 @@ func driverExec(db *driverDB, list List, args []driver.Value) (driver.Result, er
 	}
 
 	r := &driverResult{}
-	if db.ctx != nil {
-		r.lastInsertID, r.rowsAffected = db.ctx.LastInsertID, db.ctx.RowsAffected
+	if ctx != nil {
+		r.lastInsertID, r.rowsAffected = ctx.LastInsertID, ctx.RowsAffected
 	}
 	return r, nil
 }
@@ -315,11 +312,11 @@ func (c *driverConn) Query(query string, args []driver.Value) (driver.Rows, erro
 		return nil, err
 	}
 
-	return driverQuery(c.db, list, args)
+	return driverQuery(c.db, c.ctx, list, args)
 }
 
-func driverQuery(db *driverDB, list List, args []driver.Value) (driver.Rows, error) {
-	rss, _, err := db.db.Execute(db.ctx, list, params(args)...)
+func driverQuery(db *driverDB, ctx *TCtx, list List, args []driver.Value) (driver.Rows, error) {
+	rss, _, err := db.db.Execute(ctx, list, params(args)...)
 	if err != nil {
 		return nil, err
 	}
@@ -501,11 +498,11 @@ func (s *driverStmt) NumInput() int {
 // Exec executes a query that doesn't return rows, such as an INSERT or UPDATE.
 func (s *driverStmt) Exec(args []driver.Value) (driver.Result, error) {
 	c := s.conn
-	return driverExec(c.db, s.stmt, args)
+	return driverExec(c.db, c.ctx, s.stmt, args)
 }
 
 // Exec executes a query that may return rows, such as a SELECT.
 func (s *driverStmt) Query(args []driver.Value) (driver.Rows, error) {
 	c := s.conn
-	return driverQuery(c.db, s.stmt, args)
+	return driverQuery(c.db, c.ctx, s.stmt, args)
 }
