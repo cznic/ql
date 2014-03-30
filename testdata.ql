@@ -5428,3 +5428,13 @@ BEGIN TRANSACTION;
 COMMIT;
 SELECT * FROM t;
 |?i
+
+-- 496 // issue #28
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(42);
+	ALTER TABLE t ADD s string;
+COMMIT;
+SELECT * FROM t;
+|li, ?s
+[42 <nil>]

@@ -652,8 +652,14 @@ func (r tableRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, data 
 		}
 
 		h = rec[0].(int64)
+		if n := ncols + 2 - len(rec); n > 0 {
+			rec = append(rec, make([]interface{}, n)...)
+		}
+
 		for i, c := range cols {
-			rec[2+i] = rec[2+c.index]
+			if x := c.index; 2+x < len(rec) {
+				rec[2+i] = rec[2+x]
+			}
 		}
 		m, err := f(rec[1], rec[2:2+ncols]) // 0:next, 1:id
 		if !m || err != nil {
