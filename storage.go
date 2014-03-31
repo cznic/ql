@@ -49,14 +49,12 @@ type indexIterator interface {
 }
 
 type btreeIndex interface {
-	Clear() error                                   // supports truncate table
-	Create(indexedValue interface{}, h int64) error // supports insert record
-	Delete(indexedValue interface{}, h int64) error // supports delete record
-	//TODO add undo protocol
+	Clear() error                                                            // supports truncate table
+	Create(indexedValue interface{}, h int64) error                          // supports insert record
+	Delete(indexedValue interface{}, h int64) error                          // supports delete record
 	Drop() error                                                             // supports drop table
 	Seek(indexedValue interface{}) (iter indexIterator, hit bool, err error) // supports where/order by
-	//TODO add undo protocol
-	Update(oldIndexedValue, newIndexedValue interface{}, h int64) error // supports update record
+	Update(oldIndexedValue, newIndexedValue interface{}, h int64) error      // supports update record
 }
 
 type indexedCol struct {
@@ -130,7 +128,7 @@ func (t *table) load() (err error) {
 		return
 	}
 
-	if len(data) != 4 {
+	if len(data) != 4 { //TODO 6-scalar
 		return fmt.Errorf("corrupted DB: table data len %d", len(data))
 	}
 
@@ -216,7 +214,7 @@ func (t *table) blobCols() (r []*col) {
 	return
 }
 
-func (t *table) truncate() (err error) {
+func (t *table) truncate() (err error) { //TODO truncate indices
 	h := t.head
 	var rec []interface{}
 	blobCols := t.blobCols()
@@ -291,7 +289,7 @@ func (t *table) updated() (err error) {
 // 0: next record handle int64
 // 1: record id          int64
 // 2...: data row
-func (t *table) addRecord(r []interface{}) (id int64, err error) {
+func (t *table) addRecord(r []interface{}) (id int64, err error) { //TODO update indices
 	if id, err = t.store.ID(); err != nil {
 		return
 	}

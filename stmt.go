@@ -122,7 +122,7 @@ func (s *updateStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 		}
 
 		// hit
-		for i, asgn := range s.list {
+		for i, asgn := range s.list { //TODO update indices
 			val, err := asgn.expr.eval(m, ctx.arg)
 			if err != nil {
 				return nil, err
@@ -209,6 +209,7 @@ func (s *deleteStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 		}
 
 		// hit
+		//TODO Delete indices
 		if err = t.store.Delete(h, blobCols...); err != nil {
 			return nil, err
 		}
@@ -299,7 +300,7 @@ func (s *alterTableDropColumnStmt) String() string {
 	return fmt.Sprintf("ALTER TABLE %s DROP COLUMN %s;", s.tableName, s.colName)
 }
 
-func (s *alterTableDropColumnStmt) exec(ctx *execCtx) (Recordset, error) {
+func (s *alterTableDropColumnStmt) exec(ctx *execCtx) (Recordset, error) { //TODO Drop indices
 	t, ok := ctx.db.root.tables[s.tableName]
 	if !ok {
 		return nil, fmt.Errorf("ALTER TABLE: table %s does not exist", s.tableName)
