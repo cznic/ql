@@ -29,6 +29,7 @@ var (
 	_ driver.Result  = (*driverResult)(nil)
 	_ driver.Rows    = (*driverRows)(nil)
 	_ driver.Stmt    = (*driverStmt)(nil)
+	_ driver.Tx      = (*driverConn)(nil)
 
 	txBegin    = MustCompile("BEGIN TRANSACTION;")
 	txCommit   = MustCompile("COMMIT;")
