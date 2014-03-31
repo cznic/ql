@@ -42,11 +42,11 @@ func (x *memIndex) Create(indexedValue interface{}, h int64) error {
 	t := x.t
 	switch {
 	case !x.unique:
-		k := indexKey{indexedValue, h}
+		k := indexKey{indexedValue, int(h)}
 		x.m.newUndo(undoCreateX, 0, []interface{}{x, k})
 		t.Set(k, 0)
 	case indexedValue == nil: // unique, NULL
-		k := indexKey{nil, h}
+		k := indexKey{nil, int(h)}
 		x.m.newUndo(undoCreateX, 0, []interface{}{x, k})
 		t.Set(k, 0)
 	default: // unique, non NULL
@@ -56,7 +56,7 @@ func (x *memIndex) Create(indexedValue interface{}, h int64) error {
 		}
 
 		x.m.newUndo(undoCreateX, 0, []interface{}{x, k})
-		t.Set(k, h)
+		t.Set(k, int(h))
 	}
 	return nil
 }
@@ -68,11 +68,11 @@ func (x *memIndex) Delete(indexedValue interface{}, h int64) error {
 	var ok, okv bool
 	switch {
 	case !x.unique:
-		k = indexKey{indexedValue, h}
+		k = indexKey{indexedValue, int(h)}
 		v, okv = t.Get(k)
 		ok = t.delete(k)
 	case indexedValue == nil: // unique, NULL
-		k = indexKey{nil, h}
+		k = indexKey{nil, int(h)}
 		v, okv = t.Get(k)
 		ok = t.delete(k)
 	default: // unique, non NULL
@@ -455,7 +455,7 @@ func (s *mem) Rollback() (err error) {
 			x.t.delete(k)
 		case undoDeleteX:
 			x, k := data[0].(*memIndex), data[1].(indexKey)
-			x.t.Set(k, int64(h))
+			x.t.Set(k, h)
 		case undoDropX:
 			x, v := data[0].(*memIndex), data[1].(memIndex)
 			*x = v
@@ -484,7 +484,7 @@ func (s *mem) Commit() (err error) {
 type (
 	indexKey struct {
 		value interface{}
-		h     int64
+		h     int
 	}
 
 	xd struct { // data page
@@ -496,7 +496,7 @@ type (
 
 	xde struct { // xd element
 		k indexKey
-		v int64
+		v int
 	}
 
 	// xenumerator captures the state of enumerating a tree. It is returned
@@ -793,7 +793,7 @@ func (t *xtree) find(q interface{}, k indexKey) (i int, ok bool) {
 
 // First returns the first item of the tree in the key collating order, or
 // (nil, nil) if the tree is empty.
-func (t *xtree) First() (k indexKey, v int64) {
+func (t *xtree) First() (k indexKey, v int) {
 	if q := t.first; q != nil {
 		q := &q.xd[0]
 		k, v = q.k, q.v
@@ -803,7 +803,7 @@ func (t *xtree) First() (k indexKey, v int64) {
 
 // Get returns the value associated with k and true if it exists. Otherwise Get
 // returns (nil, false).
-func (t *xtree) Get(k indexKey) (v int64, ok bool) {
+func (t *xtree) Get(k indexKey) (v int, ok bool) {
 	q := t.r
 	if q == nil {
 		return
@@ -828,7 +828,7 @@ func (t *xtree) Get(k indexKey) (v int64, ok bool) {
 	}
 }
 
-func (t *xtree) insert(q *xd, i int, k indexKey, v int64) *xd {
+func (t *xtree) insert(q *xd, i int, k indexKey, v int) *xd {
 	t.ver++
 	c := q.c
 	if i < c {
@@ -843,7 +843,7 @@ func (t *xtree) insert(q *xd, i int, k indexKey, v int64) *xd {
 
 // Last returns the last item of the tree in the key collating order, or (nil,
 // nil) if the tree is empty.
-func (t *xtree) Last() (k indexKey, v int64) {
+func (t *xtree) Last() (k indexKey, v int) {
 	if q := t.last; q != nil {
 		q := &q.xd[q.c-1]
 		k, v = q.k, q.v
@@ -856,7 +856,7 @@ func (t *xtree) Len() int {
 	return t.c
 }
 
-func (t *xtree) overflow(p *xx, q *xd, pi, i int, k indexKey, v int64) {
+func (t *xtree) overflow(p *xx, q *xd, pi, i int, k indexKey, v int) {
 	t.ver++
 	l, r := p.siblings(pi)
 
@@ -934,7 +934,7 @@ func (t *xtree) SeekLast() (e *xenumerator, err error) {
 }
 
 // Set sets the value associated with k.
-func (t *xtree) Set(k indexKey, v int64) {
+func (t *xtree) Set(k indexKey, v int) {
 	pi := -1
 	var p *xx
 	q := t.r
@@ -976,7 +976,7 @@ func (t *xtree) Set(k indexKey, v int64) {
 	return
 }
 
-func (t *xtree) split(p *xx, q *xd, pi, i int, k indexKey, v int64) {
+func (t *xtree) split(p *xx, q *xd, pi, i int, k indexKey, v int) {
 	t.ver++
 	r := &xd{}
 	if q.n != nil {
@@ -1127,7 +1127,7 @@ func (e *xenumerator) Next() (k indexKey, v int64, err error) {
 	}
 
 	i := e.q.xd[e.i]
-	k, v = i.k, i.v
+	k, v = i.k, int64(i.v)
 	e.k, e.hit = k, false
 	e.next()
 	return
@@ -1180,7 +1180,7 @@ func (e *xenumerator) Prev() (k indexKey, v int64, err error) {
 	}
 
 	i := e.q.xd[e.i]
-	k, v = i.k, i.v
+	k, v = i.k, int64(i.v)
 	e.k, e.hit = k, false
 	e.prev()
 	return

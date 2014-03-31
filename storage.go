@@ -49,7 +49,7 @@ type indexIterator interface {
 }
 
 type btreeIndex interface {
-	Clear() error // supports truncate table
+	Clear() error                                   // supports truncate table
 	Create(indexedValue interface{}, h int64) error // supports insert record
 	Delete(indexedValue interface{}, h int64) error // supports delete record
 	//TODO add undo protocol
