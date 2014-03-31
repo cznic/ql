@@ -362,23 +362,20 @@ func newdriverRows(rs Recordset) *driverRows {
 		rows: make(chan interface{}, 500),
 	}
 	go func() {
-		if err := r.rs.Do(false, func(data []interface{}) (bool, error) {
+		err := io.EOF
+		if e := r.rs.Do(false, func(data []interface{}) (bool, error) {
 			select {
 			case r.rows <- data:
 				return true, nil
 			case <-r.done:
 				return false, nil
 			}
-		}); err != nil {
-			select {
-			case r.rows <- err:
-			case <-r.done:
-			}
-			return
+		}); e != nil {
+			err = e
 		}
 
 		select {
-		case r.rows <- io.EOF:
+		case r.rows <- err:
 		case <-r.done:
 		}
 	}()
