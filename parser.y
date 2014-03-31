@@ -71,9 +71,9 @@ import (
 	AlterTableStmt Assignment AssignmentList AssignmentList1
 	BeginTransactionStmt
 	Call Call1 ColumnDef ColumnName ColumnNameList ColumnNameList1
-	CommitStmt Conversion CreateIndexStmt CreateIndexStmtUnique
+	CommitStmt Conversion 
 	CreateTableStmt CreateTableStmt1
-	DeleteFromStmt DropIndexStmt DropTableStmt
+	DeleteFromStmt DropTableStmt
 	EmptyStmt Expression ExpressionList ExpressionList1
 	Factor Factor1 Field Field1 FieldList
 	GroupByClause
@@ -192,29 +192,6 @@ Conversion:
 		$$ = &conversion{typ: $1.(int), val: $3.(expression)}
 	}
 
-CreateIndexStmt:
-	create CreateIndexStmtUnique index identifier on identifier '(' identifier ')'
-	{
-		$$ = &createIndexStmt{$2.(bool), $4.(string), $6.(string), $8.(string)}
-	}
-|	create CreateIndexStmtUnique index identifier on identifier '(' identifier '(' ')' ')'
-	{
-		$$ = &createIndexStmt{$2.(bool), $4.(string), $6.(string), $8.(string)+"()"}
-		if $8.(string) != "id" {
-			yylex.(*lexer).err("only the built-in id() can be indexed on")
-			goto ret1
-		}
-	}
-
-CreateIndexStmtUnique:
-	{
-		$$ = false
-	}
-|	unique
-	{
-		$$ = true
-	}
-
 CreateTableStmt:
 	create tableKwd TableName '(' ColumnDef CreateTableStmt1 CreateTableStmt2 ')'
 	{
@@ -247,12 +224,6 @@ DeleteFromStmt:
 |	deleteKwd from TableName WhereClause
 	{
 		$$ = &deleteStmt{tableName: $3.(string), where: $4.(*whereRset).expr}
-	}
-
-DropIndexStmt:
-	drop index identifier
-	{
-		$$ = &dropIndexStmt{indexName: $3.(string)}
 	}
 
 DropTableStmt:
@@ -813,10 +784,8 @@ Statement:
 |	AlterTableStmt
 |	BeginTransactionStmt
 |	CommitStmt
-|	CreateIndexStmt
 |	CreateTableStmt
 |	DeleteFromStmt
-|	DropIndexStmt
 |	DropTableStmt
 |	InsertIntoStmt
 |	RollbackStmt

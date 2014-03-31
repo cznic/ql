@@ -1102,7 +1102,7 @@
 // Statements control execution.
 //
 //  Statement =  EmptyStmt | AlterTableStmt | BeginTransactionStmt | CommitStmt
-//  	| CreateIndexStmt | CreateTableStmt | DeleteFromStmt | DropIndexStmt
+//  	| CreateTableStmt | DeleteFromStmt
 //  	| DropTableStmt | InsertIntoStmt | RollbackStmt | SelectStmt
 //  	| TruncateTableStmt | UpdateStmt .
 //
@@ -1167,30 +1167,6 @@
 //		INSERT INTO AccountB (Amount) VALUES (-$1);
 //	COMMIT;
 //
-// CREATE INDEX
-//
-// Create index statements create new indices. Index is a named projection of
-// ordered values of a table column to the respective records. As a special
-// case the id() of the record can be indexed.
-//
-//  CreateIndexStmt = "CREATE" "INDEX" IndexName
-//  	"ON" TableName "(" ( ColumnName | "id" Call ) ")" .
-//
-// For example
-//
-//	BEGIN TRANSACTION;
-//		CREATE TABLE Orders (CustomerID int, Date time);
-//		CREATE INDEX OrdersID ON Orders (id());
-//		CREATE INDEX OrdersDate ON Orders (Date);
-//		CREATE TABLE Items (OrderID int, ProductID int, Qty int);
-//		CREATE INDEX ItemsOrderID ON Items (OrderID);
-//	COMMIT;
-//
-// Now certain SELECT statements may use the indices to speed up joins and/or
-// to speed up record set filtering when the WHERE clause is used; or the
-// indices might be used to improve the performance when the ORDER BY clause is
-// present.
-//
 // CREATE TABLE
 //
 // Create table statements create new tables. A column definition declares the
@@ -1237,19 +1213,6 @@
 //
 // If the WHERE clause is not present then all rows are removed and the
 // statement is equivalent to the TRUNCATE TABLE statement.
-//
-// DROP INDEX
-//
-// Drop index statements remove indices from the DB. The index must exist.
-//
-//  DropIndexStmt = "DROP" "INDEX" IndexName .
-//  IndexName = identifier .
-//
-// For example
-//
-//	BEGIN TRANSACTION;
-//		DROP INDEX ItemsOrderID;
-//	COMMIT;
 //
 // DROP TABLE
 //

@@ -165,10 +165,6 @@ func TestParser0(t *testing.T) {
 		{`-- 6
 			ALTER TABLE none DROP COLUMN c1;
 		`, true},
-		{"CREATE INDEX x ON t (qty)", true},
-		{"CREATE INDEX x ON t (id)", true},
-		{"CREATE INDEX x ON t (id())", true},
-		{"CREATE INDEX x ON t (qty())", false},
 	}
 
 	for i, test := range table {
