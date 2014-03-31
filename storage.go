@@ -44,13 +44,19 @@ type temp interface {
 	Set(k, v []interface{}) (err error)
 }
 
+type indexIterator interface {
+	Next() (k indexKey, v int64, err error)
+}
+
 type btreeIndex interface {
-	Clear() error                                                            // supports truncate table
-	Create(indexedValue interface{}, h int64) error                          // supports insert record
-	Delete(indexedValue interface{}, h int64) error                          // supports delete record
+	Clear() error // supports truncate table
+	Create(indexedValue interface{}, h int64) error // supports insert record
+	Delete(indexedValue interface{}, h int64) error // supports delete record
+	//TODO add undo protocol
 	Drop() error                                                             // supports drop table
-	Seek(indexedValue interface{}) (iter btreeIterator, hit bool, err error) // supports where/order by
-	Update(oldIndexedValue, newIndexedValue interface{}, h int64) error      // supports update record
+	Seek(indexedValue interface{}) (iter indexIterator, hit bool, err error) // supports where/order by
+	//TODO add undo protocol
+	Update(oldIndexedValue, newIndexedValue interface{}, h int64) error // supports update record
 }
 
 type indexedCol struct {

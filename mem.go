@@ -23,79 +23,90 @@ var (
 )
 
 type memIndex struct {
-	t      *tree
+	m      *mem
+	t      *xtree
 	unique bool
 }
 
-func newMemIndex(unique bool) *memIndex {
-	panic("TODO")
-	//return &memIndex{t: treeNew(collators[true]), unique: unique}
+func newMemIndex(m *mem, unique bool) *memIndex {
+	return &memIndex{t: xtreeNew(m), unique: unique, m: m}
 }
 
 func (x *memIndex) Clear() error {
-	panic("TODO")
-	//x.t.Clear()
-	//return nil
+	x.m.newUndo(undoClearX, 0, []interface{}{x, x.t})
+	x.t = xtreeNew(x.m)
+	return nil
 }
 
 func (x *memIndex) Create(indexedValue interface{}, h int64) error {
-	panic("TODO")
-	//t := x.t
-	//switch {
-	//case !x.unique:
-	//	t.Set([]interface{}{indexedValue, h}, nil)
-	//case indexedValue == nil: // unique, NULL
-	//	t.Set([]interface{}{nil, h}, nil)
-	//default: // unique, non NULL
-	//	k := []interface{}{indexedValue}
-	//	if _, ok := t.Get(k); ok {
-	//		return fmt.Errorf("cannot insert into unique index: duplicate value: %v", indexedValue)
-	//	}
+	t := x.t
+	switch {
+	case !x.unique:
+		k := indexKey{indexedValue, h}
+		x.m.newUndo(undoCreateX, 0, []interface{}{x, k})
+		t.Set(k, 0)
+	case indexedValue == nil: // unique, NULL
+		k := indexKey{nil, h}
+		x.m.newUndo(undoCreateX, 0, []interface{}{x, k})
+		t.Set(k, 0)
+	default: // unique, non NULL
+		k := indexKey{indexedValue, 0}
+		if _, ok := t.Get(k); ok {
+			return fmt.Errorf("cannot insert into unique index: duplicate value: %v", indexedValue)
+		}
 
-	//	t.Set(k, []interface{}{h})
-	//}
-	//return nil
+		x.m.newUndo(undoCreateX, 0, []interface{}{x, k})
+		t.Set(k, h)
+	}
+	return nil
 }
 
 func (x *memIndex) Delete(indexedValue interface{}, h int64) error {
-	panic("TODO")
-	//t := x.t
-	//var ok bool
-	//switch {
-	//case !x.unique:
-	//	ok = t.Delete([]interface{}{indexedValue, h})
-	//case indexedValue == nil: // unique, NULL
-	//	ok = t.Delete([]interface{}{nil, h})
-	//default: // unique, non NULL
-	//	ok = t.Delete([]interface{}{indexedValue})
-	//}
-	//if ok {
-	//	return nil
-	//}
+	t := x.t
+	var k indexKey
+	var v interface{}
+	var ok, okv bool
+	switch {
+	case !x.unique:
+		k = indexKey{indexedValue, h}
+		v, okv = t.Get(k)
+		ok = t.delete(k)
+	case indexedValue == nil: // unique, NULL
+		k = indexKey{nil, h}
+		v, okv = t.Get(k)
+		ok = t.delete(k)
+	default: // unique, non NULL
+		k = indexKey{indexedValue, 0}
+		v, okv = t.Get(k)
+		ok = t.delete(k)
+	}
+	if ok {
+		if okv {
+			x.m.newUndo(undoDeleteX, v.(int64), []interface{}{x, k})
+		}
+		return nil
+	}
 
-	//return fmt.Errorf("internal error on delete from index, value not found: %v", indexedValue)
+	return fmt.Errorf("internal error on delete from index, value not found: %v", indexedValue)
 }
 
 func (x *memIndex) Drop() error {
-	panic("TODO")
-	//x.Clear()
-	//x.t = nil
-	//return nil
+	x.m.newUndo(undoDropX, 0, []interface{}{x, *x})
+	*x = memIndex{}
+	return nil
 }
 
-func (x *memIndex) Seek(indexedValue interface{}) (btreeIterator, bool, error) {
-	panic("TODO")
-	//it, hit := x.t.Seek([]interface{}{indexedValue})
-	//return it, hit, nil
+func (x *memIndex) Seek(indexedValue interface{}) (indexIterator, bool, error) {
+	it, hit := x.t.Seek(indexKey{indexedValue, 0})
+	return it, hit, nil
 }
 
 func (x *memIndex) Update(oldIndexedValue, newIndexedValue interface{}, h int64) error {
-	panic("TODO")
-	//if err := x.Delete(oldIndexedValue, h); err != nil {
-	//	return err
-	//}
+	if err := x.Delete(oldIndexedValue, h); err != nil {
+		return err
+	}
 
-	//return x.Create(newIndexedValue, h)
+	return x.Create(newIndexedValue, h)
 }
 
 type memBTreeIterator enumerator
@@ -157,6 +168,10 @@ const (
 	undoCreateRecycledHandle
 	undoUpdate
 	undoDelete
+	undoClearX  // {0: *memIndex, 1: *xtree}
+	undoCreateX // {0: *memIndex, 1: indexKey}
+	undoDeleteX // {0: *memIndex, 1: indexKey}
+	undoDropX   // {0: *memIndex, 1: memIndex}
 )
 
 type undo struct {
@@ -196,6 +211,10 @@ func newMemStorage() (s *mem, err error) {
 	return
 }
 
+func (s *mem) newUndo(tag int, h int64, data []interface{}) {
+	s.rollback.list = append(s.rollback.list, undo{tag, h, data})
+}
+
 func (s *mem) Acid() bool { return false }
 
 func (s *mem) Close() (err error) {
@@ -204,7 +223,7 @@ func (s *mem) Close() (err error) {
 }
 
 func (s *mem) CreateIndex(unique bool) ( /* handle */ int64, btreeIndex, error) {
-	return -1, newMemIndex(unique), nil // handle of memIndex should never be used
+	return -1, newMemIndex(s, unique), nil // handle of memIndex should never be used
 }
 
 func (s *mem) Name() string { return fmt.Sprintf("/proc/self/mem/%p", s) } // fake, non existing name
@@ -428,6 +447,18 @@ func (s *mem) Rollback() (err error) {
 		case undoDelete:
 			s.data[h] = data
 			s.recycler = s.recycler[:len(s.recycler)-1]
+		case undoClearX:
+			x, t := data[0].(*memIndex), data[1].(*xtree)
+			x.t = t
+		case undoCreateX:
+			x, k := data[0].(*memIndex), data[1].(indexKey)
+			x.t.delete(k)
+		case undoDeleteX:
+			x, k := data[0].(*memIndex), data[1].(indexKey)
+			x.t.Set(k, int64(h))
+		case undoDropX:
+			x, v := data[0].(*memIndex), data[1].(memIndex)
+			*x = v
 		default:
 			log.Panic("internal error")
 		}
@@ -506,6 +537,15 @@ type (
 		xx [2*kx + 2]xxe
 	}
 )
+
+func (a *indexKey) cmp(b *indexKey) int {
+	r := collate1(a.value, b.value)
+	if r == 0 {
+		return 0
+	}
+
+	return int(a.h) - int(b.h)
+}
 
 var ( // R/O zero values
 	zxd  xd
@@ -646,7 +686,7 @@ func (t *xtree) catX(p, q, r *xx, pi int) {
 
 //Delete removes the k's KV pair, if it exists, in which case Delete returns
 //true.
-func (t *xtree) Delete(k indexKey) (ok bool) {
+func (t *xtree) delete(k indexKey) (ok bool) {
 	pi := -1
 	var p *xx
 	q := t.r
@@ -716,40 +756,39 @@ func (t *xtree) extract(q *xd, i int) { // (r int64) {
 }
 
 func (t *xtree) find(q interface{}, k indexKey) (i int, ok bool) {
-	panic("TODO")
-	//TODO var mk indexKey
-	//TODO l := 0
-	//TODO switch xx := q.(type) {
-	//TODO case *xx:
-	//TODO 	h := xx.c - 1
-	//TODO 	for l <= h {
-	//TODO 		m := (l + h) >> 1
-	//TODO 		mk = xx.xx[m].sep.xd[0].k
-	//TODO 		switch cmp := t.cmp(k, mk); {
-	//TODO 		case cmp > 0:
-	//TODO 			l = m + 1
-	//TODO 		case cmp == 0:
-	//TODO 			return m, true
-	//TODO 		default:
-	//TODO 			h = m - 1
-	//TODO 		}
-	//TODO 	}
-	//TODO case *xd:
-	//TODO 	h := xx.c - 1
-	//TODO 	for l <= h {
-	//TODO 		m := (l + h) >> 1
-	//TODO 		mk = xx.xd[m].k
-	//TODO 		switch cmp := t.cmp(k, mk); {
-	//TODO 		case cmp > 0:
-	//TODO 			l = m + 1
-	//TODO 		case cmp == 0:
-	//TODO 			return m, true
-	//TODO 		default:
-	//TODO 			h = m - 1
-	//TODO 		}
-	//TODO 	}
-	//TODO }
-	//TODO return l, false
+	var mk indexKey
+	l := 0
+	switch xx := q.(type) {
+	case *xx:
+		h := xx.c - 1
+		for l <= h {
+			m := (l + h) >> 1
+			mk = xx.xx[m].sep.xd[0].k
+			switch cmp := k.cmp(&mk); {
+			case cmp > 0:
+				l = m + 1
+			case cmp == 0:
+				return m, true
+			default:
+				h = m - 1
+			}
+		}
+	case *xd:
+		h := xx.c - 1
+		for l <= h {
+			m := (l + h) >> 1
+			mk = xx.xd[m].k
+			switch cmp := k.cmp(&mk); {
+			case cmp > 0:
+				l = m + 1
+			case cmp == 0:
+				return m, true
+			default:
+				h = m - 1
+			}
+		}
+	}
+	return l, false
 }
 
 // First returns the first item of the tree in the key collating order, or
