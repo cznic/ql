@@ -18,6 +18,7 @@ import (
 var (
 	_ btreeIndex    = (*memIndex)(nil)
 	_ btreeIterator = (*memBTreeIterator)(nil)
+	_ indexIterator = (*xenumerator)(nil)
 	_ storage       = (*mem)(nil)
 	_ temp          = (*memTemp)(nil)
 )
@@ -29,12 +30,12 @@ type memIndex struct {
 }
 
 func newMemIndex(m *mem, unique bool) *memIndex {
-	return &memIndex{t: xtreeNew(m), unique: unique, m: m}
+	return &memIndex{t: xtreeNew(), unique: unique, m: m}
 }
 
 func (x *memIndex) Clear() error {
 	x.m.newUndo(undoClearX, 0, []interface{}{x, x.t})
-	x.t = xtreeNew(x.m)
+	x.t = xtreeNew()
 	return nil
 }
 
@@ -524,7 +525,6 @@ type (
 		last  *xd
 		r     interface{}
 		ver   int64
-		mem   *mem
 	}
 
 	xxe struct { // xx element
@@ -630,8 +630,8 @@ func (l *xd) mvR(r *xd, c int) {
 
 // xtreeNew returns a newly created, empty xtree. The compare function is used
 // for key collation.
-func xtreeNew(mem *mem) *xtree {
-	return &xtree{mem: mem}
+func xtreeNew() *xtree {
+	return &xtree{}
 }
 
 // Clear removes all K/V pairs from the tree.

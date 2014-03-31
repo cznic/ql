@@ -30,7 +30,9 @@ const (
 )
 
 var (
+	_ btreeIndex    = (*fileIndex)(nil)
 	_ btreeIterator = (*fileBTreeIterator)(nil)
+	_ indexIterator = (*fileIndexIterator)(nil)
 	_ storage       = (*file)(nil)
 	_ temp          = (*fileTemp)(nil)
 )
@@ -547,7 +549,13 @@ func newFileFromOSFile(f lldb.OSFile) (fi *file, err error) {
 }
 
 func (s *file) CreateIndex(unique bool) ( /* handle */ int64, btreeIndex, error) {
-	panic("TODO")
+	//func CreateBTree(store *lldb.Allocator, collate func(a []byte, b []byte) int) (bt *lldb.BTree, handle int64, err error)
+	t, h, err := lldb.CreateBTree(s.a, s.collate)
+	if err != nil {
+		return -1, nil, err
+	}
+
+	return h, &fileIndex{s, h, t, unique}, nil
 }
 
 func (s *file) Acid() bool { return s.wal != nil }
@@ -618,6 +626,28 @@ func (s *file) expandBytes(d []interface{}) (err error) {
 	return
 }
 
+func (s *file) collate(a, b []byte) int { //TODO w/ error return
+	da, err := lldb.DecodeScalars(a)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	if err = s.expandBytes(da); err != nil {
+		log.Panic(err)
+	}
+
+	db, err := lldb.DecodeScalars(b)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	if err = s.expandBytes(db); err != nil {
+		log.Panic(err)
+	}
+
+	return collate(da, db)
+}
+
 func (s *file) CreateTemp(asc bool) (bt temp, err error) {
 	f, err := s.tempFile("", "ql-tmp-")
 	if err != nil {
@@ -639,25 +669,7 @@ func (s *file) CreateTemp(asc bool) (bt temp, err error) {
 	}
 
 	t, _, err := lldb.CreateBTree(a, func(a, b []byte) int { //TODO w/ error return
-		da, err := lldb.DecodeScalars(a)
-		if err != nil {
-			log.Panic(err)
-		}
-
-		if err = s.expandBytes(da); err != nil {
-			log.Panic(err)
-		}
-
-		db, err := lldb.DecodeScalars(b)
-		if err != nil {
-			log.Panic(err)
-		}
-
-		if err = s.expandBytes(db); err != nil {
-			log.Panic(err)
-		}
-
-		return k * collate(da, db)
+		return k * s.collate(a, b)
 	})
 	if err != nil {
 		f.Close()
@@ -1067,4 +1079,46 @@ func walName(dbname string) (r string) {
 	h := sha1.New()
 	io.WriteString(h, base)
 	return filepath.Join(filepath.Dir(dbname), fmt.Sprintf(".%x", h.Sum(nil)))
+}
+
+type fileIndex struct {
+	f      *file
+	h      int64
+	t      *lldb.BTree
+	unique bool
+}
+
+func (x *fileIndex) Clear() error {
+	return x.t.Clear()
+}
+
+func (x *fileIndex) Create(indexedValue interface{}, h int64) error {
+	panic("TODO")
+}
+
+func (x *fileIndex) Delete(indexedValue interface{}, h int64) error {
+	panic("TODO")
+}
+
+func (x *fileIndex) Drop() error {
+	if err := x.Clear(); err != nil {
+		return err
+	}
+
+	return x.f.a.Free(x.h)
+}
+
+func (x *fileIndex) Seek(indexedValue interface{}) (iter indexIterator, hit bool, err error) {
+	panic("TODO")
+}
+
+func (x *fileIndex) Update(oldIndexedValue, newIndexedValue interface{}, h int64) error {
+	panic("TODO")
+}
+
+type fileIndexIterator struct { //TODO
+}
+
+func (i *fileIndexIterator) Next() (k indexKey, v int64, err error) {
+	panic("TODO")
 }
