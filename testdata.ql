@@ -5565,22 +5565,22 @@ BEGIN TRANSACTION;
 	//TODO CREATE INDEX y ON t (c);
 COMMIT;
 SELECT * FROM tt;
-|?c
+||not exist
 
 -- 510
 BEGIN TRANSACTION;
 	CREATE TABLE t (c int);
-	//TODO CREATE INDEX x ON t (id());
+	CREATE INDEX x ON t (id());
 	//TODO CREATE INDEX y ON t (c);
 COMMIT;
-SELECT * FROM tt;
+SELECT * FROM t;
 |?c
 
 -- 511
 BEGIN TRANSACTION;
 	CREATE TABLE t (c int);
 	//TODO CREATE INDEX y ON t (c);
-	//TODO CREATE INDEX x ON t (id());
+	CREATE INDEX x ON t (id());
 COMMIT;
-SELECT * FROM tt;
+SELECT * FROM t;
 |?c

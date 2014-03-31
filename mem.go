@@ -43,16 +43,16 @@ func (x *memIndex) Create(indexedValue interface{}, h int64) error {
 	t := x.t
 	switch {
 	case !x.unique:
-		k := indexKey{indexedValue, int(h)}
+		k := indexKey{indexedValue, h}
 		x.m.newUndo(undoCreateX, 0, []interface{}{x, k})
 		t.Set(k, 0)
 	case indexedValue == nil: // unique, NULL
-		k := indexKey{nil, int(h)}
+		k := indexKey{nil, h}
 		x.m.newUndo(undoCreateX, 0, []interface{}{x, k})
 		t.Set(k, 0)
 	default: // unique, non NULL
 		k := indexKey{indexedValue, 0}
-		if _, ok := t.Get(k); ok {
+		if _, ok := t.Get(k); ok { //LATER need .Put
 			return fmt.Errorf("cannot insert into unique index: duplicate value: %v", indexedValue)
 		}
 
@@ -69,11 +69,11 @@ func (x *memIndex) Delete(indexedValue interface{}, h int64) error {
 	var ok, okv bool
 	switch {
 	case !x.unique:
-		k = indexKey{indexedValue, int(h)}
+		k = indexKey{indexedValue, h}
 		v, okv = t.Get(k)
 		ok = t.delete(k)
 	case indexedValue == nil: // unique, NULL
-		k = indexKey{nil, int(h)}
+		k = indexKey{nil, h}
 		v, okv = t.Get(k)
 		ok = t.delete(k)
 	default: // unique, non NULL
@@ -485,7 +485,7 @@ func (s *mem) Commit() (err error) {
 type (
 	indexKey struct {
 		value interface{}
-		h     int
+		h     int64
 	}
 
 	xd struct { // data page

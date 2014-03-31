@@ -1092,12 +1092,71 @@ func (x *fileIndex) Clear() error {
 	return x.t.Clear()
 }
 
-func (x *fileIndex) Create(indexedValue interface{}, h int64) error {
-	panic("TODO")
+var gbZeroInt64 []byte
+
+func init() {
+	var err error
+	if gbZeroInt64, err = lldb.EncodeScalars(int64(0)); err != nil {
+		panic(err)
+	}
 }
 
-func (x *fileIndex) Delete(indexedValue interface{}, h int64) error {
-	panic("TODO")
+func (x *fileIndex) Create(indexedValue interface{}, h int64) error { //TODO blobs
+	t := x.t
+	switch {
+	case !x.unique:
+		k, err := lldb.EncodeScalars(indexedValue, h)
+		if err != nil {
+			return err
+		}
+
+		return t.Set(k, gbZeroInt64)
+	case indexedValue == nil: // unique, NULL
+		k, err := lldb.EncodeScalars(nil, h)
+		if err != nil {
+			return err
+		}
+
+		return t.Set(k, gbZeroInt64)
+	default: // unique, non NULL
+		k, err := lldb.EncodeScalars(nil, 0)
+		if err != nil {
+			return err
+		}
+
+		v, err := lldb.EncodeScalars(h)
+		if err != nil {
+			return err
+		}
+
+		_, _, err = t.Put(nil, k, func(key, old []byte) (new []byte, write bool, err error) {
+			if old == nil {
+				return v, true, nil
+			}
+
+			return nil, false, fmt.Errorf("cannot insert into unique index: duplicate value: %v", indexedValue)
+		})
+		return err
+	}
+}
+
+func (x *fileIndex) Delete(indexedValue interface{}, h int64) error { //TODO blobs
+	t := x.t
+	var k []byte
+	var err error
+	switch {
+	case !x.unique:
+		k, err = lldb.EncodeScalars(indexedValue, h)
+	case indexedValue == nil: // unique, NULL
+		k, err = lldb.EncodeScalars(nil, h)
+	default: // unique, non NULL
+		k, err = lldb.EncodeScalars(indexedValue, gbZeroInt64)
+	}
+	if err != nil {
+		return err
+	}
+
+	return t.Delete(k)
 }
 
 func (x *fileIndex) Drop() error {
@@ -1108,17 +1167,54 @@ func (x *fileIndex) Drop() error {
 	return x.f.a.Free(x.h)
 }
 
-func (x *fileIndex) Seek(indexedValue interface{}) (iter indexIterator, hit bool, err error) {
-	panic("TODO")
+func (x *fileIndex) Seek(indexedValue interface{}) (indexIterator, bool, error) { //TODO blobs
+	k, err := lldb.EncodeScalars(indexedValue)
+	if err != nil {
+		return nil, false, err
+	}
+
+	en, hit, err := x.t.Seek(k)
+	if err != nil {
+		return nil, false, err
+	}
+
+	return &fileIndexIterator{en}, hit, nil
 }
 
-func (x *fileIndex) Update(oldIndexedValue, newIndexedValue interface{}, h int64) error {
-	panic("TODO")
+func (x *fileIndex) Update(oldIndexedValue, newIndexedValue interface{}, h int64) error { //TODO blobs
+	if err := x.Delete(oldIndexedValue, h); err != nil {
+		return err
+	}
+
+	return x.Create(newIndexedValue, h)
 }
 
-type fileIndexIterator struct { //TODO
+type fileIndexIterator struct {
+	en *lldb.BTreeEnumerator
 }
 
-func (i *fileIndexIterator) Next() (k indexKey, v int64, err error) {
-	panic("TODO")
+func (i *fileIndexIterator) Next() (indexKey, int64, error) { //TODO blobs
+	var k indexKey
+	bk, bv, err := i.en.Next()
+	if err != nil {
+		return k, -1, err
+	}
+
+	dk, err := lldb.DecodeScalars(bk)
+	if err != nil {
+		return k, -1, err
+	}
+
+	dv, err := lldb.DecodeScalars(bv)
+	if err != nil {
+		return k, -1, err
+	}
+
+	k.value = dk[0]
+	if len(dk) > 0 {
+		k.h = dk[1].(int64)
+	}
+
+	h, _ := dv[0].(int64)
+	return k, h, nil
 }

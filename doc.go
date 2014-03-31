@@ -8,6 +8,8 @@
 
 //TODO verify there's a graceful failure for a 2G+ blob on a 32 bit machine.
 
+//TODO Describe when an index will be used with examples. Show also how to circumvent the limitations.
+
 // Package ql is a pure Go embedded (S)QL database.
 //
 // QL is a SQL-like language. It is less complex and less powerful than SQL
@@ -1188,8 +1190,6 @@
 // to speed up record set filtering when the WHERE clause is used; or the
 // indices might be used to improve the performance when the ORDER BY clause is
 // present.
-//
-//TODO Describe when an index will be used with examples. Show also how to circumvent the limitations.
 //
 // CREATE TABLE
 //
