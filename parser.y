@@ -71,7 +71,8 @@ import (
 	AlterTableStmt Assignment AssignmentList AssignmentList1
 	BeginTransactionStmt
 	Call Call1 ColumnDef ColumnName ColumnNameList ColumnNameList1
-	CommitStmt Conversion CreateIndexStmt CreateTableStmt CreateTableStmt1
+	CommitStmt Conversion CreateIndexStmt CreateIndexStmtUnique
+	CreateTableStmt CreateTableStmt1
 	DeleteFromStmt DropIndexStmt DropTableStmt
 	EmptyStmt Expression ExpressionList ExpressionList1
 	Factor Factor1 Field Field1 FieldList
@@ -192,17 +193,26 @@ Conversion:
 	}
 
 CreateIndexStmt:
-	create index identifier on identifier '(' identifier ')'
+	create CreateIndexStmtUnique index identifier on identifier '(' identifier ')'
 	{
-		$$ = &createIndexStmt{$3.(string), $5.(string), $7.(string)}
+		$$ = &createIndexStmt{$2.(bool), $4.(string), $6.(string), $8.(string)}
 	}
-|	create index identifier on identifier '(' identifier '(' ')' ')'
+|	create CreateIndexStmtUnique index identifier on identifier '(' identifier '(' ')' ')'
 	{
-		$$ = &createIndexStmt{$3.(string), $5.(string), $7.(string)+"()"}
-		if $7.(string) != "id" {
+		$$ = &createIndexStmt{$2.(bool), $4.(string), $6.(string), $8.(string)+"()"}
+		if $8.(string) != "id" {
 			yylex.(*lexer).err("only the built-in id() can be indexed on")
 			goto ret1
 		}
+	}
+
+CreateIndexStmtUnique:
+	{
+		$$ = false
+	}
+|	unique
+	{
+		$$ = true
 	}
 
 CreateTableStmt:

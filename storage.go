@@ -16,8 +16,8 @@ type storage interface {
 	Close() error
 	Commit() error
 	Create(data ...interface{}) (h int64, err error)
+	CreateIndex(unique bool) (handle int64, x btreeIndex, err error)
 	CreateTemp(asc bool) (bt temp, err error)
-	//CreateIndex(unique bool) (handle int64, btreeIndex)
 	Delete(h int64, blobCols ...*col) error //LATER split the nil blobCols case
 	ID() (id int64, err error)
 	Name() string
@@ -99,9 +99,11 @@ func (t *table) clone() *table {
 	}
 	r.indices = make([]*indexedCol, len(t.indices))
 	for i, v := range t.indices {
-		c := &indexedCol{}
-		*c = *v
-		r.indices[i] = c
+		if v != nil {
+			c := &indexedCol{}
+			*c = *v
+			r.indices[i] = c
+		}
 	}
 	r.tnext, r.tprev = nil, nil
 	return r
@@ -233,15 +235,28 @@ func (t *table) truncate() (err error) {
 	return t.updated()
 }
 
-func (t *table) addIndex(indexName string, colIndex int) error {
+func (t *table) addIndex(unique bool, indexName string, colIndex int) error {
 	switch len(t.indices) {
 	case 0:
-		t.indices = make([]*indexedCol, len(t.cols0))
-		//t.indices[colIndex+1] = &indexedCol
-	default:
-	}
+		indices := make([]*indexedCol, len(t.cols0)+1)
+		h, x, err := t.store.CreateIndex(unique)
+		if err != nil {
+			return err
+		}
 
-	panic("TODO")
+		indices[colIndex+1] = &indexedCol{indexName, unique, x, h}
+		xroots := make([]interface{}, len(indices))
+		xroots[colIndex+1] = h
+		hx, err := t.store.Create(xroots...)
+		if err != nil {
+			return err
+		}
+
+		t.hxroots, t.indices = hx, indices
+		return t.updated()
+	default:
+		panic("TODO")
+	}
 }
 
 func (t *table) updated() (err error) {
@@ -446,6 +461,20 @@ func (r *root) dropTable(t *table) (err error) {
 
 	if err = t.store.Delete(t.h); err != nil {
 		return
+	}
+
+	for _, v := range t.indices {
+		if v != nil && v.x != nil {
+			if err = v.x.Drop(); err != nil {
+				return
+			}
+		}
+	}
+
+	if h := t.hxroots; h != 0 {
+		if err = t.store.Delete(h); err != nil {
+			return
+		}
 	}
 
 	switch {

@@ -597,6 +597,7 @@ func (rollbackStmt) exec(*execCtx) (Recordset, error) {
 func (rollbackStmt) isUpdating() bool { log.Panic("internal error"); panic("unreachable") }
 
 type createIndexStmt struct {
+	unique    bool
 	indexName string
 	tableName string
 	colName   string // alt. "id()" for index on id()
@@ -617,7 +618,7 @@ func (s *createIndexStmt) exec(ctx *execCtx) (Recordset, error) {
 	}
 
 	if s.colName == "id()" {
-		if err := t.addIndex(s.indexName, -1); err != nil {
+		if err := t.addIndex(s.unique, s.indexName, -1); err != nil {
 			return nil, fmt.Errorf("CREATE INDEX: %v", err)
 		}
 
@@ -629,7 +630,7 @@ func (s *createIndexStmt) exec(ctx *execCtx) (Recordset, error) {
 		return nil, fmt.Errorf("CREATE INDEX: column does not exist: %s", s.colName)
 	}
 
-	if err := t.addIndex(s.indexName, c.index); err != nil {
+	if err := t.addIndex(s.unique, s.indexName, c.index); err != nil {
 		return nil, fmt.Errorf("CREATE INDEX: %v", err)
 	}
 

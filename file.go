@@ -546,7 +546,7 @@ func newFileFromOSFile(f lldb.OSFile) (fi *file, err error) {
 	}
 }
 
-func (s *file) CreateIndex(unique bool) ( /* handle */ int64, btreeIndex) {
+func (s *file) CreateIndex(unique bool) ( /* handle */ int64, btreeIndex, error) {
 	panic("TODO")
 }
 
