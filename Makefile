@@ -62,7 +62,7 @@ scanner.go: scanner.l parser.go
 
 todo:
 	@grep -n ^[[:space:]]*_[[:space:]]*=[[:space:]][[:alpha:]][[:alnum:]]* *.go *.l parser.y || true
-	@grep -n TODO *.go *.l parser.y || true
+	@grep -n TODO *.go *.l parser.y testdata.ql || true
 	@grep -n BUG *.go *.l parser.y || true
 	@grep -n println *.go *.l parser.y || true
 

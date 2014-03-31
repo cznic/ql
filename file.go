@@ -546,6 +546,10 @@ func newFileFromOSFile(f lldb.OSFile) (fi *file, err error) {
 	}
 }
 
+func (s *file) CreateIndex(unique bool) ( /* handle */ int64, btreeIndex) {
+	panic("TODO")
+}
+
 func (s *file) Acid() bool { return s.wal != nil }
 
 func errSet(p *error, errs ...error) (err error) {

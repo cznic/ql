@@ -1320,7 +1320,7 @@ func (db *DB) do(r recordset, names int, f func(data []interface{}) (more bool, 
 	})
 }
 
-func (db *DB) beginTransaction() { //LATER smaller undo info (CRUD Tx)
+func (db *DB) beginTransaction() { //TODO Rewrite, must use much smaller undo info!
 	p := db.root
 	r := &root{}
 	*r = *p

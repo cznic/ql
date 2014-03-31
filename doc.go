@@ -1,4 +1,4 @@
-// Copyright 2013 The Go Authors. All rights reserved.
+// Copyright 2014 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -134,11 +134,16 @@
 //
 // The following keywords are reserved and may not be used as identifiers.
 //
-//	ADD    BETWEEN  BY          CREATE    duration  float64  INSERT  int8   SELECT  TRUNCATE  uint8
-//	ALTER  bigint   byte        DELETE    EXISTS    FROM     int     INTO   string  uint      UPDATE
-//	AND    bigrat   COLUMN      DESC      false     GROUP    int16   NOT    TABLE   uint16    VALUES
-//	AS     blob     complex128  DISTINCT  float     IF       int32   NULL   time    uint32    WHERE
-//	ASC    bool     complex64   DROP      float32   IN       int64   ORDER  true    uint64
+//	ADD      BY          duration  INDEX   ON        uint32
+//	ALTER    byte        EXISTS    INSERT  ORDER     uint64
+//	AND      COLUMN      false     int     SELECT    uint8
+//	AS       complex128  float     int16   string    UNIQUE
+//	ASC      complex64   float32   int32   TABLE     UPDATE
+//	BETWEEN  CREATE      float64   int64   time      VALUES
+//	bigint   DELETE      FROM      int8    true      WHERE
+//	bigrat   DESC        GROUP     INTO    TRUNCATE
+//	blob     DISTINCT    IF        NOT     uint
+//	bool     DROP        IN        NULL    uint16
 //
 // Keywords are not case sensitive.
 //
@@ -1095,8 +1100,9 @@
 // Statements control execution.
 //
 //  Statement =  EmptyStmt | AlterTableStmt | BeginTransactionStmt | CommitStmt
-//  	| CreateTableStmt | DeleteFromStmt | DropTableStmt | InsertIntoStmt
-//  	| RollbackStmt | SelectStmt | TruncateTableStmt | UpdateStmt .
+//  	| CreateIndexStmt | CreateTableStmt | DeleteFromStmt | DropIndexStmt
+//  	| DropTableStmt | InsertIntoStmt | RollbackStmt | SelectStmt
+//  	| TruncateTableStmt | UpdateStmt .
 //
 //  StatementList = Statement { ";" Statement } .
 //
@@ -1110,7 +1116,9 @@
 //
 // Alter table statements modify existing tables.  With the ADD clause it adds
 // a new column to the table. The column must not exist. With the DROP clause
-// it removes an existing column from a table. The column must exist.
+// it removes an existing column from a table. The column must exist and it
+// must be not the only (last) column of the table. IOW, there cannot be a
+// table with no columns.
 //
 //  AlterTableStmt = "ALTER" "TABLE" TableName ( "ADD" ColumnDef | "DROP" "COLUMN"  ColumnName ) .
 //
@@ -1157,6 +1165,32 @@
 //		INSERT INTO AccountB (Amount) VALUES (-$1);
 //	COMMIT;
 //
+// CREATE INDEX
+//
+// Create index statements create new indices. Index is a named projection of
+// ordered values of a table column to the respective records. As a special
+// case the id() of the record can be indexed.
+//
+//  CreateIndexStmt = "CREATE" "INDEX" IndexName
+//  	"ON" TableName "(" ( ColumnName | "id" Call ) ")" .
+//
+// For example
+//
+//	BEGIN TRANSACTION;
+//		CREATE TABLE Orders (CustomerID int, Date time);
+//		CREATE INDEX OrdersID ON Orders (id());
+//		CREATE INDEX OrdersDate ON Orders (Date);
+//		CREATE TABLE Items (OrderID int, ProductID int, Qty int);
+//		CREATE INDEX ItemsOrderID ON Items (OrderID);
+//	COMMIT;
+//
+// Now certain SELECT statements may use the indices to speed up joins and/or
+// to speed up record set filtering when the WHERE clause is used; or the
+// indices might be used to improve the performance when the ORDER BY clause is
+// present.
+//
+//TODO Describe when an index will be used with examples. Show also how to circumvent the limitations.
+//
 // CREATE TABLE
 //
 // Create table statements create new tables. A column definition declares the
@@ -1201,8 +1235,21 @@
 //		WHERE DepartmentName == "Ponies";
 //	COMMIT;
 //
-// If the WhereClause is not present then all rows are removed and the
+// If the WHERE clause is not present then all rows are removed and the
 // statement is equivalent to the TRUNCATE TABLE statement.
+//
+// DROP INDEX
+//
+// Drop index statements remove indices from the DB. The index must exist.
+//
+//  DropIndexStmt = "DROP" "INDEX" IndexName .
+//  IndexName = identifier .
+//
+// For example
+//
+//	BEGIN TRANSACTION;
+//		DROP INDEX ItemsOrderID;
+//	COMMIT;
 //
 // DROP TABLE
 //

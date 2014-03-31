@@ -1,4 +1,4 @@
-// Copyright (c) 2013 Go Authors. All rights reserved.
+// Copyright (c) 2014 Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -17,8 +17,10 @@ import (
 var (
 	_ stmt = (*alterTableAddStmt)(nil)
 	_ stmt = (*alterTableDropColumnStmt)(nil)
+	_ stmt = (*createIndexStmt)(nil)
 	_ stmt = (*createTableStmt)(nil)
 	_ stmt = (*deleteStmt)(nil)
+	_ stmt = (*dropIndexStmt)(nil)
 	_ stmt = (*dropTableStmt)(nil)
 	_ stmt = (*insertIntoStmt)(nil)
 	_ stmt = (*selectStmt)(nil)
@@ -255,6 +257,18 @@ func (s *truncateTableStmt) exec(ctx *execCtx) (Recordset, error) {
 
 func (s *truncateTableStmt) isUpdating() bool { return true }
 
+type dropIndexStmt struct {
+	indexName string
+}
+
+func (s *dropIndexStmt) String() string { return fmt.Sprintf("DROP INDEX %s;", s.indexName) }
+
+func (s *dropIndexStmt) exec(ctx *execCtx) (Recordset, error) {
+	panic("TODO")
+}
+
+func (s *dropIndexStmt) isUpdating() bool { return true }
+
 type dropTableStmt struct {
 	ifExists  bool
 	tableName string
@@ -294,6 +308,10 @@ func (s *alterTableDropColumnStmt) exec(ctx *execCtx) (Recordset, error) {
 	cols := t.cols
 	for _, c := range cols {
 		if c.name == s.colName {
+			if len(cols) == 1 {
+				return nil, fmt.Errorf("ALTER TABLE %s DROP COLUMN: cannot drop the only column: %s", s.tableName, s.colName)
+			}
+
 			c.name = ""
 			return nil, t.updated()
 		}
@@ -577,6 +595,48 @@ func (rollbackStmt) exec(*execCtx) (Recordset, error) {
 	panic("unreachable")
 }
 func (rollbackStmt) isUpdating() bool { log.Panic("internal error"); panic("unreachable") }
+
+type createIndexStmt struct {
+	indexName string
+	tableName string
+	colName   string // alt. "id()" for index on id()
+}
+
+func (s *createIndexStmt) String() string {
+	return fmt.Sprintf("CREATE INDEX %s ON %s (%s);", s.indexName, s.tableName, s.colName)
+}
+
+func (s *createIndexStmt) exec(ctx *execCtx) (Recordset, error) {
+	if t, i := ctx.db.root.findIndexByName(s.indexName); i != nil {
+		return nil, fmt.Errorf("CREATE INDEX: table %s already has an index named %s", t.name, i.name)
+	}
+
+	t, ok := ctx.db.root.tables[s.tableName]
+	if !ok {
+		return nil, fmt.Errorf("CREATE INDEX: table does not exist %s", s.tableName)
+	}
+
+	if s.colName == "id()" {
+		if err := t.addIndex(s.indexName, -1); err != nil {
+			return nil, fmt.Errorf("CREATE INDEX: %v", err)
+		}
+
+		return nil, t.updated()
+	}
+
+	c := findCol(t.cols, s.colName)
+	if c == nil {
+		return nil, fmt.Errorf("CREATE INDEX: column does not exist: %s", s.colName)
+	}
+
+	if err := t.addIndex(s.indexName, c.index); err != nil {
+		return nil, fmt.Errorf("CREATE INDEX: %v", err)
+	}
+
+	return nil, t.updated()
+}
+
+func (s *createIndexStmt) isUpdating() bool { return true }
 
 type createTableStmt struct {
 	ifNotExists bool

@@ -1,4 +1,4 @@
-// Copyright (c) 2013 Go Authors. All rights reserved.
+// Copyright (c) 2014 Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -5491,3 +5491,71 @@ COMMIT;
 SELECT * FROM t;
 |li
 [42]
+
+-- 501 // new spec rule: table must have at least 1 column
+BEGIN TRANSACTION;
+	CREATE TABLE t (c int);
+COMMIT;
+BEGIN TRANSACTION;
+	ALTER TABLE t DROP COLUMN c;
+COMMIT;
+SELECT * FROM t;
+||cannot drop.*column
+
+-- 502 // fixed bug
+BEGIN TRANSACTION;
+	CREATE TABLE t (c int, s string);
+COMMIT;
+BEGIN TRANSACTION;
+	ALTER TABLE t DROP COLUMN s;
+ROLLBACK;
+SELECT * FROM t;
+|?c, ?s
+
+-- 503 // fixed bug
+BEGIN TRANSACTION;
+	CREATE TABLE t (c int, s string);
+COMMIT;
+BEGIN TRANSACTION;
+	ALTER TABLE t ADD b bool;
+ROLLBACK;
+SELECT * FROM t;
+|?c, ?s
+
+-- 504 // fixed bug
+BEGIN TRANSACTION;
+	CREATE TABLE t (c int, s string);
+COMMIT;
+BEGIN TRANSACTION;
+	DROP TABLE t;
+ROLLBACK;
+SELECT * FROM t;
+|?c, ?s
+
+-- 505 // fixed bug
+BEGIN TRANSACTION;
+	CREATE INDEX x ON t (qty());
+COMMIT;
+||only .* id
+
+-- 506
+BEGIN TRANSACTION;
+	CREATE INDEX x ON t (qty);
+COMMIT;
+||table.*not exist
+
+-- 507
+BEGIN TRANSACTION;
+	CREATE TABLE t (c int);
+	CREATE INDEX x ON t (qty);
+COMMIT;
+||column.*not exist
+
+-- 508
+BEGIN TRANSACTION;
+	CREATE TABLE t (c int);
+	//TODO CREATE INDEX x ON t (id());
+	//TODO CREATE INDEX y ON t (c);
+COMMIT;
+SELECT * FROM t;
+|?c

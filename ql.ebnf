@@ -69,10 +69,15 @@ ColumnName = identifier .
 ColumnNameList = ColumnName { "," ColumnName } [ "," ] .
 CommitStmt = "COMMIT" .
 Conversion = Type "(" Expression ")" .
+CreateIndexStmt = "CREATE" "INDEX" IndexName "ON" TableName "(" (
+		  ColumnName
+		| "id" Call
+	  ) ")" .
 CreateTableStmt = "CREATE" "TABLE" [
 		 "IF" "NOT" "EXISTS"
 	  ] TableName "(" ColumnDef { "," ColumnDef } [ "," ] ")" .
 DeleteFromStmt = "DELETE" "FROM" TableName [ WhereClause ] .
+DropIndexStmt = "DROP" "INDEX" IndexName .
 DropTableStmt = "DROP" "TABLE" [ "IF" "EXISTS" ] TableName .
 EmptyStmt = .
 Expression = Term { oror Term } .
@@ -91,6 +96,7 @@ Field = Expression [ "AS" identifier ] .
 FieldList = Field { "," Field } [ "," ] .
 GroupByClause = "GROUP BY" ColumnNameList .
 Index = "[" Expression "]" .
+IndexName = identifier .
 InsertIntoStmt = "INSERT" "INTO" TableName [
 		 "(" ColumnNameList ")"
 	  ] ( Values | SelectStmt ) .
@@ -150,8 +156,10 @@ Statement = EmptyStmt
 	| AlterTableStmt
 	| BeginTransactionStmt
 	| CommitStmt
+	| CreateIndexStmt
 	| CreateTableStmt
 	| DeleteFromStmt
+	| DropIndexStmt
 	| DropTableStmt
 	| InsertIntoStmt
 	| RollbackStmt

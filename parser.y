@@ -1,6 +1,6 @@
 %{
 
-// Copyright (c) 2013 Go Authors. All rights reserved.
+// Copyright (c) 2014 Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 		
@@ -38,16 +38,16 @@ import (
 	eq exists
 	falseKwd floatType float32Type float64Type floatLit from 
 	ge group
-	identifier ifKwd imaginaryLit in insert intType int16Type int32Type
-	int64Type int8Type into intLit is
+	identifier ifKwd imaginaryLit in index insert intType int16Type
+	int32Type int64Type int8Type into intLit is
 	le lsh 
-	neq not null 
-	order oror
+	neq not null
+	on order oror
 	qlParam
 	rollback rsh runeType
 	selectKwd stringType stringLit
 	tableKwd timeType transaction trueKwd truncate
-	uintType uint16Type uint32Type uint64Type uint8Type update
+	uintType uint16Type uint32Type uint64Type uint8Type unique update
 	values
 	where
 
@@ -71,8 +71,8 @@ import (
 	AlterTableStmt Assignment AssignmentList AssignmentList1
 	BeginTransactionStmt
 	Call Call1 ColumnDef ColumnName ColumnNameList ColumnNameList1
-	CommitStmt Conversion CreateTableStmt CreateTableStmt1
-	DeleteFromStmt DropTableStmt
+	CommitStmt Conversion CreateIndexStmt CreateTableStmt CreateTableStmt1
+	DeleteFromStmt DropIndexStmt DropTableStmt
 	EmptyStmt Expression ExpressionList ExpressionList1
 	Factor Factor1 Field Field1 FieldList
 	GroupByClause
@@ -191,6 +191,20 @@ Conversion:
 		$$ = &conversion{typ: $1.(int), val: $3.(expression)}
 	}
 
+CreateIndexStmt:
+	create index identifier on identifier '(' identifier ')'
+	{
+		$$ = &createIndexStmt{$3.(string), $5.(string), $7.(string)}
+	}
+|	create index identifier on identifier '(' identifier '(' ')' ')'
+	{
+		$$ = &createIndexStmt{$3.(string), $5.(string), $7.(string)+"()"}
+		if $7.(string) != "id" {
+			yylex.(*lexer).err("only the built-in id() can be indexed on")
+			goto ret1
+		}
+	}
+
 CreateTableStmt:
 	create tableKwd TableName '(' ColumnDef CreateTableStmt1 CreateTableStmt2 ')'
 	{
@@ -223,6 +237,12 @@ DeleteFromStmt:
 |	deleteKwd from TableName WhereClause
 	{
 		$$ = &deleteStmt{tableName: $3.(string), where: $4.(*whereRset).expr}
+	}
+
+DropIndexStmt:
+	drop index identifier
+	{
+		$$ = &dropIndexStmt{indexName: $3.(string)}
 	}
 
 DropTableStmt:
@@ -783,8 +803,10 @@ Statement:
 |	AlterTableStmt
 |	BeginTransactionStmt
 |	CommitStmt
+|	CreateIndexStmt
 |	CreateTableStmt
 |	DeleteFromStmt
+|	DropIndexStmt
 |	DropTableStmt
 |	InsertIntoStmt
 |	RollbackStmt
