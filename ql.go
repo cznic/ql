@@ -659,7 +659,10 @@ func (r tableRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, data 
 		for i, c := range cols {
 			if x := c.index; 2+x < len(rec) {
 				rec[2+i] = rec[2+x]
+				continue
 			}
+
+			rec[2+i] = nil //TODO +test
 		}
 		m, err := f(rec[1], rec[2:2+ncols]) // 0:next, 1:id
 		if !m || err != nil {

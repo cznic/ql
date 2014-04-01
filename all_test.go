@@ -1083,12 +1083,15 @@ func TestIndices(t *testing.T) {
 			INSERT INTO t VALUES(24);
 		COMMIT;`)
 	e(`	BEGIN TRANSACTION;
-			CREATE INDEX i ON t (i);
+			CREATE INDEX i ON t (i); //TODO this should fail due to name collision
 		COMMIT;`)
 	e(`	BEGIN TRANSACTION;
 			INSERT INTO t VALUES(1);
 		COMMIT;`)
 	e(`	BEGIN TRANSACTION;
 			INSERT INTO t VALUES(999);
+		COMMIT;`)
+	e(`	BEGIN TRANSACTION;
+			UPDATE t i = 240 WHERE i == 24;
 		COMMIT;`)
 }

@@ -87,6 +87,8 @@ type table struct {
 	xroots  []interface{}
 }
 
+func (t *table) hasIndices() bool { return len(t.indices) != 0 }
+
 func (t *table) clone() *table {
 	r := &table{}
 	*r = *t

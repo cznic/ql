@@ -90,6 +90,12 @@ func (s *updateStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 	expr := s.where
 	blobCols := t.blobCols()
 	cc := ctx.db.cc
+	var old []interface{}
+	var touched []bool
+	if t.hasIndices() {
+		old = make([]interface{}, len(t.cols0))
+		touched = make([]bool, len(t.cols0))
+	}
 	for h := t.head; h != 0; h = nh {
 		data, err := t.store.Read(nil, h, t.cols...)
 		if err != nil {
@@ -128,10 +134,29 @@ func (s *updateStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 				return nil, err
 			}
 
-			data[2+tcols[i].index] = val
+			colIndex := tcols[i].index
+			if t.hasIndices() {
+				old[colIndex] = data[2+colIndex]
+				touched[colIndex] = true
+			}
+			data[2+colIndex] = val
 		}
 		if err = typeCheck(data[2:], t.cols); err != nil {
 			return nil, err
+		}
+
+		for i, v := range t.indices {
+			if i == 0 { // id() N/A
+				continue
+			}
+
+			if v == nil || !touched[i-1] {
+				continue
+			}
+
+			if err = v.x.Update(old[i-1], data[2+i-1], h); err != nil {
+				return nil, err
+			}
 		}
 
 		if err = t.store.UpdateRow(h, blobCols, data...); err != nil { //LATER detect which blobs are actually affected
@@ -486,6 +511,16 @@ func (s *insertIntoStmt) execSelect(t *table, cols []*col, ctx *execCtx) (_ Reco
 			data0[1] = id
 			if h, err = t.store.Create(data0...); err != nil {
 				return false, err
+			}
+
+			for i, v := range t.indices { //TODO +test
+				if v == nil {
+					continue
+				}
+
+				if err = v.x.Create(data0[i+1], h); err != nil {
+					return false, err
+				}
 			}
 
 			cc.RowsAffected++
