@@ -172,11 +172,11 @@ it's intended. The indices are B+Trees[2]. The list of handles to their roots
 is pointed to by hxroots with zeros for non indexed columns. For the previous
 example
 
-	tableMeta.xroots -> {0, y, 0, x}
+	tableMeta.hxroots -> {0, y, 0, x}
 
 where x is the root of the B+Tree for the X index and y is the root of the
 B+Tree for the Y index. If there would be an index for id(), its B+Tree root
-will be present where the first zero is. Similarly to hhead, xroots is never
+will be present where the first zero is. Similarly to hhead, hxroots is never
 zero, even when there are no indices for a table.
 
 Table record

@@ -84,6 +84,7 @@ type table struct {
 	store   storage
 	tnext   *table
 	tprev   *table
+	xroots  []interface{}
 }
 
 func (t *table) clone() *table {
@@ -109,13 +110,15 @@ func (t *table) clone() *table {
 			r.indices[i] = c
 		}
 	}
+	r.xroots = make([]interface{}, len(t.xroots))
+	copy(r.xroots, t.xroots)
 	r.tnext, r.tprev = nil, nil
 	return r
 }
 
 func (t *table) findIndexByName(name string) *indexedCol {
 	for _, v := range t.indices {
-		if v.name == name {
+		if v != nil && v.name == name {
 			return v
 		}
 	}
@@ -256,10 +259,30 @@ func (t *table) addIndex(unique bool, indexName string, colIndex int) error {
 			return err
 		}
 
-		t.hxroots, t.indices = hx, indices
+		t.hxroots, t.xroots, t.indices = hx, xroots, indices
 		return t.updated()
 	default:
-		panic("TODO")
+		ex := t.indices[colIndex+1]
+		if ex != nil && ex.name != "" {
+			colName := "id()"
+			if colIndex >= 0 {
+				colName = t.cols0[colIndex].name
+			}
+			return fmt.Errorf("column %s already has an index: %s", colName, ex.name)
+		}
+
+		h, x, err := t.store.CreateIndex(unique)
+		if err != nil {
+			return err
+		}
+
+		t.xroots[colIndex+1] = h
+		if err := t.store.Update(t.hxroots, t.xroots...); err != nil {
+			return err
+		}
+
+		t.indices[colIndex+1] = &indexedCol{indexName, unique, x, h}
+		return t.updated()
 	}
 }
 

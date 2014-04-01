@@ -5561,25 +5561,43 @@ SELECT * FROM t;
 
 -- 509
 BEGIN TRANSACTION;
-	//TODO CREATE TABLE t (c int);
-	//TODO CREATE INDEX y ON t (c);
+	CREATE TABLE t (c int);
+	CREATE INDEX y ON t (c);
 COMMIT;
-SELECT * FROM tt;
-||not exist
+SELECT * FROM t;
+|?c
 
 -- 510
 BEGIN TRANSACTION;
 	CREATE TABLE t (c int);
 	CREATE INDEX x ON t (id());
-	//TODO CREATE INDEX y ON t (c);
+	CREATE INDEX y ON t (id());
 COMMIT;
 SELECT * FROM t;
-|?c
+||already
 
 -- 511
 BEGIN TRANSACTION;
 	CREATE TABLE t (c int);
-	//TODO CREATE INDEX y ON t (c);
+	CREATE INDEX x ON t (id());
+	CREATE INDEX x ON t (c);
+COMMIT;
+SELECT * FROM t;
+||already
+
+-- 512
+BEGIN TRANSACTION;
+	CREATE TABLE t (c int);
+	CREATE INDEX x ON t (id());
+	CREATE INDEX y ON t (c);
+COMMIT;
+SELECT * FROM t;
+|?c
+
+-- 513
+BEGIN TRANSACTION;
+	CREATE TABLE t (c int);
+	CREATE INDEX y ON t (c);
 	CREATE INDEX x ON t (id());
 COMMIT;
 SELECT * FROM t;
