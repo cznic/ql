@@ -1031,27 +1031,15 @@ func dumpDB(db *DB, tag string, t *testing.T) {
 					t.Fatal(err)
 				}
 
-				t.Logf("k %v, v %v", k, v)
+				t.Logf("%v: %v", k, v)
 			}
 		}
 	}
 }
 
-func TestIndices(t *testing.T) {
-	dir, err := ioutil.TempDir("", "ql-test")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	defer os.RemoveAll(dir)
-
-	nm := filepath.Join(dir, "ql.db")
-	db, err := OpenFile(nm, &Options{CanCreate: true})
-	if err != nil {
-		t.Fatal(err)
-	}
-
+func testIndices(db *DB, t *testing.T) {
 	ctx := NewRWCtx()
+	var err error
 	e := func(q string) {
 		if _, _, err = db.Run(ctx, q); err != nil {
 			t.Fatal(err)
@@ -1059,6 +1047,11 @@ func TestIndices(t *testing.T) {
 
 		dumpDB(db, "post\n\t"+q, t)
 		t.Log("....")
+		if db.isMem {
+			return
+		}
+
+		nm := db.Name()
 		if err = db.Close(); err != nil {
 			t.Fatal(err)
 		}
@@ -1066,6 +1059,7 @@ func TestIndices(t *testing.T) {
 		if db, err = OpenFile(nm, &Options{}); err != nil {
 			t.Fatal(err)
 		}
+
 		dumpDB(db, "reopened", t)
 		t.Log("====\n")
 	}
@@ -1094,4 +1088,34 @@ func TestIndices(t *testing.T) {
 	e(`	BEGIN TRANSACTION;
 			UPDATE t i = 240 WHERE i == 24;
 		COMMIT;`)
+	e(`	BEGIN TRANSACTION;
+			DELETE FROM t WHERE i == 240;
+		COMMIT;`)
+
+	if err = db.Close(); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestIndices(t *testing.T) {
+	dir, err := ioutil.TempDir("", "ql-test")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer os.RemoveAll(dir)
+
+	nm := filepath.Join(dir, "ql.db")
+	db, err := OpenFile(nm, &Options{CanCreate: true})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	testIndices(db, t)
+	db, err = OpenMem()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	testIndices(db, t)
 }

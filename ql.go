@@ -882,6 +882,7 @@ func cols2meta(f []*col) (s string) {
 // DB represent the database capable of executing QL statements.
 type DB struct {
 	cc    *TCtx // Current transaction context
+	isMem bool
 	mu    sync.Mutex
 	nest  int // ACID FSM
 	root  *root

@@ -83,7 +83,7 @@ func (x *memIndex) Delete(indexedValue interface{}, h int64) error {
 	}
 	if ok {
 		if okv {
-			x.m.newUndo(undoDeleteX, v.(int64), []interface{}{x, k})
+			x.m.newUndo(undoDeleteX, int64(v.(int)), []interface{}{x, k})
 		}
 		return nil
 	}
@@ -243,9 +243,11 @@ func OpenMem() (db *DB, err error) {
 	}
 
 	if db, err = newDB(s); err != nil {
-		db = nil
+		return nil, err
 	}
-	return
+
+	db.isMem = true
+	return db, nil
 }
 
 func (s *mem) Verify() (allocs int64, err error) {

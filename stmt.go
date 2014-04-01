@@ -128,7 +128,7 @@ func (s *updateStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 		}
 
 		// hit
-		for i, asgn := range s.list { //TODO update indices
+		for i, asgn := range s.list {
 			val, err := asgn.expr.eval(m, ctx.arg)
 			if err != nil {
 				return nil, err
@@ -234,7 +234,16 @@ func (s *deleteStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 		}
 
 		// hit
-		//TODO Delete indices
+		for i, v := range t.indices {
+			if v == nil {
+				continue
+			}
+
+			if err = v.x.Delete(data[i+1], h); err != nil {
+				return nil, err
+			}
+		}
+
 		if err = t.store.Delete(h, blobCols...); err != nil {
 			return nil, err
 		}
