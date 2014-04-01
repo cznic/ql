@@ -38,10 +38,6 @@ var (
 	errNoResult = errors.New("query statement does not produce a result set (no top level SELECT)")
 )
 
-//func init() {
-//	log.SetFlags(log.Lshortfile)
-//}
-
 type errList []error
 
 func (e *errList) append(err error) {

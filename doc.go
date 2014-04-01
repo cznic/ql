@@ -1171,7 +1171,9 @@
 //
 // Create index statements create new indices. Index is a named projection of
 // ordered values of a table column to the respective records. As a special
-// case the id() of the record can be indexed.
+// case the id() of the record can be indexed. Index name must not collide with
+// a name of any existing table and it also cannot the same as of any column
+// name of the table the index is on. (TODO +tests)
 //
 //  CreateIndexStmt = "CREATE" "INDEX" IndexName
 //  	"ON" TableName "(" ( ColumnName | "id" Call ) ")" .
@@ -1195,7 +1197,8 @@
 //
 // Create table statements create new tables. A column definition declares the
 // column name and type. Table names and column names are case sensitive. The
-// table must not exist before.
+// table must not exist before and the name of the table must not collide with
+// a name of any existing index. (TODO +tests)
 //
 //  CreateTableStmt = "CREATE" "TABLE" [ "IF" "NOT" "EXISTS" ] TableName
 //  	"(" ColumnDef { "," ColumnDef } [ "," ] ")" .

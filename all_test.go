@@ -7,11 +7,13 @@ package ql
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"math/rand"
 	"os"
 	"path"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"testing"
@@ -966,7 +968,7 @@ func TestRowsAffected(t *testing.T) {
 	}
 }
 
-func TestTxNext(t *testing.T) {
+func TestTxBug(t *testing.T) { //TODO move below
 	db, err := OpenMem()
 	if err != nil {
 		t.Fatal(err)
@@ -978,19 +980,7 @@ func TestTxNext(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		t.Logf("----\npost %q", q)
-		for nm, tab := range db.root.tables {
-			h := tab.head
-			t.Logf("%q: head %d", nm, h)
-			for h != 0 {
-				rec, err := db.store.Read(nil, h, nil)
-				if err != nil {
-					t.Fatal(err)
-				}
-				t.Logf("%d: %v", h, rec)
-				h = rec[0].(int64)
-			}
-		}
+		dumpDB(db, "post\n\t"+q, t)
 	}
 
 	e("BEGIN TRANSACTION; CREATE TABLE t (i int); COMMIT;")
@@ -999,4 +989,106 @@ func TestTxNext(t *testing.T) {
 	e("	ROLLBACK;")
 	e("INSERT INTO t VALUES(3000);")
 	e("COMMIT;")
+}
+
+func dumpDB(db *DB, tag string, t *testing.T) {
+	t.Logf("---- %s", tag)
+	for nm, tab := range db.root.tables {
+		h := tab.head
+		t.Logf("%q: head %d", nm, h)
+		for h != 0 {
+			rec, err := db.store.Read(nil, h, tab.cols...)
+			if err != nil {
+				t.Fatal(err)
+			}
+			t.Logf("record @%d: %v", h, rec)
+			h = rec[0].(int64)
+		}
+	X:
+		for i, v := range tab.indices {
+			if v == nil {
+				continue
+			}
+
+			xname := v.name
+			cname := "id()"
+			if i != 0 {
+				cname = tab.cols0[i-1].name
+			}
+			t.Logf("index %s on %s", xname, cname)
+			it, _, err := v.x.Seek(nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			for {
+				k, v, err := it.Next()
+				if err != nil {
+					if err == io.EOF {
+						continue X
+					}
+
+					t.Fatal(err)
+				}
+
+				t.Logf("k %v, v %v", k, v)
+			}
+		}
+	}
+}
+
+func TestIndices(t *testing.T) {
+	dir, err := ioutil.TempDir("", "ql-test")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer os.RemoveAll(dir)
+
+	nm := filepath.Join(dir, "ql.db")
+	db, err := OpenFile(nm, &Options{CanCreate: true})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	ctx := NewRWCtx()
+	e := func(q string) {
+		if _, _, err = db.Run(ctx, q); err != nil {
+			t.Fatal(err)
+		}
+
+		dumpDB(db, "post\n\t"+q, t)
+		t.Log("....")
+		if err = db.Close(); err != nil {
+			t.Fatal(err)
+		}
+
+		if db, err = OpenFile(nm, &Options{}); err != nil {
+			t.Fatal(err)
+		}
+		dumpDB(db, "reopened", t)
+		t.Log("====\n")
+	}
+
+	e(`	BEGIN TRANSACTION;
+			CREATE TABLE t (i int);
+		COMMIT;`)
+	e(`	BEGIN TRANSACTION;
+			CREATE INDEX x ON t (id());
+		COMMIT;`)
+	e(`	BEGIN TRANSACTION;
+			INSERT INTO t VALUES(42);
+		COMMIT;`)
+	e(`	BEGIN TRANSACTION;
+			INSERT INTO t VALUES(24);
+		COMMIT;`)
+	e(`	BEGIN TRANSACTION;
+			CREATE INDEX i ON t (i);
+		COMMIT;`)
+	e(`	BEGIN TRANSACTION;
+			INSERT INTO t VALUES(1);
+		COMMIT;`)
+	e(`	BEGIN TRANSACTION;
+			INSERT INTO t VALUES(999);
+		COMMIT;`)
 }

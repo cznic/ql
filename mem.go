@@ -212,6 +212,10 @@ func newMemStorage() (s *mem, err error) {
 	return
 }
 
+func (s *mem) OpenIndex(unique bool, handle int64) (btreeIndex, error) { // Never called on the memory backend.
+	panic("internal error")
+}
+
 func (s *mem) newUndo(tag int, h int64, data []interface{}) {
 	s.rollback.list = append(s.rollback.list, undo{tag, h, data})
 }
@@ -540,8 +544,8 @@ type (
 
 func (a *indexKey) cmp(b *indexKey) int {
 	r := collate1(a.value, b.value)
-	if r == 0 {
-		return 0
+	if r != 0 {
+		return r
 	}
 
 	return int(a.h) - int(b.h)

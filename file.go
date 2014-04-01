@@ -548,8 +548,16 @@ func newFileFromOSFile(f lldb.OSFile) (fi *file, err error) {
 	}
 }
 
+func (s *file) OpenIndex(unique bool, handle int64) (btreeIndex, error) {
+	t, err := lldb.OpenBTree(s.a, s.collate, handle)
+	if err != nil {
+		return nil, err
+	}
+
+	return &fileIndex{s, handle, t, unique}, nil
+}
+
 func (s *file) CreateIndex(unique bool) ( /* handle */ int64, btreeIndex, error) {
-	//func CreateBTree(store *lldb.Allocator, collate func(a []byte, b []byte) int) (bt *lldb.BTree, handle int64, err error)
 	t, h, err := lldb.CreateBTree(s.a, s.collate)
 	if err != nil {
 		return -1, nil, err

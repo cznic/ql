@@ -21,7 +21,7 @@ type storage interface {
 	Delete(h int64, blobCols ...*col) error //LATER split the nil blobCols case
 	ID() (id int64, err error)
 	Name() string
-	//OpenIndex(unique bool, handle int64) (btreeIndex) // Never called on the memory backend.
+	OpenIndex(unique bool, handle int64) (btreeIndex, error) // Never called on the memory backend.
 	Read(dst []interface{}, h int64, cols ...*col) (data []interface{}, err error)
 	ResetID() (err error)
 	Rollback() error
@@ -131,8 +131,13 @@ func (t *table) load() (err error) {
 		return
 	}
 
-	if len(data) != 4 { //TODO 6-scalar
-		return fmt.Errorf("corrupted DB: table data len %d", len(data))
+	var hasIndices bool
+	switch n := len(data); n {
+	case 4:
+	case 6:
+		hasIndices = true
+	default:
+		return fmt.Errorf("corrupted DB: table data len %d", n)
 	}
 
 	var ok bool
@@ -153,16 +158,17 @@ func (t *table) load() (err error) {
 		return fmt.Errorf("corrupted DB: table data[3] of type %T", data[3])
 	}
 
-	if data, err = t.store.Read(nil, t.hhead); err != nil {
+	var head []interface{}
+	if head, err = t.store.Read(nil, t.hhead); err != nil {
 		return err
 	}
 
-	if len(data) != 1 {
-		return fmt.Errorf("corrupted DB: table head data len %d", len(data))
+	if len(head) != 1 {
+		return fmt.Errorf("corrupted DB: table head data len %d", len(head))
 	}
 
-	if t.head, ok = data[0].(int64); !ok {
-		return fmt.Errorf("corrupted DB: table head data[0] of type %T", data[0])
+	if t.head, ok = head[0].(int64); !ok {
+		return fmt.Errorf("corrupted DB: table head data[0] of type %T", head[0])
 	}
 
 	a := strings.Split(scols, "|")
@@ -178,6 +184,63 @@ func (t *table) load() (err error) {
 			t.cols = append(t.cols, col)
 		}
 	}
+
+	if !hasIndices {
+		return
+	}
+
+	if t.hxroots, ok = data[5].(int64); !ok {
+		return fmt.Errorf("corrupted DB: table data[5] of type %T", data[5])
+	}
+
+	xroots, err := t.store.Read(nil, t.hxroots)
+	if err != nil {
+		return err
+	}
+
+	if g, e := len(xroots), len(t.cols0)+1; g != e {
+		return fmt.Errorf("corrupted DB: got %d index roots, expected %d.", g, e)
+	}
+
+	indices, ok := data[4].(string)
+	if !ok {
+		return fmt.Errorf("corrupted DB: table data[4] of type %T", data[4])
+	}
+
+	a = strings.Split(indices, "|")
+	if g, e := len(a), len(t.cols0)+1; g != e {
+		return fmt.Errorf("corrupted DB: got %d index definitions, expected %d.", g, e)
+	}
+
+	t.indices = make([]*indexedCol, len(a))
+	for i, v := range a {
+		if v == "" {
+			continue
+		}
+
+		if len(v) < 2 {
+			return fmt.Errorf("corrupted DB: invalid index definition %q", v)
+		}
+
+		nm := v[1:]
+		h, ok := xroots[i].(int64)
+		if !ok {
+			return fmt.Errorf("corrupted DB: table index root of type %T", xroots[i])
+		}
+
+		if h == 0 {
+			return fmt.Errorf("corrupted DB: missing root for index %s", nm)
+		}
+
+		unique := v[0] == 'u'
+		x, err := t.store.OpenIndex(unique, h)
+		if err != nil {
+			return err
+		}
+
+		t.indices[i] = &indexedCol{nm, unique, x, h}
+	}
+	t.xroots = xroots
 
 	return
 }
@@ -242,13 +305,13 @@ func (t *table) truncate() (err error) { //TODO truncate indices
 	return t.updated()
 }
 
-func (t *table) addIndex(unique bool, indexName string, colIndex int) error {
+func (t *table) addIndex0(unique bool, indexName string, colIndex int) (btreeIndex, error) {
 	switch len(t.indices) {
 	case 0:
 		indices := make([]*indexedCol, len(t.cols0)+1)
 		h, x, err := t.store.CreateIndex(unique)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		indices[colIndex+1] = &indexedCol{indexName, unique, x, h}
@@ -256,11 +319,11 @@ func (t *table) addIndex(unique bool, indexName string, colIndex int) error {
 		xroots[colIndex+1] = h
 		hx, err := t.store.Create(xroots...)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		t.hxroots, t.xroots, t.indices = hx, xroots, indices
-		return t.updated()
+		return x, t.updated()
 	default:
 		ex := t.indices[colIndex+1]
 		if ex != nil && ex.name != "" {
@@ -268,22 +331,50 @@ func (t *table) addIndex(unique bool, indexName string, colIndex int) error {
 			if colIndex >= 0 {
 				colName = t.cols0[colIndex].name
 			}
-			return fmt.Errorf("column %s already has an index: %s", colName, ex.name)
+			return nil, fmt.Errorf("column %s already has an index: %s", colName, ex.name)
 		}
 
 		h, x, err := t.store.CreateIndex(unique)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		t.xroots[colIndex+1] = h
 		if err := t.store.Update(t.hxroots, t.xroots...); err != nil {
-			return err
+			return nil, err
 		}
 
 		t.indices[colIndex+1] = &indexedCol{indexName, unique, x, h}
-		return t.updated()
+		return x, t.updated()
 	}
+}
+
+func (t *table) addIndex(unique bool, indexName string, colIndex int) error { //TODO blobs
+	x, err := t.addIndex0(unique, indexName, colIndex)
+	if err != nil {
+		return err
+	}
+
+	// Must fill the new index.
+	ncols := len(t.cols0)
+	h, store := t.head, t.store
+	for h != 0 {
+		rec, err := store.Read(nil, h, t.cols...)
+		if err != nil {
+			return err
+		}
+
+		if n := ncols + 2 - len(rec); n > 0 {
+			rec = append(rec, make([]interface{}, n)...)
+		}
+
+		if err = x.Create(rec[colIndex+2], h); err != nil {
+			return err
+		}
+
+		h = rec[0].(int64)
+	}
+	return nil
 }
 
 func (t *table) updated() (err error) {
@@ -312,14 +403,25 @@ func (t *table) updated() (err error) {
 // 0: next record handle int64
 // 1: record id          int64
 // 2...: data row
-func (t *table) addRecord(r []interface{}) (id int64, err error) { //TODO update indices
+func (t *table) addRecord(r []interface{}) (id int64, err error) {
 	if id, err = t.store.ID(); err != nil {
 		return
 	}
 
-	h, err := t.store.Create(append([]interface{}{t.head, id}, r...)...)
+	r = append([]interface{}{t.head, id}, r...)
+	h, err := t.store.Create(r...)
 	if err != nil {
 		return
+	}
+
+	for i, v := range t.indices {
+		if v == nil {
+			continue
+		}
+
+		if err = v.x.Create(r[i+1], h); err != nil {
+			return
+		}
 	}
 
 	if err = t.store.Update(t.hhead, h); err != nil {
