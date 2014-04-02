@@ -299,7 +299,20 @@ type dropIndexStmt struct {
 func (s *dropIndexStmt) String() string { return fmt.Sprintf("DROP INDEX %s;", s.indexName) }
 
 func (s *dropIndexStmt) exec(ctx *execCtx) (Recordset, error) {
-	panic("TODO") //TODO(indices)
+	t, x := ctx.db.root.findIndexByName(s.indexName)
+	if x == nil {
+		return nil, fmt.Errorf("DROP INDEX: index %s does not exist", s.indexName)
+	}
+
+	for i, v := range t.indices {
+		if v == nil {
+			continue
+		}
+
+		return nil, t.dropIndex(i)
+	}
+
+	panic("internal error")
 }
 
 func (s *dropIndexStmt) isUpdating() bool { return true }
