@@ -38,6 +38,8 @@ var (
 	_ rset = (*selectStmt)(nil)
 	_ rset = (*tableRset)(nil)
 	_ rset = (*whereRset)(nil)
+
+	isTesting bool // enables test hook: select from an index
 )
 
 const gracePeriod = time.Second
@@ -633,8 +635,49 @@ func (r *selectRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, dat
 
 type tableRset string
 
+func (r tableRset) doIndex(x *indexedCol, ctx *execCtx, onlyNames bool, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
+	flds := []*fld{&fld{name: x.name}}
+	m, err := f(nil, []interface{}{flds})
+	if onlyNames {
+		return err
+	}
+
+	if !m || err != nil {
+		return
+	}
+
+	en, _, err := x.x.Seek(nil)
+	if err != nil {
+		return err
+	}
+
+	var id int64
+	rec := []interface{}{nil}
+	for {
+		k, _, err := en.Next()
+		if err != nil {
+			return noEOF(err)
+		}
+
+		id++
+		rec[0] = k.value
+		m, err := f(id, rec)
+		if !m || err != nil {
+			return err
+		}
+	}
+	return
+}
+
 func (r tableRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
 	t, ok := ctx.db.root.tables[string(r)]
+	var x *indexedCol
+	if !ok && isTesting {
+		if _, x = ctx.db.root.findIndexByName(string(r)); x != nil {
+			return r.doIndex(x, ctx, onlyNames, f)
+		}
+	}
+
 	if !ok {
 		return fmt.Errorf("table %s does not exist", r)
 	}

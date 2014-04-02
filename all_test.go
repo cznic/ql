@@ -23,6 +23,7 @@ import (
 
 func init() {
 	log.SetFlags(log.Flags() | log.Lshortfile)
+	isTesting = true
 }
 
 func dbg(s string, va ...interface{}) {
@@ -1151,6 +1152,12 @@ func testIndices(db *DB, t *testing.T) {
 		COMMIT;`)
 	e(`	BEGIN TRANSACTION;
 			ALTER TABLE t ADD s string;
+		COMMIT;`)
+	e(`	BEGIN TRANSACTION;
+			DROP TABLE IF EXISTS t;
+			CREATE TABLE t (i bigint);
+			CREATE INDEX x ON t (i);
+			INSERT INTO t VALUES(42);
 		COMMIT;`)
 
 	if err = db.Close(); err != nil {
