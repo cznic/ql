@@ -1325,16 +1325,16 @@ func (db *DB) do(r recordset, names int, f func(data []interface{}) (more bool, 
 }
 
 func (db *DB) beginTransaction() { //TODO Rewrite, must use much smaller undo info!
-	p := db.root
-	r := &root{}
-	*r = *p
-	r.parent = p
-	a := make([]*table, 0, len(p.tables))
-	r.tables = make(map[string]*table, len(p.tables))
-	for k, v := range p.tables {
+	oldRoot := db.root
+	newRoot := &root{}
+	*newRoot = *oldRoot
+	newRoot.parent = oldRoot
+	a := make([]*table, 0, len(oldRoot.tables))
+	newRoot.tables = make(map[string]*table, len(oldRoot.tables))
+	for k, v := range oldRoot.tables {
 		c := v.clone()
 		a = append(a, c)
-		r.tables[k] = c
+		newRoot.tables[k] = c
 	}
 	for i := 0; i < len(a)-1; i++ {
 		l, p := a[i], a[i+1]
@@ -1342,9 +1342,9 @@ func (db *DB) beginTransaction() { //TODO Rewrite, must use much smaller undo in
 		p.tprev = l
 	}
 	if len(a) != 0 {
-		r.thead = a[0]
+		newRoot.thead = a[0]
 	}
-	db.root = r
+	db.root = newRoot
 }
 
 func (db *DB) rollback() {

@@ -17,6 +17,8 @@ import (
 	"runtime"
 	"strings"
 	"testing"
+
+	"github.com/cznic/strutil"
 )
 
 func init() {
@@ -968,19 +970,23 @@ func TestRowsAffected(t *testing.T) {
 	}
 }
 
-func dumpDB(db *DB, tag string, t *testing.T) {
-	t.Logf("---- %s", tag)
+func dumpDB(db *DB, tag string) (string, error) {
+	var buf bytes.Buffer
+	f := strutil.IndentFormatter(&buf, "\t")
+	f.Format("---- %s%i\n", tag)
 	for nm, tab := range db.root.tables {
 		h := tab.head
-		t.Logf("%q: head %d", nm, h)
+		f.Format("%u%q: head %d, scols0 %q, scols %q%i\n", nm, h, cols2meta(tab.cols0), cols2meta(tab.cols))
 		for h != 0 {
 			rec, err := db.store.Read(nil, h, tab.cols...)
 			if err != nil {
-				t.Fatal(err)
+				return "", err
 			}
-			t.Logf("record @%d: %v", h, rec)
+
+			f.Format("record @%d: %v\n", h, rec)
 			h = rec[0].(int64)
 		}
+		f.Format("%u")
 	X:
 		for i, v := range tab.indices {
 			if v == nil {
@@ -992,10 +998,10 @@ func dumpDB(db *DB, tag string, t *testing.T) {
 			if i != 0 {
 				cname = tab.cols0[i-1].name
 			}
-			t.Logf("index %s on %s", xname, cname)
+			f.Format("index %s on %s%i\n", xname, cname)
 			it, _, err := v.x.Seek(nil)
 			if err != nil {
-				t.Fatal(err)
+				return "", err
 			}
 
 			for {
@@ -1005,13 +1011,16 @@ func dumpDB(db *DB, tag string, t *testing.T) {
 						continue X
 					}
 
-					t.Fatal(err)
+					return "", err
 				}
 
-				t.Logf("%v: %v", k, v)
+				f.Format("%v: %v\n", k, v)
 			}
+			f.Format("%u")
 		}
 	}
+
+	return buf.String(), nil
 }
 
 func testIndices(db *DB, t *testing.T) {
@@ -1022,8 +1031,12 @@ func testIndices(db *DB, t *testing.T) {
 			t.Fatal(err)
 		}
 
-		dumpDB(db, "post\n\t"+q, t)
-		t.Log("....")
+		s, err := dumpDB(db, "post\n\t"+q)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		t.Logf("%s\n....", s)
 		if db.isMem {
 			return
 		}
@@ -1037,8 +1050,11 @@ func testIndices(db *DB, t *testing.T) {
 			t.Fatal(err)
 		}
 
-		dumpDB(db, "reopened", t)
-		t.Log("====\n")
+		if s, err = dumpDB(db, "reopened"); err != nil {
+			t.Fatal(err)
+		}
+
+		t.Logf("%s\n====\n", s)
 	}
 
 	e(`	BEGIN TRANSACTION;
@@ -1068,6 +1084,18 @@ func testIndices(db *DB, t *testing.T) {
 	e(`	BEGIN TRANSACTION;
 			DELETE FROM t WHERE i == 240;
 		COMMIT;`)
+	e(`	BEGIN TRANSACTION;
+			TRUNCATE TABLE t;
+		COMMIT;`)
+	e(`	BEGIN TRANSACTION;
+			DROP TABLE IF EXISTS t;
+			CREATE TABLE t (i int, s string);
+			CREATE INDEX xi ON t (i);
+			INSERT INTO t VALUES (42, "foo");
+		COMMIT;`)
+	e(`	BEGIN TRANSACTION;
+			ALTER TABLE t DROP COLUMN i;
+		COMMIT;`)
 
 	if err = db.Close(); err != nil {
 		t.Fatal(err)
@@ -1075,7 +1103,14 @@ func testIndices(db *DB, t *testing.T) {
 }
 
 func TestIndices(t *testing.T) {
+	db, err := OpenMem()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	testIndices(db, t)
 	dir, err := ioutil.TempDir("", "ql-test")
+
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1083,13 +1118,7 @@ func TestIndices(t *testing.T) {
 	defer os.RemoveAll(dir)
 
 	nm := filepath.Join(dir, "ql.db")
-	db, err := OpenFile(nm, &Options{CanCreate: true})
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	testIndices(db, t)
-	db, err = OpenMem()
+	db, err = OpenFile(nm, &Options{CanCreate: true})
 	if err != nil {
 		t.Fatal(err)
 	}

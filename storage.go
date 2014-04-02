@@ -282,7 +282,7 @@ func (t *table) blobCols() (r []*col) {
 	return
 }
 
-func (t *table) truncate() (err error) { //TODO(indices) truncate indices
+func (t *table) truncate() (err error) {
 	h := t.head
 	var rec []interface{}
 	blobCols := t.blobCols()
@@ -303,6 +303,15 @@ func (t *table) truncate() (err error) { //TODO(indices) truncate indices
 		return
 	}
 
+	for _, v := range t.indices {
+		if v == nil {
+			continue
+		}
+
+		if err := v.x.Clear(); err != nil {
+			return err
+		}
+	}
 	t.head = 0
 	return t.updated()
 }
@@ -379,6 +388,16 @@ func (t *table) addIndex(unique bool, indexName string, colIndex int) error { //
 	return nil
 }
 
+func (t *table) dropIndex(xIndex int) error {
+	t.xroots[xIndex] = 0
+	if err := t.indices[xIndex].x.Drop(); err != nil {
+		return err
+	}
+
+	t.indices[xIndex] = nil
+	return t.updated()
+}
+
 func (t *table) updated() (err error) {
 	switch {
 	case len(t.indices) != 0:
@@ -395,9 +414,9 @@ func (t *table) updated() (err error) {
 			}
 			a = append(a, s+v.name)
 		}
-		return t.store.Update(t.h, t.next, cols2meta(t.updateCols().cols), t.hhead, t.name, strings.Join(a, "|"), t.hxroots)
+		return t.store.Update(t.h, t.next, cols2meta(t.updateCols().cols0), t.hhead, t.name, strings.Join(a, "|"), t.hxroots)
 	default:
-		return t.store.Update(t.h, t.next, cols2meta(t.updateCols().cols), t.hhead, t.name)
+		return t.store.Update(t.h, t.next, cols2meta(t.updateCols().cols0), t.hhead, t.name)
 	}
 }
 
