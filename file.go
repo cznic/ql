@@ -1109,7 +1109,7 @@ func init() {
 	}
 }
 
-func (x *fileIndex) Create(indexedValue interface{}, h int64) error { //TODO blobs
+func (x *fileIndex) Create(indexedValue interface{}, h int64) error { //TODO(indices) blobs
 	t := x.t
 	switch {
 	case !x.unique:
@@ -1148,7 +1148,7 @@ func (x *fileIndex) Create(indexedValue interface{}, h int64) error { //TODO blo
 	}
 }
 
-func (x *fileIndex) Delete(indexedValue interface{}, h int64) error { //TODO blobs
+func (x *fileIndex) Delete(indexedValue interface{}, h int64) error { //TODO(indices) blobs
 	t := x.t
 	var k []byte
 	var err error
@@ -1175,7 +1175,7 @@ func (x *fileIndex) Drop() error {
 	return x.f.a.Free(x.h)
 }
 
-func (x *fileIndex) Seek(indexedValue interface{}) (indexIterator, bool, error) { //TODO blobs
+func (x *fileIndex) Seek(indexedValue interface{}) (indexIterator, bool, error) { //TODO(indices) blobs
 	k, err := lldb.EncodeScalars(indexedValue)
 	if err != nil {
 		return nil, false, err
@@ -1189,7 +1189,7 @@ func (x *fileIndex) Seek(indexedValue interface{}) (indexIterator, bool, error) 
 	return &fileIndexIterator{en}, hit, nil
 }
 
-func (x *fileIndex) Update(oldIndexedValue, newIndexedValue interface{}, h int64) error { //TODO blobs
+func (x *fileIndex) Update(oldIndexedValue, newIndexedValue interface{}, h int64) error { //TODO(indices) blobs
 	if err := x.Delete(oldIndexedValue, h); err != nil {
 		return err
 	}
@@ -1201,7 +1201,7 @@ type fileIndexIterator struct {
 	en *lldb.BTreeEnumerator
 }
 
-func (i *fileIndexIterator) Next() (indexKey, int64, error) { //TODO blobs
+func (i *fileIndexIterator) Next() (indexKey, int64, error) { //TODO(indices) blobs
 	var k indexKey
 	bk, bv, err := i.en.Next()
 	if err != nil {

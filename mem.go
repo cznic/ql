@@ -659,11 +659,11 @@ func (t *xtree) cat(p *xx, q, r *xd, pi int) {
 	} else {
 		t.last = q
 	}
-	q.n = r.n //TODO recycle r
+	q.n = r.n
 	if p.c > 1 {
 		p.extract(pi)
 		p.xx[pi].ch = q
-	} else { //TODO recycle r
+	} else {
 		t.r = q
 	}
 }
@@ -673,7 +673,7 @@ func (t *xtree) catX(p, q, r *xx, pi int) {
 	q.xx[q.c].sep = p.xx[pi].sep
 	copy(q.xx[q.c+1:], r.xx[:r.c])
 	q.c += r.c + 1
-	q.xx[q.c].ch = r.xx[r.c].ch //TODO recycle r
+	q.xx[q.c].ch = r.xx[r.c].ch
 	if p.c > 1 {
 		p.c--
 		pc := p.c
@@ -687,7 +687,7 @@ func (t *xtree) catX(p, q, r *xx, pi int) {
 		return
 	}
 
-	t.r = q //TODO recycle r
+	t.r = q
 }
 
 //Delete removes the k's KV pair, if it exists, in which case Delete returns

@@ -299,7 +299,7 @@ type dropIndexStmt struct {
 func (s *dropIndexStmt) String() string { return fmt.Sprintf("DROP INDEX %s;", s.indexName) }
 
 func (s *dropIndexStmt) exec(ctx *execCtx) (Recordset, error) {
-	panic("TODO")
+	panic("TODO") //TODO(indices)
 }
 
 func (s *dropIndexStmt) isUpdating() bool { return true }
@@ -334,7 +334,7 @@ func (s *alterTableDropColumnStmt) String() string {
 	return fmt.Sprintf("ALTER TABLE %s DROP COLUMN %s;", s.tableName, s.colName)
 }
 
-func (s *alterTableDropColumnStmt) exec(ctx *execCtx) (Recordset, error) { //TODO Drop indices
+func (s *alterTableDropColumnStmt) exec(ctx *execCtx) (Recordset, error) { //TODO(indices) Drop indices
 	t, ok := ctx.db.root.tables[s.tableName]
 	if !ok {
 		return nil, fmt.Errorf("ALTER TABLE: table %s does not exist", s.tableName)
@@ -522,7 +522,7 @@ func (s *insertIntoStmt) execSelect(t *table, cols []*col, ctx *execCtx) (_ Reco
 				return false, err
 			}
 
-			for i, v := range t.indices { //TODO +test
+			for i, v := range t.indices { //TODO(indices) +test
 				if v == nil {
 					continue
 				}

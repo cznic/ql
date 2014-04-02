@@ -282,7 +282,7 @@ func (t *table) blobCols() (r []*col) {
 	return
 }
 
-func (t *table) truncate() (err error) { //TODO truncate indices
+func (t *table) truncate() (err error) { //TODO(indices) truncate indices
 	h := t.head
 	var rec []interface{}
 	blobCols := t.blobCols()
@@ -351,7 +351,7 @@ func (t *table) addIndex0(unique bool, indexName string, colIndex int) (btreeInd
 	}
 }
 
-func (t *table) addIndex(unique bool, indexName string, colIndex int) error { //TODO blobs
+func (t *table) addIndex(unique bool, indexName string, colIndex int) error { //TODO(indices) blobs
 	x, err := t.addIndex0(unique, indexName, colIndex)
 	if err != nil {
 		return err

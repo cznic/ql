@@ -8,7 +8,7 @@
 
 //TODO verify there's a graceful failure for a 2G+ blob on a 32 bit machine.
 
-//TODO Describe when an index will be used with examples. Show also how to circumvent the limitations.
+//TODO(indices) Describe when an index will be used with examples. Show also how to circumvent the limitations.
 
 // Package ql is a pure Go embedded (S)QL database.
 //

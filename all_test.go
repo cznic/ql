@@ -968,29 +968,6 @@ func TestRowsAffected(t *testing.T) {
 	}
 }
 
-func TestTxBug(t *testing.T) { //TODO move below
-	db, err := OpenMem()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	ctx := NewRWCtx()
-	e := func(q string) {
-		if _, _, err = db.Run(ctx, q); err != nil {
-			t.Fatal(err)
-		}
-
-		dumpDB(db, "post\n\t"+q, t)
-	}
-
-	e("BEGIN TRANSACTION; CREATE TABLE t (i int); COMMIT;")
-	e("BEGIN TRANSACTION; INSERT INTO t VALUES(1000);")
-	e("	BEGIN TRANSACTION; INSERT INTO t VALUES(2000);")
-	e("	ROLLBACK;")
-	e("INSERT INTO t VALUES(3000);")
-	e("COMMIT;")
-}
-
 func dumpDB(db *DB, tag string, t *testing.T) {
 	t.Logf("---- %s", tag)
 	for nm, tab := range db.root.tables {
