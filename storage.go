@@ -492,7 +492,7 @@ func newRoot(store storage) (r *root, err error) {
 		}, nil
 	case 1: // existing DB, load tables
 		if len(data) != 1 {
-			return nil, fmt.Errorf("corrupted DB")
+			return nil, fmt.Errorf("corrupted DB") //LATER these messages must be distinct
 		}
 
 		p, ok := data[0].(int64)
@@ -526,7 +526,7 @@ func newRoot(store storage) (r *root, err error) {
 				return nil, err
 			}
 
-			if r.tables[t.name] != nil {
+			if r.tables[t.name] != nil { // duplicate
 				return nil, fmt.Errorf("corrupted DB")
 			}
 

@@ -5660,7 +5660,7 @@ SELECT * FROM t ORDER BY c;
 -- 518
 BEGIN TRANSACTION;
 	CREATE TABLE t (i int);
-	CREATE INDEX id ON t (id());
+	CREATE INDEX xid ON t (id());
 	INSERT INTO t VALUES(42);
 	INSERT INTO t VALUES(24);
 	CREATE INDEX ii ON t (i);
@@ -5674,3 +5674,63 @@ SELECT * FROM t ORDER BY i;
 [1]
 [42]
 [999]
+
+-- 519
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	CREATE INDEX i ON t (i);
+COMMIT;
+||collision: i
+
+-- 520
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	CREATE INDEX t ON t (i);
+COMMIT;
+||collision: t
+
+-- 521
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	CREATE TABLE u (s string);
+	CREATE INDEX u ON t (i);
+COMMIT;
+||collision.*: u
+
+-- 522
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	CREATE TABLE u (s string);
+	CREATE INDEX z ON t (i);
+	CREATE INDEX z ON u (s);
+COMMIT;
+||already
+
+-- 523
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	CREATE INDEX u ON u (s);
+COMMIT;
+||collision: u
+
+-- 524
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	CREATE INDEX v ON u (v);
+COMMIT;
+||collision: v
+
+-- 525
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int, s string);
+	CREATE INDEX s ON t (i);
+COMMIT;
+||collision.*: s
+
+-- 526
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	CREATE INDEX id ON t (i);
+COMMIT;
+SELECT * FROM t;
+|?i

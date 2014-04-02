@@ -789,14 +789,25 @@ yydefault:
 	case 22:
 
 		{
-			yyVAL.item = &createIndexStmt{yyS[yypt-7].item.(bool), yyS[yypt-5].item.(string), yyS[yypt-3].item.(string), yyS[yypt-1].item.(string)}
+			indexName, tableName, columnName := yyS[yypt-5].item.(string), yyS[yypt-3].item.(string), yyS[yypt-1].item.(string)
+			yyVAL.item = &createIndexStmt{yyS[yypt-7].item.(bool), indexName, tableName, columnName}
+			if indexName == tableName || indexName == columnName {
+				yylex.(*lexer).err("index name collision: %s", indexName)
+				goto ret1
+			}
 		}
 	case 23:
 
 		{
-			yyVAL.item = &createIndexStmt{yyS[yypt-9].item.(bool), yyS[yypt-7].item.(string), yyS[yypt-5].item.(string), yyS[yypt-3].item.(string) + "()"}
+			indexName, tableName, columnName := yyS[yypt-7].item.(string), yyS[yypt-5].item.(string), yyS[yypt-3].item.(string)
+			yyVAL.item = &createIndexStmt{yyS[yypt-9].item.(bool), indexName, tableName, "id()"}
 			if yyS[yypt-3].item.(string) != "id" {
-				yylex.(*lexer).err("only the built-in id() can be indexed on")
+				yylex.(*lexer).err("only the built-in function id() can be used in index: %s()", columnName)
+				goto ret1
+			}
+
+			if indexName == tableName {
+				yylex.(*lexer).err("index name collision: %s", indexName)
 				goto ret1
 			}
 		}

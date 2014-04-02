@@ -1077,7 +1077,7 @@ func testIndices(db *DB, t *testing.T) {
 			INSERT INTO t VALUES(24);
 		COMMIT;`)
 	e(`	BEGIN TRANSACTION;
-			CREATE INDEX i ON t (i); //TODO this should fail due to name collision
+			CREATE INDEX xi ON t (i);
 		COMMIT;`)
 	e(`	BEGIN TRANSACTION;
 			INSERT INTO t VALUES(1);

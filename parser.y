@@ -195,13 +195,24 @@ Conversion:
 CreateIndexStmt:
 	create CreateIndexStmtUnique index identifier on identifier '(' identifier ')'
 	{
-		$$ = &createIndexStmt{$2.(bool), $4.(string), $6.(string), $8.(string)}
+		indexName, tableName, columnName := $4.(string), $6.(string), $8.(string)
+		$$ = &createIndexStmt{$2.(bool), indexName, tableName, columnName}
+		if indexName == tableName || indexName == columnName {
+			yylex.(*lexer).err("index name collision: %s", indexName)
+			goto ret1
+		}
 	}
 |	create CreateIndexStmtUnique index identifier on identifier '(' identifier '(' ')' ')'
 	{
-		$$ = &createIndexStmt{$2.(bool), $4.(string), $6.(string), $8.(string)+"()"}
+		indexName, tableName, columnName := $4.(string), $6.(string), $8.(string)
+		$$ = &createIndexStmt{$2.(bool), indexName, tableName, "id()"}
 		if $8.(string) != "id" {
-			yylex.(*lexer).err("only the built-in id() can be indexed on")
+			yylex.(*lexer).err("only the built-in function id() can be used in index: %s()", columnName)
+			goto ret1
+		}
+
+		if indexName == tableName {
+			yylex.(*lexer).err("index name collision: %s", indexName)
 			goto ret1
 		}
 	}

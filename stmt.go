@@ -653,13 +653,22 @@ func (s *createIndexStmt) String() string {
 }
 
 func (s *createIndexStmt) exec(ctx *execCtx) (Recordset, error) {
-	if t, i := ctx.db.root.findIndexByName(s.indexName); i != nil {
+	root := ctx.db.root
+	if root.tables[s.indexName] != nil {
+		return nil, fmt.Errorf("CREATE INDEX: index name collision with existing table: %s", s.indexName)
+	}
+
+	if t, i := root.findIndexByName(s.indexName); i != nil {
 		return nil, fmt.Errorf("CREATE INDEX: table %s already has an index named %s", t.name, i.name)
 	}
 
-	t, ok := ctx.db.root.tables[s.tableName]
+	t, ok := root.tables[s.tableName]
 	if !ok {
 		return nil, fmt.Errorf("CREATE INDEX: table does not exist %s", s.tableName)
+	}
+
+	if findCol(t.cols, s.indexName) != nil {
+		return nil, fmt.Errorf("CREATE INDEX: index name collision with existing column: %s", s.indexName)
 	}
 
 	if s.colName == "id()" {

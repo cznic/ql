@@ -1171,9 +1171,9 @@
 //
 // Create index statements create new indices. Index is a named projection of
 // ordered values of a table column to the respective records. As a special
-// case the id() of the record can be indexed. Index name must not collide with
-// a name of any existing table and it also cannot the same as of any column
-// name of the table the index is on. (TODO +tests)
+// case the id() of the record can be indexed. Index name must not be the same
+// as any of the existing tables and it also cannot be the same as of any
+// column name of the table the index is on. (TODO +tests)
 //
 //  CreateIndexStmt = "CREATE" "INDEX" IndexName
 //  	"ON" TableName "(" ( ColumnName | "id" Call ) ")" .

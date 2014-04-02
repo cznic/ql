@@ -26,17 +26,17 @@ DB root is a 1-scalar found at a fixed handle (#1).
 	| 0 | head | handle | First table meta data |
 	+---+------+--------+-----------------------+
 
-Head is the handle of meta data for the first table or zero if there are no
-tables in the DB..
+Head is the head of a single linked list of table of meta data. It's zero if
+there are no tables in the DB.
 
 Table meta data
 
-Table meta data is a 6-scalar.
+Table meta data are a 6-scalar.
 
 	+---+---------+--------+--------------------------+
 	| # | Name    | Type   |      Description         |
 	+---+---------+--------+--------------------------+
-	| 0 | next    | handle | Table meta data.         |
+	| 0 | next    | handle | Next table meta data.    |
 	| 1 | scols   | string | Column defintitions      |
 	| 2 | hhead   | handle | -> head -> first record  |
 	| 3 | name    | string | Table name               |
