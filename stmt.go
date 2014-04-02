@@ -401,6 +401,14 @@ func (s *alterTableAddStmt) exec(ctx *execCtx) (Recordset, error) { //TODO(indic
 		}
 	}
 
+	if t.hasIndices() {
+		t.indices = append(t.indices, nil)
+		t.xroots = append(t.xroots, 0)
+		if err := t.store.Update(t.hxroots, t.xroots...); err != nil {
+			return nil, err
+		}
+	}
+
 	t.cols0 = append(t.cols0, s.c)
 	return nil, t.updated()
 }

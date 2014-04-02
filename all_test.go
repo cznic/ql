@@ -1138,6 +1138,20 @@ func testIndices(db *DB, t *testing.T) {
 		BEGIN TRANSACTION;
 			DROP INDEX x;
 		COMMIT;`)
+	e(`	BEGIN TRANSACTION;
+			DROP TABLE IF EXISTS t;
+			CREATE TABLE t (i int);
+			CREATE INDEX x ON t (i);
+			ALTER TABLE t ADD s string;
+		COMMIT;`)
+	e(`	BEGIN TRANSACTION;
+			DROP TABLE IF EXISTS t;
+			CREATE TABLE t (i int);
+			CREATE INDEX x ON t (i);
+		COMMIT;`)
+	e(`	BEGIN TRANSACTION;
+			ALTER TABLE t ADD s string;
+		COMMIT;`)
 
 	if err = db.Close(); err != nil {
 		t.Fatal(err)

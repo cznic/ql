@@ -5986,3 +5986,30 @@ SELECT * FROM t ORDER BY i;
 |li
 [42]
 [420]
+
+-- 547
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	CREATE INDEX x ON t (i);
+	ALTER TABLE t ADD s string;
+COMMIT;
+SELECT * FROM t;
+|?i, ?s
+
+-- 548
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	CREATE INDEX x ON t (i);
+	ALTER TABLE t ADD s string;
+COMMIT;
+SELECT * FROM t ORDER BY i;
+|?i, ?s
+
+-- 549
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	CREATE INDEX x ON t (i);
+	ALTER TABLE t ADD s string;
+COMMIT;
+SELECT * FROM t ORDER BY s;
+|?i, ?s
