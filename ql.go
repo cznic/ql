@@ -14,6 +14,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"math/big"
 	"runtime"
@@ -429,7 +430,12 @@ func (r *orderByRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, da
 
 	it, err := t.SeekFirst()
 	if err != nil {
-		return noEOF(err)
+		if err != io.EOF {
+			return err
+		}
+
+		_, err = f(nil, []interface{}{flds})
+		return err
 	}
 
 	var data []interface{}
