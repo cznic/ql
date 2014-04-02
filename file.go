@@ -1109,7 +1109,7 @@ func init() {
 	}
 }
 
-func (x *fileIndex) Create(indexedValue interface{}, h int64) error { //TODO(indices) blobs
+func (x *fileIndex) Create(indexedValue interface{}, h int64) error {
 	if x.f.wal != nil {
 		defer x.f.lock()()
 	}
@@ -1151,7 +1151,12 @@ func (x *fileIndex) Create(indexedValue interface{}, h int64) error { //TODO(ind
 	}
 }
 
-func (x *fileIndex) Delete(indexedValue interface{}, h int64) error { //TODO(indices) blobs
+func (x *fileIndex) Delete(indexedValue interface{}, h int64) error {
+	chunk, ok := indexedValue.(chunk)
+	if ok {
+		indexedValue = chunk.b
+	}
+
 	t := x.t
 	var k []byte
 	var err error
