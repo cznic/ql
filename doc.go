@@ -1173,7 +1173,7 @@
 // ordered values of a table column to the respective records. As a special
 // case the id() of the record can be indexed. Index name must not be the same
 // as any of the existing tables and it also cannot be the same as of any
-// column name of the table the index is on. (TODO +tests)
+// column name of the table the index is on.
 //
 //  CreateIndexStmt = "CREATE" "INDEX" IndexName
 //  	"ON" TableName "(" ( ColumnName | "id" Call ) ")" .
@@ -1196,9 +1196,8 @@
 // CREATE TABLE
 //
 // Create table statements create new tables. A column definition declares the
-// column name and type. Table names and column names are case sensitive. The
-// table must not exist before and the name of the table must not collide with
-// a name of any existing index. (TODO +tests)
+// column name and type. Table names and column names are case sensitive.
+// Neither a table or an index of the same name may exist in the DB.
 //
 //  CreateTableStmt = "CREATE" "TABLE" [ "IF" "NOT" "EXISTS" ] TableName
 //  	"(" ColumnDef { "," ColumnDef } [ "," ] ")" .

@@ -5734,3 +5734,11 @@ BEGIN TRANSACTION;
 COMMIT;
 SELECT * FROM t;
 |?i
+
+-- 526
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	CREATE INDEX x ON t (i);
+	CREATE TABLE x (s string);
+COMMIT;
+||table t.*index x

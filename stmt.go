@@ -708,12 +708,17 @@ func (s *createTableStmt) String() string {
 }
 
 func (s *createTableStmt) exec(ctx *execCtx) (_ Recordset, err error) {
-	if _, ok := ctx.db.root.tables[s.tableName]; ok {
+	root := ctx.db.root
+	if _, ok := root.tables[s.tableName]; ok {
 		if s.ifNotExists {
 			return nil, nil
 		}
 
 		return nil, fmt.Errorf("CREATE TABLE: table exists %s", s.tableName)
+	}
+
+	if t, x := root.findIndexByName(s.tableName); x != nil {
+		return nil, fmt.Errorf("CREATE TABLE: table %s has index %s", t.name, s.tableName)
 	}
 
 	m := map[string]bool{}
@@ -726,7 +731,7 @@ func (s *createTableStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 		m[nm] = true
 		c.index = i
 	}
-	_, err = ctx.db.root.createTable(s.tableName, s.cols)
+	_, err = root.createTable(s.tableName, s.cols)
 	return
 }
 
