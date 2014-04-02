@@ -987,7 +987,6 @@ func dumpDB(db *DB, tag string) (string, error) {
 			h = rec[0].(int64)
 		}
 		f.Format("%u")
-	X:
 		for i, v := range tab.indices {
 			if v == nil {
 				continue
@@ -1008,7 +1007,7 @@ func dumpDB(db *DB, tag string) (string, error) {
 				k, v, err := it.Next()
 				if err != nil {
 					if err == io.EOF {
-						continue X
+						break
 					}
 
 					return "", err
@@ -1036,7 +1035,7 @@ func testIndices(db *DB, t *testing.T) {
 			t.Fatal(err)
 		}
 
-		t.Logf("%s\n....", s)
+		t.Logf("%s\n\n", s)
 		if db.isMem {
 			return
 		}
@@ -1054,7 +1053,7 @@ func testIndices(db *DB, t *testing.T) {
 			t.Fatal(err)
 		}
 
-		t.Logf("%s\n====\n", s)
+		t.Logf("%s\n\n", s)
 	}
 
 	e(`	BEGIN TRANSACTION;
@@ -1095,6 +1094,23 @@ func testIndices(db *DB, t *testing.T) {
 		COMMIT;`)
 	e(`	BEGIN TRANSACTION;
 			ALTER TABLE t DROP COLUMN i;
+		COMMIT;`)
+
+	e(`	BEGIN TRANSACTION;
+			DROP TABLE IF EXISTS t;
+			CREATE TABLE t (i int);
+			CREATE INDEX x ON t (i);
+			INSERT INTO t VALUES (42);
+			INSERT INTO t SELECT 10*i FROM t;
+		COMMIT;`)
+	e(`	BEGIN TRANSACTION;
+			DROP TABLE IF EXISTS t;
+			CREATE TABLE t (i int);
+			CREATE INDEX x ON t (i);
+			INSERT INTO t VALUES (42);
+		COMMIT;
+		BEGIN TRANSACTION;
+			INSERT INTO t SELECT 10*i FROM t;
 		COMMIT;`)
 
 	if err = db.Close(); err != nil {
