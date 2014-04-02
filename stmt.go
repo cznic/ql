@@ -387,7 +387,7 @@ func (s *alterTableAddStmt) String() string {
 	return fmt.Sprintf("ALTER TABLE %s ADD COLUMN %s;", s.tableName, s.c.name)
 }
 
-func (s *alterTableAddStmt) exec(ctx *execCtx) (Recordset, error) { //TODO(indices)
+func (s *alterTableAddStmt) exec(ctx *execCtx) (Recordset, error) {
 	t, ok := ctx.db.root.tables[s.tableName]
 	if !ok {
 		return nil, fmt.Errorf("ALTER TABLE: table %s does not exist", s.tableName)
