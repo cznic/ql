@@ -473,7 +473,7 @@ func (r *whereRset) doIndexedBool(t *table, en indexIterator, f func(id interfac
 			return noEOF(err)
 		}
 
-		switch x := k.value.(type) {
+		switch x := k.(type) {
 		case nil:
 			panic("internal error") // nil should sort before true
 		case bool:
@@ -747,7 +747,7 @@ func (r tableRset) doIndex(x *indexedCol, ctx *execCtx, onlyNames bool, f func(i
 		}
 
 		id++
-		rec[0] = k.value
+		rec[0] = k
 		m, err := f(id, rec)
 		if !m || err != nil {
 			return err

@@ -45,7 +45,8 @@ type temp interface {
 }
 
 type indexIterator interface {
-	Next() (k indexKey, v int64, err error)
+	Next() (k interface{}, h int64, err error)
+	//LATER Prev() (k indexKey, v int64, err error)
 }
 
 type btreeIndex interface {

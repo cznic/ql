@@ -1202,54 +1202,59 @@ func (x *fileIndex) Seek(indexedValue interface{}) (indexIterator, bool, error) 
 		return nil, false, err
 	}
 
-	return &fileIndexIterator{x.f, en}, hit, nil
+	return &fileIndexIterator{x.f, en, x.unique}, hit, nil
 }
 
 func (x *fileIndex) SeekFirst() (iter indexIterator, err error) {
 	en, err := x.t.SeekFirst()
-	return &fileIndexIterator{x.f, en}, err
+	return &fileIndexIterator{x.f, en, x.unique}, err
 }
 
 func (x *fileIndex) SeekLast() (iter indexIterator, err error) {
 	en, err := x.t.SeekLast()
-	return &fileIndexIterator{x.f, en}, err
+	return &fileIndexIterator{x.f, en, x.unique}, err
 }
 
 type fileIndexIterator struct {
-	f  *file
-	en *lldb.BTreeEnumerator
+	f      *file
+	en     *lldb.BTreeEnumerator
+	unique bool
 }
 
-func (i *fileIndexIterator) Next() (indexKey, int64, error) { //TODO(indices) blobs: +test
+func (i *fileIndexIterator) Next() (interface{}, int64, error) { //TODO(indices) blobs: +test
 	var k indexKey
 	bk, bv, err := i.en.Next()
 	if err != nil {
-		return k, -1, err
+		return nil, -1, err
 	}
 
 	dk, err := lldb.DecodeScalars(bk)
 	if err != nil {
-		return k, -1, err
+		return nil, -1, err
 	}
 
 	b, ok := dk[0].([]byte)
 	if ok {
 		dk[0] = chunk{i.f, b}
 		if expand(dk[:1]); err != nil {
-			return k, -1, err
+			return nil, -1, err
 		}
 	}
 
-	dv, err := lldb.DecodeScalars(bv)
-	if err != nil {
-		return k, -1, err
-	}
-
 	k.value = dk[0]
-	if len(dk) > 0 {
-		k.h = dk[1].(int64)
-	}
+	switch i.unique {
+	case true:
+		if k.value == nil {
+			return nil, dk[1].(int64), nil
+		}
 
-	h, _ := dv[0].(int64)
-	return k, h, nil
+		dv, err := lldb.DecodeScalars(bv)
+		if err != nil {
+			return nil, -1, err
+		}
+
+		return k.value, dv[0].(int64), nil
+	default:
+		return k.value, dk[1].(int64), nil
+	}
 }

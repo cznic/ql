@@ -18,7 +18,7 @@ import (
 var (
 	_ btreeIndex    = (*memIndex)(nil)
 	_ btreeIterator = (*memBTreeIterator)(nil)
-	_ indexIterator = (*xenumerator)(nil)
+	_ indexIterator = (*xenumerator2)(nil)
 	_ storage       = (*mem)(nil)
 	_ temp          = (*memTemp)(nil)
 )
@@ -99,15 +99,48 @@ func (x *memIndex) Drop() error {
 
 func (x *memIndex) Seek(indexedValue interface{}) (indexIterator, bool, error) {
 	it, hit := x.t.Seek(indexKey{indexedValue, 0})
-	return it, hit, nil
+	return &xenumerator2{*it, x.unique}, hit, nil
 }
 
 func (x *memIndex) SeekFirst() (iter indexIterator, err error) {
-	return x.t.SeekFirst()
+	it, err := x.t.SeekFirst()
+	if err != nil {
+		return nil, err
+	}
+
+	return &xenumerator2{*it, x.unique}, nil
 }
 
 func (x *memIndex) SeekLast() (iter indexIterator, err error) {
-	return x.t.SeekLast()
+	it, err := x.t.SeekLast()
+	if err != nil {
+		return nil, err
+	}
+
+	return &xenumerator2{*it, x.unique}, nil
+}
+
+type xenumerator2 struct {
+	it     xenumerator
+	unique bool
+}
+
+func (it *xenumerator2) Next() (interface{}, int64, error) {
+	k, h, err := it.it.Next()
+	if err != nil {
+		return nil, -1, err
+	}
+
+	switch it.unique {
+	case true:
+		if k.value == nil {
+			return nil, k.h, nil
+		}
+
+		return k.value, h, nil
+	default:
+		return k.value, k.h, nil
+	}
 }
 
 type memBTreeIterator enumerator
