@@ -1215,20 +1215,6 @@ func (x *fileIndex) SeekLast() (iter indexIterator, err error) {
 	return &fileIndexIterator{x.f, en}, err
 }
 
-func (x *fileIndex) Update(oldIndexedValue, newIndexedValue interface{}, h int64) error { //TODO(indices) blobs
-	if err := x.Delete(oldIndexedValue, h); err != nil {
-		return err
-	}
-
-	//TODO-data := []interface{}{newIndexedValue}
-	//TODO-if err := x.f.flatten(data); err != nil {
-	//TODO-	return err
-	//TODO-}
-
-	//TODO-return x.Create(data[0], h)
-	return x.Create(newIndexedValue, h)
-}
-
 type fileIndexIterator struct {
 	f  *file
 	en *lldb.BTreeEnumerator

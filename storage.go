@@ -57,7 +57,6 @@ type btreeIndex interface {
 	Seek(indexedValue interface{}) (iter indexIterator, hit bool, err error) // supports where clause
 	SeekFirst() (iter indexIterator, err error)                              // supports aggregate min / ascending order by
 	SeekLast() (iter indexIterator, err error)                               // supports aggregate max / descending order by
-	Update(oldIndexedValue, newIndexedValue interface{}, h int64) error      // supports update statement
 }
 
 type indexedCol struct {

@@ -110,14 +110,6 @@ func (x *memIndex) SeekLast() (iter indexIterator, err error) {
 	return x.t.SeekLast()
 }
 
-func (x *memIndex) Update(oldIndexedValue, newIndexedValue interface{}, h int64) error {
-	if err := x.Delete(oldIndexedValue, h); err != nil {
-		return err
-	}
-
-	return x.Create(newIndexedValue, h)
-}
-
 type memBTreeIterator enumerator
 
 func (it *memBTreeIterator) Next() (k, v []interface{}, err error) {
