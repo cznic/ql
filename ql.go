@@ -8,6 +8,8 @@
 
 //MAYBE CROSSJOIN (explicit form), LEFT JOIN, INNER JOIN, OUTER JOIN equivalents.
 
+//TODO(indices) +test for normal vs unique indices
+
 package ql
 
 import (
@@ -458,7 +460,92 @@ type whereRset struct {
 	src  rset
 }
 
+func (r *whereRset) doIndexedBool(t *table, en indexIterator, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
+	m, err := f(nil, []interface{}{t.flds()})
+	if !m || err != nil {
+		return
+	}
+
+	var ts tableRset
+	for {
+		k, h, err := en.Next()
+		if err != nil {
+			return noEOF(err)
+		}
+
+		switch x := k.value.(type) {
+		case nil:
+			panic("internal error") // nil should sort before true
+		case bool:
+			if !x {
+				return nil
+			}
+		}
+
+		if _, err := ts.doOne(t, h, f); err != nil {
+			return err
+		}
+	}
+}
+
+func (r *whereRset) tryUseIndex(ctx *execCtx, f func(id interface{}, data []interface{}) (more bool, err error)) (bool, error) {
+	c, ok := r.src.(*crossJoinRset)
+	if !ok {
+		return false, nil
+	}
+
+	tabName, ok := c.isSingleTable()
+	if !ok {
+		return false, nil
+	}
+
+	t := ctx.db.root.tables[tabName]
+	if t == nil {
+		return true, fmt.Errorf("table %s does not exist", r)
+	}
+
+	if !t.hasIndices() {
+		return false, nil
+	}
+
+	//LATER WHERE column1 boolOp column2 ...
+	//LATER WHERE !column (rewritable as: column == false)
+	switch ex := r.expr.(type) {
+	case *ident: // WHERE colum
+		c := findCol(t.cols0, ex.s)
+		if c == nil { // no such column
+			return false, fmt.Errorf("unknown column %s", ex)
+		}
+
+		if c.typ != qBool { // not a bool column
+			return false, nil
+		}
+
+		xCol := t.indices[c.index+1]
+		if xCol == nil { // column isn't indexed
+			return false, nil
+		}
+
+		en, _, err := xCol.x.Seek(true)
+		if err != nil {
+			return false, err
+		}
+
+		return true, r.doIndexedBool(t, en, f)
+	case *binaryOperation: // WHERE column relOp fixed value or WHERE fixed value relOp column
+		panic("TODO") //TODO(indices) check for bool indexed column
+	default:
+		return false, nil
+	}
+}
+
 func (r *whereRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
+	if !onlyNames {
+		if ok, err := r.tryUseIndex(ctx, f); ok || err != nil {
+			return err
+		}
+	}
+
 	m := map[interface{}]interface{}{}
 	var flds []*fld
 	ok := false
@@ -669,6 +756,35 @@ func (r tableRset) doIndex(x *indexedCol, ctx *execCtx, onlyNames bool, f func(i
 	return
 }
 
+func (tableRset) doOne(t *table, h int64, f func(id interface{}, data []interface{}) (more bool, err error)) ( /* next handle */ int64, error) {
+	cols := t.cols
+	ncols := len(cols)
+	rec, err := t.store.Read(nil, h, cols...)
+	if err != nil {
+		return -1, err
+	}
+
+	h = rec[0].(int64)
+	if n := ncols + 2 - len(rec); n > 0 {
+		rec = append(rec, make([]interface{}, n)...)
+	}
+
+	for i, c := range cols {
+		if x := c.index; 2+x < len(rec) {
+			rec[2+i] = rec[2+x]
+			continue
+		}
+
+		rec[2+i] = nil //DONE +test (#571)
+	}
+	m, err := f(rec[1], rec[2:2+ncols]) // 0:next, 1:id
+	if !m || err != nil {
+		return -1, err
+	}
+
+	return h, nil
+}
+
 func (r tableRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
 	t, ok := ctx.db.root.tables[string(r)]
 	var x *indexedCol
@@ -691,32 +807,7 @@ func (r tableRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, data 
 		return
 	}
 
-	cols := t.cols
-	ncols := len(cols)
-	h, store := t.head, t.store
-	for h != 0 {
-		rec, err := store.Read(nil, h, cols...)
-		if err != nil {
-			return err
-		}
-
-		h = rec[0].(int64)
-		if n := ncols + 2 - len(rec); n > 0 {
-			rec = append(rec, make([]interface{}, n)...)
-		}
-
-		for i, c := range cols {
-			if x := c.index; 2+x < len(rec) {
-				rec[2+i] = rec[2+x]
-				continue
-			}
-
-			rec[2+i] = nil //DONE +test (#571)
-		}
-		m, err := f(rec[1], rec[2:2+ncols]) // 0:next, 1:id
-		if !m || err != nil {
-			return err
-		}
+	for h := t.head; h > 0 && err == nil; h, err = r.doOne(t, h, f) {
 	}
 	return
 }
@@ -729,16 +820,21 @@ func (r *crossJoinRset) String() string {
 	a := make([]string, len(r.sources))
 	for i, pair0 := range r.sources {
 		pair := pair0.([]interface{})
-		qualifier := pair[1].(string)
+		altName := pair[1].(string)
 		switch x := pair[0].(type) {
 		case string: // table name
-			a[i] = x
+			switch {
+			case altName == "":
+				a[i] = x
+			default:
+				a[i] = fmt.Sprintf("%s AS %s", x, altName)
+			}
 		case *selectStmt:
 			switch {
-			case qualifier == "":
+			case altName == "":
 				a[i] = fmt.Sprintf("(%s)", x)
 			default:
-				a[i] = fmt.Sprintf("(%s) AS %s", x, qualifier)
+				a[i] = fmt.Sprintf("(%s) AS %s", x, altName)
 			}
 		default:
 			log.Panic("internal error")
@@ -747,24 +843,35 @@ func (r *crossJoinRset) String() string {
 	return strings.Join(a, ", ")
 }
 
+func (r *crossJoinRset) isSingleTable() (string, bool) {
+	sources := r.sources
+	if len(sources) != 1 {
+		return "", false
+	}
+
+	pair := sources[0].([]interface{})
+	s, ok := pair[0].(string)
+	return s, ok
+}
+
 func (r *crossJoinRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
 	rsets := make([]rset, len(r.sources))
-	qualifiers := make([]string, len(r.sources))
+	altNames := make([]string, len(r.sources))
 	for i, pair0 := range r.sources {
 		pair := pair0.([]interface{})
-		qualifier := pair[1].(string)
+		altName := pair[1].(string)
 		switch x := pair[0].(type) {
 		case string: // table name
 			rsets[i] = tableRset(x)
-			if qualifier == "" {
-				qualifier = x
+			if altName == "" {
+				altName = x
 			}
 		case *selectStmt:
 			rsets[i] = x
 		default:
 			log.Panic("internal error")
 		}
-		qualifiers[i] = qualifier
+		altNames[i] = altName
 	}
 
 	if len(rsets) == 1 {
@@ -801,7 +908,7 @@ func (r *crossJoinRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, 
 			ok = true
 			if !fldsSent {
 				f0 := in[0].([]*fld)
-				q := qualifiers[iq]
+				q := altNames[iq]
 				for i, elem := range f0 {
 					nf := &fld{}
 					*nf = *elem
@@ -809,7 +916,7 @@ func (r *crossJoinRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, 
 					case q == "":
 						nf.name = ""
 					case nf.name != "":
-						nf.name = fmt.Sprintf("%s.%s", qualifiers[iq], nf.name)
+						nf.name = fmt.Sprintf("%s.%s", altNames[iq], nf.name)
 					}
 					f0[i] = nf
 				}

@@ -489,11 +489,6 @@ func (s *mem) Commit() (err error) {
 // Transaction index B+Tree
 
 type (
-	indexKey struct {
-		value interface{}
-		h     int64
-	}
-
 	xd struct { // data page
 		c  int
 		xd [2*kd + 1]xde

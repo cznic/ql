@@ -65,6 +65,11 @@ type indexedCol struct {
 	xroot  int64
 }
 
+type indexKey struct {
+	value interface{}
+	h     int64
+}
+
 // storage fields
 // 0: next  int64
 // 1: scols string

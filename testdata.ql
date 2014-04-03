@@ -6375,3 +6375,59 @@ COMMIT;
 SELECT * FROM t;
 |li, ?s
 [42 <nil>]
+
+-- 573
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+COMMIT;
+SELECT * FROM q.t;
+||syntax error
+
+-- 574
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(42);
+COMMIT;
+SELECT * FROM t AS u;
+|li
+[42]
+
+-- 575
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(42);
+COMMIT;
+SELECT u.x FROM t AS u;
+||unknown field u.x
+
+-- 576
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(42);
+COMMIT;
+SELECT u.i FROM t AS u;
+||unknown field u.i
+
+-- 577
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(42);
+COMMIT;
+SELECT i FROM t AS u;
+|li
+[42]
+
+-- 578
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int, b bool);
+	CREATE INDEX x ON t (b);
+	INSERT INTO t VALUES(24, false);
+	INSERT INTO t VALUES(333, NULL);
+	INSERT INTO t VALUES(42, true);
+	INSERT INTO t VALUES(240, false);
+	INSERT INTO t VALUES(420, true);
+COMMIT;
+SELECT i FROM t WHERE b ORDER BY i;
+|li
+[42]
+[420]
