@@ -466,7 +466,6 @@ func (r *whereRset) doIndexedBool(t *table, en indexIterator, f func(id interfac
 		return
 	}
 
-	var ts tableRset
 	for {
 		k, h, err := en.Next()
 		if err != nil {
@@ -482,7 +481,7 @@ func (r *whereRset) doIndexedBool(t *table, en indexIterator, f func(id interfac
 			}
 		}
 
-		if _, err := ts.doOne(t, h, f); err != nil {
+		if _, err := tableRset("").doOne(t, h, f); err != nil {
 			return err
 		}
 	}
@@ -532,8 +531,8 @@ func (r *whereRset) tryUseIndex(ctx *execCtx, f func(id interface{}, data []inte
 		}
 
 		return true, r.doIndexedBool(t, en, f)
-	case *binaryOperation: // WHERE column relOp fixed value or WHERE fixed value relOp column
-		panic("TODO") //TODO(indices) check for bool indexed column
+	case *binaryOperation: //TODO(indices) WHERE column relOp fixed value or WHERE fixed value relOp column
+		return false, nil
 	default:
 		return false, nil
 	}

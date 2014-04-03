@@ -15,6 +15,7 @@ import (
 	"path"
 	"path/filepath"
 	"runtime"
+	"runtime/debug"
 	"strings"
 	"testing"
 
@@ -1187,4 +1188,430 @@ func TestIndices(t *testing.T) {
 	}
 
 	testIndices(db, t)
+}
+
+func benchmarkInsertBool(b *testing.B, db *DB, size int, selectivity float64, index bool, teardown func()) {
+	if teardown != nil {
+		defer teardown()
+	}
+
+	ctx := NewRWCtx()
+	if _, _, err := db.Run(ctx, `
+		BEGIN TRANSACTION;
+			CREATE TABLE t (b bool);
+	`); err != nil {
+		b.Fatal(err)
+	}
+
+	if index {
+		if _, _, err := db.Run(ctx, `
+			CREATE INDEX x ON t (b);
+		`); err != nil {
+			b.Fatal(err)
+		}
+	}
+
+	ins, err := Compile("INSERT INTO t VALUES($1);")
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	trunc, err := Compile("TRUNCATE TABLE t;")
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	begin, err := Compile("BEGIN TRANSACTION;")
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	commit, err := Compile("COMMIT;")
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	rng := rand.New(rand.NewSource(42))
+	debug.FreeOSMemory()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		b.StopTimer()
+		if i != 0 {
+			if _, _, err = db.Execute(ctx, begin); err != nil {
+				b.Fatal(err)
+			}
+		}
+
+		if _, _, err = db.Execute(ctx, trunc); err != nil {
+			b.Fatal(err)
+		}
+
+		b.StartTimer()
+		for j := 0; j < size; j++ {
+			if _, _, err = db.Execute(ctx, ins, rng.Float64() < selectivity); err != nil {
+				b.Fatal(err)
+			}
+		}
+		if _, _, err = db.Execute(ctx, commit); err != nil {
+			b.Fatal(err)
+		}
+	}
+	b.StopTimer()
+	b.SetBytes(int64(size)) // bytes/s == inserts/s
+}
+
+func benchmarkInsertBoolMem(b *testing.B, size int, sel float64, index bool) {
+	db, err := OpenMem()
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	benchmarkInsertBool(b, db, size, sel, index, nil)
+}
+
+func BenchmarkInsertBoolMemNoX1e1(b *testing.B) {
+	benchmarkInsertBoolMem(b, 1e1, 0.5, false)
+}
+
+func BenchmarkInsertBoolMemNoX1e2(b *testing.B) {
+	benchmarkInsertBoolMem(b, 1e2, 0.5, false)
+}
+
+func BenchmarkInsertBoolMemNoX1e3(b *testing.B) {
+	benchmarkInsertBoolMem(b, 1e3, 0.5, false)
+}
+
+func BenchmarkInsertBoolMemNoX1e4(b *testing.B) {
+	benchmarkInsertBoolMem(b, 1e4, 0.5, false)
+}
+
+func BenchmarkInsertBoolMemNoX1e5(b *testing.B) {
+	benchmarkInsertBoolMem(b, 1e5, 0.5, false)
+}
+
+func BenchmarkInsertBoolMemX1e1(b *testing.B) {
+	benchmarkInsertBoolMem(b, 1e1, 0.5, true)
+}
+
+func BenchmarkInsertBoolMemX1e2(b *testing.B) {
+	benchmarkInsertBoolMem(b, 1e2, 0.5, true)
+}
+
+func BenchmarkInsertBoolMemX1e3(b *testing.B) {
+	benchmarkInsertBoolMem(b, 1e3, 0.5, true)
+}
+
+func BenchmarkInsertBoolMemX1e4(b *testing.B) {
+	benchmarkInsertBoolMem(b, 1e4, 0.5, true)
+}
+
+func BenchmarkInsertBoolMemX1e5(b *testing.B) {
+	benchmarkInsertBoolMem(b, 1e5, 0.5, true)
+}
+
+func benchmarkInsertBoolFile(b *testing.B, size int, sel float64, index bool) {
+	dir, err := ioutil.TempDir("", "ql-bench-")
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	n := runtime.GOMAXPROCS(0)
+	db, err := OpenFile(filepath.Join(dir, "ql.db"), &Options{CanCreate: true})
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	benchmarkInsertBool(b, db, size, sel, index, func() {
+		runtime.GOMAXPROCS(n)
+		db.Close()
+		os.RemoveAll(dir)
+	})
+}
+
+func BenchmarkInsertBoolFileNoX1e1(b *testing.B) {
+	benchmarkInsertBoolFile(b, 1e1, 0.5, false)
+}
+
+func BenchmarkInsertBoolFileNoX1e2(b *testing.B) {
+	benchmarkInsertBoolFile(b, 1e2, 0.5, false)
+}
+
+func BenchmarkInsertBoolFileNoX1e3(b *testing.B) {
+	benchmarkInsertBoolFile(b, 1e3, 0.5, false)
+}
+
+func BenchmarkInsertBoolFileNoX1e4(b *testing.B) {
+	benchmarkInsertBoolFile(b, 1e4, 0.5, false)
+}
+
+func BenchmarkInsertBoolFileX1e1(b *testing.B) {
+	benchmarkInsertBoolFile(b, 1e1, 0.5, true)
+}
+
+func BenchmarkInsertBoolFileX1e2(b *testing.B) {
+	benchmarkInsertBoolFile(b, 1e2, 0.5, true)
+}
+
+func BenchmarkInsertBoolFileX1e3(b *testing.B) {
+	benchmarkInsertBoolFile(b, 1e3, 0.5, true)
+}
+
+func BenchmarkInsertBoolFileX1e4(b *testing.B) {
+	benchmarkInsertBoolFile(b, 1e4, 0.5, true)
+}
+
+func benchmarkSelectBool(b *testing.B, db *DB, size int, selectivity float64, index bool, teardown func()) {
+	if teardown != nil {
+		defer teardown()
+	}
+
+	ctx := NewRWCtx()
+	if _, _, err := db.Run(ctx, `
+		BEGIN TRANSACTION;
+			CREATE TABLE t (b bool);
+	`); err != nil {
+		b.Fatal(err)
+	}
+
+	if index {
+		if _, _, err := db.Run(ctx, `
+			CREATE INDEX x ON t (b);
+		`); err != nil {
+			b.Fatal(err)
+		}
+	}
+
+	ins, err := Compile("INSERT INTO t VALUES($1);")
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	rng := rand.New(rand.NewSource(42))
+	for j := 0; j < size; j++ {
+		if _, _, err = db.Execute(ctx, ins, rng.Float64() < selectivity); err != nil {
+			b.Fatal(err)
+		}
+	}
+
+	if _, _, err := db.Run(ctx, "COMMIT;"); err != nil {
+		b.Fatal(err)
+	}
+
+	sel, err := Compile("SELECT * FROM t WHERE b;")
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	debug.FreeOSMemory()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		rss, _, err := db.Execute(nil, sel)
+		if err != nil {
+			b.Fatal(err)
+		}
+
+		if err = rss[0].Do(false, func([]interface{}) (bool, error) {
+			return true, nil
+		}); err != nil {
+			b.Fatal(err)
+		}
+	}
+	b.StopTimer()
+	b.SetBytes(int64(size)) // bytes/s == records processed/s
+}
+
+func benchmarkSelectBoolMem(b *testing.B, size int, sel float64, index bool) {
+	db, err := OpenMem()
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	benchmarkSelectBool(b, db, size, sel, index, nil)
+}
+
+// ----
+
+func BenchmarkSelectBoolMemNoX1e1Perc50(b *testing.B) {
+	benchmarkSelectBoolMem(b, 1e1, 0.5, false)
+}
+
+func BenchmarkSelectBoolMemNoX1e2Perc50(b *testing.B) {
+	benchmarkSelectBoolMem(b, 1e2, 0.5, false)
+}
+
+func BenchmarkSelectBoolMemNoX1e3Perc50(b *testing.B) {
+	benchmarkSelectBoolMem(b, 1e3, 0.5, false)
+}
+
+func BenchmarkSelectBoolMemNoX1e4Perc50(b *testing.B) {
+	benchmarkSelectBoolMem(b, 1e4, 0.5, false)
+}
+
+func BenchmarkSelectBoolMemNoX1e5Perc50(b *testing.B) {
+	benchmarkSelectBoolMem(b, 1e5, 0.5, false)
+}
+
+func BenchmarkSelectBoolMemX1e1Perc50(b *testing.B) {
+	benchmarkSelectBoolMem(b, 1e1, 0.5, true)
+}
+
+func BenchmarkSelectBoolMemX1e2Perc50(b *testing.B) {
+	benchmarkSelectBoolMem(b, 1e2, 0.5, true)
+}
+
+func BenchmarkSelectBoolMemX1e3Perc50(b *testing.B) {
+	benchmarkSelectBoolMem(b, 1e3, 0.5, true)
+}
+
+func BenchmarkSelectBoolMemX1e4Perc50(b *testing.B) {
+	benchmarkSelectBoolMem(b, 1e4, 0.5, true)
+}
+
+func BenchmarkSelectBoolMemX1e5Perc50(b *testing.B) {
+	benchmarkSelectBoolMem(b, 1e5, 0.5, true)
+}
+
+// ----
+
+func BenchmarkSelectBoolMemNoX1e1Perc5(b *testing.B) {
+	benchmarkSelectBoolMem(b, 1e1, 0.05, false)
+}
+
+func BenchmarkSelectBoolMemNoX1e2Perc5(b *testing.B) {
+	benchmarkSelectBoolMem(b, 1e2, 0.05, false)
+}
+
+func BenchmarkSelectBoolMemNoX1e3Perc5(b *testing.B) {
+	benchmarkSelectBoolMem(b, 1e3, 0.05, false)
+}
+
+func BenchmarkSelectBoolMemNoX1e4Perc5(b *testing.B) {
+	benchmarkSelectBoolMem(b, 1e4, 0.05, false)
+}
+
+func BenchmarkSelectBoolMemNoX1e5Perc5(b *testing.B) {
+	benchmarkSelectBoolMem(b, 1e5, 0.05, false)
+}
+
+func BenchmarkSelectBoolMemX1e1Perc5(b *testing.B) {
+	benchmarkSelectBoolMem(b, 1e1, 0.05, true)
+}
+
+func BenchmarkSelectBoolMemX1e2Perc5(b *testing.B) {
+	benchmarkSelectBoolMem(b, 1e2, 0.05, true)
+}
+
+func BenchmarkSelectBoolMemX1e3Perc5(b *testing.B) {
+	benchmarkSelectBoolMem(b, 1e3, 0.05, true)
+}
+
+func BenchmarkSelectBoolMemX1e4Perc5(b *testing.B) {
+	benchmarkSelectBoolMem(b, 1e4, 0.05, true)
+}
+
+func BenchmarkSelectBoolMemX1e5Perc5(b *testing.B) {
+	benchmarkSelectBoolMem(b, 1e5, 0.05, true)
+}
+
+func benchmarkSelectBoolFile(b *testing.B, size int, sel float64, index bool) {
+	dir, err := ioutil.TempDir("", "ql-bench-")
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	n := runtime.GOMAXPROCS(0)
+	db, err := OpenFile(filepath.Join(dir, "ql.db"), &Options{CanCreate: true})
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	benchmarkSelectBool(b, db, size, sel, index, func() {
+		runtime.GOMAXPROCS(n)
+		db.Close()
+		os.RemoveAll(dir)
+	})
+}
+
+// ----
+
+func BenchmarkSelectBoolFileNoX1e1Perc50(b *testing.B) {
+	benchmarkSelectBoolFile(b, 1e1, 0.5, false)
+}
+
+func BenchmarkSelectBoolFileNoX1e2Perc50(b *testing.B) {
+	benchmarkSelectBoolFile(b, 1e2, 0.5, false)
+}
+
+func BenchmarkSelectBoolFileNoX1e3Perc50(b *testing.B) {
+	benchmarkSelectBoolFile(b, 1e3, 0.5, false)
+}
+
+func BenchmarkSelectBoolFileNoX1e4Perc50(b *testing.B) {
+	benchmarkSelectBoolFile(b, 1e4, 0.5, false)
+}
+
+func BenchmarkSelectBoolFileNoX1e5Perc50(b *testing.B) {
+	benchmarkSelectBoolFile(b, 1e5, 0.5, false)
+}
+
+func BenchmarkSelectBoolFileX1e1Perc50(b *testing.B) {
+	benchmarkSelectBoolFile(b, 1e1, 0.5, true)
+}
+
+func BenchmarkSelectBoolFileX1e2Perc50(b *testing.B) {
+	benchmarkSelectBoolFile(b, 1e2, 0.5, true)
+}
+
+func BenchmarkSelectBoolFileX1e3Perc50(b *testing.B) {
+	benchmarkSelectBoolFile(b, 1e3, 0.5, true)
+}
+
+func BenchmarkSelectBoolFileX1e4Perc50(b *testing.B) {
+	benchmarkSelectBoolFile(b, 1e4, 0.5, true)
+}
+
+func BenchmarkSelectBoolFileX1e5Perc50(b *testing.B) {
+	benchmarkSelectBoolFile(b, 1e5, 0.5, true)
+}
+
+// ----
+
+func BenchmarkSelectBoolFileNoX1e1Perc5(b *testing.B) {
+	benchmarkSelectBoolFile(b, 1e1, 0.05, false)
+}
+
+func BenchmarkSelectBoolFileNoX1e2Perc5(b *testing.B) {
+	benchmarkSelectBoolFile(b, 1e2, 0.05, false)
+}
+
+func BenchmarkSelectBoolFileNoX1e3Perc5(b *testing.B) {
+	benchmarkSelectBoolFile(b, 1e3, 0.05, false)
+}
+
+func BenchmarkSelectBoolFileNoX1e4Perc5(b *testing.B) {
+	benchmarkSelectBoolFile(b, 1e4, 0.05, false)
+}
+
+func BenchmarkSelectBoolFileNoX1e5Perc5(b *testing.B) {
+	benchmarkSelectBoolFile(b, 1e5, 0.05, false)
+}
+
+func BenchmarkSelectBoolFileX1e1Perc5(b *testing.B) {
+	benchmarkSelectBoolFile(b, 1e1, 0.05, true)
+}
+
+func BenchmarkSelectBoolFileX1e2Perc5(b *testing.B) {
+	benchmarkSelectBoolFile(b, 1e2, 0.05, true)
+}
+
+func BenchmarkSelectBoolFileX1e3Perc5(b *testing.B) {
+	benchmarkSelectBoolFile(b, 1e3, 0.05, true)
+}
+
+func BenchmarkSelectBoolFileX1e4Perc5(b *testing.B) {
+	benchmarkSelectBoolFile(b, 1e4, 0.05, true)
+}
+
+func BenchmarkSelectBoolFileX1e5Perc5(b *testing.B) {
+	benchmarkSelectBoolFile(b, 1e5, 0.05, true)
 }
