@@ -53,7 +53,9 @@ type btreeIndex interface {
 	Create(indexedValue interface{}, h int64) error                          // supports insert record
 	Delete(indexedValue interface{}, h int64) error                          // supports delete record
 	Drop() error                                                             // supports drop table
-	Seek(indexedValue interface{}) (iter indexIterator, hit bool, err error) // supports where/order by
+	Seek(indexedValue interface{}) (iter indexIterator, hit bool, err error) // supports where
+	SeekFirst() (iter indexIterator, err error)                              // supports aggregate min / ascending order by
+	SeekLast() (iter indexIterator, err error)                               // supports aggregate max / descending order by
 	Update(oldIndexedValue, newIndexedValue interface{}, h int64) error      // supports update record
 }
 

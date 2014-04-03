@@ -1197,12 +1197,27 @@ func (x *fileIndex) Seek(indexedValue interface{}) (indexIterator, bool, error) 
 	return &fileIndexIterator{x.f, en}, hit, nil
 }
 
+func (x *fileIndex) SeekFirst() (iter indexIterator, err error) {
+	en, err := x.t.SeekFirst()
+	return &fileIndexIterator{x.f, en}, err
+}
+
+func (x *fileIndex) SeekLast() (iter indexIterator, err error) {
+	en, err := x.t.SeekLast()
+	return &fileIndexIterator{x.f, en}, err
+}
+
 func (x *fileIndex) Update(oldIndexedValue, newIndexedValue interface{}, h int64) error { //TODO(indices) blobs
 	if err := x.Delete(oldIndexedValue, h); err != nil {
 		return err
 	}
 
-	return x.Create(newIndexedValue, h)
+	data := []interface{}{newIndexedValue}
+	if err := x.f.flatten(data); err != nil {
+		return err
+	}
+
+	return x.Create(data[0], h)
 }
 
 type fileIndexIterator struct {
