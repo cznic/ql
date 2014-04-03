@@ -97,6 +97,7 @@ func (s *updateStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 		touched = make([]bool, len(t.cols0))
 	}
 	for h := t.head; h != 0; h = nh {
+		// Read can return lazily expanded chunks
 		data, err := t.store.Read(nil, h, t.cols...)
 		if err != nil {
 			return nil, err
@@ -154,7 +155,7 @@ func (s *updateStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 				continue
 			}
 
-			if err = v.x.Update(old[i-1], data[2+i-1], h); err != nil {
+			if err = v.x.Delete(old[i-1], h); err != nil {
 				return nil, err
 			}
 		}
@@ -163,6 +164,19 @@ func (s *updateStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 			return nil, err
 		}
 
+		for i, v := range t.indices {
+			if i == 0 { // id() N/A
+				continue
+			}
+
+			if v == nil || !touched[i-1] {
+				continue
+			}
+
+			if err = v.x.Create(data[2+i-1], h); err != nil {
+				return nil, err
+			}
+		}
 		cc.RowsAffected++
 	}
 	return
@@ -205,6 +219,7 @@ func (s *deleteStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 			data[i] = c.b
 		}
 		pdata = append(pdata[:0], data...)
+		// Read can return lazily expanded chunks
 		data, err = t.store.Read(nil, h, t.cols...)
 		if err != nil {
 			return nil, err
@@ -239,11 +254,13 @@ func (s *deleteStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 				continue
 			}
 
+			// overflow chunks left in place
 			if err = v.x.Delete(data[i+1], h); err != nil {
 				return nil, err
 			}
 		}
 
+		// overflow chunks freed here
 		if err = t.store.Delete(h, blobCols...); err != nil {
 			return nil, err
 		}
@@ -547,6 +564,8 @@ func (s *insertIntoStmt) execSelect(t *table, cols []*col, ctx *execCtx) (_ Reco
 
 			data0[0] = h
 			data0[1] = id
+
+			// Any overflow chunks are written here.
 			if h, err = t.store.Create(data0...); err != nil {
 				return false, err
 			}
@@ -556,6 +575,7 @@ func (s *insertIntoStmt) execSelect(t *table, cols []*col, ctx *execCtx) (_ Reco
 					continue
 				}
 
+				// Any overflow chunks are shared with the BTree key
 				if err = v.x.Create(data0[i+1], h); err != nil {
 					return false, err
 				}

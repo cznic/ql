@@ -48,15 +48,16 @@ type indexIterator interface {
 	Next() (k indexKey, v int64, err error)
 }
 
+//TODO(indices) blobs: +test drop {table, index} doesn't leak overflow chunks
 type btreeIndex interface {
-	Clear() error                                                            // supports truncate table
-	Create(indexedValue interface{}, h int64) error                          // supports insert record
-	Delete(indexedValue interface{}, h int64) error                          // supports delete record
-	Drop() error                                                             // supports drop table
-	Seek(indexedValue interface{}) (iter indexIterator, hit bool, err error) // supports where
+	Clear() error                                                            // supports truncate table statement
+	Create(indexedValue interface{}, h int64) error                          // supports insert into statement
+	Delete(indexedValue interface{}, h int64) error                          // supports delete from statement
+	Drop() error                                                             // supports drop table, drop index statements
+	Seek(indexedValue interface{}) (iter indexIterator, hit bool, err error) // supports where clause
 	SeekFirst() (iter indexIterator, err error)                              // supports aggregate min / ascending order by
 	SeekLast() (iter indexIterator, err error)                               // supports aggregate max / descending order by
-	Update(oldIndexedValue, newIndexedValue interface{}, h int64) error      // supports update record
+	Update(oldIndexedValue, newIndexedValue interface{}, h int64) error      // supports update statement
 }
 
 type indexedCol struct {

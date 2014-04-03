@@ -1109,6 +1109,8 @@ func init() {
 	}
 }
 
+// The []byte version of the key in the BTree shares chunks, if any, with
+// the value stored in the record.
 func (x *fileIndex) Create(indexedValue interface{}, h int64) error {
 	if x.f.wal != nil {
 		defer x.f.lock()()
@@ -1152,6 +1154,9 @@ func (x *fileIndex) Create(indexedValue interface{}, h int64) error {
 }
 
 func (x *fileIndex) Delete(indexedValue interface{}, h int64) error {
+	if x.f.wal != nil {
+		defer x.f.lock()()
+	}
 	chunk, ok := indexedValue.(chunk)
 	if ok {
 		indexedValue = chunk.b
@@ -1176,6 +1181,9 @@ func (x *fileIndex) Delete(indexedValue interface{}, h int64) error {
 }
 
 func (x *fileIndex) Drop() error {
+	if x.f.wal != nil {
+		defer x.f.lock()()
+	}
 	if err := x.Clear(); err != nil {
 		return err
 	}
@@ -1212,12 +1220,13 @@ func (x *fileIndex) Update(oldIndexedValue, newIndexedValue interface{}, h int64
 		return err
 	}
 
-	data := []interface{}{newIndexedValue}
-	if err := x.f.flatten(data); err != nil {
-		return err
-	}
+	//TODO-data := []interface{}{newIndexedValue}
+	//TODO-if err := x.f.flatten(data); err != nil {
+	//TODO-	return err
+	//TODO-}
 
-	return x.Create(data[0], h)
+	//TODO-return x.Create(data[0], h)
+	return x.Create(newIndexedValue, h)
 }
 
 type fileIndexIterator struct {

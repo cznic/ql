@@ -262,21 +262,22 @@ out are stripped off and "resupplied" on decoding transparently. See also
 blob.go. If the length of the resulting slice is <= shortBlob, the first and
 only chunk is the scalar encoding of
 
-	[]interface{}{typeTag, slice}.
+	
+	[]interface{}{typeTag, slice}.                  // initial (and last) chunk
 
 The length of slice can be zero (for blob("")). If the resulting slice is long
 (> shortBlob), the first chunk comes from encoding
 
-	[]interface{}{typeTag, nextHandle, firstPart}.
+	[]interface{}{typeTag, nextHandle, firstPart}.  // initial, but not final chunk
 
 In this case len(firstPart) <= shortBlob. Second and other chunks: If the chunk
 is the last one, src is
 
-	[]interface{lastPart}.
+	[]interface{lastPart}.                          // overflow chunk (last)
 
 In this case len(lastPart) <= 64kB. If the chunk is not the last one, src is
 
-	[]interface{}{nextHandle, part}.
+	[]interface{}{nextHandle, part}.                // overflow chunk (not last)
 
 In this case len(part) == 64kB.
 
