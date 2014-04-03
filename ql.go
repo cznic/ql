@@ -711,7 +711,7 @@ func (r tableRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, data 
 				continue
 			}
 
-			rec[2+i] = nil //TODO +test
+			rec[2+i] = nil //DONE +test (#571)
 		}
 		m, err := f(rec[1], rec[2:2+ncols]) // 0:next, 1:id
 		if !m || err != nil {

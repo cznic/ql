@@ -90,7 +90,7 @@ import (
 	UnaryExpr UpdateStmt UpdateStmt1
 	WhereClause
 
-%type	<list>	RecordSetList //TODO-
+%type	<list>	RecordSetList
 
 %start	StatementList
 

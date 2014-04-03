@@ -1132,7 +1132,7 @@ func (x *fileIndex) Create(indexedValue interface{}, h int64) error {
 
 		return t.Set(k, gbZeroInt64)
 	default: // unique, non NULL
-		k, err := lldb.EncodeScalars(nil, 0) //TODO 1st arg is not nil
+		k, err := lldb.EncodeScalars(indexedValue, 0)
 		if err != nil {
 			return err
 		}
@@ -1191,7 +1191,7 @@ func (x *fileIndex) Drop() error {
 	return x.f.a.Free(x.h)
 }
 
-func (x *fileIndex) Seek(indexedValue interface{}) (indexIterator, bool, error) { //TODO(indices) blobs
+func (x *fileIndex) Seek(indexedValue interface{}) (indexIterator, bool, error) { //TODO(indices) blobs: +test
 	k, err := lldb.EncodeScalars(indexedValue)
 	if err != nil {
 		return nil, false, err
@@ -1220,7 +1220,7 @@ type fileIndexIterator struct {
 	en *lldb.BTreeEnumerator
 }
 
-func (i *fileIndexIterator) Next() (indexKey, int64, error) { //TODO(indices) blobs
+func (i *fileIndexIterator) Next() (indexKey, int64, error) { //TODO(indices) blobs: +test
 	var k indexKey
 	bk, bv, err := i.en.Next()
 	if err != nil {

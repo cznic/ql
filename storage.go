@@ -48,7 +48,6 @@ type indexIterator interface {
 	Next() (k indexKey, v int64, err error)
 }
 
-//TODO(indices) blobs: +test drop {table, index} doesn't leak overflow chunks
 type btreeIndex interface {
 	Clear() error                                                            // supports truncate table statement
 	Create(indexedValue interface{}, h int64) error                          // supports insert into statement
@@ -203,7 +202,7 @@ func (t *table) load() (err error) {
 	}
 
 	if g, e := len(xroots), len(t.cols0)+1; g != e {
-		return fmt.Errorf("corrupted DB: got %d index roots, expected %d.", g, e)
+		return fmt.Errorf("corrupted DB: got %d index roots, expected %d", g, e)
 	}
 
 	indices, ok := data[4].(string)
@@ -213,7 +212,7 @@ func (t *table) load() (err error) {
 
 	a = strings.Split(indices, "|")
 	if g, e := len(a), len(t.cols0)+1; g != e {
-		return fmt.Errorf("corrupted DB: got %d index definitions, expected %d.", g, e)
+		return fmt.Errorf("corrupted DB: got %d index definitions, expected %d", g, e)
 	}
 
 	t.indices = make([]*indexedCol, len(a))
@@ -362,7 +361,7 @@ func (t *table) addIndex0(unique bool, indexName string, colIndex int) (btreeInd
 	}
 }
 
-func (t *table) addIndex(unique bool, indexName string, colIndex int) error { //TODO(indices) blobs
+func (t *table) addIndex(unique bool, indexName string, colIndex int) error {
 	x, err := t.addIndex0(unique, indexName, colIndex)
 	if err != nil {
 		return err
