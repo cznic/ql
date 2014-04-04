@@ -17,10 +17,14 @@ import (
 	"runtime"
 	"runtime/debug"
 	"strings"
+	"sync"
 	"testing"
 
 	"github.com/cznic/strutil"
 )
+
+// Note: All benchmarks report MB/s equal to record/s.
+const benchScale = 1e6
 
 func init() {
 	log.SetFlags(log.Flags() | log.Lshortfile)
@@ -293,7 +297,33 @@ func rnds16(rng *rand.Rand, n int) string {
 	return strings.Join(a, "")
 }
 
+var (
+	benchmarkScaleOnce  sync.Once
+	benchmarkSelectOnce = map[string]sync.Once{}
+)
+
+func benchProlog(b *testing.B) {
+	benchmarkScaleOnce.Do(func() {
+		b.Logf(`
+=============================================================
+NOTE: All benchmarks report records/s as %d bytes/s.
+=============================================================`, int64(benchScale))
+	})
+}
+
 func benchmarkSelect(b *testing.B, n int, sel List, ts testDB) {
+	if testing.Verbose() {
+		benchProlog(b)
+		id := fmt.Sprintf("%T|%d", ts, n)
+		once := benchmarkSelectOnce[id]
+		once.Do(func() {
+			b.Logf(`Having a table of %d records, each of size 1kB, measure the performance of
+%s
+`, n, sel)
+		})
+		benchmarkSelectOnce[id] = once
+	}
+
 	db, err := ts.setup()
 	if err != nil {
 		b.Error(err)
@@ -321,7 +351,7 @@ func benchmarkSelect(b *testing.B, n int, sel List, ts testDB) {
 		return
 	}
 
-	b.SetBytes(int64(n) * (2 + 1024))
+	b.SetBytes(int64(n) * benchScale)
 	runtime.GC()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -344,28 +374,28 @@ func BenchmarkSelectMem1kBx1e2(b *testing.B) {
 	benchmarkSelect(b, 1e2, compiledSelect, &memTestDB{})
 }
 
-func BenchmarkSelectFile1kBx1e2(b *testing.B) {
-	benchmarkSelect(b, 1e2, compiledSelect, &fileTestDB{})
-}
-
 func BenchmarkSelectMem1kBx1e3(b *testing.B) {
 	benchmarkSelect(b, 1e3, compiledSelect, &memTestDB{})
-}
-
-func BenchmarkSelectFile1kBx1e3(b *testing.B) {
-	benchmarkSelect(b, 1e3, compiledSelect, &fileTestDB{})
 }
 
 func BenchmarkSelectMem1kBx1e4(b *testing.B) {
 	benchmarkSelect(b, 1e4, compiledSelect, &memTestDB{})
 }
 
-func BenchmarkSelectFile1kBx1e4(b *testing.B) {
-	benchmarkSelect(b, 1e4, compiledSelect, &fileTestDB{})
-}
-
 func BenchmarkSelectMem1kBx1e5(b *testing.B) {
 	benchmarkSelect(b, 1e5, compiledSelect, &memTestDB{})
+}
+
+func BenchmarkSelectFile1kBx1e2(b *testing.B) {
+	benchmarkSelect(b, 1e2, compiledSelect, &fileTestDB{})
+}
+
+func BenchmarkSelectFile1kBx1e3(b *testing.B) {
+	benchmarkSelect(b, 1e3, compiledSelect, &fileTestDB{})
+}
+
+func BenchmarkSelectFile1kBx1e4(b *testing.B) {
+	benchmarkSelect(b, 1e4, compiledSelect, &fileTestDB{})
 }
 
 func BenchmarkSelectFile1kBx1e5(b *testing.B) {
@@ -376,20 +406,20 @@ func BenchmarkSelectOrderedMem1kBx1e2(b *testing.B) {
 	benchmarkSelect(b, 1e2, compiledSelectOrderBy, &memTestDB{})
 }
 
-func BenchmarkSelectOrderedFile1kBx1e2(b *testing.B) {
-	benchmarkSelect(b, 1e2, compiledSelectOrderBy, &fileTestDB{})
-}
-
 func BenchmarkSelectOrderedMem1kBx1e3(b *testing.B) {
 	benchmarkSelect(b, 1e3, compiledSelectOrderBy, &memTestDB{})
 }
 
-func BenchmarkSelectOrderedFile1kBx1e3(b *testing.B) {
-	benchmarkSelect(b, 1e3, compiledSelectOrderBy, &fileTestDB{})
-}
-
 func BenchmarkSelectOrderedMem1kBx1e4(b *testing.B) {
 	benchmarkSelect(b, 1e4, compiledSelectOrderBy, &memTestDB{})
+}
+
+func BenchmarkSelectOrderedFile1kBx1e2(b *testing.B) {
+	benchmarkSelect(b, 1e2, compiledSelectOrderBy, &fileTestDB{})
+}
+
+func BenchmarkSelectOrderedFile1kBx1e3(b *testing.B) {
+	benchmarkSelect(b, 1e3, compiledSelectOrderBy, &fileTestDB{})
 }
 
 func BenchmarkSelectOrderedFile1kBx1e4(b *testing.B) {
@@ -413,7 +443,21 @@ func TestString(t *testing.T) {
 	}
 }
 
+var benchmarkInsertOnce = map[string]sync.Once{}
+
 func benchmarkInsert(b *testing.B, batch, total int, ts testDB) {
+	if testing.Verbose() {
+		benchProlog(b)
+		id := fmt.Sprintf("%T|%d|%d", ts, batch, total)
+		once := benchmarkInsertOnce[id]
+		once.Do(func() {
+			b.Logf(`In batches of %d record(s), insert a total of %d records, each of size 1kB, into a table.
+
+`, batch, total)
+		})
+		benchmarkInsertOnce[id] = once
+	}
+
 	if total%batch != 0 {
 		b.Fatal("internal error")
 	}
@@ -445,7 +489,7 @@ func benchmarkInsert(b *testing.B, batch, total int, ts testDB) {
 		return
 	}
 
-	b.SetBytes(int64(total) * (2 + 1024))
+	b.SetBytes(int64(total) * benchScale)
 	runtime.GC()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -1190,7 +1234,25 @@ func TestIndices(t *testing.T) {
 	testIndices(db, t)
 }
 
+var benchmarkInsertBoolOnce = map[string]sync.Once{}
+
 func benchmarkInsertBool(b *testing.B, db *DB, size int, selectivity float64, index bool, teardown func()) {
+	if testing.Verbose() {
+		benchProlog(b)
+		id := fmt.Sprintf("%t|%d|%g|%t", db.isMem, size, selectivity, index)
+		once := benchmarkInsertBoolOnce[id]
+		once.Do(func() {
+			s := "INDEXED"
+			if !index {
+				s = "NON " + s
+			}
+			b.Logf(`Insert %d records into a table having a single bool %s column. Batch size: 1 record.
+
+`, size, s)
+		})
+		benchmarkInsertBoolOnce[id] = once
+	}
+
 	if teardown != nil {
 		defer teardown()
 	}
@@ -1257,7 +1319,7 @@ func benchmarkInsertBool(b *testing.B, db *DB, size int, selectivity float64, in
 		}
 	}
 	b.StopTimer()
-	b.SetBytes(int64(size)) // bytes/s == inserts/s
+	b.SetBytes(int64(size) * benchScale)
 }
 
 func benchmarkInsertBoolMem(b *testing.B, size int, sel float64, index bool) {
@@ -1360,7 +1422,31 @@ func BenchmarkInsertBoolFileX1e4(b *testing.B) {
 	benchmarkInsertBoolFile(b, 1e4, 0.5, true)
 }
 
+var benchmarkSelectBoolOnce = map[string]sync.Once{}
+
 func benchmarkSelectBool(b *testing.B, db *DB, size int, selectivity float64, index bool, teardown func()) {
+	sel, err := Compile("SELECT * FROM t WHERE b;")
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	if testing.Verbose() {
+		benchProlog(b)
+		id := fmt.Sprintf("%t|%d|%g|%t", db.isMem, size, selectivity, index)
+		once := benchmarkSelectBoolOnce[id]
+		once.Do(func() {
+			s := "INDEXED"
+			if !index {
+				s = "NON " + s
+			}
+			b.Logf(`A table has a single %s bool column b. Insert %d records with a random bool value,
+%.0f%% of them are true. Measure the performance of
+%s
+`, s, size, 100*selectivity, sel)
+		})
+		benchmarkSelectBoolOnce[id] = once
+	}
+
 	if teardown != nil {
 		defer teardown()
 	}
@@ -1386,9 +1472,14 @@ func benchmarkSelectBool(b *testing.B, db *DB, size int, selectivity float64, in
 		b.Fatal(err)
 	}
 
+	var n int64
 	rng := rand.New(rand.NewSource(42))
 	for j := 0; j < size; j++ {
-		if _, _, err = db.Execute(ctx, ins, rng.Float64() < selectivity); err != nil {
+		v := rng.Float64() < selectivity
+		if v {
+			n++
+		}
+		if _, _, err = db.Execute(ctx, ins, v); err != nil {
 			b.Fatal(err)
 		}
 	}
@@ -1397,27 +1488,27 @@ func benchmarkSelectBool(b *testing.B, db *DB, size int, selectivity float64, in
 		b.Fatal(err)
 	}
 
-	sel, err := Compile("SELECT * FROM t WHERE b;")
-	if err != nil {
-		b.Fatal(err)
-	}
-
 	debug.FreeOSMemory()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
+		var m int64
 		rss, _, err := db.Execute(nil, sel)
 		if err != nil {
 			b.Fatal(err)
 		}
 
 		if err = rss[0].Do(false, func([]interface{}) (bool, error) {
+			m++
 			return true, nil
 		}); err != nil {
 			b.Fatal(err)
 		}
+		if g, e := n, m; g != e {
+			b.Fatal(g, e)
+		}
 	}
 	b.StopTimer()
-	b.SetBytes(int64(size)) // bytes/s == records processed/s
+	b.SetBytes(n * benchScale)
 }
 
 func benchmarkSelectBoolMem(b *testing.B, size int, sel float64, index bool) {

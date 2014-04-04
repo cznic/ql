@@ -8,8 +8,6 @@
 
 //TODO verify there's a graceful failure for a 2G+ blob on a 32 bit machine.
 
-//TODO(indices) Describe when an index will be used with examples. Show also how to circumvent the limitations.
-
 // Package ql is a pure Go embedded (S)QL database.
 //
 // QL is a SQL-like language. It is less complex and less powerful than SQL
@@ -1961,5 +1959,39 @@
 //	[3]: http://code.google.com/policies.html
 //	[4]: http://creativecommons.org/licenses/by/3.0/
 //	[5]: http://golang.org/LICENSE
+//
+// Implementation details
+//
+// This section is not part of the specification.
+//
+// Indices
+//
+// TODO describe the limitations of the current implementation and how to
+// circumvent them.
+//
+// Benchmarks
+//
+// Running a benchmark with -v (-test.v) outputs information about the scale
+// used to report records/s and a brief description of the benchmark. For
+// example
+//
+//	$ go test -run NONE -bench 'SelectMem.*1e[23]' -v
+//	PASS
+//	BenchmarkSelectMem1kBx1e2	   50000	     67680 ns/op	1477537.05 MB/s
+//	--- BENCH: BenchmarkSelectMem1kBx1e2
+//		all_test.go:310:
+//			=============================================================
+//			NOTE: All benchmarks report records/s as 1000000 bytes/s.
+//			=============================================================
+//		all_test.go:321: Having a table of 100 records, each of size 1kB, measure the performance of
+//			SELECT * FROM t;
+//
+//	BenchmarkSelectMem1kBx1e3	    5000	    634819 ns/op	1575251.01 MB/s
+//	--- BENCH: BenchmarkSelectMem1kBx1e3
+//		all_test.go:321: Having a table of 1000 records, each of size 1kB, measure the performance of
+//			SELECT * FROM t;
+//
+//	ok  	github.com/cznic/ql	7.496s
+//	$
 //
 package ql
