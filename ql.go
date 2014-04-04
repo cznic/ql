@@ -498,10 +498,12 @@ func (r *whereRset) tryBinOp(t *table, id *ident, v value, op int, f func(id int
 		return false, nil
 	}
 
-	if err := typeCheck([]interface{}{v.val}, []*col{c}); err != nil {
+	data := []interface{}{v.val}
+	if err := typeCheck(data, []*col{c}); err != nil {
 		return true, err
 	}
 
+	v.val = data[0]
 	ex := &binaryOperation{op, nil, v}
 	switch op {
 	case '<':
@@ -559,6 +561,7 @@ func (r *whereRset) tryBinOp(t *table, id *ident, v value, op int, f func(id int
 }
 
 func (r *whereRset) tryUseIndex(ctx *execCtx, f func(id interface{}, data []interface{}) (more bool, err error)) (bool, error) {
+	//TODO(indices) support IS [NOT] NULL
 	c, ok := r.src.(*crossJoinRset)
 	if !ok {
 		return false, nil

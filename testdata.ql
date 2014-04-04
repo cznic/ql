@@ -6435,22 +6435,6 @@ SELECT i FROM t WHERE b ORDER BY i;
 -- 579
 BEGIN TRANSACTION;
 	CREATE TABLE t (i int, s string);
-	INSERT INTO t VALUES(40, "qux");
-	INSERT INTO t VALUES(20, "bar");
-	INSERT INTO t VALUES(NULL, "nothing");
-	INSERT INTO t VALUES(NULL, "more nothing");
-	INSERT INTO t VALUES(30, "baz");
-	INSERT INTO t VALUES(50, "fifty");
-	INSERT INTO t VALUES(10, "foo");
-COMMIT;
-SELECT * FROM t WHERE i < 30;
-|li, ss
-[10 foo]
-[20 bar]
-
--- 580
-BEGIN TRANSACTION;
-	CREATE TABLE t (i int, s string);
 	CREATE INDEX x ON t (i);
 	INSERT INTO t VALUES(10, "foo");
 	INSERT INTO t VALUES(40, "qux");
@@ -6463,7 +6447,7 @@ COMMIT;
 SELECT * FROM t WHERE i < "30";
 ||cannot.*compar
 
--- 581
+-- 580
 BEGIN TRANSACTION;
 	CREATE TABLE t (i int, s string);
 	CREATE INDEX x ON t (i);
@@ -6485,7 +6469,23 @@ SELECT * FROM x;
 [40]
 [50]
 
--- 582
+-- 581
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int, s string);
+	INSERT INTO t VALUES(NULL, "nothing");
+	INSERT INTO t VALUES(NULL, "more nothing");
+	INSERT INTO t VALUES(50, "fifty");
+	INSERT INTO t VALUES(40, "qux");
+	INSERT INTO t VALUES(30, "baz");
+	INSERT INTO t VALUES(20, "bar");
+	INSERT INTO t VALUES(10, "foo");
+COMMIT;
+SELECT * FROM t WHERE i < 30;
+|li, ss
+[10 foo]
+[20 bar]
+
+-- 582 // reversed order of the output shows an index is used
 BEGIN TRANSACTION;
 	CREATE TABLE t (i int, s string);
 	CREATE INDEX x ON t (i);

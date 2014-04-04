@@ -656,6 +656,44 @@ func (s *file) collate(a, b []byte) int { //TODO w/ error return
 	return collate(da, db)
 }
 
+func (s *file) collateNonUniqIndex(a, b []byte) int { //TODO w/ error return
+	da, err := lldb.DecodeScalars(a)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	if err = s.expandBytes(da); err != nil {
+		log.Panic(err)
+	}
+
+	db, err := lldb.DecodeScalars(b)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	if err = s.expandBytes(db); err != nil {
+		log.Panic(err)
+	}
+
+	r := collate(da[:1], db[:1])
+	if r != 0 {
+		return r
+	}
+
+	if da[0] != nil && da[1].(int64) < 0 {
+		return 0
+	}
+
+	switch a, b := da[1].(int64), db[1].(int64); {
+	case a < b:
+		return -1
+	case a == b:
+		return 0
+	default:
+		return 1
+	}
+}
+
 func (s *file) CreateTemp(asc bool) (bt temp, err error) {
 	f, err := s.tempFile("", "ql-tmp-")
 	if err != nil {
@@ -1192,12 +1230,12 @@ func (x *fileIndex) Drop() error {
 }
 
 func (x *fileIndex) Seek(indexedValue interface{}) (indexIterator, bool, error) { //TODO(indices) blobs: +test
-	k, err := lldb.EncodeScalars(indexedValue)
+	k, err := lldb.EncodeScalars(indexedValue, -1) //TODO this works only for non uniqe indices
 	if err != nil {
 		return nil, false, err
 	}
 
-	en, hit, err := x.t.Seek(k)
+	en, hit, err := x.t.IndexSeek(k, x.f.collateNonUniqIndex)
 	if err != nil {
 		return nil, false, err
 	}
@@ -1261,41 +1299,6 @@ func (i *fileIndexIterator) nextPrev(f func() ([]byte, []byte, error)) (interfac
 
 func (i *fileIndexIterator) Next() (interface{}, int64, error) { //TODO(indices) blobs: +test
 	return i.nextPrev(i.en.Next)
-	//bk, bv, err := i.en.Next()
-	//if err != nil {
-	//	return nil, -1, err
-	//}
-
-	//dk, err := lldb.DecodeScalars(bk)
-	//if err != nil {
-	//	return nil, -1, err
-	//}
-
-	//b, ok := dk[0].([]byte)
-	//if ok {
-	//	dk[0] = chunk{i.f, b}
-	//	if expand(dk[:1]); err != nil {
-	//		return nil, -1, err
-	//	}
-	//}
-
-	//var k indexKey
-	//k.value = dk[0]
-	//switch i.unique {
-	//case true:
-	//	if k.value == nil {
-	//		return nil, dk[1].(int64), nil
-	//	}
-
-	//	dv, err := lldb.DecodeScalars(bv)
-	//	if err != nil {
-	//		return nil, -1, err
-	//	}
-
-	//	return k.value, dv[0].(int64), nil
-	//default:
-	//	return k.value, dk[1].(int64), nil
-	//}
 }
 
 func (i *fileIndexIterator) Prev() (interface{}, int64, error) { //TODO(indices) blobs: +test
