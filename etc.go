@@ -1616,7 +1616,7 @@ func typeCheck(rec []interface{}, cols []*col) (err error) {
 				}
 			}
 			//dbg("v %T(%v), typ %s", v, v, typeStr(c.typ))
-			return fmt.Errorf("cannot use %v (type %T) as %s in assignment to column %s", v, ideal(v), typeStr(c.typ), c.name)
+			return fmt.Errorf("cannot use %v (type %T) as %s in assignment/comparison to/with column %s", v, ideal(v), typeStr(c.typ), c.name)
 		}
 	}
 	return
@@ -1645,6 +1645,8 @@ func collate1(a, b interface{}) int {
 			}
 
 			return 1
+		default:
+			panic("internal error")
 		}
 	case idealComplex:
 		switch y := b.(type) {
@@ -1668,6 +1670,50 @@ func collate1(a, b interface{}) int {
 			}
 
 			return 1
+		case complex64:
+			{
+				x, y := complex64(x), complex64(y)
+				if x == y {
+					return 0
+				}
+
+				if real(x) < real(y) {
+					return -1
+				}
+
+				if real(x) > real(y) {
+					return 1
+				}
+
+				if imag(x) < imag(y) {
+					return -1
+				}
+
+				return 1
+			}
+		case complex128:
+			{
+				x := complex128(x)
+				if x == y {
+					return 0
+				}
+
+				if real(x) < real(y) {
+					return -1
+				}
+
+				if real(x) > real(y) {
+					return 1
+				}
+
+				if imag(x) < imag(y) {
+					return -1
+				}
+
+				return 1
+			}
+		default:
+			panic("internal error")
 		}
 	case idealUint:
 		switch y := b.(type) {
@@ -1683,6 +1729,73 @@ func collate1(a, b interface{}) int {
 			}
 
 			return 1
+		case uint8:
+			{
+				x, y := uint64(x), uint64(y)
+				if x < y {
+					return -1
+				}
+
+				if x == y {
+					return 0
+				}
+
+				return 1
+			}
+		case uint16:
+			{
+				x, y := uint64(x), uint64(y)
+				if x < y {
+					return -1
+				}
+
+				if x == y {
+					return 0
+				}
+
+				return 1
+			}
+		case uint32:
+			{
+				x, y := uint64(x), uint64(y)
+				if x < y {
+					return -1
+				}
+
+				if x == y {
+					return 0
+				}
+
+				return 1
+			}
+		case uint64:
+			{
+				x, y := uint64(x), uint64(y)
+				if x < y {
+					return -1
+				}
+
+				if x == y {
+					return 0
+				}
+
+				return 1
+			}
+		case uint:
+			{
+				x, y := uint64(x), uint64(y)
+				if x < y {
+					return -1
+				}
+
+				if x == y {
+					return 0
+				}
+
+				return 1
+			}
+		default:
+			panic("internal error")
 		}
 	case idealRune:
 		switch y := b.(type) {
@@ -1698,6 +1811,73 @@ func collate1(a, b interface{}) int {
 			}
 
 			return 1
+		case int8:
+			{
+				x, y := int64(x), int64(y)
+				if x < y {
+					return -1
+				}
+
+				if x == y {
+					return 0
+				}
+
+				return 1
+			}
+		case int16:
+			{
+				x, y := int64(x), int64(y)
+				if x < y {
+					return -1
+				}
+
+				if x == y {
+					return 0
+				}
+
+				return 1
+			}
+		case int32:
+			{
+				x, y := int64(x), int64(y)
+				if x < y {
+					return -1
+				}
+
+				if x == y {
+					return 0
+				}
+
+				return 1
+			}
+		case int64:
+			{
+				x, y := int64(x), int64(y)
+				if x < y {
+					return -1
+				}
+
+				if x == y {
+					return 0
+				}
+
+				return 1
+			}
+		case int:
+			{
+				x, y := int64(x), int64(y)
+				if x < y {
+					return -1
+				}
+
+				if x == y {
+					return 0
+				}
+
+				return 1
+			}
+		default:
+			panic("internal error")
 		}
 	case idealInt:
 		switch y := b.(type) {
@@ -1713,6 +1893,73 @@ func collate1(a, b interface{}) int {
 			}
 
 			return 1
+		case int8:
+			{
+				x, y := int64(x), int64(y)
+				if x < y {
+					return -1
+				}
+
+				if x == y {
+					return 0
+				}
+
+				return 1
+			}
+		case int16:
+			{
+				x, y := int64(x), int64(y)
+				if x < y {
+					return -1
+				}
+
+				if x == y {
+					return 0
+				}
+
+				return 1
+			}
+		case int32:
+			{
+				x, y := int64(x), int64(y)
+				if x < y {
+					return -1
+				}
+
+				if x == y {
+					return 0
+				}
+
+				return 1
+			}
+		case int64:
+			{
+				x, y := int64(x), int64(y)
+				if x < y {
+					return -1
+				}
+
+				if x == y {
+					return 0
+				}
+
+				return 1
+			}
+		case int:
+			{
+				x, y := int64(x), int64(y)
+				if x < y {
+					return -1
+				}
+
+				if x == y {
+					return 0
+				}
+
+				return 1
+			}
+		default:
+			panic("internal error")
 		}
 	case idealFloat:
 		switch y := b.(type) {
@@ -1728,6 +1975,34 @@ func collate1(a, b interface{}) int {
 			}
 
 			return 1
+		case float32:
+			{
+				x, y := float64(x), float64(y)
+				if x < y {
+					return -1
+				}
+
+				if x == y {
+					return 0
+				}
+
+				return 1
+			}
+		case float64:
+			{
+				x, y := float64(x), float64(y)
+				if x < y {
+					return -1
+				}
+
+				if x == y {
+					return 0
+				}
+
+				return 1
+			}
+		default:
+			panic("internal error")
 		}
 	case complex64:
 		switch y := b.(type) {
@@ -1751,6 +2026,29 @@ func collate1(a, b interface{}) int {
 			}
 
 			return 1
+		case idealComplex:
+			{
+				x, y := complex64(x), complex64(y)
+				if x == y {
+					return 0
+				}
+
+				if real(x) < real(y) {
+					return -1
+				}
+
+				if real(x) > real(y) {
+					return 1
+				}
+
+				if imag(x) < imag(y) {
+					return -1
+				}
+
+				return 1
+			}
+		default:
+			panic("internal error")
 		}
 	case complex128:
 		switch y := b.(type) {
@@ -1774,6 +2072,29 @@ func collate1(a, b interface{}) int {
 			}
 
 			return 1
+		case idealComplex:
+			{
+				x, y := complex128(x), complex128(y)
+				if x == y {
+					return 0
+				}
+
+				if real(x) < real(y) {
+					return -1
+				}
+
+				if real(x) > real(y) {
+					return 1
+				}
+
+				if imag(x) < imag(y) {
+					return -1
+				}
+
+				return 1
+			}
+		default:
+			panic("internal error")
 		}
 	case float32:
 		switch y := b.(type) {
@@ -1789,6 +2110,21 @@ func collate1(a, b interface{}) int {
 			}
 
 			return 1
+		case idealFloat:
+			{
+				x, y := float32(x), float32(y)
+				if x < y {
+					return -1
+				}
+
+				if x == y {
+					return 0
+				}
+
+				return 1
+			}
+		default:
+			panic("internal error")
 		}
 	case float64:
 		switch y := b.(type) {
@@ -1804,6 +2140,21 @@ func collate1(a, b interface{}) int {
 			}
 
 			return 1
+		case idealFloat:
+			{
+				x, y := float64(x), float64(y)
+				if x < y {
+					return -1
+				}
+
+				if x == y {
+					return 0
+				}
+
+				return 1
+			}
+		default:
+			panic("internal error")
 		}
 	case int8:
 		switch y := b.(type) {
@@ -1819,6 +2170,21 @@ func collate1(a, b interface{}) int {
 			}
 
 			return 1
+		case idealInt:
+			{
+				x, y := int64(x), int64(y)
+				if x < y {
+					return -1
+				}
+
+				if x == y {
+					return 0
+				}
+
+				return 1
+			}
+		default:
+			panic("internal error")
 		}
 	case int16:
 		switch y := b.(type) {
@@ -1834,6 +2200,21 @@ func collate1(a, b interface{}) int {
 			}
 
 			return 1
+		case idealInt:
+			{
+				x, y := int64(x), int64(y)
+				if x < y {
+					return -1
+				}
+
+				if x == y {
+					return 0
+				}
+
+				return 1
+			}
+		default:
+			panic("internal error")
 		}
 	case int32:
 		switch y := b.(type) {
@@ -1849,6 +2230,21 @@ func collate1(a, b interface{}) int {
 			}
 
 			return 1
+		case idealInt:
+			{
+				x, y := int64(x), int64(y)
+				if x < y {
+					return -1
+				}
+
+				if x == y {
+					return 0
+				}
+
+				return 1
+			}
+		default:
+			panic("internal error")
 		}
 	case int64:
 		switch y := b.(type) {
@@ -1864,6 +2260,21 @@ func collate1(a, b interface{}) int {
 			}
 
 			return 1
+		case idealInt:
+			{
+				x, y := int64(x), int64(y)
+				if x < y {
+					return -1
+				}
+
+				if x == y {
+					return 0
+				}
+
+				return 1
+			}
+		default:
+			panic("internal error")
 		}
 	case uint8:
 		switch y := b.(type) {
@@ -1879,6 +2290,34 @@ func collate1(a, b interface{}) int {
 			}
 
 			return 1
+		case idealInt:
+			{
+				x, y := uint64(x), uint64(y)
+				if x < y {
+					return -1
+				}
+
+				if x == y {
+					return 0
+				}
+
+				return 1
+			}
+		case idealUint:
+			{
+				x, y := uint64(x), uint64(y)
+				if x < y {
+					return -1
+				}
+
+				if x == y {
+					return 0
+				}
+
+				return 1
+			}
+		default:
+			panic("internal error")
 		}
 	case uint16:
 		switch y := b.(type) {
@@ -1894,6 +2333,34 @@ func collate1(a, b interface{}) int {
 			}
 
 			return 1
+		case idealInt:
+			{
+				x, y := uint64(x), uint64(y)
+				if x < y {
+					return -1
+				}
+
+				if x == y {
+					return 0
+				}
+
+				return 1
+			}
+		case idealUint:
+			{
+				x, y := uint64(x), uint64(y)
+				if x < y {
+					return -1
+				}
+
+				if x == y {
+					return 0
+				}
+
+				return 1
+			}
+		default:
+			panic("internal error")
 		}
 	case uint32:
 		switch y := b.(type) {
@@ -1909,6 +2376,34 @@ func collate1(a, b interface{}) int {
 			}
 
 			return 1
+		case idealInt:
+			{
+				x, y := uint64(x), uint64(y)
+				if x < y {
+					return -1
+				}
+
+				if x == y {
+					return 0
+				}
+
+				return 1
+			}
+		case idealUint:
+			{
+				x, y := uint64(x), uint64(y)
+				if x < y {
+					return -1
+				}
+
+				if x == y {
+					return 0
+				}
+
+				return 1
+			}
+		default:
+			panic("internal error")
 		}
 	case uint64:
 		switch y := b.(type) {
@@ -1924,6 +2419,34 @@ func collate1(a, b interface{}) int {
 			}
 
 			return 1
+		case idealInt:
+			{
+				x, y := uint64(x), uint64(y)
+				if x < y {
+					return -1
+				}
+
+				if x == y {
+					return 0
+				}
+
+				return 1
+			}
+		case idealUint:
+			{
+				x, y := uint64(x), uint64(y)
+				if x < y {
+					return -1
+				}
+
+				if x == y {
+					return 0
+				}
+
+				return 1
+			}
+		default:
+			panic("internal error")
 		}
 	case string:
 		switch y := b.(type) {
@@ -1939,6 +2462,8 @@ func collate1(a, b interface{}) int {
 			}
 
 			return 1
+		default:
+			panic("internal error")
 		}
 	case []byte:
 		switch y := b.(type) {
@@ -1946,6 +2471,8 @@ func collate1(a, b interface{}) int {
 			return 1
 		case []byte:
 			return bytes.Compare(x, y)
+		default:
+			panic("internal error")
 		}
 	case *big.Int:
 		switch y := b.(type) {
@@ -1953,6 +2480,19 @@ func collate1(a, b interface{}) int {
 			return 1
 		case *big.Int:
 			return x.Cmp(y)
+		case idealInt:
+			{
+				y := big.NewInt(int64(y))
+				return x.Cmp(y)
+			}
+		case idealUint:
+			{
+				u := big.NewInt(0)
+				u.SetUint64(uint64(y))
+				return x.Cmp(u)
+			}
+		default:
+			panic("internal error")
 		}
 	case *big.Rat:
 		switch y := b.(type) {
@@ -1960,6 +2500,21 @@ func collate1(a, b interface{}) int {
 			return 1
 		case *big.Rat:
 			return x.Cmp(y)
+		case idealInt:
+			{
+				y := big.NewRat(int64(y), 1)
+				return x.Cmp(y)
+			}
+		case idealUint:
+			{
+				u := big.NewInt(0)
+				u.SetUint64(uint64(y))
+				var y big.Rat
+				y.SetInt(u)
+				return x.Cmp(&y)
+			}
+		default:
+			panic("internal error")
 		}
 	case time.Time:
 		switch y := b.(type) {
@@ -1975,6 +2530,8 @@ func collate1(a, b interface{}) int {
 			}
 
 			return 1
+		default:
+			panic("internal error")
 		}
 	case time.Duration:
 		switch y := b.(type) {
@@ -1990,6 +2547,8 @@ func collate1(a, b interface{}) int {
 			}
 
 			return 1
+		default:
+			panic("internal error")
 		}
 	case chunk:
 		switch y := b.(type) {
@@ -2007,10 +2566,12 @@ func collate1(a, b interface{}) int {
 			}
 
 			return collate1(a, b)
+		default:
+			panic("internal error")
 		}
+	default:
+		panic("internal error")
 	}
-	log.Panicf("internal error")
-	panic("unreachable")
 }
 
 //TODO collate should return errors from collate1

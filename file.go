@@ -1221,9 +1221,8 @@ type fileIndexIterator struct {
 	unique bool
 }
 
-func (i *fileIndexIterator) Next() (interface{}, int64, error) { //TODO(indices) blobs: +test
-	var k indexKey
-	bk, bv, err := i.en.Next()
+func (i *fileIndexIterator) nextPrev(f func() ([]byte, []byte, error)) (interface{}, int64, error) { //TODO(indices) blobs: +test
+	bk, bv, err := f()
 	if err != nil {
 		return nil, -1, err
 	}
@@ -1241,6 +1240,7 @@ func (i *fileIndexIterator) Next() (interface{}, int64, error) { //TODO(indices)
 		}
 	}
 
+	var k indexKey
 	k.value = dk[0]
 	switch i.unique {
 	case true:
@@ -1257,4 +1257,47 @@ func (i *fileIndexIterator) Next() (interface{}, int64, error) { //TODO(indices)
 	default:
 		return k.value, dk[1].(int64), nil
 	}
+}
+
+func (i *fileIndexIterator) Next() (interface{}, int64, error) { //TODO(indices) blobs: +test
+	return i.nextPrev(i.en.Next)
+	//bk, bv, err := i.en.Next()
+	//if err != nil {
+	//	return nil, -1, err
+	//}
+
+	//dk, err := lldb.DecodeScalars(bk)
+	//if err != nil {
+	//	return nil, -1, err
+	//}
+
+	//b, ok := dk[0].([]byte)
+	//if ok {
+	//	dk[0] = chunk{i.f, b}
+	//	if expand(dk[:1]); err != nil {
+	//		return nil, -1, err
+	//	}
+	//}
+
+	//var k indexKey
+	//k.value = dk[0]
+	//switch i.unique {
+	//case true:
+	//	if k.value == nil {
+	//		return nil, dk[1].(int64), nil
+	//	}
+
+	//	dv, err := lldb.DecodeScalars(bv)
+	//	if err != nil {
+	//		return nil, -1, err
+	//	}
+
+	//	return k.value, dv[0].(int64), nil
+	//default:
+	//	return k.value, dk[1].(int64), nil
+	//}
+}
+
+func (i *fileIndexIterator) Prev() (interface{}, int64, error) { //TODO(indices) blobs: +test
+	return i.nextPrev(i.en.Prev)
 }

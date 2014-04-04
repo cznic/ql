@@ -487,6 +487,77 @@ func (r *whereRset) doIndexedBool(t *table, en indexIterator, f func(id interfac
 	}
 }
 
+func (r *whereRset) tryBinOp(t *table, id *ident, v value, op int, f func(id interface{}, data []interface{}) (more bool, err error)) (bool, error) {
+	c := findCol(t.cols0, id.s)
+	if c == nil {
+		return false, fmt.Errorf("undefined column: %s", id.s)
+	}
+
+	xCol := t.indices[c.index+1]
+	if xCol == nil { // no index for this column
+		return false, nil
+	}
+
+	if err := typeCheck([]interface{}{v.val}, []*col{c}); err != nil {
+		return true, err
+	}
+
+	ex := &binaryOperation{op, nil, v}
+	switch op {
+	case '<':
+		m, err := f(nil, []interface{}{t.flds()})
+		if !m || err != nil {
+			return true, err
+		}
+
+		en, hit, err := xCol.x.Seek(v.val)
+		if err != nil {
+			return true, noEOF(err)
+		}
+
+		if hit {
+			if _, _, err := en.Prev(); err != nil {
+				return true, noEOF(err)
+			}
+		}
+
+		for {
+			k, h, err := en.Prev()
+			if k == nil {
+				return true, nil
+			}
+
+			if err != nil {
+				return true, noEOF(err)
+			}
+
+			ex.l = value{k}
+			eval, err := ex.eval(nil, nil)
+			if err != nil {
+				return true, err
+			}
+
+			if !eval.(bool) {
+				return true, nil
+			}
+
+			if _, err := tableRset("").doOne(t, h, f); err != nil {
+				return true, err
+			}
+		}
+	case le:
+		panic("TODO")
+	case eq:
+		panic("TODO")
+	case ge:
+		panic("TODO")
+	case '>':
+		panic("TODO")
+	default:
+		panic("internal error")
+	}
+}
+
 func (r *whereRset) tryUseIndex(ctx *execCtx, f func(id interface{}, data []interface{}) (more bool, err error)) (bool, error) {
 	c, ok := r.src.(*crossJoinRset)
 	if !ok {
@@ -527,12 +598,33 @@ func (r *whereRset) tryUseIndex(ctx *execCtx, f func(id interface{}, data []inte
 
 		en, _, err := xCol.x.Seek(true)
 		if err != nil {
-			return false, err
+			return false, noEOF(err)
 		}
 
 		return true, r.doIndexedBool(t, en, f)
 	case *binaryOperation: //TODO(indices) WHERE column relOp fixed value or WHERE fixed value relOp column
-		return false, nil
+		//TODO handle id()
+		switch ex.op {
+		case '<', le, eq, '>', ge:
+		default:
+			return false, nil
+		}
+		switch lhs := ex.l.(type) {
+		case *ident:
+			switch rhs := ex.r.(type) {
+			case value:
+				return r.tryBinOp(t, lhs, rhs, ex.op, f)
+			default:
+				return false, nil
+			}
+		case *parameter:
+			panic("TODO")
+		case value:
+			panic("TODO")
+		default:
+			return false, nil
+		}
+		panic("TODO")
 	default:
 		return false, nil
 	}

@@ -98,7 +98,7 @@ func (x *memIndex) Drop() error {
 }
 
 func (x *memIndex) Seek(indexedValue interface{}) (indexIterator, bool, error) {
-	it, hit := x.t.Seek(indexKey{indexedValue, 0})
+	it, hit := x.t.Seek(indexKey{indexedValue, -1})
 	return &xenumerator2{*it, x.unique}, hit, nil
 }
 
@@ -127,6 +127,24 @@ type xenumerator2 struct {
 
 func (it *xenumerator2) Next() (interface{}, int64, error) {
 	k, h, err := it.it.Next()
+	if err != nil {
+		return nil, -1, err
+	}
+
+	switch it.unique {
+	case true:
+		if k.value == nil {
+			return nil, k.h, nil
+		}
+
+		return k.value, h, nil
+	default:
+		return k.value, k.h, nil
+	}
+}
+
+func (it *xenumerator2) Prev() (interface{}, int64, error) {
+	k, h, err := it.it.Prev()
 	if err != nil {
 		return nil, -1, err
 	}
@@ -576,6 +594,10 @@ func (a *indexKey) cmp(b *indexKey) int {
 	r := collate1(a.value, b.value)
 	if r != 0 {
 		return r
+	}
+
+	if a.value != nil && a.h < 0 {
+		return 0
 	}
 
 	return int(a.h) - int(b.h)
