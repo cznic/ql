@@ -659,7 +659,7 @@ func (r *whereRset) tryUseIndex(ctx *execCtx, f func(id interface{}, data []inte
 		}
 
 		return true, r.doIndexedBool(t, en, true, f)
-	case *binaryOperation: //TODO(indices) WHERE column relOp fixed value or WHERE fixed value relOp column
+	case *binaryOperation:
 		//TODO handle id()
 		var invOp int
 		switch ex.op {
@@ -714,7 +714,6 @@ func (r *whereRset) tryUseIndex(ctx *execCtx, f func(id interface{}, data []inte
 		default:
 			return false, nil
 		}
-		panic("TODO")
 	default:
 		return false, nil
 	}
@@ -934,7 +933,6 @@ func (r tableRset) doIndex(x *indexedCol, ctx *execCtx, onlyNames bool, f func(i
 			return err
 		}
 	}
-	return
 }
 
 func (tableRset) doOne(t *table, h int64, f func(id interface{}, data []interface{}) (more bool, err error)) ( /* next handle */ int64, error) {

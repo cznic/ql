@@ -1192,7 +1192,7 @@ func (x *fileIndex) Drop() error {
 }
 
 func (x *fileIndex) Seek(indexedValue interface{}) (indexIterator, bool, error) { //TODO(indices) blobs: +test
-	k, err := lldb.EncodeScalars(indexedValue, 0) //TODO this works only for non unique indices
+	k, err := lldb.EncodeScalars(indexedValue, 0)
 	if err != nil {
 		return nil, false, err
 	}

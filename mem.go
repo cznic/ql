@@ -98,7 +98,7 @@ func (x *memIndex) Drop() error {
 }
 
 func (x *memIndex) Seek(indexedValue interface{}) (indexIterator, bool, error) {
-	it, hit := x.t.Seek(indexKey{indexedValue, 0}) //TODO this is ok only for non unique indices
+	it, hit := x.t.Seek(indexKey{indexedValue, 0})
 	return &xenumerator2{*it, x.unique}, hit, nil
 }
 
