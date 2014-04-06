@@ -656,44 +656,6 @@ func (s *file) collate(a, b []byte) int { //TODO w/ error return
 	return collate(da, db)
 }
 
-func (s *file) collateNonUniqIndex(a, b []byte) int { //TODO w/ error return
-	da, err := lldb.DecodeScalars(a)
-	if err != nil {
-		log.Panic(err)
-	}
-
-	if err = s.expandBytes(da); err != nil {
-		log.Panic(err)
-	}
-
-	db, err := lldb.DecodeScalars(b)
-	if err != nil {
-		log.Panic(err)
-	}
-
-	if err = s.expandBytes(db); err != nil {
-		log.Panic(err)
-	}
-
-	r := collate(da[:1], db[:1])
-	if r != 0 {
-		return r
-	}
-
-	if da[0] != nil && da[1].(int64) < 0 {
-		return 0
-	}
-
-	switch a, b := da[1].(int64), db[1].(int64); {
-	case a < b:
-		return -1
-	case a == b:
-		return 0
-	default:
-		return 1
-	}
-}
-
 func (s *file) CreateTemp(asc bool) (bt temp, err error) {
 	f, err := s.tempFile("", "ql-tmp-")
 	if err != nil {
@@ -1230,12 +1192,12 @@ func (x *fileIndex) Drop() error {
 }
 
 func (x *fileIndex) Seek(indexedValue interface{}) (indexIterator, bool, error) { //TODO(indices) blobs: +test
-	k, err := lldb.EncodeScalars(indexedValue, -1) //TODO this works only for non uniqe indices
+	k, err := lldb.EncodeScalars(indexedValue, 0) //TODO this works only for non unique indices
 	if err != nil {
 		return nil, false, err
 	}
 
-	en, hit, err := x.t.IndexSeek(k, x.f.collateNonUniqIndex)
+	en, hit, err := x.t.Seek(k)
 	if err != nil {
 		return nil, false, err
 	}

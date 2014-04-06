@@ -6472,32 +6472,32 @@ SELECT * FROM x;
 -- 581
 BEGIN TRANSACTION;
 	CREATE TABLE t (i int, s string);
-	INSERT INTO t VALUES(NULL, "nothing");
-	INSERT INTO t VALUES(NULL, "more nothing");
-	INSERT INTO t VALUES(50, "fifty");
-	INSERT INTO t VALUES(40, "qux");
-	INSERT INTO t VALUES(30, "baz");
-	INSERT INTO t VALUES(20, "bar");
 	INSERT INTO t VALUES(10, "foo");
+	INSERT INTO t VALUES(NULL, "nothing");
+	INSERT INTO t VALUES(50, "fifty");
+	INSERT INTO t VALUES(NULL, "more nothing");
+	INSERT INTO t VALUES(40, "qux");
+	INSERT INTO t VALUES(20, "bar");
+	INSERT INTO t VALUES(30, "baz");
 COMMIT;
 SELECT * FROM t WHERE i < 30;
 |li, ss
-[10 foo]
 [20 bar]
+[10 foo]
 
--- 582 // reversed order of the output shows an index is used
+-- 582 // non reversed order of the output shows an index is used
 BEGIN TRANSACTION;
 	CREATE TABLE t (i int, s string);
 	CREATE INDEX x ON t (i);
 	INSERT INTO t VALUES(10, "foo");
+	INSERT INTO t VALUES(NULL, "nothing");
+	INSERT INTO t VALUES(50, "fifty");
+	INSERT INTO t VALUES(NULL, "more nothing");
 	INSERT INTO t VALUES(40, "qux");
 	INSERT INTO t VALUES(20, "bar");
-	INSERT INTO t VALUES(NULL, "nothing");
-	INSERT INTO t VALUES(NULL, "more nothing");
 	INSERT INTO t VALUES(30, "baz");
-	INSERT INTO t VALUES(50, "fifty");
 COMMIT;
 SELECT * FROM t WHERE i < 30;
 |li, ss
-[20 bar]
 [10 foo]
+[20 bar]

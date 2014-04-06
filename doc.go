@@ -1994,4 +1994,6 @@
 //	ok  	github.com/cznic/ql	7.496s
 //	$
 //
+// Running the full suite of benchmarks takes a lot of time. Use the -timeout
+// flag to avoid them being killed after the default time limit (10 minutes).
 package ql

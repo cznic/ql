@@ -1646,7 +1646,9 @@ func collate1(a, b interface{}) int {
 
 			return 1
 		default:
-			panic("internal error")
+			// Make bool collate before anything except nil and
+			// other bool for index seeking first non NULL value.
+			return -1
 		}
 	case idealComplex:
 		switch y := b.(type) {

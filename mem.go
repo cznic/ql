@@ -98,7 +98,7 @@ func (x *memIndex) Drop() error {
 }
 
 func (x *memIndex) Seek(indexedValue interface{}) (indexIterator, bool, error) {
-	it, hit := x.t.Seek(indexKey{indexedValue, -1}) //TODO this is ok only for non unique indices
+	it, hit := x.t.Seek(indexKey{indexedValue, 0}) //TODO this is ok only for non unique indices
 	return &xenumerator2{*it, x.unique}, hit, nil
 }
 
@@ -538,6 +538,7 @@ func (s *mem) Commit() (err error) {
 }
 
 // Transaction index B+Tree
+//LATER make it just a wrapper of the implementation in btree.go.
 
 type (
 	xd struct { // data page
@@ -590,14 +591,10 @@ type (
 	}
 )
 
-func (a *indexKey) cmp(b *indexKey) int {
+func (a *indexKey) cmp(b *indexKey) (TODO int) {
 	r := collate1(a.value, b.value)
 	if r != 0 {
 		return r
-	}
-
-	if a.value != nil && a.h < 0 {
-		return 0
 	}
 
 	return int(a.h) - int(b.h)

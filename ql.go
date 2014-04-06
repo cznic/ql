@@ -512,19 +512,13 @@ func (r *whereRset) tryBinOp(t *table, id *ident, v value, op int, f func(id int
 			return true, err
 		}
 
-		en, hit, err := xCol.x.Seek(v.val)
+		en, _, err := xCol.x.Seek(false) // first value collating after nil
 		if err != nil {
 			return true, noEOF(err)
 		}
 
-		if hit {
-			if _, _, err := en.Prev(); err != nil {
-				return true, noEOF(err)
-			}
-		}
-
 		for {
-			k, h, err := en.Prev()
+			k, h, err := en.Next()
 			if k == nil {
 				return true, nil
 			}

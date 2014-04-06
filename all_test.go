@@ -1335,36 +1335,36 @@ func BenchmarkInsertBoolMemNoX1e1(b *testing.B) {
 	benchmarkInsertBoolMem(b, 1e1, 0.5, false)
 }
 
-func BenchmarkInsertBoolMemNoX1e2(b *testing.B) {
-	benchmarkInsertBoolMem(b, 1e2, 0.5, false)
-}
-
-func BenchmarkInsertBoolMemNoX1e3(b *testing.B) {
-	benchmarkInsertBoolMem(b, 1e3, 0.5, false)
-}
-
-func BenchmarkInsertBoolMemNoX1e4(b *testing.B) {
-	benchmarkInsertBoolMem(b, 1e4, 0.5, false)
-}
-
-func BenchmarkInsertBoolMemNoX1e5(b *testing.B) {
-	benchmarkInsertBoolMem(b, 1e5, 0.5, false)
-}
-
 func BenchmarkInsertBoolMemX1e1(b *testing.B) {
 	benchmarkInsertBoolMem(b, 1e1, 0.5, true)
+}
+
+func BenchmarkInsertBoolMemNoX1e2(b *testing.B) {
+	benchmarkInsertBoolMem(b, 1e2, 0.5, false)
 }
 
 func BenchmarkInsertBoolMemX1e2(b *testing.B) {
 	benchmarkInsertBoolMem(b, 1e2, 0.5, true)
 }
 
+func BenchmarkInsertBoolMemNoX1e3(b *testing.B) {
+	benchmarkInsertBoolMem(b, 1e3, 0.5, false)
+}
+
 func BenchmarkInsertBoolMemX1e3(b *testing.B) {
 	benchmarkInsertBoolMem(b, 1e3, 0.5, true)
 }
 
+func BenchmarkInsertBoolMemNoX1e4(b *testing.B) {
+	benchmarkInsertBoolMem(b, 1e4, 0.5, false)
+}
+
 func BenchmarkInsertBoolMemX1e4(b *testing.B) {
 	benchmarkInsertBoolMem(b, 1e4, 0.5, true)
+}
+
+func BenchmarkInsertBoolMemNoX1e5(b *testing.B) {
+	benchmarkInsertBoolMem(b, 1e5, 0.5, false)
 }
 
 func BenchmarkInsertBoolMemX1e5(b *testing.B) {
@@ -1394,28 +1394,28 @@ func BenchmarkInsertBoolFileNoX1e1(b *testing.B) {
 	benchmarkInsertBoolFile(b, 1e1, 0.5, false)
 }
 
-func BenchmarkInsertBoolFileNoX1e2(b *testing.B) {
-	benchmarkInsertBoolFile(b, 1e2, 0.5, false)
-}
-
-func BenchmarkInsertBoolFileNoX1e3(b *testing.B) {
-	benchmarkInsertBoolFile(b, 1e3, 0.5, false)
-}
-
-func BenchmarkInsertBoolFileNoX1e4(b *testing.B) {
-	benchmarkInsertBoolFile(b, 1e4, 0.5, false)
-}
-
 func BenchmarkInsertBoolFileX1e1(b *testing.B) {
 	benchmarkInsertBoolFile(b, 1e1, 0.5, true)
+}
+
+func BenchmarkInsertBoolFileNoX1e2(b *testing.B) {
+	benchmarkInsertBoolFile(b, 1e2, 0.5, false)
 }
 
 func BenchmarkInsertBoolFileX1e2(b *testing.B) {
 	benchmarkInsertBoolFile(b, 1e2, 0.5, true)
 }
 
+func BenchmarkInsertBoolFileNoX1e3(b *testing.B) {
+	benchmarkInsertBoolFile(b, 1e3, 0.5, false)
+}
+
 func BenchmarkInsertBoolFileX1e3(b *testing.B) {
 	benchmarkInsertBoolFile(b, 1e3, 0.5, true)
+}
+
+func BenchmarkInsertBoolFileNoX1e4(b *testing.B) {
+	benchmarkInsertBoolFile(b, 1e4, 0.5, false)
 }
 
 func BenchmarkInsertBoolFileX1e4(b *testing.B) {
@@ -1526,36 +1526,36 @@ func BenchmarkSelectBoolMemNoX1e1Perc50(b *testing.B) {
 	benchmarkSelectBoolMem(b, 1e1, 0.5, false)
 }
 
-func BenchmarkSelectBoolMemNoX1e2Perc50(b *testing.B) {
-	benchmarkSelectBoolMem(b, 1e2, 0.5, false)
-}
-
-func BenchmarkSelectBoolMemNoX1e3Perc50(b *testing.B) {
-	benchmarkSelectBoolMem(b, 1e3, 0.5, false)
-}
-
-func BenchmarkSelectBoolMemNoX1e4Perc50(b *testing.B) {
-	benchmarkSelectBoolMem(b, 1e4, 0.5, false)
-}
-
-func BenchmarkSelectBoolMemNoX1e5Perc50(b *testing.B) {
-	benchmarkSelectBoolMem(b, 1e5, 0.5, false)
-}
-
 func BenchmarkSelectBoolMemX1e1Perc50(b *testing.B) {
 	benchmarkSelectBoolMem(b, 1e1, 0.5, true)
+}
+
+func BenchmarkSelectBoolMemNoX1e2Perc50(b *testing.B) {
+	benchmarkSelectBoolMem(b, 1e2, 0.5, false)
 }
 
 func BenchmarkSelectBoolMemX1e2Perc50(b *testing.B) {
 	benchmarkSelectBoolMem(b, 1e2, 0.5, true)
 }
 
+func BenchmarkSelectBoolMemNoX1e3Perc50(b *testing.B) {
+	benchmarkSelectBoolMem(b, 1e3, 0.5, false)
+}
+
 func BenchmarkSelectBoolMemX1e3Perc50(b *testing.B) {
 	benchmarkSelectBoolMem(b, 1e3, 0.5, true)
 }
 
+func BenchmarkSelectBoolMemNoX1e4Perc50(b *testing.B) {
+	benchmarkSelectBoolMem(b, 1e4, 0.5, false)
+}
+
 func BenchmarkSelectBoolMemX1e4Perc50(b *testing.B) {
 	benchmarkSelectBoolMem(b, 1e4, 0.5, true)
+}
+
+func BenchmarkSelectBoolMemNoX1e5Perc50(b *testing.B) {
+	benchmarkSelectBoolMem(b, 1e5, 0.5, false)
 }
 
 func BenchmarkSelectBoolMemX1e5Perc50(b *testing.B) {
@@ -1568,36 +1568,36 @@ func BenchmarkSelectBoolMemNoX1e1Perc5(b *testing.B) {
 	benchmarkSelectBoolMem(b, 1e1, 0.05, false)
 }
 
-func BenchmarkSelectBoolMemNoX1e2Perc5(b *testing.B) {
-	benchmarkSelectBoolMem(b, 1e2, 0.05, false)
-}
-
-func BenchmarkSelectBoolMemNoX1e3Perc5(b *testing.B) {
-	benchmarkSelectBoolMem(b, 1e3, 0.05, false)
-}
-
-func BenchmarkSelectBoolMemNoX1e4Perc5(b *testing.B) {
-	benchmarkSelectBoolMem(b, 1e4, 0.05, false)
-}
-
-func BenchmarkSelectBoolMemNoX1e5Perc5(b *testing.B) {
-	benchmarkSelectBoolMem(b, 1e5, 0.05, false)
-}
-
 func BenchmarkSelectBoolMemX1e1Perc5(b *testing.B) {
 	benchmarkSelectBoolMem(b, 1e1, 0.05, true)
+}
+
+func BenchmarkSelectBoolMemNoX1e2Perc5(b *testing.B) {
+	benchmarkSelectBoolMem(b, 1e2, 0.05, false)
 }
 
 func BenchmarkSelectBoolMemX1e2Perc5(b *testing.B) {
 	benchmarkSelectBoolMem(b, 1e2, 0.05, true)
 }
 
+func BenchmarkSelectBoolMemNoX1e3Perc5(b *testing.B) {
+	benchmarkSelectBoolMem(b, 1e3, 0.05, false)
+}
+
 func BenchmarkSelectBoolMemX1e3Perc5(b *testing.B) {
 	benchmarkSelectBoolMem(b, 1e3, 0.05, true)
 }
 
+func BenchmarkSelectBoolMemNoX1e4Perc5(b *testing.B) {
+	benchmarkSelectBoolMem(b, 1e4, 0.05, false)
+}
+
 func BenchmarkSelectBoolMemX1e4Perc5(b *testing.B) {
 	benchmarkSelectBoolMem(b, 1e4, 0.05, true)
+}
+
+func BenchmarkSelectBoolMemNoX1e5Perc5(b *testing.B) {
+	benchmarkSelectBoolMem(b, 1e5, 0.05, false)
 }
 
 func BenchmarkSelectBoolMemX1e5Perc5(b *testing.B) {
@@ -1629,36 +1629,36 @@ func BenchmarkSelectBoolFileNoX1e1Perc50(b *testing.B) {
 	benchmarkSelectBoolFile(b, 1e1, 0.5, false)
 }
 
-func BenchmarkSelectBoolFileNoX1e2Perc50(b *testing.B) {
-	benchmarkSelectBoolFile(b, 1e2, 0.5, false)
-}
-
-func BenchmarkSelectBoolFileNoX1e3Perc50(b *testing.B) {
-	benchmarkSelectBoolFile(b, 1e3, 0.5, false)
-}
-
-func BenchmarkSelectBoolFileNoX1e4Perc50(b *testing.B) {
-	benchmarkSelectBoolFile(b, 1e4, 0.5, false)
-}
-
-func BenchmarkSelectBoolFileNoX1e5Perc50(b *testing.B) {
-	benchmarkSelectBoolFile(b, 1e5, 0.5, false)
-}
-
 func BenchmarkSelectBoolFileX1e1Perc50(b *testing.B) {
 	benchmarkSelectBoolFile(b, 1e1, 0.5, true)
+}
+
+func BenchmarkSelectBoolFileNoX1e2Perc50(b *testing.B) {
+	benchmarkSelectBoolFile(b, 1e2, 0.5, false)
 }
 
 func BenchmarkSelectBoolFileX1e2Perc50(b *testing.B) {
 	benchmarkSelectBoolFile(b, 1e2, 0.5, true)
 }
 
+func BenchmarkSelectBoolFileNoX1e3Perc50(b *testing.B) {
+	benchmarkSelectBoolFile(b, 1e3, 0.5, false)
+}
+
 func BenchmarkSelectBoolFileX1e3Perc50(b *testing.B) {
 	benchmarkSelectBoolFile(b, 1e3, 0.5, true)
 }
 
+func BenchmarkSelectBoolFileNoX1e4Perc50(b *testing.B) {
+	benchmarkSelectBoolFile(b, 1e4, 0.5, false)
+}
+
 func BenchmarkSelectBoolFileX1e4Perc50(b *testing.B) {
 	benchmarkSelectBoolFile(b, 1e4, 0.5, true)
+}
+
+func BenchmarkSelectBoolFileNoX1e5Perc50(b *testing.B) {
+	benchmarkSelectBoolFile(b, 1e5, 0.5, false)
 }
 
 func BenchmarkSelectBoolFileX1e5Perc50(b *testing.B) {
@@ -1671,38 +1671,111 @@ func BenchmarkSelectBoolFileNoX1e1Perc5(b *testing.B) {
 	benchmarkSelectBoolFile(b, 1e1, 0.05, false)
 }
 
-func BenchmarkSelectBoolFileNoX1e2Perc5(b *testing.B) {
-	benchmarkSelectBoolFile(b, 1e2, 0.05, false)
-}
-
-func BenchmarkSelectBoolFileNoX1e3Perc5(b *testing.B) {
-	benchmarkSelectBoolFile(b, 1e3, 0.05, false)
-}
-
-func BenchmarkSelectBoolFileNoX1e4Perc5(b *testing.B) {
-	benchmarkSelectBoolFile(b, 1e4, 0.05, false)
-}
-
-func BenchmarkSelectBoolFileNoX1e5Perc5(b *testing.B) {
-	benchmarkSelectBoolFile(b, 1e5, 0.05, false)
-}
-
 func BenchmarkSelectBoolFileX1e1Perc5(b *testing.B) {
 	benchmarkSelectBoolFile(b, 1e1, 0.05, true)
+}
+
+func BenchmarkSelectBoolFileNoX1e2Perc5(b *testing.B) {
+	benchmarkSelectBoolFile(b, 1e2, 0.05, false)
 }
 
 func BenchmarkSelectBoolFileX1e2Perc5(b *testing.B) {
 	benchmarkSelectBoolFile(b, 1e2, 0.05, true)
 }
 
+func BenchmarkSelectBoolFileNoX1e3Perc5(b *testing.B) {
+	benchmarkSelectBoolFile(b, 1e3, 0.05, false)
+}
+
 func BenchmarkSelectBoolFileX1e3Perc5(b *testing.B) {
 	benchmarkSelectBoolFile(b, 1e3, 0.05, true)
+}
+
+func BenchmarkSelectBoolFileNoX1e4Perc5(b *testing.B) {
+	benchmarkSelectBoolFile(b, 1e4, 0.05, false)
 }
 
 func BenchmarkSelectBoolFileX1e4Perc5(b *testing.B) {
 	benchmarkSelectBoolFile(b, 1e4, 0.05, true)
 }
 
+func BenchmarkSelectBoolFileNoX1e5Perc5(b *testing.B) {
+	benchmarkSelectBoolFile(b, 1e5, 0.05, false)
+}
+
 func BenchmarkSelectBoolFileX1e5Perc5(b *testing.B) {
 	benchmarkSelectBoolFile(b, 1e5, 0.05, true)
+}
+
+func TestIndex(t *testing.T) {
+	db, err := OpenMem()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	ctx := NewRWCtx()
+	if _, _, err := db.Run(ctx, `
+		BEGIN TRANSACTION;
+			CREATE TABLE t (b bool);
+	`); err != nil {
+		t.Fatal(err)
+	}
+
+	if _, _, err := db.Run(ctx, `
+			CREATE INDEX x ON t (b);
+		`); err != nil {
+		t.Fatal(err)
+	}
+
+	ins, err := Compile("INSERT INTO t VALUES($1);")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	size, selectivity := int(1e1), 0.5
+	rng := rand.New(rand.NewSource(42))
+	var n int64
+	for j := 0; j < size; j++ {
+		v := rng.Float64() < selectivity
+		if v {
+			n++
+			t.Logf("id %d <- true", j+1)
+		}
+		if _, _, err = db.Execute(ctx, ins, v); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if _, _, err := db.Run(ctx, "COMMIT;"); err != nil {
+		t.Fatal(err)
+	}
+
+	s, err := dumpDB(db, "")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Logf("n: %d\n%s", n, s)
+	sel, err := Compile("SELECT id(), b FROM t WHERE b;")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var m int64
+	rss, _, err := db.Execute(nil, sel)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err = rss[0].Do(false, func(rec []interface{}) (bool, error) {
+		t.Logf("%v", rec)
+		m++
+		return true, nil
+	}); err != nil {
+		t.Fatal(err)
+	}
+
+	if g, e := n, m; g != e {
+		t.Fatal(g, e)
+	}
 }
