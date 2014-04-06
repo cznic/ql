@@ -460,7 +460,7 @@ type whereRset struct {
 	src  rset
 }
 
-func (r *whereRset) doIndexedBool(t *table, en indexIterator, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
+func (r *whereRset) doIndexedBool(t *table, en indexIterator, v bool, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
 	m, err := f(nil, []interface{}{t.flds()})
 	if !m || err != nil {
 		return
@@ -476,7 +476,7 @@ func (r *whereRset) doIndexedBool(t *table, en indexIterator, f func(id interfac
 		case nil:
 			panic("internal error") // nil should sort before true
 		case bool:
-			if !x {
+			if x != v {
 				return nil
 			}
 		}
@@ -507,76 +507,9 @@ func (r *whereRset) tryBinOp(t *table, id *ident, v value, op int, f func(id int
 	ex := &binaryOperation{op, nil, v}
 	switch op {
 	case '<', le:
-		m, err := f(nil, []interface{}{t.flds()})
-		if !m || err != nil {
-			return true, err
-		}
-
-		en, _, err := xCol.x.Seek(false) // first value collating after nil
-		if err != nil {
-			return true, noEOF(err)
-		}
-
-		for {
-			k, h, err := en.Next()
-			if k == nil {
-				return true, nil
-			}
-
-			if err != nil {
-				return true, noEOF(err)
-			}
-
-			ex.l = value{k}
-			eval, err := ex.eval(nil, nil)
-			if err != nil {
-				return true, err
-			}
-
-			if !eval.(bool) {
-				return true, nil
-			}
-
-			if _, err := tableRset("").doOne(t, h, f); err != nil {
-				return true, err
-			}
-		}
-	case eq:
-		m, err := f(nil, []interface{}{t.flds()})
-		if !m || err != nil {
-			return true, err
-		}
-
-		en, _, err := xCol.x.Seek(v.val)
-		if err != nil {
-			return true, noEOF(err)
-		}
-
-		for {
-			k, h, err := en.Next()
-			if k == nil {
-				return true, nil
-			}
-
-			if err != nil {
-				return true, noEOF(err)
-			}
-
-			ex.l = value{k}
-			eval, err := ex.eval(nil, nil)
-			if err != nil {
-				return true, err
-			}
-
-			if !eval.(bool) {
-				return true, nil
-			}
-
-			if _, err := tableRset("").doOne(t, h, f); err != nil {
-				return true, err
-			}
-		}
-	case ge:
+		v.val = false // first value collating after nil
+		fallthrough
+	case eq, ge:
 		m, err := f(nil, []interface{}{t.flds()})
 		if !m || err != nil {
 			return true, err
@@ -675,6 +608,36 @@ func (r *whereRset) tryUseIndex(ctx *execCtx, f func(id interface{}, data []inte
 	//LATER WHERE column1 boolOp column2 ...
 	//LATER WHERE !column (rewritable as: column == false)
 	switch ex := r.expr.(type) {
+	case *unaryOperation: // WHERE !column
+		if ex.op != '!' {
+			return false, nil
+		}
+
+		switch operand := ex.v.(type) {
+		case *ident:
+			c := findCol(t.cols0, operand.s)
+			if c == nil { // no such column
+				return false, fmt.Errorf("unknown column %s", ex)
+			}
+
+			if c.typ != qBool { // not a bool column
+				return false, nil
+			}
+
+			xCol := t.indices[c.index+1]
+			if xCol == nil { // column isn't indexed
+				return false, nil
+			}
+
+			en, _, err := xCol.x.Seek(false)
+			if err != nil {
+				return false, noEOF(err)
+			}
+
+			return true, r.doIndexedBool(t, en, false, f)
+		default:
+			return false, nil
+		}
 	case *ident: // WHERE colum
 		c := findCol(t.cols0, ex.s)
 		if c == nil { // no such column
@@ -695,7 +658,7 @@ func (r *whereRset) tryUseIndex(ctx *execCtx, f func(id interface{}, data []inte
 			return false, noEOF(err)
 		}
 
-		return true, r.doIndexedBool(t, en, f)
+		return true, r.doIndexedBool(t, en, true, f)
 	case *binaryOperation: //TODO(indices) WHERE column relOp fixed value or WHERE fixed value relOp column
 		//TODO handle id()
 		switch ex.op {
@@ -703,6 +666,7 @@ func (r *whereRset) tryUseIndex(ctx *execCtx, f func(id interface{}, data []inte
 		default:
 			return false, nil
 		}
+
 		switch lhs := ex.l.(type) {
 		case *ident:
 			switch rhs := ex.r.(type) {
