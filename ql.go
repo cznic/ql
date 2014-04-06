@@ -661,8 +661,18 @@ func (r *whereRset) tryUseIndex(ctx *execCtx, f func(id interface{}, data []inte
 		return true, r.doIndexedBool(t, en, true, f)
 	case *binaryOperation: //TODO(indices) WHERE column relOp fixed value or WHERE fixed value relOp column
 		//TODO handle id()
+		var invOp int
 		switch ex.op {
-		case '<', le, eq, '>', ge:
+		case '<':
+			invOp = '>'
+		case le:
+			invOp = ge
+		case eq:
+			invOp = eq
+		case '>':
+			invOp = '<'
+		case ge:
+			invOp = le
 		default:
 			return false, nil
 		}
@@ -683,7 +693,17 @@ func (r *whereRset) tryUseIndex(ctx *execCtx, f func(id interface{}, data []inte
 				return false, nil
 			}
 		case parameter:
-			panic("TODO")
+			switch rhs := ex.r.(type) {
+			case *ident:
+				v, err := lhs.eval(nil, ctx.arg)
+				if err != nil {
+					return false, err
+				}
+
+				return r.tryBinOp(t, rhs, value{v}, invOp, f)
+			default:
+				return false, nil
+			}
 		case value:
 			panic("TODO")
 		default:
