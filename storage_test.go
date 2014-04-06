@@ -26,6 +26,7 @@ var (
 	dropT          = MustCompile("BEGIN TRANSACTION; DROP TABLE t; COMMIT;")
 
 	oN = flag.Int("N", 0, "")
+	oM = flag.Int("M", 0, "")
 )
 
 var testdata []string
@@ -261,7 +262,11 @@ func test(t *testing.T, s testDB) (panicked error) {
 		return true
 	}
 
-	for itest, test := range testdata[*oN:] {
+	max := len(testdata)
+	if n := *oM; n != 0 {
+		max = n
+	}
+	for itest, test := range testdata[*oN:max] {
 		//dbg("---------------------------------------- itest %d", itest)
 		var re *regexp.Regexp
 		a := strings.Split(test+"|", "|")

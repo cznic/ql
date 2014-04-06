@@ -125,7 +125,8 @@ type xenumerator2 struct {
 	unique bool
 }
 
-func (it *xenumerator2) Next() (interface{}, int64, error) {
+func (it *xenumerator2) Next() (TODOv interface{}, TODOh int64, TODO error) {
+	//defer func() { dbg(".Next() -> %v %v", TODOv, TODOh) }()
 	k, h, err := it.it.Next()
 	if err != nil {
 		return nil, -1, err
@@ -592,6 +593,7 @@ type (
 )
 
 func (a *indexKey) cmp(b *indexKey) (TODO int) {
+	//defer func() { dbg("%v %v -> %v", a, b, TODO) }()
 	r := collate1(a.value, b.value)
 	if r != 0 {
 		return r

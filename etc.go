@@ -2578,6 +2578,7 @@ func collate1(a, b interface{}) int {
 
 //TODO collate should return errors from collate1
 func collate(x, y []interface{}) (r int) {
+	//defer func() { dbg("%v %v -> %v", x, y, r) }()
 	nx, ny := len(x), len(y)
 
 	switch {

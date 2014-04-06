@@ -506,7 +506,7 @@ func (r *whereRset) tryBinOp(t *table, id *ident, v value, op int, f func(id int
 	v.val = data[0]
 	ex := &binaryOperation{op, nil, v}
 	switch op {
-	case '<':
+	case '<', le:
 		m, err := f(nil, []interface{}{t.flds()})
 		if !m || err != nil {
 			return true, err
@@ -541,14 +541,111 @@ func (r *whereRset) tryBinOp(t *table, id *ident, v value, op int, f func(id int
 				return true, err
 			}
 		}
-	case le:
-		panic("TODO")
 	case eq:
-		panic("TODO")
+		m, err := f(nil, []interface{}{t.flds()})
+		if !m || err != nil {
+			return true, err
+		}
+
+		en, _, err := xCol.x.Seek(v.val)
+		if err != nil {
+			return true, noEOF(err)
+		}
+
+		for {
+			k, h, err := en.Next()
+			if k == nil {
+				return true, nil
+			}
+
+			if err != nil {
+				return true, noEOF(err)
+			}
+
+			ex.l = value{k}
+			eval, err := ex.eval(nil, nil)
+			if err != nil {
+				return true, err
+			}
+
+			if !eval.(bool) {
+				return true, nil
+			}
+
+			if _, err := tableRset("").doOne(t, h, f); err != nil {
+				return true, err
+			}
+		}
 	case ge:
-		panic("TODO")
+		m, err := f(nil, []interface{}{t.flds()})
+		if !m || err != nil {
+			return true, err
+		}
+
+		en, _, err := xCol.x.Seek(v.val)
+		if err != nil {
+			return true, noEOF(err)
+		}
+
+		for {
+			k, h, err := en.Next()
+			if k == nil {
+				return true, nil
+			}
+
+			if err != nil {
+				return true, noEOF(err)
+			}
+
+			ex.l = value{k}
+			eval, err := ex.eval(nil, nil)
+			if err != nil {
+				return true, err
+			}
+
+			if !eval.(bool) {
+				return true, nil
+			}
+
+			if _, err := tableRset("").doOne(t, h, f); err != nil {
+				return true, err
+			}
+		}
 	case '>':
-		panic("TODO")
+		m, err := f(nil, []interface{}{t.flds()})
+		if !m || err != nil {
+			return true, err
+		}
+
+		en, err := xCol.x.SeekLast()
+		if err != nil {
+			return true, noEOF(err)
+		}
+
+		for {
+			k, h, err := en.Prev()
+			if k == nil {
+				return true, nil
+			}
+
+			if err != nil {
+				return true, noEOF(err)
+			}
+
+			ex.l = value{k}
+			eval, err := ex.eval(nil, nil)
+			if err != nil {
+				return true, err
+			}
+
+			if !eval.(bool) {
+				return true, nil
+			}
+
+			if _, err := tableRset("").doOne(t, h, f); err != nil {
+				return true, err
+			}
+		}
 	default:
 		panic("internal error")
 	}
