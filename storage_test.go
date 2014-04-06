@@ -123,11 +123,12 @@ func dumpFlds(flds []*fld) string {
 	return strings.Join(a, ",")
 }
 
-func recSetDump(ctx *execCtx, rs Recordset) (s string, err error) {
+func recSetDump(rs Recordset) (s string, err error) {
 	var state int
 	var a []string
 	var flds []*fld
-	if err = rs.(recordset).do(ctx, false, func(_ interface{}, rec []interface{}) (bool, error) {
+	rs2 := rs.(recordset)
+	if err = rs2.do(rs2.ctx, false, func(_ interface{}, rec []interface{}) (bool, error) {
 		switch state {
 		case 0:
 			flds = rec[0].([]*fld)
@@ -290,7 +291,7 @@ func test(t *testing.T, s testDB) (panicked error) {
 				return
 			}
 
-			rs, _, err := db.Execute(tctx, list)
+			rs, _, err := db.Execute(tctx, list, int64(30))
 			if err != nil {
 				return chk(itest, err, expErr, re)
 			}
@@ -300,7 +301,7 @@ func test(t *testing.T, s testDB) (panicked error) {
 				return
 			}
 
-			g, err := recSetDump(&execCtx{db, []interface{}{idealInt(30)}}, rs[len(rs)-1])
+			g, err := recSetDump(rs[len(rs)-1])
 			if err != nil {
 				return chk(itest, err, expErr, re)
 			}
