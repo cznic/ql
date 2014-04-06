@@ -18,7 +18,7 @@ import (
 var (
 	_ btreeIndex    = (*memIndex)(nil)
 	_ btreeIterator = (*memBTreeIterator)(nil)
-	_ indexIterator = (*xenumerator)(nil)
+	_ indexIterator = (*xenumerator2)(nil)
 	_ storage       = (*mem)(nil)
 	_ temp          = (*memTemp)(nil)
 )
@@ -83,7 +83,7 @@ func (x *memIndex) Delete(indexedValue interface{}, h int64) error {
 	}
 	if ok {
 		if okv {
-			x.m.newUndo(undoDeleteX, v.(int64), []interface{}{x, k})
+			x.m.newUndo(undoDeleteX, int64(v.(int)), []interface{}{x, k})
 		}
 		return nil
 	}
@@ -99,15 +99,66 @@ func (x *memIndex) Drop() error {
 
 func (x *memIndex) Seek(indexedValue interface{}) (indexIterator, bool, error) {
 	it, hit := x.t.Seek(indexKey{indexedValue, 0})
-	return it, hit, nil
+	return &xenumerator2{*it, x.unique}, hit, nil
 }
 
-func (x *memIndex) Update(oldIndexedValue, newIndexedValue interface{}, h int64) error {
-	if err := x.Delete(oldIndexedValue, h); err != nil {
-		return err
+func (x *memIndex) SeekFirst() (iter indexIterator, err error) {
+	it, err := x.t.SeekFirst()
+	if err != nil {
+		return nil, err
 	}
 
-	return x.Create(newIndexedValue, h)
+	return &xenumerator2{*it, x.unique}, nil
+}
+
+func (x *memIndex) SeekLast() (iter indexIterator, err error) {
+	it, err := x.t.SeekLast()
+	if err != nil {
+		return nil, err
+	}
+
+	return &xenumerator2{*it, x.unique}, nil
+}
+
+type xenumerator2 struct {
+	it     xenumerator
+	unique bool
+}
+
+func (it *xenumerator2) Next() (interface{}, int64, error) {
+	k, h, err := it.it.Next()
+	if err != nil {
+		return nil, -1, err
+	}
+
+	switch it.unique {
+	case true:
+		if k.value == nil {
+			return nil, k.h, nil
+		}
+
+		return k.value, h, nil
+	default:
+		return k.value, k.h, nil
+	}
+}
+
+func (it *xenumerator2) Prev() (interface{}, int64, error) {
+	k, h, err := it.it.Prev()
+	if err != nil {
+		return nil, -1, err
+	}
+
+	switch it.unique {
+	case true:
+		if k.value == nil {
+			return nil, k.h, nil
+		}
+
+		return k.value, h, nil
+	default:
+		return k.value, k.h, nil
+	}
 }
 
 type memBTreeIterator enumerator
@@ -212,6 +263,10 @@ func newMemStorage() (s *mem, err error) {
 	return
 }
 
+func (s *mem) OpenIndex(unique bool, handle int64) (btreeIndex, error) { // Never called on the memory backend.
+	panic("internal error")
+}
+
 func (s *mem) newUndo(tag int, h int64, data []interface{}) {
 	s.rollback.list = append(s.rollback.list, undo{tag, h, data})
 }
@@ -239,9 +294,11 @@ func OpenMem() (db *DB, err error) {
 	}
 
 	if db, err = newDB(s); err != nil {
-		db = nil
+		return nil, err
 	}
-	return
+
+	db.isMem = true
+	return db, nil
 }
 
 func (s *mem) Verify() (allocs int64, err error) {
@@ -481,13 +538,9 @@ func (s *mem) Commit() (err error) {
 }
 
 // Transaction index B+Tree
+//LATER make it just a wrapper of the implementation in btree.go.
 
 type (
-	indexKey struct {
-		value interface{}
-		h     int64
-	}
-
 	xd struct { // data page
 		c  int
 		xd [2*kd + 1]xde
@@ -540,8 +593,8 @@ type (
 
 func (a *indexKey) cmp(b *indexKey) int {
 	r := collate1(a.value, b.value)
-	if r == 0 {
-		return 0
+	if r != 0 {
+		return r
 	}
 
 	return int(a.h) - int(b.h)
@@ -653,11 +706,11 @@ func (t *xtree) cat(p *xx, q, r *xd, pi int) {
 	} else {
 		t.last = q
 	}
-	q.n = r.n //TODO recycle r
+	q.n = r.n
 	if p.c > 1 {
 		p.extract(pi)
 		p.xx[pi].ch = q
-	} else { //TODO recycle r
+	} else {
 		t.r = q
 	}
 }
@@ -667,7 +720,7 @@ func (t *xtree) catX(p, q, r *xx, pi int) {
 	q.xx[q.c].sep = p.xx[pi].sep
 	copy(q.xx[q.c+1:], r.xx[:r.c])
 	q.c += r.c + 1
-	q.xx[q.c].ch = r.xx[r.c].ch //TODO recycle r
+	q.xx[q.c].ch = r.xx[r.c].ch
 	if p.c > 1 {
 		p.c--
 		pc := p.c
@@ -681,7 +734,7 @@ func (t *xtree) catX(p, q, r *xx, pi int) {
 		return
 	}
 
-	t.r = q //TODO recycle r
+	t.r = q
 }
 
 //Delete removes the k's KV pair, if it exists, in which case Delete returns

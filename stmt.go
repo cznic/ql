@@ -90,7 +90,14 @@ func (s *updateStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 	expr := s.where
 	blobCols := t.blobCols()
 	cc := ctx.db.cc
+	var old []interface{}
+	var touched []bool
+	if t.hasIndices() {
+		old = make([]interface{}, len(t.cols0))
+		touched = make([]bool, len(t.cols0))
+	}
 	for h := t.head; h != 0; h = nh {
+		// Read can return lazily expanded chunks
 		data, err := t.store.Read(nil, h, t.cols...)
 		if err != nil {
 			return nil, err
@@ -122,22 +129,54 @@ func (s *updateStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 		}
 
 		// hit
-		for i, asgn := range s.list { //TODO update indices
+		for i, asgn := range s.list {
 			val, err := asgn.expr.eval(m, ctx.arg)
 			if err != nil {
 				return nil, err
 			}
 
-			data[2+tcols[i].index] = val
+			colIndex := tcols[i].index
+			if t.hasIndices() {
+				old[colIndex] = data[2+colIndex]
+				touched[colIndex] = true
+			}
+			data[2+colIndex] = val
 		}
 		if err = typeCheck(data[2:], t.cols); err != nil {
 			return nil, err
+		}
+
+		for i, v := range t.indices {
+			if i == 0 { // id() N/A
+				continue
+			}
+
+			if v == nil || !touched[i-1] {
+				continue
+			}
+
+			if err = v.x.Delete(old[i-1], h); err != nil {
+				return nil, err
+			}
 		}
 
 		if err = t.store.UpdateRow(h, blobCols, data...); err != nil { //LATER detect which blobs are actually affected
 			return nil, err
 		}
 
+		for i, v := range t.indices {
+			if i == 0 { // id() N/A
+				continue
+			}
+
+			if v == nil || !touched[i-1] {
+				continue
+			}
+
+			if err = v.x.Create(data[2+i-1], h); err != nil {
+				return nil, err
+			}
+		}
 		cc.RowsAffected++
 	}
 	return
@@ -180,6 +219,7 @@ func (s *deleteStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 			data[i] = c.b
 		}
 		pdata = append(pdata[:0], data...)
+		// Read can return lazily expanded chunks
 		data, err = t.store.Read(nil, h, t.cols...)
 		if err != nil {
 			return nil, err
@@ -209,7 +249,18 @@ func (s *deleteStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 		}
 
 		// hit
-		//TODO Delete indices
+		for i, v := range t.indices {
+			if v == nil {
+				continue
+			}
+
+			// overflow chunks left in place
+			if err = v.x.Delete(data[i+1], h); err != nil {
+				return nil, err
+			}
+		}
+
+		// overflow chunks freed here
 		if err = t.store.Delete(h, blobCols...); err != nil {
 			return nil, err
 		}
@@ -265,7 +316,20 @@ type dropIndexStmt struct {
 func (s *dropIndexStmt) String() string { return fmt.Sprintf("DROP INDEX %s;", s.indexName) }
 
 func (s *dropIndexStmt) exec(ctx *execCtx) (Recordset, error) {
-	panic("TODO")
+	t, x := ctx.db.root.findIndexByName(s.indexName)
+	if x == nil {
+		return nil, fmt.Errorf("DROP INDEX: index %s does not exist", s.indexName)
+	}
+
+	for i, v := range t.indices {
+		if v == nil {
+			continue
+		}
+
+		return nil, t.dropIndex(i)
+	}
+
+	panic("internal error")
 }
 
 func (s *dropIndexStmt) isUpdating() bool { return true }
@@ -300,7 +364,7 @@ func (s *alterTableDropColumnStmt) String() string {
 	return fmt.Sprintf("ALTER TABLE %s DROP COLUMN %s;", s.tableName, s.colName)
 }
 
-func (s *alterTableDropColumnStmt) exec(ctx *execCtx) (Recordset, error) { //TODO Drop indices
+func (s *alterTableDropColumnStmt) exec(ctx *execCtx) (Recordset, error) {
 	t, ok := ctx.db.root.tables[s.tableName]
 	if !ok {
 		return nil, fmt.Errorf("ALTER TABLE: table %s does not exist", s.tableName)
@@ -314,6 +378,14 @@ func (s *alterTableDropColumnStmt) exec(ctx *execCtx) (Recordset, error) { //TOD
 			}
 
 			c.name = ""
+			t.cols0[c.index].name = ""
+			if t.hasIndices() {
+				if v := t.indices[c.index+1]; v != nil {
+					if err := t.dropIndex(c.index + 1); err != nil {
+						return nil, err
+					}
+				}
+			}
 			return nil, t.updated()
 		}
 	}
@@ -343,6 +415,14 @@ func (s *alterTableAddStmt) exec(ctx *execCtx) (Recordset, error) {
 		nm := c.name
 		if nm == s.c.name {
 			return nil, fmt.Errorf("ALTER TABLE %s ADD COLUMN %s: column exists", s.tableName, nm)
+		}
+	}
+
+	if t.hasIndices() {
+		t.indices = append(t.indices, nil)
+		t.xroots = append(t.xroots, 0)
+		if err := t.store.Update(t.hxroots, t.xroots...); err != nil {
+			return nil, err
 		}
 	}
 
@@ -484,8 +564,21 @@ func (s *insertIntoStmt) execSelect(t *table, cols []*col, ctx *execCtx) (_ Reco
 
 			data0[0] = h
 			data0[1] = id
+
+			// Any overflow chunks are written here.
 			if h, err = t.store.Create(data0...); err != nil {
 				return false, err
+			}
+
+			for i, v := range t.indices {
+				if v == nil {
+					continue
+				}
+
+				// Any overflow chunks are shared with the BTree key
+				if err = v.x.Create(data0[i+1], h); err != nil {
+					return false, err
+				}
 			}
 
 			cc.RowsAffected++
@@ -609,13 +702,22 @@ func (s *createIndexStmt) String() string {
 }
 
 func (s *createIndexStmt) exec(ctx *execCtx) (Recordset, error) {
-	if t, i := ctx.db.root.findIndexByName(s.indexName); i != nil {
+	root := ctx.db.root
+	if root.tables[s.indexName] != nil {
+		return nil, fmt.Errorf("CREATE INDEX: index name collision with existing table: %s", s.indexName)
+	}
+
+	if t, i := root.findIndexByName(s.indexName); i != nil {
 		return nil, fmt.Errorf("CREATE INDEX: table %s already has an index named %s", t.name, i.name)
 	}
 
-	t, ok := ctx.db.root.tables[s.tableName]
+	t, ok := root.tables[s.tableName]
 	if !ok {
 		return nil, fmt.Errorf("CREATE INDEX: table does not exist %s", s.tableName)
+	}
+
+	if findCol(t.cols, s.indexName) != nil {
+		return nil, fmt.Errorf("CREATE INDEX: index name collision with existing column: %s", s.indexName)
 	}
 
 	if s.colName == "id()" {
@@ -655,12 +757,17 @@ func (s *createTableStmt) String() string {
 }
 
 func (s *createTableStmt) exec(ctx *execCtx) (_ Recordset, err error) {
-	if _, ok := ctx.db.root.tables[s.tableName]; ok {
+	root := ctx.db.root
+	if _, ok := root.tables[s.tableName]; ok {
 		if s.ifNotExists {
 			return nil, nil
 		}
 
 		return nil, fmt.Errorf("CREATE TABLE: table exists %s", s.tableName)
+	}
+
+	if t, x := root.findIndexByName(s.tableName); x != nil {
+		return nil, fmt.Errorf("CREATE TABLE: table %s has index %s", t.name, s.tableName)
 	}
 
 	m := map[string]bool{}
@@ -673,7 +780,7 @@ func (s *createTableStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 		m[nm] = true
 		c.index = i
 	}
-	_, err = ctx.db.root.createTable(s.tableName, s.cols)
+	_, err = root.createTable(s.tableName, s.cols)
 	return
 }
 

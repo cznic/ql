@@ -38,10 +38,6 @@ var (
 	errNoResult = errors.New("query statement does not produce a result set (no top level SELECT)")
 )
 
-//func init() {
-//	log.SetFlags(log.Lshortfile)
-//}
-
 type errList []error
 
 func (e *errList) append(err error) {
@@ -132,7 +128,6 @@ func (d *sqlDriver) lock() func() {
 //
 // The returned connection is only used by one goroutine at a time.
 func (d *sqlDriver) Open(name string) (driver.Conn, error) {
-
 	name = filepath.Clean(name)
 	if name == "" || name == "." || name == string(os.PathSeparator) {
 		return nil, fmt.Errorf("invalid DB name %q", name)
@@ -161,8 +156,6 @@ func (d *sqlDriver) Open(name string) (driver.Conn, error) {
 	db.refcount++
 	return newDriverConn(d, db), nil
 }
-
-var zDriverConn driverConn
 
 // driverConn is a connection to a database. It is not used concurrently by
 // multiple goroutines.
@@ -216,7 +209,6 @@ func (c *driverConn) Close() error {
 		err.append(c.db.db.Close())
 		delete(dbs, name)
 	}
-	*c = zDriverConn
 	return err.error()
 }
 
@@ -458,8 +450,6 @@ func (r *driverRows) Next(dest []driver.Value) error {
 	}
 }
 
-var zDriverStmt driverStmt
-
 // driverStmt is a prepared statement. It is bound to a driverConn and not used
 // by multiple goroutines concurrently.
 type driverStmt struct {
@@ -472,7 +462,6 @@ type driverStmt struct {
 // As of Go 1.1, a Stmt will not be closed if it's in use by any queries.
 func (s *driverStmt) Close() error {
 	delete(s.conn.stop, s)
-	*s = zDriverStmt
 	return nil
 }
 

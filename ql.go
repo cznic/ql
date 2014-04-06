@@ -14,6 +14,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"math/big"
 	"runtime"
@@ -37,6 +38,8 @@ var (
 	_ rset = (*selectStmt)(nil)
 	_ rset = (*tableRset)(nil)
 	_ rset = (*whereRset)(nil)
+
+	isTesting bool // enables test hook: select from an index
 )
 
 const gracePeriod = time.Second
@@ -429,7 +432,12 @@ func (r *orderByRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, da
 
 	it, err := t.SeekFirst()
 	if err != nil {
-		return noEOF(err)
+		if err != io.EOF {
+			return err
+		}
+
+		_, err = f(nil, []interface{}{flds})
+		return err
 	}
 
 	var data []interface{}
@@ -450,7 +458,272 @@ type whereRset struct {
 	src  rset
 }
 
+func (r *whereRset) doIndexedBool(t *table, en indexIterator, v bool, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
+	m, err := f(nil, []interface{}{t.flds()})
+	if !m || err != nil {
+		return
+	}
+
+	for {
+		k, h, err := en.Next()
+		if err != nil {
+			return noEOF(err)
+		}
+
+		switch x := k.(type) {
+		case nil:
+			panic("internal error") // nil should sort before true
+		case bool:
+			if x != v {
+				return nil
+			}
+		}
+
+		if _, err := tableRset("").doOne(t, h, f); err != nil {
+			return err
+		}
+	}
+}
+
+func (r *whereRset) tryBinOp(t *table, id *ident, v value, op int, f func(id interface{}, data []interface{}) (more bool, err error)) (bool, error) {
+	c := findCol(t.cols0, id.s)
+	if c == nil {
+		return false, fmt.Errorf("undefined column: %s", id.s)
+	}
+
+	xCol := t.indices[c.index+1]
+	if xCol == nil { // no index for this column
+		return false, nil
+	}
+
+	data := []interface{}{v.val}
+	if err := typeCheck(data, []*col{c}); err != nil {
+		return true, err
+	}
+
+	v.val = data[0]
+	ex := &binaryOperation{op, nil, v}
+	switch op {
+	case '<', le:
+		v.val = false // first value collating after nil
+		fallthrough
+	case eq, ge:
+		m, err := f(nil, []interface{}{t.flds()})
+		if !m || err != nil {
+			return true, err
+		}
+
+		en, _, err := xCol.x.Seek(v.val)
+		if err != nil {
+			return true, noEOF(err)
+		}
+
+		for {
+			k, h, err := en.Next()
+			if k == nil {
+				return true, nil
+			}
+
+			if err != nil {
+				return true, noEOF(err)
+			}
+
+			ex.l = value{k}
+			eval, err := ex.eval(nil, nil)
+			if err != nil {
+				return true, err
+			}
+
+			if !eval.(bool) {
+				return true, nil
+			}
+
+			if _, err := tableRset("").doOne(t, h, f); err != nil {
+				return true, err
+			}
+		}
+	case '>':
+		m, err := f(nil, []interface{}{t.flds()})
+		if !m || err != nil {
+			return true, err
+		}
+
+		en, err := xCol.x.SeekLast()
+		if err != nil {
+			return true, noEOF(err)
+		}
+
+		for {
+			k, h, err := en.Prev()
+			if k == nil {
+				return true, nil
+			}
+
+			if err != nil {
+				return true, noEOF(err)
+			}
+
+			ex.l = value{k}
+			eval, err := ex.eval(nil, nil)
+			if err != nil {
+				return true, err
+			}
+
+			if !eval.(bool) {
+				return true, nil
+			}
+
+			if _, err := tableRset("").doOne(t, h, f); err != nil {
+				return true, err
+			}
+		}
+	default:
+		panic("internal error")
+	}
+}
+
+func (r *whereRset) tryUseIndex(ctx *execCtx, f func(id interface{}, data []interface{}) (more bool, err error)) (bool, error) {
+	//TODO(indices) support IS [NOT] NULL
+	c, ok := r.src.(*crossJoinRset)
+	if !ok {
+		return false, nil
+	}
+
+	tabName, ok := c.isSingleTable()
+	if !ok {
+		return false, nil
+	}
+
+	t := ctx.db.root.tables[tabName]
+	if t == nil {
+		return true, fmt.Errorf("table %s does not exist", r)
+	}
+
+	if !t.hasIndices() {
+		return false, nil
+	}
+
+	//LATER WHERE column1 boolOp column2 ...
+	//LATER WHERE !column (rewritable as: column == false)
+	switch ex := r.expr.(type) {
+	case *unaryOperation: // WHERE !column
+		if ex.op != '!' {
+			return false, nil
+		}
+
+		switch operand := ex.v.(type) {
+		case *ident:
+			c := findCol(t.cols0, operand.s)
+			if c == nil { // no such column
+				return false, fmt.Errorf("unknown column %s", ex)
+			}
+
+			if c.typ != qBool { // not a bool column
+				return false, nil
+			}
+
+			xCol := t.indices[c.index+1]
+			if xCol == nil { // column isn't indexed
+				return false, nil
+			}
+
+			en, _, err := xCol.x.Seek(false)
+			if err != nil {
+				return false, noEOF(err)
+			}
+
+			return true, r.doIndexedBool(t, en, false, f)
+		default:
+			return false, nil
+		}
+	case *ident: // WHERE column
+		c := findCol(t.cols0, ex.s)
+		if c == nil { // no such column
+			return false, fmt.Errorf("unknown column %s", ex)
+		}
+
+		if c.typ != qBool { // not a bool column
+			return false, nil
+		}
+
+		xCol := t.indices[c.index+1]
+		if xCol == nil { // column isn't indexed
+			return false, nil
+		}
+
+		en, _, err := xCol.x.Seek(true)
+		if err != nil {
+			return false, noEOF(err)
+		}
+
+		return true, r.doIndexedBool(t, en, true, f)
+	case *binaryOperation:
+		//TODO handle id()
+		var invOp int
+		switch ex.op {
+		case '<':
+			invOp = '>'
+		case le:
+			invOp = ge
+		case eq:
+			invOp = eq
+		case '>':
+			invOp = '<'
+		case ge:
+			invOp = le
+		default:
+			return false, nil
+		}
+
+		switch lhs := ex.l.(type) {
+		case *ident:
+			switch rhs := ex.r.(type) {
+			case parameter:
+				v, err := rhs.eval(nil, ctx.arg)
+				if err != nil {
+					return false, err
+				}
+
+				return r.tryBinOp(t, lhs, value{v}, ex.op, f)
+			case value:
+				return r.tryBinOp(t, lhs, rhs, ex.op, f)
+			default:
+				return false, nil
+			}
+		case parameter:
+			switch rhs := ex.r.(type) {
+			case *ident:
+				v, err := lhs.eval(nil, ctx.arg)
+				if err != nil {
+					return false, err
+				}
+
+				return r.tryBinOp(t, rhs, value{v}, invOp, f)
+			default:
+				return false, nil
+			}
+		case value:
+			switch rhs := ex.r.(type) {
+			case *ident:
+				return r.tryBinOp(t, rhs, lhs, invOp, f)
+			default:
+				return false, nil
+			}
+		default:
+			return false, nil
+		}
+	default:
+		return false, nil
+	}
+}
+
 func (r *whereRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
+	if !onlyNames {
+		if ok, err := r.tryUseIndex(ctx, f); ok || err != nil {
+			return err
+		}
+	}
+
 	m := map[interface{}]interface{}{}
 	var flds []*fld
 	ok := false
@@ -627,8 +900,77 @@ func (r *selectRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, dat
 
 type tableRset string
 
+func (r tableRset) doIndex(x *indexedCol, ctx *execCtx, onlyNames bool, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
+	flds := []*fld{&fld{name: x.name}}
+	m, err := f(nil, []interface{}{flds})
+	if onlyNames {
+		return err
+	}
+
+	if !m || err != nil {
+		return
+	}
+
+	en, _, err := x.x.Seek(nil)
+	if err != nil {
+		return err
+	}
+
+	var id int64
+	rec := []interface{}{nil}
+	for {
+		k, _, err := en.Next()
+		if err != nil {
+			return noEOF(err)
+		}
+
+		id++
+		rec[0] = k
+		m, err := f(id, rec)
+		if !m || err != nil {
+			return err
+		}
+	}
+}
+
+func (tableRset) doOne(t *table, h int64, f func(id interface{}, data []interface{}) (more bool, err error)) ( /* next handle */ int64, error) {
+	cols := t.cols
+	ncols := len(cols)
+	rec, err := t.store.Read(nil, h, cols...)
+	if err != nil {
+		return -1, err
+	}
+
+	h = rec[0].(int64)
+	if n := ncols + 2 - len(rec); n > 0 {
+		rec = append(rec, make([]interface{}, n)...)
+	}
+
+	for i, c := range cols {
+		if x := c.index; 2+x < len(rec) {
+			rec[2+i] = rec[2+x]
+			continue
+		}
+
+		rec[2+i] = nil //DONE +test (#571)
+	}
+	m, err := f(rec[1], rec[2:2+ncols]) // 0:next, 1:id
+	if !m || err != nil {
+		return -1, err
+	}
+
+	return h, nil
+}
+
 func (r tableRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
 	t, ok := ctx.db.root.tables[string(r)]
+	var x *indexedCol
+	if !ok && isTesting {
+		if _, x = ctx.db.root.findIndexByName(string(r)); x != nil {
+			return r.doIndex(x, ctx, onlyNames, f)
+		}
+	}
+
 	if !ok {
 		return fmt.Errorf("table %s does not exist", r)
 	}
@@ -642,29 +984,7 @@ func (r tableRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, data 
 		return
 	}
 
-	cols := t.cols
-	ncols := len(cols)
-	h, store := t.head, t.store
-	for h != 0 {
-		rec, err := store.Read(nil, h, cols...)
-		if err != nil {
-			return err
-		}
-
-		h = rec[0].(int64)
-		if n := ncols + 2 - len(rec); n > 0 {
-			rec = append(rec, make([]interface{}, n)...)
-		}
-
-		for i, c := range cols {
-			if x := c.index; 2+x < len(rec) {
-				rec[2+i] = rec[2+x]
-			}
-		}
-		m, err := f(rec[1], rec[2:2+ncols]) // 0:next, 1:id
-		if !m || err != nil {
-			return err
-		}
+	for h := t.head; h > 0 && err == nil; h, err = r.doOne(t, h, f) {
 	}
 	return
 }
@@ -677,16 +997,21 @@ func (r *crossJoinRset) String() string {
 	a := make([]string, len(r.sources))
 	for i, pair0 := range r.sources {
 		pair := pair0.([]interface{})
-		qualifier := pair[1].(string)
+		altName := pair[1].(string)
 		switch x := pair[0].(type) {
 		case string: // table name
-			a[i] = x
+			switch {
+			case altName == "":
+				a[i] = x
+			default:
+				a[i] = fmt.Sprintf("%s AS %s", x, altName)
+			}
 		case *selectStmt:
 			switch {
-			case qualifier == "":
+			case altName == "":
 				a[i] = fmt.Sprintf("(%s)", x)
 			default:
-				a[i] = fmt.Sprintf("(%s) AS %s", x, qualifier)
+				a[i] = fmt.Sprintf("(%s) AS %s", x, altName)
 			}
 		default:
 			log.Panic("internal error")
@@ -695,24 +1020,35 @@ func (r *crossJoinRset) String() string {
 	return strings.Join(a, ", ")
 }
 
+func (r *crossJoinRset) isSingleTable() (string, bool) {
+	sources := r.sources
+	if len(sources) != 1 {
+		return "", false
+	}
+
+	pair := sources[0].([]interface{})
+	s, ok := pair[0].(string)
+	return s, ok
+}
+
 func (r *crossJoinRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
 	rsets := make([]rset, len(r.sources))
-	qualifiers := make([]string, len(r.sources))
+	altNames := make([]string, len(r.sources))
 	for i, pair0 := range r.sources {
 		pair := pair0.([]interface{})
-		qualifier := pair[1].(string)
+		altName := pair[1].(string)
 		switch x := pair[0].(type) {
 		case string: // table name
 			rsets[i] = tableRset(x)
-			if qualifier == "" {
-				qualifier = x
+			if altName == "" {
+				altName = x
 			}
 		case *selectStmt:
 			rsets[i] = x
 		default:
 			log.Panic("internal error")
 		}
-		qualifiers[i] = qualifier
+		altNames[i] = altName
 	}
 
 	if len(rsets) == 1 {
@@ -749,7 +1085,7 @@ func (r *crossJoinRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, 
 			ok = true
 			if !fldsSent {
 				f0 := in[0].([]*fld)
-				q := qualifiers[iq]
+				q := altNames[iq]
 				for i, elem := range f0 {
 					nf := &fld{}
 					*nf = *elem
@@ -757,7 +1093,7 @@ func (r *crossJoinRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, 
 					case q == "":
 						nf.name = ""
 					case nf.name != "":
-						nf.name = fmt.Sprintf("%s.%s", qualifiers[iq], nf.name)
+						nf.name = fmt.Sprintf("%s.%s", altNames[iq], nf.name)
 					}
 					f0[i] = nf
 				}
@@ -879,6 +1215,7 @@ func cols2meta(f []*col) (s string) {
 // DB represent the database capable of executing QL statements.
 type DB struct {
 	cc    *TCtx // Current transaction context
+	isMem bool
 	mu    sync.Mutex
 	nest  int // ACID FSM
 	root  *root
@@ -1059,6 +1396,7 @@ func (db *DB) Execute(ctx *TCtx, l List, arg ...interface{}) (rs []Recordset, in
 }
 
 func (db *DB) run1(pc *TCtx, tnl0 *int, s stmt, arg ...interface{}) (rs Recordset, err error) {
+	//dbg("%v", s)
 	db.mu.Lock()
 	switch db.rw {
 	case false:
@@ -1321,16 +1659,16 @@ func (db *DB) do(r recordset, names int, f func(data []interface{}) (more bool, 
 }
 
 func (db *DB) beginTransaction() { //TODO Rewrite, must use much smaller undo info!
-	p := db.root
-	r := &root{}
-	*r = *p
-	r.parent = p
-	a := make([]*table, 0, len(p.tables))
-	r.tables = make(map[string]*table, len(p.tables))
-	for k, v := range p.tables {
+	oldRoot := db.root
+	newRoot := &root{}
+	*newRoot = *oldRoot
+	newRoot.parent = oldRoot
+	a := make([]*table, 0, len(oldRoot.tables))
+	newRoot.tables = make(map[string]*table, len(oldRoot.tables))
+	for k, v := range oldRoot.tables {
 		c := v.clone()
 		a = append(a, c)
-		r.tables[k] = c
+		newRoot.tables[k] = c
 	}
 	for i := 0; i < len(a)-1; i++ {
 		l, p := a[i], a[i+1]
@@ -1338,9 +1676,9 @@ func (db *DB) beginTransaction() { //TODO Rewrite, must use much smaller undo in
 		p.tprev = l
 	}
 	if len(a) != 0 {
-		r.thead = a[0]
+		newRoot.thead = a[0]
 	}
-	db.root = r
+	db.root = newRoot
 }
 
 func (db *DB) rollback() {

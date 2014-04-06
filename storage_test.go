@@ -26,6 +26,7 @@ var (
 	dropT          = MustCompile("BEGIN TRANSACTION; DROP TABLE t; COMMIT;")
 
 	oN = flag.Int("N", 0, "")
+	oM = flag.Int("M", 0, "")
 )
 
 var testdata []string
@@ -122,11 +123,12 @@ func dumpFlds(flds []*fld) string {
 	return strings.Join(a, ",")
 }
 
-func recSetDump(ctx *execCtx, rs Recordset) (s string, err error) {
+func recSetDump(rs Recordset) (s string, err error) {
 	var state int
 	var a []string
 	var flds []*fld
-	if err = rs.(recordset).do(ctx, false, func(_ interface{}, rec []interface{}) (bool, error) {
+	rs2 := rs.(recordset)
+	if err = rs2.do(rs2.ctx, false, func(_ interface{}, rec []interface{}) (bool, error) {
 		switch state {
 		case 0:
 			flds = rec[0].([]*fld)
@@ -190,25 +192,6 @@ const sample = `
      COMMIT;
 `
 
-func parse(t *testing.T, src string) (ls List, err error) {
-	//dbg("----\n%s----\n", src)
-	//t.Log(src)
-
-	l := newLexer(src)
-	r := yyParse(l)
-	//dbg("yyParse %d", r)
-	if r != 0 {
-		err = l.errs[0]
-		if err == nil {
-			log.Panic("internal error")
-		}
-
-		return
-	}
-
-	return List{l.list, l.params}, nil
-}
-
 // Test provides a testing facility for alternative storage implementations.
 // The storef should return freshly created and empty storage. Removing the
 // store from the system is the responsibility of the caller. The test only
@@ -261,7 +244,11 @@ func test(t *testing.T, s testDB) (panicked error) {
 		return true
 	}
 
-	for itest, test := range testdata[*oN:] {
+	max := len(testdata)
+	if n := *oM; n != 0 {
+		max = n
+	}
+	for itest, test := range testdata[*oN:max] {
 		//dbg("---------------------------------------- itest %d", itest)
 		var re *regexp.Regexp
 		a := strings.Split(test+"|", "|")
@@ -278,7 +265,7 @@ func test(t *testing.T, s testDB) (panicked error) {
 
 		q = strings.Replace(q, "&or;", "|", -1)
 		q = strings.Replace(q, "&oror;", "||", -1)
-		list, err := parse(t, q)
+		list, err := Compile(q)
 		if err != nil {
 			if !chk(itest, err, expErr, re) {
 				return
@@ -304,7 +291,7 @@ func test(t *testing.T, s testDB) (panicked error) {
 				return
 			}
 
-			rs, _, err := db.Execute(tctx, list)
+			rs, _, err := db.Execute(tctx, list, int64(30))
 			if err != nil {
 				return chk(itest, err, expErr, re)
 			}
@@ -314,7 +301,7 @@ func test(t *testing.T, s testDB) (panicked error) {
 				return
 			}
 
-			g, err := recSetDump(&execCtx{db, nil}, rs[len(rs)-1])
+			g, err := recSetDump(rs[len(rs)-1])
 			if err != nil {
 				return chk(itest, err, expErr, re)
 			}

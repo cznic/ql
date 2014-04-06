@@ -71,9 +71,9 @@ import (
 	AlterTableStmt Assignment AssignmentList AssignmentList1
 	BeginTransactionStmt
 	Call Call1 ColumnDef ColumnName ColumnNameList ColumnNameList1
-	CommitStmt Conversion 
+	CommitStmt Conversion CreateIndexStmt CreateIndexStmtUnique
 	CreateTableStmt CreateTableStmt1
-	DeleteFromStmt DropTableStmt
+	DeleteFromStmt DropIndexStmt DropTableStmt
 	EmptyStmt Expression ExpressionList ExpressionList1
 	Factor Factor1 Field Field1 FieldList
 	GroupByClause
@@ -90,7 +90,7 @@ import (
 	UnaryExpr UpdateStmt UpdateStmt1
 	WhereClause
 
-%type	<list>	RecordSetList //TODO-
+%type	<list>	RecordSetList
 
 %start	StatementList
 
@@ -192,6 +192,40 @@ Conversion:
 		$$ = &conversion{typ: $1.(int), val: $3.(expression)}
 	}
 
+CreateIndexStmt:
+	create CreateIndexStmtUnique index identifier on identifier '(' identifier ')'
+	{
+		indexName, tableName, columnName := $4.(string), $6.(string), $8.(string)
+		$$ = &createIndexStmt{$2.(bool), indexName, tableName, columnName}
+		if indexName == tableName || indexName == columnName {
+			yylex.(*lexer).err("index name collision: %s", indexName)
+			goto ret1
+		}
+	}
+|	create CreateIndexStmtUnique index identifier on identifier '(' identifier '(' ')' ')'
+	{
+		indexName, tableName, columnName := $4.(string), $6.(string), $8.(string)
+		$$ = &createIndexStmt{$2.(bool), indexName, tableName, "id()"}
+		if $8.(string) != "id" {
+			yylex.(*lexer).err("only the built-in function id() can be used in index: %s()", columnName)
+			goto ret1
+		}
+
+		if indexName == tableName {
+			yylex.(*lexer).err("index name collision: %s", indexName)
+			goto ret1
+		}
+	}
+
+CreateIndexStmtUnique:
+	{
+		$$ = false
+	}
+|	unique
+	{
+		$$ = true
+	}
+
 CreateTableStmt:
 	create tableKwd TableName '(' ColumnDef CreateTableStmt1 CreateTableStmt2 ')'
 	{
@@ -224,6 +258,12 @@ DeleteFromStmt:
 |	deleteKwd from TableName WhereClause
 	{
 		$$ = &deleteStmt{tableName: $3.(string), where: $4.(*whereRset).expr}
+	}
+
+DropIndexStmt:
+	drop index identifier
+	{
+		$$ = &dropIndexStmt{indexName: $3.(string)}
 	}
 
 DropTableStmt:
@@ -784,8 +824,10 @@ Statement:
 |	AlterTableStmt
 |	BeginTransactionStmt
 |	CommitStmt
+|	CreateIndexStmt
 |	CreateTableStmt
 |	DeleteFromStmt
+|	DropIndexStmt
 |	DropTableStmt
 |	InsertIntoStmt
 |	RollbackStmt
@@ -910,3 +952,4 @@ WhereClause:
 	{
 		$$ = &whereRset{expr: $2.(expression)}
 	}
+

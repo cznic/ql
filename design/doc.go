@@ -26,17 +26,17 @@ DB root is a 1-scalar found at a fixed handle (#1).
 	| 0 | head | handle | First table meta data |
 	+---+------+--------+-----------------------+
 
-Head is the handle of meta data for the first table or zero if there are no
-tables in the DB..
+Head is the head of a single linked list of table of meta data. It's zero if
+there are no tables in the DB.
 
 Table meta data
 
-Table meta data is a 6-scalar.
+Table meta data are a 6-scalar.
 
 	+---+---------+--------+--------------------------+
 	| # | Name    | Type   |      Description         |
 	+---+---------+--------+--------------------------+
-	| 0 | next    | handle | Table meta data.         |
+	| 0 | next    | handle | Next table meta data.    |
 	| 1 | scols   | string | Column defintitions      |
 	| 2 | hhead   | handle | -> head -> first record  |
 	| 3 | name    | string | Table name               |
@@ -172,11 +172,11 @@ it's intended. The indices are B+Trees[2]. The list of handles to their roots
 is pointed to by hxroots with zeros for non indexed columns. For the previous
 example
 
-	tableMeta.xroots -> {0, y, 0, x}
+	tableMeta.hxroots -> {0, y, 0, x}
 
 where x is the root of the B+Tree for the X index and y is the root of the
 B+Tree for the Y index. If there would be an index for id(), its B+Tree root
-will be present where the first zero is. Similarly to hhead, xroots is never
+will be present where the first zero is. Similarly to hhead, hxroots is never
 zero, even when there are no indices for a table.
 
 Table record
@@ -262,21 +262,22 @@ out are stripped off and "resupplied" on decoding transparently. See also
 blob.go. If the length of the resulting slice is <= shortBlob, the first and
 only chunk is the scalar encoding of
 
-	[]interface{}{typeTag, slice}.
+	
+	[]interface{}{typeTag, slice}.                  // initial (and last) chunk
 
 The length of slice can be zero (for blob("")). If the resulting slice is long
 (> shortBlob), the first chunk comes from encoding
 
-	[]interface{}{typeTag, nextHandle, firstPart}.
+	[]interface{}{typeTag, nextHandle, firstPart}.  // initial, but not final chunk
 
 In this case len(firstPart) <= shortBlob. Second and other chunks: If the chunk
 is the last one, src is
 
-	[]interface{lastPart}.
+	[]interface{lastPart}.                          // overflow chunk (last)
 
 In this case len(lastPart) <= 64kB. If the chunk is not the last one, src is
 
-	[]interface{}{nextHandle, part}.
+	[]interface{}{nextHandle, part}.                // overflow chunk (not last)
 
 In this case len(part) == 64kB.
 

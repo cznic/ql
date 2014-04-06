@@ -8,8 +8,6 @@
 
 //TODO verify there's a graceful failure for a 2G+ blob on a 32 bit machine.
 
-//TODO Describe when an index will be used with examples. Show also how to circumvent the limitations.
-
 // Package ql is a pure Go embedded (S)QL database.
 //
 // QL is a SQL-like language. It is less complex and less powerful than SQL
@@ -17,8 +15,7 @@
 //
 // Release notes
 //
-// This is a first public release. More features will probably be added in
-// later releases while considering user feedback, if any.
+// 2014-04-07: Introduction of indices.
 //
 // Notation
 //
@@ -1102,7 +1099,7 @@
 // Statements control execution.
 //
 //  Statement =  EmptyStmt | AlterTableStmt | BeginTransactionStmt | CommitStmt
-//  	| CreateTableStmt | DeleteFromStmt
+//  	| CreateIndexStmt | CreateTableStmt | DeleteFromStmt | DropIndexStmt
 //  	| DropTableStmt | InsertIntoStmt | RollbackStmt | SelectStmt
 //  	| TruncateTableStmt | UpdateStmt .
 //
@@ -1167,11 +1164,39 @@
 //		INSERT INTO AccountB (Amount) VALUES (-$1);
 //	COMMIT;
 //
+// CREATE INDEX
+//
+// Create index statements create new indices. Index is a named projection of
+// ordered values of a table column to the respective records. As a special
+// case the id() of the record can be indexed. Index name must not be the same
+// as any of the existing tables and it also cannot be the same as of any
+// column name of the table the index is on.
+//
+//  CreateIndexStmt = "CREATE" [ "UNIQUE" ] "INDEX" IndexName
+//  	"ON" TableName "(" ( ColumnName | "id" Call ) ")" .
+//
+// For example
+//
+//	BEGIN TRANSACTION;
+//		CREATE TABLE Orders (CustomerID int, Date time);
+//		CREATE INDEX OrdersID ON Orders (id());
+//		CREATE INDEX OrdersDate ON Orders (Date);
+//		CREATE TABLE Items (OrderID int, ProductID int, Qty int);
+//		CREATE INDEX ItemsOrderID ON Items (OrderID);
+//	COMMIT;
+//
+// Now certain SELECT statements may use the indices to speed up joins and/or
+// to speed up record set filtering when the WHERE clause is used; or the
+// indices might be used to improve the performance when the ORDER BY clause is
+// present.
+//
+// The UNIQUE modifier requires the indexed values to be unique or NULL.
+//
 // CREATE TABLE
 //
 // Create table statements create new tables. A column definition declares the
-// column name and type. Table names and column names are case sensitive. The
-// table must not exist before.
+// column name and type. Table names and column names are case sensitive.
+// Neither a table or an index of the same name may exist in the DB.
 //
 //  CreateTableStmt = "CREATE" "TABLE" [ "IF" "NOT" "EXISTS" ] TableName
 //  	"(" ColumnDef { "," ColumnDef } [ "," ] ")" .
@@ -1213,6 +1238,19 @@
 //
 // If the WHERE clause is not present then all rows are removed and the
 // statement is equivalent to the TRUNCATE TABLE statement.
+//
+// DROP INDEX
+//
+// Drop index statements remove indices from the DB. The index must exist.
+//
+//  DropIndexStmt = "DROP" "INDEX" IndexName .
+//  IndexName = identifier .
+//
+// For example
+//
+//	BEGIN TRANSACTION;
+//		DROP INDEX ItemsOrderID;
+//	COMMIT;
 //
 // DROP TABLE
 //
@@ -1923,4 +1961,78 @@
 //	[4]: http://creativecommons.org/licenses/by/3.0/
 //	[5]: http://golang.org/LICENSE
 //
+// Implementation details
+//
+// This section is not part of the specification.
+//
+// Indices
+//
+// WARNING: The implementation of indices is new and it surely needs more time
+// to become mature.
+//
+// Indices are used currently used only by the WHERE clause. The following
+// expression patterns of 'WHERE expression' are recognized and trigger index
+// use.
+//
+// 	- WHERE c                   // For bool typed indexed column c
+// 	- WHERE !c                  // For bool typed indexed column c
+// 	- WHERE c relOp constExpr   // For indexed column c
+// 	- WHERE c relOp parameter   // For indexed column c
+// 	- WHERE parameter relOp c   // For indexed column c
+// 	- WHERE constExpr relOp c   // For indexed column c
+//
+// The relOp is one of the relation operators <, <=, ==, >=, >. For the
+// equality operator both operands must be of comparable types. For all other
+// operators both operands must be of ordered types. The constant expression is
+// a compile time constant expression. Some constant folding is still a TODO.
+// Parameter is a QL parameter ($1 etc.).  The limited set of index-use
+// patterns currently requires hand optimization of some cases. For example,
+// consider tables t and u, both with an indexed field f. The statement
+//
+//	SELECT * FROM t, u WHERE t.f < x && u.f < y;
+//
+// will not yet use the indices. However it can be manually rewritten as
+//
+//	SELECT * FROM
+//		(SELECT * FROM t WHERE f < x),
+//		(SELECT * FROM u WHERE f < y);
+//
+// which will use both of the indices. The impact of using the indices can be
+// substantial (cf.  BenchmarkCrossJoin*) if the resulting rows have low
+// "selectivity", ie. only few rows from both tables are selected by the
+// respective WHERE filtering.
+//
+// Note: The id() value of a table can be indexed on but cannot yet be used.
+//
+// Note: Existing QL DBs can be used and indices can be added to them. However,
+// once any indices are present in the DB, the old QL versions cannot work with
+// such DB anymore.
+//
+// Benchmarks
+//
+// Running a benchmark with -v (-test.v) outputs information about the scale
+// used to report records/s and a brief description of the benchmark. For
+// example
+//
+//	$ go test -run NONE -bench 'SelectMem.*1e[23]' -v
+//	PASS
+//	BenchmarkSelectMem1kBx1e2	   50000	     67680 ns/op	1477537.05 MB/s
+//	--- BENCH: BenchmarkSelectMem1kBx1e2
+//		all_test.go:310:
+//			=============================================================
+//			NOTE: All benchmarks report records/s as 1000000 bytes/s.
+//			=============================================================
+//		all_test.go:321: Having a table of 100 records, each of size 1kB, measure the performance of
+//			SELECT * FROM t;
+//
+//	BenchmarkSelectMem1kBx1e3	    5000	    634819 ns/op	1575251.01 MB/s
+//	--- BENCH: BenchmarkSelectMem1kBx1e3
+//		all_test.go:321: Having a table of 1000 records, each of size 1kB, measure the performance of
+//			SELECT * FROM t;
+//
+//	ok  	github.com/cznic/ql	7.496s
+//	$
+//
+// Running the full suite of benchmarks takes a lot of time. Use the -timeout
+// flag to avoid them being killed after the default time limit (10 minutes).
 package ql
