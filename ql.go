@@ -705,7 +705,12 @@ func (r *whereRset) tryUseIndex(ctx *execCtx, f func(id interface{}, data []inte
 				return false, nil
 			}
 		case value:
-			panic("TODO")
+			switch rhs := ex.r.(type) {
+			case *ident:
+				return r.tryBinOp(t, rhs, lhs, invOp, f)
+			default:
+				return false, nil
+			}
 		default:
 			return false, nil
 		}
