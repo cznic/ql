@@ -15,8 +15,7 @@
 //
 // Release notes
 //
-// This is a first public release. More features will probably be added in
-// later releases while considering user feedback, if any.
+// 2014-04-07: Introduction of indices.
 //
 // Notation
 //
@@ -1173,7 +1172,7 @@
 // as any of the existing tables and it also cannot be the same as of any
 // column name of the table the index is on.
 //
-//  CreateIndexStmt = "CREATE" "INDEX" IndexName
+//  CreateIndexStmt = "CREATE" [ "UNIQUE" ] "INDEX" IndexName
 //  	"ON" TableName "(" ( ColumnName | "id" Call ) ")" .
 //
 // For example
@@ -1190,6 +1189,8 @@
 // to speed up record set filtering when the WHERE clause is used; or the
 // indices might be used to improve the performance when the ORDER BY clause is
 // present.
+//
+// The UNIQUE modifier requires the indexed values to be unique or NULL.
 //
 // CREATE TABLE
 //
@@ -1966,8 +1967,46 @@
 //
 // Indices
 //
-// TODO describe the limitations of the current implementation and how to
-// circumvent them.
+// WARNING: The implementation of indices is new and it surely needs more time
+// to become mature.
+//
+// Indices are used currently used only by the WHERE clause. The following
+// expression patterns of 'WHERE expression' are recognized and trigger index
+// use.
+//
+// 	- WHERE c                   // For bool typed indexed column c
+// 	- WHERE !c                  // For bool typed indexed column c
+// 	- WHERE c relOp constExpr   // For indexed column c
+// 	- WHERE c relOp parameter   // For indexed column c
+// 	- WHERE parameter relOp c   // For indexed column c
+// 	- WHERE constExpr relOp c   // For indexed column c
+//
+// The relOp is one of the relation operators <, <=, ==, >=, >. For the
+// equality operator both operands must be of comparable types. For all other
+// operators both operands must be of ordered types. The constant expression is
+// a compile time constant expression. Some constant folding is still a TODO.
+// Parameter is a QL parameter ($1 etc.).  The limited set of index-use
+// patterns currently requires hand optimization of some cases. For example,
+// consider tables t and u, both with an indexed field f. The statement
+//
+//	SELECT * FROM t, u WHERE t.f < x && u.f < y;
+//
+// will not yet use the indices. However it can be manually rewritten as
+//
+//	SELECT * FROM
+//		(SELECT * FROM t WHERE f < x),
+//		(SELECT * FROM u WHERE f < y);
+//
+// which will use both of the indices. The impact of using the indices can be
+// substantial (cf.  BenchmarkCrossJoin*) if the resulting rows have low
+// "selectivity", ie. only few rows from both tables are selected by the
+// respective WHERE filtering.
+//
+// Note: The id() value of a table can be indexed on but cannot yet be used.
+//
+// Note: Existing QL DBs can be used and indices can be added to them. However,
+// once any indices are present in the DB, the old QL versions cannot work with
+// such DB anymore.
 //
 // Benchmarks
 //

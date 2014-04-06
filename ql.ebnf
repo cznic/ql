@@ -69,7 +69,7 @@ ColumnName = identifier .
 ColumnNameList = ColumnName { "," ColumnName } [ "," ] .
 CommitStmt = "COMMIT" .
 Conversion = Type "(" Expression ")" .
-CreateIndexStmt = "CREATE" "INDEX" IndexName "ON" TableName "(" (
+CreateIndexStmt = "CREATE" [ "UNIQUE" ] "INDEX" IndexName "ON" TableName "(" (
 		  ColumnName
 		| "id" Call
 	  ) ")" .

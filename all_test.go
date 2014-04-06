@@ -1779,3 +1779,212 @@ func TestIndex(t *testing.T) {
 		t.Fatal(g, e)
 	}
 }
+
+var benchmarkCrossJoinOnce = map[string]sync.Once{}
+
+func benchmarkCrossJoin(b *testing.B, db *DB, create, sel List, size1, size2 int, index bool, teardown func()) {
+	if testing.Verbose() {
+		benchProlog(b)
+		id := fmt.Sprintf("%t|%d|%d|%t", db.isMem, size1, size2, index)
+		once := benchmarkCrossJoinOnce[id]
+		once.Do(func() {
+			s := "INDEXED "
+			if !index {
+				s = "NON " + s
+			}
+			b.Logf(`Fill two %stables with %d and %d records of random numbers [0, 1). Measure the performance of
+%s
+`, s, size1, size2, sel)
+		})
+		benchmarkCrossJoinOnce[id] = once
+	}
+
+	if teardown != nil {
+		defer teardown()
+	}
+
+	ctx := NewRWCtx()
+	if _, _, err := db.Execute(ctx, create); err != nil {
+		b.Fatal(err)
+	}
+
+	if index {
+		if _, _, err := db.Execute(ctx, xjoinX); err != nil {
+			b.Fatal(err)
+		}
+	}
+
+	rng := rand.New(rand.NewSource(42))
+	for i := 0; i < size1; i++ {
+		if _, _, err := db.Execute(ctx, xjoinT, rng.Float64()); err != nil {
+			b.Fatal(err)
+		}
+	}
+	for i := 0; i < size2; i++ {
+		if _, _, err := db.Execute(ctx, xjoinU, rng.Float64()); err != nil {
+			b.Fatal(err)
+		}
+	}
+
+	rs, _, err := db.Execute(nil, sel)
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	var n int
+	debug.FreeOSMemory()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		n = 0
+		if err := rs[0].Do(false, func(rec []interface{}) (bool, error) {
+			n++
+			return true, nil
+		}); err != nil {
+			b.Fatal(err)
+		}
+	}
+	b.StopTimer()
+	b.SetBytes(int64(n) * benchScale)
+}
+
+var (
+	xjoinCreate = MustCompile(`BEGIN TRANSACTION;
+	CREATE TABLE t (f float);
+	CREATE TABLE u (f float);
+COMMIT;`)
+	xjoinSel = MustCompile(`SELECT *  FROM (SELECT f FROM t WHERE f < 0.1), (SELECT f FROM u where f < 0.1);`)
+	xjoinT   = MustCompile("BEGIN TRANSACTION; INSERT INTO t VALUES($1); COMMIT;")
+	xjoinU   = MustCompile("BEGIN TRANSACTION; INSERT INTO u VALUES($1); COMMIT;")
+	xjoinX   = MustCompile(`
+	BEGIN TRANSACTION;
+		CREATE INDEX x ON t (f);
+		CREATE INDEX y ON u (f);
+	COMMIT;
+	`)
+)
+
+func benchmarkCrossJoinMem(b *testing.B, size1, size2 int, index bool) {
+	db, err := OpenMem()
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	benchmarkCrossJoin(b, db, xjoinCreate, xjoinSel, size1, size2, index, nil)
+}
+
+func benchmarkCrossJoinFile(b *testing.B, size1, size2 int, index bool) {
+	dir, err := ioutil.TempDir("", "ql-bench-")
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	n := runtime.GOMAXPROCS(0)
+	db, err := OpenFile(filepath.Join(dir, "ql.db"), &Options{CanCreate: true})
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	benchmarkCrossJoin(b, db, xjoinCreate, xjoinSel, size1, size2, index, func() {
+		runtime.GOMAXPROCS(n)
+		db.Close()
+		os.RemoveAll(dir)
+	})
+}
+
+func BenchmarkCrossJoinMem1e1NoX1e2(b *testing.B) {
+	benchmarkCrossJoinMem(b, 1e1, 1e2, false)
+}
+
+func BenchmarkCrossJoinMem1e1X1e2(b *testing.B) {
+	benchmarkCrossJoinMem(b, 1e1, 1e2, true)
+}
+
+func BenchmarkCrossJoinMem1e2NoX1e3(b *testing.B) {
+	benchmarkCrossJoinMem(b, 1e2, 1e3, false)
+}
+
+func BenchmarkCrossJoinMem1e2X1e3(b *testing.B) {
+	benchmarkCrossJoinMem(b, 1e2, 1e3, true)
+}
+
+func BenchmarkCrossJoinMem1e3NoX1e4(b *testing.B) {
+	benchmarkCrossJoinMem(b, 1e3, 1e4, false)
+}
+
+func BenchmarkCrossJoinMem1e3X1e4(b *testing.B) {
+	benchmarkCrossJoinMem(b, 1e3, 1e4, true)
+}
+
+func BenchmarkCrossJoinMem1e2NoX1e1(b *testing.B) {
+	benchmarkCrossJoinMem(b, 1e2, 1e1, false)
+}
+
+func BenchmarkCrossJoinMem1e2X1e1(b *testing.B) {
+	benchmarkCrossJoinMem(b, 1e2, 1e1, true)
+}
+
+func BenchmarkCrossJoinMem1e3NoX1e2(b *testing.B) {
+	benchmarkCrossJoinMem(b, 1e3, 1e2, false)
+}
+
+func BenchmarkCrossJoinMem1e3X1e2(b *testing.B) {
+	benchmarkCrossJoinMem(b, 1e3, 1e2, true)
+}
+
+func BenchmarkCrossJoinMem1e4NoX1e3(b *testing.B) {
+	benchmarkCrossJoinMem(b, 1e4, 1e3, false)
+}
+
+func BenchmarkCrossJoinMem1e4X1e3(b *testing.B) {
+	benchmarkCrossJoinMem(b, 1e4, 1e3, true)
+}
+
+// ----
+
+func BenchmarkCrossJoinFile1e1NoX1e2(b *testing.B) {
+	benchmarkCrossJoinFile(b, 1e1, 1e2, false)
+}
+
+func BenchmarkCrossJoinFile1e1X1e2(b *testing.B) {
+	benchmarkCrossJoinFile(b, 1e1, 1e2, true)
+}
+
+func BenchmarkCrossJoinFile1e2NoX1e3(b *testing.B) {
+	benchmarkCrossJoinFile(b, 1e2, 1e3, false)
+}
+
+func BenchmarkCrossJoinFile1e2X1e3(b *testing.B) {
+	benchmarkCrossJoinFile(b, 1e2, 1e3, true)
+}
+
+func BenchmarkCrossJoinFile1e3NoX1e4(b *testing.B) {
+	benchmarkCrossJoinFile(b, 1e3, 1e4, false)
+}
+
+func BenchmarkCrossJoinFile1e3X1e4(b *testing.B) {
+	benchmarkCrossJoinFile(b, 1e3, 1e4, true)
+}
+
+func BenchmarkCrossJoinFile1e2NoX1e1(b *testing.B) {
+	benchmarkCrossJoinFile(b, 1e2, 1e1, false)
+}
+
+func BenchmarkCrossJoinFile1e2X1e1(b *testing.B) {
+	benchmarkCrossJoinFile(b, 1e2, 1e1, true)
+}
+
+func BenchmarkCrossJoinFile1e3NoX1e2(b *testing.B) {
+	benchmarkCrossJoinFile(b, 1e3, 1e2, false)
+}
+
+func BenchmarkCrossJoinFile1e3X1e2(b *testing.B) {
+	benchmarkCrossJoinFile(b, 1e3, 1e2, true)
+}
+
+func BenchmarkCrossJoinFile1e4NoX1e3(b *testing.B) {
+	benchmarkCrossJoinFile(b, 1e4, 1e3, false)
+}
+
+func BenchmarkCrossJoinFile1e4X1e3(b *testing.B) {
+	benchmarkCrossJoinFile(b, 1e4, 1e3, true)
+}

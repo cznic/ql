@@ -8,8 +8,6 @@
 
 //MAYBE CROSSJOIN (explicit form), LEFT JOIN, INNER JOIN, OUTER JOIN equivalents.
 
-//TODO(indices) +test for normal vs unique indices
-
 package ql
 
 import (
@@ -1398,6 +1396,7 @@ func (db *DB) Execute(ctx *TCtx, l List, arg ...interface{}) (rs []Recordset, in
 }
 
 func (db *DB) run1(pc *TCtx, tnl0 *int, s stmt, arg ...interface{}) (rs Recordset, err error) {
+	//dbg("%v", s)
 	db.mu.Lock()
 	switch db.rw {
 	case false:
