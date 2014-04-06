@@ -638,7 +638,7 @@ func (r *whereRset) tryUseIndex(ctx *execCtx, f func(id interface{}, data []inte
 		default:
 			return false, nil
 		}
-	case *ident: // WHERE colum
+	case *ident: // WHERE column
 		c := findCol(t.cols0, ex.s)
 		if c == nil { // no such column
 			return false, fmt.Errorf("unknown column %s", ex)
@@ -670,12 +670,19 @@ func (r *whereRset) tryUseIndex(ctx *execCtx, f func(id interface{}, data []inte
 		switch lhs := ex.l.(type) {
 		case *ident:
 			switch rhs := ex.r.(type) {
+			case parameter:
+				v, err := rhs.eval(nil, ctx.arg)
+				if err != nil {
+					return false, err
+				}
+
+				return r.tryBinOp(t, lhs, value{v}, ex.op, f)
 			case value:
 				return r.tryBinOp(t, lhs, rhs, ex.op, f)
 			default:
 				return false, nil
 			}
-		case *parameter:
+		case parameter:
 			panic("TODO")
 		case value:
 			panic("TODO")

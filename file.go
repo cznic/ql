@@ -1221,8 +1221,7 @@ type fileIndexIterator struct {
 	unique bool
 }
 
-func (i *fileIndexIterator) nextPrev(f func() ([]byte, []byte, error)) (TODOv interface{}, TODOh int64, TODO error) { //TODO(indices) blobs: +test
-	//defer func() { dbg(".Next() -> %v %v", TODOv, TODOh) }()
+func (i *fileIndexIterator) nextPrev(f func() ([]byte, []byte, error)) (interface{}, int64, error) { //TODO(indices) blobs: +test
 	bk, bv, err := f()
 	if err != nil {
 		return nil, -1, err

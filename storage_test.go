@@ -191,25 +191,6 @@ const sample = `
      COMMIT;
 `
 
-func parse(t *testing.T, src string) (ls List, err error) {
-	//dbg("----\n%s----\n", src)
-	//t.Log(src)
-
-	l := newLexer(src)
-	r := yyParse(l)
-	//dbg("yyParse %d", r)
-	if r != 0 {
-		err = l.errs[0]
-		if err == nil {
-			log.Panic("internal error")
-		}
-
-		return
-	}
-
-	return List{l.list, l.params}, nil
-}
-
 // Test provides a testing facility for alternative storage implementations.
 // The storef should return freshly created and empty storage. Removing the
 // store from the system is the responsibility of the caller. The test only
@@ -283,7 +264,7 @@ func test(t *testing.T, s testDB) (panicked error) {
 
 		q = strings.Replace(q, "&or;", "|", -1)
 		q = strings.Replace(q, "&oror;", "||", -1)
-		list, err := parse(t, q)
+		list, err := Compile(q)
 		if err != nil {
 			if !chk(itest, err, expErr, re) {
 				return
@@ -319,7 +300,7 @@ func test(t *testing.T, s testDB) (panicked error) {
 				return
 			}
 
-			g, err := recSetDump(&execCtx{db, nil}, rs[len(rs)-1])
+			g, err := recSetDump(&execCtx{db, []interface{}{idealInt(30)}}, rs[len(rs)-1])
 			if err != nil {
 				return chk(itest, err, expErr, re)
 			}
