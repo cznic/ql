@@ -150,7 +150,7 @@ all indexes are joined with "|". For example
 		CREATE UNIQUE INDEX Y ON t (Foo);
 	COMMIT;
 
-The values of fields #1 and #4 for the above is
+The values of fields #1 and #4 for the above are
 
 	  scols: "lFoo|bBar|sBaz"
 	indices: "|uY||nX"

@@ -10,6 +10,7 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"math/big"
 	"math/rand"
 	"os"
 	"path"
@@ -1987,4 +1988,52 @@ func BenchmarkCrossJoinFile1e4NoX1e3(b *testing.B) {
 
 func BenchmarkCrossJoinFile1e4X1e3(b *testing.B) {
 	benchmarkCrossJoinFile(b, 1e4, 1e3, true)
+}
+
+func TestIssue35(t *testing.T) {
+	var bigInt big.Int
+	var bigRat big.Rat
+	bigInt.SetInt64(42)
+	bigRat.SetInt64(24)
+	db, err := OpenMem()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	ctx := NewRWCtx()
+	_, _, err = db.Run(ctx, `
+	BEGIN TRANSACTION;
+		CREATE TABLE t (i bigint, r bigrat);
+		INSERT INTO t VALUES ($1, $2);
+	COMMIT;
+	`, bigInt, bigRat)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bigInt.SetInt64(420)
+	bigRat.SetInt64(240)
+
+	rs, _, err := db.Run(nil, "SELECT * FROM t;")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	n := 0
+	if err := rs[0].Do(false, func(rec []interface{}) (bool, error) {
+		switch n {
+		case 0:
+			n++
+			if g, e := fmt.Sprint(rec), "[42 24/1]"; g != e {
+				t.Fatal(g, e)
+			}
+
+			return true, nil
+		default:
+			t.Fatal(n)
+			panic("unreachable")
+		}
+	}); err != nil {
+		t.Fatal(err)
+	}
 }

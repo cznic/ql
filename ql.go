@@ -1371,6 +1371,22 @@ func MustCompile(src string) List {
 // write ahead log is used. Database is recovered after a crash from the write
 // ahead log automatically on open.
 func (db *DB) Execute(ctx *TCtx, l List, arg ...interface{}) (rs []Recordset, index int, err error) {
+	// Sanitize args
+	for i, v := range arg {
+		switch x := v.(type) {
+		case nil, bool, complex64, complex128, float32, float64, string,
+			int8, int16, int32, int64, int,
+			uint8, uint16, uint32, uint64, uint,
+			*big.Int, *big.Rat, []byte, time.Duration, time.Time:
+		case big.Int:
+			arg[i] = &x
+		case big.Rat:
+			arg[i] = &x
+		default:
+			return nil, 0, fmt.Errorf("cannot use arg[%d] (type %T):unsupported type", i, v)
+		}
+	}
+
 	tnl0 := -1
 	if ctx != nil {
 		ctx.LastInsertID, ctx.RowsAffected = 0, 0
