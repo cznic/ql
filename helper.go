@@ -93,7 +93,7 @@ func (n t) String() string {
 	case qDuration:
 		return "time.Duration"
 	default:
-		panic("internal error")
+		panic("internal error 046")
 	}
 }
 

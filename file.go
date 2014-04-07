@@ -265,17 +265,17 @@ func infer(from []interface{}, to *[]*col) {
 				}
 
 				if len(vals) == 0 {
-					log.Panic("internal error")
+					log.Panic("internal error 040")
 				}
 
 				i, ok := vals[0].(int64)
 				if !ok {
-					log.Panic("internal error")
+					log.Panic("internal error 041")
 				}
 
 				c.typ = int(i)
 			default:
-				log.Panic("internal error")
+				log.Panic("internal error 042")
 			}
 		}
 	}
@@ -483,7 +483,7 @@ func newFileFromOSFile(f lldb.OSFile) (fi *file, err error) {
 		}
 
 		if h != 1 { // root
-			log.Panic("internal error")
+			log.Panic("internal error 043")
 		}
 
 		if h, err = s.a.Alloc(make([]byte, 8)); err != nil {
@@ -491,7 +491,7 @@ func newFileFromOSFile(f lldb.OSFile) (fi *file, err error) {
 		}
 
 		if h != 2 { // id
-			log.Panic("internal error")
+			log.Panic("internal error 044")
 		}
 
 		close, closew = false, false
@@ -845,7 +845,7 @@ func (s *file) Read(dst []interface{}, h int64, cols ...*col) (data []interface{
 
 			rec[i] = chunk{f: s, b: b}
 		default:
-			log.Panic("internal error")
+			log.Panic("internal error 045")
 		}
 	}
 

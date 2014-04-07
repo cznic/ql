@@ -793,7 +793,12 @@ yydefault:
 			yyVAL.item = &createIndexStmt{yyS[yypt-7].item.(bool), indexName, tableName, columnName}
 			if indexName == tableName || indexName == columnName {
 				yylex.(*lexer).err("index name collision: %s", indexName)
-				goto ret1
+				return 1
+			}
+
+			if isSytemName[indexName] || isSytemName[tableName] {
+				yylex.(*lexer).err("name is used for system tables: %s", indexName)
+				return 1
 			}
 		}
 	case 23:
@@ -803,12 +808,17 @@ yydefault:
 			yyVAL.item = &createIndexStmt{yyS[yypt-9].item.(bool), indexName, tableName, "id()"}
 			if yyS[yypt-3].item.(string) != "id" {
 				yylex.(*lexer).err("only the built-in function id() can be used in index: %s()", columnName)
-				goto ret1
+				return 1
 			}
 
 			if indexName == tableName {
 				yylex.(*lexer).err("index name collision: %s", indexName)
-				goto ret1
+				return 1
+			}
+
+			if isSytemName[indexName] || isSytemName[tableName] {
+				yylex.(*lexer).err("name is used for system tables: %s", indexName)
+				return 1
 			}
 		}
 	case 24:
@@ -824,12 +834,22 @@ yydefault:
 	case 26:
 
 		{
-			yyVAL.item = &createTableStmt{tableName: yyS[yypt-5].item.(string), cols: append([]*col{yyS[yypt-3].item.(*col)}, yyS[yypt-2].item.([]*col)...)}
+			nm := yyS[yypt-5].item.(string)
+			yyVAL.item = &createTableStmt{tableName: nm, cols: append([]*col{yyS[yypt-3].item.(*col)}, yyS[yypt-2].item.([]*col)...)}
+			if isSytemName[nm] {
+				yylex.(*lexer).err("name is used for system tables: %s", nm)
+				return 1
+			}
 		}
 	case 27:
 
 		{
-			yyVAL.item = &createTableStmt{ifNotExists: true, tableName: yyS[yypt-5].item.(string), cols: append([]*col{yyS[yypt-3].item.(*col)}, yyS[yypt-2].item.([]*col)...)}
+			nm := yyS[yypt-5].item.(string)
+			yyVAL.item = &createTableStmt{ifNotExists: true, tableName: nm, cols: append([]*col{yyS[yypt-3].item.(*col)}, yyS[yypt-2].item.([]*col)...)}
+			if isSytemName[nm] {
+				yylex.(*lexer).err("name is used for system tables: %s", nm)
+				return 1
+			}
 		}
 	case 28:
 
@@ -859,12 +879,22 @@ yydefault:
 	case 35:
 
 		{
-			yyVAL.item = &dropTableStmt{tableName: yyS[yypt-0].item.(string)}
+			nm := yyS[yypt-0].item.(string)
+			yyVAL.item = &dropTableStmt{tableName: nm}
+			if isSytemName[nm] {
+				yylex.(*lexer).err("name is used for system tables: %s", nm)
+				return 1
+			}
 		}
 	case 36:
 
 		{
-			yyVAL.item = &dropTableStmt{ifExists: true, tableName: yyS[yypt-0].item.(string)}
+			nm := yyS[yypt-0].item.(string)
+			yyVAL.item = &dropTableStmt{ifExists: true, tableName: nm}
+			if isSytemName[nm] {
+				yylex.(*lexer).err("name is used for system tables: %s", nm)
+				return 1
+			}
 		}
 	case 37:
 
@@ -879,7 +909,7 @@ yydefault:
 			var err error
 			if yyVAL.item, err = newBinaryOperation(oror, yyS[yypt-2].item, yyS[yypt-0].item); err != nil {
 				yylex.(*lexer).err("%v", err)
-				goto ret1
+				return 1
 			}
 		}
 	case 40:
@@ -937,7 +967,7 @@ yydefault:
 			var err error
 			if yyVAL.item, err = newBinaryOperation(ge, yyS[yypt-2].item, yyS[yypt-0].item); err != nil {
 				yylex.(*lexer).err("%v", err)
-				goto ret1
+				return 1
 			}
 		}
 	case 54:
@@ -946,7 +976,7 @@ yydefault:
 			var err error
 			if yyVAL.item, err = newBinaryOperation('>', yyS[yypt-2].item, yyS[yypt-0].item); err != nil {
 				yylex.(*lexer).err("%v", err)
-				goto ret1
+				return 1
 			}
 		}
 	case 55:
@@ -955,7 +985,7 @@ yydefault:
 			var err error
 			if yyVAL.item, err = newBinaryOperation(le, yyS[yypt-2].item, yyS[yypt-0].item); err != nil {
 				yylex.(*lexer).err("%v", err)
-				goto ret1
+				return 1
 			}
 		}
 	case 56:
@@ -964,7 +994,7 @@ yydefault:
 			var err error
 			if yyVAL.item, err = newBinaryOperation('<', yyS[yypt-2].item, yyS[yypt-0].item); err != nil {
 				yylex.(*lexer).err("%v", err)
-				goto ret1
+				return 1
 			}
 		}
 	case 57:
@@ -973,7 +1003,7 @@ yydefault:
 			var err error
 			if yyVAL.item, err = newBinaryOperation(neq, yyS[yypt-2].item, yyS[yypt-0].item); err != nil {
 				yylex.(*lexer).err("%v", err)
-				goto ret1
+				return 1
 			}
 		}
 	case 58:
@@ -982,7 +1012,7 @@ yydefault:
 			var err error
 			if yyVAL.item, err = newBinaryOperation(eq, yyS[yypt-2].item, yyS[yypt-0].item); err != nil {
 				yylex.(*lexer).err("%v", err)
-				goto ret1
+				return 1
 			}
 		}
 	case 59:
@@ -1019,7 +1049,7 @@ yydefault:
 			if f.name != "" {
 				if f := findFld(l, f.name); f != nil {
 					yylex.(*lexer).err("duplicate field name %q", f.name)
-					goto ret1
+					return 1
 				}
 			}
 
@@ -1093,7 +1123,7 @@ yydefault:
 			l.params = mathutil.Max(l.params, n)
 			if n == 0 {
 				l.err("parameter number must be non zero")
-				goto ret1
+				return 1
 			}
 		}
 	case 83:
@@ -1136,7 +1166,7 @@ yydefault:
 			var err error
 			if yyVAL.item, err = newIndex(yyS[yypt-1].item.(expression), yyS[yypt-0].item.(expression)); err != nil {
 				yylex.(*lexer).err("%v", err)
-				goto ret1
+				return 1
 			}
 		}
 	case 92:
@@ -1146,7 +1176,7 @@ yydefault:
 			s := yyS[yypt-0].item.([2]*expression)
 			if yyVAL.item, err = newSlice(yyS[yypt-1].item.(expression), s[0], s[1]); err != nil {
 				yylex.(*lexer).err("%v", err)
-				goto ret1
+				return 1
 			}
 		}
 	case 93:
@@ -1156,14 +1186,14 @@ yydefault:
 			f, ok := yyS[yypt-1].item.(*ident)
 			if !ok {
 				x.err("expected identifier or qualified identifier")
-				goto ret1
+				return 1
 			}
 
 			var err error
 			var agg bool
 			if yyVAL.item, agg, err = newCall(f.s, yyS[yypt-0].item.([]expression)); err != nil {
 				x.err("%v", err)
-				goto ret1
+				return 1
 			}
 			if n := len(x.agg); n > 0 {
 				x.agg[n-1] = x.agg[n-1] || agg
@@ -1177,7 +1207,7 @@ yydefault:
 			var err error
 			if yyVAL.item, err = newBinaryOperation('^', yyS[yypt-2].item, yyS[yypt-0].item); err != nil {
 				yylex.(*lexer).err("%v", err)
-				goto ret1
+				return 1
 			}
 		}
 	case 96:
@@ -1186,7 +1216,7 @@ yydefault:
 			var err error
 			if yyVAL.item, err = newBinaryOperation('|', yyS[yypt-2].item, yyS[yypt-0].item); err != nil {
 				yylex.(*lexer).err("%v", err)
-				goto ret1
+				return 1
 			}
 		}
 	case 97:
@@ -1195,7 +1225,7 @@ yydefault:
 			var err error
 			if yyVAL.item, err = newBinaryOperation('-', yyS[yypt-2].item, yyS[yypt-0].item); err != nil {
 				yylex.(*lexer).err("%v", err)
-				goto ret1
+				return 1
 			}
 		}
 	case 98:
@@ -1205,7 +1235,7 @@ yydefault:
 			yyVAL.item, err = newBinaryOperation('+', yyS[yypt-2].item, yyS[yypt-0].item)
 			if err != nil {
 				yylex.(*lexer).err("%v", err)
-				goto ret1
+				return 1
 			}
 		}
 	case 99:
@@ -1217,7 +1247,7 @@ yydefault:
 			yyVAL.item, err = newBinaryOperation(andnot, yyS[yypt-2].item, yyS[yypt-0].item)
 			if err != nil {
 				yylex.(*lexer).err("%v", err)
-				goto ret1
+				return 1
 			}
 		}
 	case 101:
@@ -1227,7 +1257,7 @@ yydefault:
 			yyVAL.item, err = newBinaryOperation('&', yyS[yypt-2].item, yyS[yypt-0].item)
 			if err != nil {
 				yylex.(*lexer).err("%v", err)
-				goto ret1
+				return 1
 			}
 		}
 	case 102:
@@ -1237,7 +1267,7 @@ yydefault:
 			yyVAL.item, err = newBinaryOperation(lsh, yyS[yypt-2].item, yyS[yypt-0].item)
 			if err != nil {
 				yylex.(*lexer).err("%v", err)
-				goto ret1
+				return 1
 			}
 		}
 	case 103:
@@ -1247,7 +1277,7 @@ yydefault:
 			yyVAL.item, err = newBinaryOperation(rsh, yyS[yypt-2].item, yyS[yypt-0].item)
 			if err != nil {
 				yylex.(*lexer).err("%v", err)
-				goto ret1
+				return 1
 			}
 		}
 	case 104:
@@ -1257,7 +1287,7 @@ yydefault:
 			yyVAL.item, err = newBinaryOperation('%', yyS[yypt-2].item, yyS[yypt-0].item)
 			if err != nil {
 				yylex.(*lexer).err("%v", err)
-				goto ret1
+				return 1
 			}
 		}
 	case 105:
@@ -1267,7 +1297,7 @@ yydefault:
 			yyVAL.item, err = newBinaryOperation('/', yyS[yypt-2].item, yyS[yypt-0].item)
 			if err != nil {
 				yylex.(*lexer).err("%v", err)
-				goto ret1
+				return 1
 			}
 		}
 	case 106:
@@ -1277,7 +1307,7 @@ yydefault:
 			yyVAL.item, err = newBinaryOperation('*', yyS[yypt-2].item, yyS[yypt-0].item)
 			if err != nil {
 				yylex.(*lexer).err("%v", err)
-				goto ret1
+				return 1
 			}
 		}
 	case 107:
@@ -1478,7 +1508,7 @@ yydefault:
 			var err error
 			if yyVAL.item, err = newBinaryOperation(andand, yyS[yypt-2].item, yyS[yypt-0].item); err != nil {
 				yylex.(*lexer).err("%v", err)
-				goto ret1
+				return 1
 			}
 		}
 	case 155:
@@ -1555,7 +1585,7 @@ yydefault:
 			yyVAL.item, err = newUnaryOperation('^', yyS[yypt-0].item)
 			if err != nil {
 				yylex.(*lexer).err("%v", err)
-				goto ret1
+				return 1
 			}
 		}
 	case 185:
@@ -1565,7 +1595,7 @@ yydefault:
 			yyVAL.item, err = newUnaryOperation('!', yyS[yypt-0].item)
 			if err != nil {
 				yylex.(*lexer).err("%v", err)
-				goto ret1
+				return 1
 			}
 		}
 	case 186:
@@ -1575,7 +1605,7 @@ yydefault:
 			yyVAL.item, err = newUnaryOperation('-', yyS[yypt-0].item)
 			if err != nil {
 				yylex.(*lexer).err("%v", err)
-				goto ret1
+				return 1
 			}
 		}
 	case 187:
@@ -1585,7 +1615,7 @@ yydefault:
 			yyVAL.item, err = newUnaryOperation('+', yyS[yypt-0].item)
 			if err != nil {
 				yylex.(*lexer).err("%v", err)
-				goto ret1
+				return 1
 			}
 		}
 	case 188:

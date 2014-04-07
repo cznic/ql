@@ -1208,7 +1208,7 @@ func convert(val interface{}, typ int) (v interface{}, err error) { //NTYPE
 			return invConv(val, typ)
 		}
 	default:
-		log.Panic("internal error")
+		log.Panic("internal error 006")
 	}
 	//dbg("%T(%v) %s", val, val, typeStr(typ))
 	panic("unreachable")
@@ -1245,7 +1245,7 @@ func typeCheck(rec []interface{}, cols []*col) (err error) {
 					return fmt.Errorf("constant %v truncated to real", y)
 				case qString:
 				default:
-					log.Panic("internal error")
+					log.Panic("internal error 007")
 				}
 			case idealFloat:
 				y := float64(v.(idealFloat))
@@ -1367,7 +1367,7 @@ func typeCheck(rec []interface{}, cols []*col) (err error) {
 					rec[i] = big.NewRat(1, 1).SetFloat64(y)
 					continue
 				default:
-					log.Panic("internal error")
+					log.Panic("internal error 008")
 				}
 			case idealInt:
 				y := int64(v.(idealInt))
@@ -1449,7 +1449,7 @@ func typeCheck(rec []interface{}, cols []*col) (err error) {
 					rec[i] = big.NewRat(1, 1).SetInt64(y)
 					continue
 				default:
-					log.Panic("internal error")
+					log.Panic("internal error 009")
 				}
 			case idealRune:
 				y := int64(v.(idealRune))
@@ -1531,7 +1531,7 @@ func typeCheck(rec []interface{}, cols []*col) (err error) {
 					rec[i] = big.NewRat(1, 1).SetInt64(y)
 					continue
 				default:
-					log.Panic("internal error")
+					log.Panic("internal error 010")
 				}
 			case idealUint:
 				y := uint64(v.(idealUint))
@@ -1612,7 +1612,7 @@ func typeCheck(rec []interface{}, cols []*col) (err error) {
 					rec[i] = big.NewRat(1, 1).SetInt(ii)
 					continue
 				default:
-					log.Panic("internal error")
+					log.Panic("internal error 011")
 				}
 			}
 			//dbg("v %T(%v), typ %s", v, v, typeStr(c.typ))
@@ -1715,7 +1715,7 @@ func collate1(a, b interface{}) int {
 				return 1
 			}
 		default:
-			panic("internal error")
+			panic("internal error 012")
 		}
 	case idealUint:
 		switch y := b.(type) {
@@ -1797,7 +1797,7 @@ func collate1(a, b interface{}) int {
 				return 1
 			}
 		default:
-			panic("internal error")
+			panic("internal error 013")
 		}
 	case idealRune:
 		switch y := b.(type) {
@@ -1879,7 +1879,7 @@ func collate1(a, b interface{}) int {
 				return 1
 			}
 		default:
-			panic("internal error")
+			panic("internal error 014")
 		}
 	case idealInt:
 		switch y := b.(type) {
@@ -1961,7 +1961,7 @@ func collate1(a, b interface{}) int {
 				return 1
 			}
 		default:
-			panic("internal error")
+			panic("internal error 015")
 		}
 	case idealFloat:
 		switch y := b.(type) {
@@ -2004,7 +2004,7 @@ func collate1(a, b interface{}) int {
 				return 1
 			}
 		default:
-			panic("internal error")
+			panic("internal error 016")
 		}
 	case complex64:
 		switch y := b.(type) {
@@ -2050,7 +2050,7 @@ func collate1(a, b interface{}) int {
 				return 1
 			}
 		default:
-			panic("internal error")
+			panic("internal error 017")
 		}
 	case complex128:
 		switch y := b.(type) {
@@ -2096,7 +2096,7 @@ func collate1(a, b interface{}) int {
 				return 1
 			}
 		default:
-			panic("internal error")
+			panic("internal error 018")
 		}
 	case float32:
 		switch y := b.(type) {
@@ -2126,7 +2126,7 @@ func collate1(a, b interface{}) int {
 				return 1
 			}
 		default:
-			panic("internal error")
+			panic("internal error 019")
 		}
 	case float64:
 		switch y := b.(type) {
@@ -2156,7 +2156,7 @@ func collate1(a, b interface{}) int {
 				return 1
 			}
 		default:
-			panic("internal error")
+			panic("internal error 020")
 		}
 	case int8:
 		switch y := b.(type) {
@@ -2186,7 +2186,7 @@ func collate1(a, b interface{}) int {
 				return 1
 			}
 		default:
-			panic("internal error")
+			panic("internal error 021")
 		}
 	case int16:
 		switch y := b.(type) {
@@ -2216,7 +2216,7 @@ func collate1(a, b interface{}) int {
 				return 1
 			}
 		default:
-			panic("internal error")
+			panic("internal error 022")
 		}
 	case int32:
 		switch y := b.(type) {
@@ -2246,7 +2246,7 @@ func collate1(a, b interface{}) int {
 				return 1
 			}
 		default:
-			panic("internal error")
+			panic("internal error 023")
 		}
 	case int64:
 		switch y := b.(type) {
@@ -2276,7 +2276,7 @@ func collate1(a, b interface{}) int {
 				return 1
 			}
 		default:
-			panic("internal error")
+			panic("internal error 024")
 		}
 	case uint8:
 		switch y := b.(type) {
@@ -2319,7 +2319,7 @@ func collate1(a, b interface{}) int {
 				return 1
 			}
 		default:
-			panic("internal error")
+			panic("internal error 025")
 		}
 	case uint16:
 		switch y := b.(type) {
@@ -2362,7 +2362,7 @@ func collate1(a, b interface{}) int {
 				return 1
 			}
 		default:
-			panic("internal error")
+			panic("internal error 026")
 		}
 	case uint32:
 		switch y := b.(type) {
@@ -2405,7 +2405,7 @@ func collate1(a, b interface{}) int {
 				return 1
 			}
 		default:
-			panic("internal error")
+			panic("internal error 027")
 		}
 	case uint64:
 		switch y := b.(type) {
@@ -2448,7 +2448,7 @@ func collate1(a, b interface{}) int {
 				return 1
 			}
 		default:
-			panic("internal error")
+			panic("internal error 028")
 		}
 	case string:
 		switch y := b.(type) {
@@ -2465,7 +2465,7 @@ func collate1(a, b interface{}) int {
 
 			return 1
 		default:
-			panic("internal error")
+			panic("internal error 029")
 		}
 	case []byte:
 		switch y := b.(type) {
@@ -2474,7 +2474,7 @@ func collate1(a, b interface{}) int {
 		case []byte:
 			return bytes.Compare(x, y)
 		default:
-			panic("internal error")
+			panic("internal error 030")
 		}
 	case *big.Int:
 		switch y := b.(type) {
@@ -2494,7 +2494,7 @@ func collate1(a, b interface{}) int {
 				return x.Cmp(u)
 			}
 		default:
-			panic("internal error")
+			panic("internal error 031")
 		}
 	case *big.Rat:
 		switch y := b.(type) {
@@ -2516,7 +2516,7 @@ func collate1(a, b interface{}) int {
 				return x.Cmp(&y)
 			}
 		default:
-			panic("internal error")
+			panic("internal error 032")
 		}
 	case time.Time:
 		switch y := b.(type) {
@@ -2533,7 +2533,7 @@ func collate1(a, b interface{}) int {
 
 			return 1
 		default:
-			panic("internal error")
+			panic("internal error 033")
 		}
 	case time.Duration:
 		switch y := b.(type) {
@@ -2550,7 +2550,7 @@ func collate1(a, b interface{}) int {
 
 			return 1
 		default:
-			panic("internal error")
+			panic("internal error 034")
 		}
 	case chunk:
 		switch y := b.(type) {
@@ -2569,10 +2569,10 @@ func collate1(a, b interface{}) int {
 
 			return collate1(a, b)
 		default:
-			panic("internal error")
+			panic("internal error 035")
 		}
 	default:
-		panic("internal error")
+		panic("internal error 036")
 	}
 }
 
@@ -2636,4 +2636,10 @@ func isOrderedType(v interface{}) (y interface{}, r bool, err error) {
 	}
 
 	return v, false, nil
+}
+
+var isSytemName = map[string]bool{
+	"__Column": true,
+	"__Index":  true,
+	"__Table":  true,
 }

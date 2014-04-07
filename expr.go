@@ -2664,7 +2664,7 @@ func (o *binaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{
 			return invOp2(a, b, op)
 		}
 	default:
-		log.Panic("internal error")
+		log.Panic("internal error 037")
 		panic("unreachable")
 	}
 }
@@ -2807,7 +2807,7 @@ type unaryOperation struct {
 func newUnaryOperation(op int, x interface{}) (v expression, err error) {
 	l, ok := x.(expression)
 	if !ok {
-		log.Panic("internal error")
+		log.Panic("internal error 038")
 	}
 
 	u := unaryOperation{op, l}
@@ -3021,7 +3021,7 @@ func (u *unaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{}
 			return undOp(a, op)
 		}
 	default:
-		log.Panic("internal error")
+		log.Panic("internal error 039")
 		panic("unreachable")
 	}
 }

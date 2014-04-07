@@ -88,7 +88,7 @@ func (x *memIndex) Delete(indexedValue interface{}, h int64) error {
 		return nil
 	}
 
-	return fmt.Errorf("internal error on delete from index, value not found: %v", indexedValue)
+	return fmt.Errorf("internal error 047")
 }
 
 func (x *memIndex) Drop() error {
@@ -253,7 +253,7 @@ func newMemStorage() (s *mem, err error) {
 
 	h, err := s.Create()
 	if h != 1 {
-		log.Panic("internal error")
+		log.Panic("internal error 048")
 	}
 
 	if err = s.Commit(); err != nil {
@@ -264,7 +264,7 @@ func newMemStorage() (s *mem, err error) {
 }
 
 func (s *mem) OpenIndex(unique bool, handle int64) (btreeIndex, error) { // Never called on the memory backend.
-	panic("internal error")
+	panic("internal error 049")
 }
 
 func (s *mem) newUndo(tag int, h int64, data []interface{}) {
@@ -414,7 +414,7 @@ func (s *mem) clone(data ...interface{}) []interface{} {
 		case time.Duration:
 			r[i] = x
 		default:
-			log.Panic("internal error")
+			log.Panic("internal error 050")
 		}
 	}
 	return r
@@ -518,7 +518,7 @@ func (s *mem) Rollback() (err error) {
 			x, v := data[0].(*memIndex), data[1].(memIndex)
 			*x = v
 		default:
-			log.Panic("internal error")
+			log.Panic("internal error 051")
 		}
 	}
 

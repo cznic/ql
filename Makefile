@@ -28,16 +28,19 @@ coerce.go: helper.go
 cover:
 	t=$(shell tempfile) ; go test -coverprofile $$t && go tool cover -html $$t && unlink $$t
 
+cpu: ql.test
+	go test -c
+	./$< -test.bench . -test.cpuprofile cpu.out
+	go tool pprof $< cpu.out
+
 editor: check scanner.go parser.go coerce.go
 	go fmt
 	go test -i
 	go test
 	go install
 
-cpu: ql.test
-	go test -c
-	./$< -test.bench . -test.cpuprofile cpu.out
-	go tool pprof $< cpu.out
+internalError:
+	egrep -ho '"internal error.*"' *.go | sort | cat -n
 
 mem: ql.test
 	go test -c

@@ -121,7 +121,6 @@ func do() (err error) {
 			}
 
 			a := []string{}
-
 			for _, ci := range ti.Columns {
 				a = append(a, fmt.Sprintf("%s %s", ci.Name, ci.Type))
 			}

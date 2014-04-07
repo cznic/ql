@@ -472,7 +472,7 @@ func (r *whereRset) doIndexedBool(t *table, en indexIterator, v bool, f func(id 
 
 		switch x := k.(type) {
 		case nil:
-			panic("internal error") // nil should sort before true
+			panic("internal error 052") // nil should sort before true
 		case bool:
 			if x != v {
 				return nil
@@ -578,7 +578,7 @@ func (r *whereRset) tryBinOp(t *table, id *ident, v value, op int, f func(id int
 			}
 		}
 	default:
-		panic("internal error")
+		panic("internal error 053")
 	}
 }
 
@@ -962,7 +962,118 @@ func (tableRset) doOne(t *table, h int64, f func(id interface{}, data []interfac
 	return h, nil
 }
 
+func (r tableRset) doSysTable(ctx *execCtx, onlyNames bool, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
+	flds := []*fld{&fld{name: "Name"}, &fld{name: "Schema"}}
+	m, err := f(nil, []interface{}{flds})
+	if onlyNames {
+		return err
+	}
+
+	if !m || err != nil {
+		return
+	}
+
+	rec := make([]interface{}, 2)
+	di, err := ctx.db.Info()
+	if err != nil {
+		return err
+	}
+
+	var id int64
+	for _, ti := range di.Tables {
+		rec[0] = ti.Name
+		a := []string{}
+		for _, ci := range ti.Columns {
+			a = append(a, fmt.Sprintf("%s %s", ci.Name, ci.Type))
+		}
+		rec[1] = fmt.Sprintf("CREATE TABLE %s (%s);", ti.Name, strings.Join(a, ", "))
+		id++
+		m, err := f(id, rec)
+		if !m || err != nil {
+			return err
+		}
+	}
+	return
+}
+
+func (r tableRset) doSysColumn(ctx *execCtx, onlyNames bool, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
+	flds := []*fld{&fld{name: "TableName"}, &fld{name: "Ordinal"}, &fld{name: "Name"}, &fld{name: "Type"}}
+	m, err := f(nil, []interface{}{flds})
+	if onlyNames {
+		return err
+	}
+
+	if !m || err != nil {
+		return
+	}
+
+	rec := make([]interface{}, 4)
+	di, err := ctx.db.Info()
+	if err != nil {
+		return err
+	}
+
+	var id int64
+	for _, ti := range di.Tables {
+		rec[0] = ti.Name
+		var ix int64
+		for _, ci := range ti.Columns {
+			ix++
+			rec[1] = ix
+			rec[2] = ci.Name
+			rec[3] = ci.Type.String()
+			id++
+			m, err := f(id, rec)
+			if !m || err != nil {
+				return err
+			}
+		}
+	}
+	return
+}
+
+func (r tableRset) doSysIndex(ctx *execCtx, onlyNames bool, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
+	flds := []*fld{&fld{name: "TableName"}, &fld{name: "ColumnName"}, &fld{name: "Name"}, &fld{name: "Unique"}}
+	m, err := f(nil, []interface{}{flds})
+	if onlyNames {
+		return err
+	}
+
+	if !m || err != nil {
+		return
+	}
+
+	rec := make([]interface{}, 4)
+	di, err := ctx.db.Info()
+	if err != nil {
+		return err
+	}
+
+	var id int64
+	for _, xi := range di.Indices {
+		rec[0] = xi.Table
+		rec[1] = xi.Column
+		rec[2] = xi.Name
+		rec[3] = xi.Unique
+		id++
+		m, err := f(id, rec)
+		if !m || err != nil {
+			return err
+		}
+	}
+	return
+}
+
 func (r tableRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
+	switch r {
+	case "__Table":
+		return r.doSysTable(ctx, onlyNames, f)
+	case "__Column":
+		return r.doSysColumn(ctx, onlyNames, f)
+	case "__Index":
+		return r.doSysIndex(ctx, onlyNames, f)
+	}
+
 	t, ok := ctx.db.root.tables[string(r)]
 	var x *indexedCol
 	if !ok && isTesting {
@@ -1014,7 +1125,7 @@ func (r *crossJoinRset) String() string {
 				a[i] = fmt.Sprintf("(%s) AS %s", x, altName)
 			}
 		default:
-			log.Panic("internal error")
+			log.Panic("internal error 054")
 		}
 	}
 	return strings.Join(a, ", ")
@@ -1046,7 +1157,7 @@ func (r *crossJoinRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, 
 		case *selectStmt:
 			rsets[i] = x
 		default:
-			log.Panic("internal error")
+			log.Panic("internal error 055")
 		}
 		altNames[i] = altName
 	}
@@ -1583,7 +1694,7 @@ func (db *DB) leave() (err error) {
 			return db.store.Commit()
 		}
 	default:
-		log.Panic("internal error")
+		log.Panic("internal error 056")
 	}
 	return
 }
@@ -1603,7 +1714,7 @@ func (db *DB) timeout() {
 		db.store.Commit()
 		db.state = stIdle
 	default:
-		log.Panic("internal error")
+		log.Panic("internal error 057")
 	}
 }
 
@@ -1744,14 +1855,29 @@ type ColumnInfo struct {
 
 // TableInfo provides meta data describing a DB table.
 type TableInfo struct {
-	Name    string       // Table name.
-	Columns []ColumnInfo // Table schema.
+	// Table name.
+	Name string
+	// Table schema. Columns as listed in the order in which they appear in
+	// the schema.
+	Columns []ColumnInfo
+}
+
+// IndexInfo provides meta data describing a DB index.  It corresponds to the
+// statement
+//
+//	CREATE INDEX Name ON Table (Column);
+type IndexInfo struct {
+	Name   string // Index name
+	Table  string // Table name.
+	Column string // Column name.
+	Unique bool   // Wheter the index is unique.
 }
 
 // DbInfo provides meta data describing a DB.
 type DbInfo struct {
-	Name   string      // DB name.
-	Tables []TableInfo // Tables in the DB.
+	Name    string      // DB name.
+	Tables  []TableInfo // Tables in the DB.
+	Indices []IndexInfo // Indices in the DB.
 }
 
 // Info provides meta data describing a DB or an error if any. It locks the DB
@@ -1767,6 +1893,20 @@ func (db *DB) Info() (r *DbInfo, err error) {
 			ti.Columns = append(ti.Columns, ColumnInfo{Name: c.name, Type: Type(c.typ)})
 		}
 		r.Tables = append(r.Tables, ti)
+		for i, x := range t.indices {
+			if x == nil {
+				continue
+			}
+
+			var cn string
+			switch {
+			case i == 0:
+				cn = "id()"
+			default:
+				cn = t.cols[i-1].name
+			}
+			r.Indices = append(r.Indices, IndexInfo{x.name, nm, cn, x.unique})
+		}
 	}
 	return
 }

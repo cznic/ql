@@ -127,7 +127,13 @@
 // 	Sales
 //
 // No identifiers are predeclared, however note that no keyword can be used as
-// an identifier.
+// an identifier.  Identifiers starting with two underscores are used for meta
+// data virtual tables names. For forward compatibility, users should generally
+// avoid using any identifiers starting with two underscores. For example
+//
+//	__Column
+//	__Index
+//	__Table
 //
 // Keywords
 //
@@ -1530,6 +1536,36 @@
 //			DepartmentID = 1000+DepartmentID,
 //		WHERE DepartmentID < 1000;
 //	COMMIT;
+//
+// System Tables
+//
+// To allow to query for DB meta data, there exist specially named virtual
+// tables. These tables have unique but meaningless and unstable record IDs.
+//
+// Tables Table
+//
+// The table __Table lists all tables in the DB. The schema is
+//
+//	CREATE TABLE __Table (Name string, Schema string);
+//
+// The Schema column returns the statement to (re)create table Name.
+//
+// Columns Table
+//
+// The table __Colum lists all columns of all tables in the DB. The schema is
+//
+//	CREATE TABLE __Column (TableName string, Ordinal int, Name string, Type string);
+//
+// The Ordnial column defines the 1-based index of the column in the record.
+//
+// Indices table
+//
+// The table __Index lists all indices in the DB. The schema is
+//
+//	CREATE TABLE __Index (TableName string, ColumnName string, Name string, Unique bool);
+//
+// The Unique columns reflects if the index was created using the optional
+// UNIQUE clause.
 //
 // Built-in functions
 //

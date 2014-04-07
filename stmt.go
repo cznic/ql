@@ -329,7 +329,7 @@ func (s *dropIndexStmt) exec(ctx *execCtx) (Recordset, error) {
 		return nil, t.dropIndex(i)
 	}
 
-	panic("internal error")
+	panic("internal error 058")
 }
 
 func (s *dropIndexStmt) isUpdating() bool { return true }
@@ -670,25 +670,37 @@ type beginTransactionStmt struct{}
 
 func (beginTransactionStmt) String() string { return "BEGIN TRANSACTION;" }
 func (beginTransactionStmt) exec(*execCtx) (Recordset, error) {
-	log.Panic("internal error")
+	log.Panic("internal error 059")
 	panic("unreachable")
 }
-func (beginTransactionStmt) isUpdating() bool { log.Panic("internal error"); panic("unreachable") }
+func (beginTransactionStmt) isUpdating() bool {
+	log.Panic("internal error 060")
+	panic("unreachable")
+}
 
 type commitStmt struct{}
 
-func (commitStmt) String() string                   { return "COMMIT;" }
-func (commitStmt) exec(*execCtx) (Recordset, error) { log.Panic("internal error"); panic("unreachable") }
-func (commitStmt) isUpdating() bool                 { log.Panic("internal error"); panic("unreachable") }
+func (commitStmt) String() string { return "COMMIT;" }
+func (commitStmt) exec(*execCtx) (Recordset, error) {
+	log.Panic("internal error 061")
+	panic("unreachable")
+}
+func (commitStmt) isUpdating() bool {
+	log.Panic("internal error 062")
+	panic("unreachable")
+}
 
 type rollbackStmt struct{}
 
 func (rollbackStmt) String() string { return "ROLLBACK;" }
 func (rollbackStmt) exec(*execCtx) (Recordset, error) {
-	log.Panic("internal error")
+	log.Panic("internal error 063")
 	panic("unreachable")
 }
-func (rollbackStmt) isUpdating() bool { log.Panic("internal error"); panic("unreachable") }
+func (rollbackStmt) isUpdating() bool {
+	log.Panic("internal error 064")
+	panic("unreachable")
+}
 
 type createIndexStmt struct {
 	unique    bool

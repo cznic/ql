@@ -155,7 +155,7 @@ func (m *memTestDB) teardown() (err error) {
 	}
 
 	if g, e := n, m.m0; g != e {
-		return fmt.Errorf("allocs: got %d, exp %d", g, e)
+		return fmt.Errorf("STORAGE LEAK: allocs: got %d, exp %d", g, e)
 	}
 
 	return
@@ -210,7 +210,7 @@ func (m *fileTestDB) teardown() (err error) {
 	}
 
 	if g, e := n, m.m0; g != e {
-		return fmt.Errorf("allocs: got %d, exp %d", g, e)
+		return fmt.Errorf("STORAGE LEAK: allocs: got %d, exp %d", g, e)
 	}
 	return
 }
@@ -264,7 +264,7 @@ func (m *osFileTestDB) teardown() (err error) {
 	}
 
 	if g, e := n, m.m0; g != e {
-		return fmt.Errorf("allocs: got %d, exp %d", g, e)
+		return fmt.Errorf("STORAGE LEAK: allocs: got %d, exp %d", g, e)
 	}
 	return
 }
@@ -461,7 +461,7 @@ func benchmarkInsert(b *testing.B, batch, total int, ts testDB) {
 	}
 
 	if total%batch != 0 {
-		b.Fatal("internal error")
+		b.Fatal("internal error 001")
 	}
 
 	db, err := ts.setup()

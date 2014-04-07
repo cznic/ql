@@ -101,7 +101,7 @@ func (g *gobCoder) encode(v interface{}) (b []byte, err error) {
 		err = g.enc.Encode(int64(x))
 	default:
 		//dbg("%T(%v)", v, v)
-		log.Panic("internal error")
+		log.Panic("internal error 002")
 	}
 	b = g.buf.Bytes()
 	return
@@ -133,7 +133,7 @@ func (g *gobCoder) decode(b []byte, typ int) (v interface{}, err error) {
 		err = g.dec.Decode(&x)
 		v = time.Duration(x)
 	default:
-		log.Panic("internal error")
+		log.Panic("internal error 003")
 	}
 	return
 }

@@ -244,7 +244,7 @@ func builtinCount(arg []interface{}, ctx map[interface{}]interface{}) (v interfa
 			n++
 		}
 	default:
-		log.Panic("internal error")
+		log.Panic("internal error 067")
 	}
 	ctx[fn] = n
 	return

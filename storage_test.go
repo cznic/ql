@@ -24,6 +24,7 @@ var (
 	dropEmployee   = MustCompile("BEGIN TRANSACTION; DROP TABLE employee; COMMIT;")
 	dropP          = MustCompile("BEGIN TRANSACTION; DROP TABLE p; COMMIT;")
 	dropT          = MustCompile("BEGIN TRANSACTION; DROP TABLE t; COMMIT;")
+	dropU          = MustCompile("BEGIN TRANSACTION; DROP TABLE u; COMMIT;")
 
 	oN = flag.Int("N", 0, "")
 	oM = flag.Int("M", 0, "")
@@ -255,7 +256,7 @@ func test(t *testing.T, s testDB) (panicked error) {
 		q, rset := a[0], strings.TrimSpace(a[1])
 		var expErr string
 		if len(a) < 3 {
-			t.Error(itest, "internal error")
+			t.Error(itest, "internal error 066")
 			return
 		}
 
@@ -284,6 +285,7 @@ func test(t *testing.T, s testDB) (panicked error) {
 				db.Execute(tctx, dropEmployee)
 				db.Execute(tctx, dropP)
 				db.Execute(tctx, dropT)
+				db.Execute(tctx, dropU)
 			}()
 
 			if err = s.mark(); err != nil {

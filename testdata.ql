@@ -7159,3 +7159,215 @@ BEGIN TRANSACTION;
 COMMIT;
 SELECT * FROM t WHERE i == $0;
 ||parameter.*non zero
+
+-- 612
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	CREATE TABLE __Table (i int);
+COMMIT;
+SELECT * FROM t;
+||system table
+
+-- 613
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	CREATE TABLE __Column (i int);
+COMMIT;
+SELECT * FROM t;
+||system table
+
+-- 614
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	CREATE TABLE __Index (i int);
+COMMIT;
+SELECT * FROM t;
+||system table
+
+-- 615
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	DROP TABLE __Table;
+COMMIT;
+SELECT * FROM t;
+||system table
+
+-- 616
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	DROP TABLE __Column;
+COMMIT;
+SELECT * FROM t;
+||system table
+
+-- 617
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	DROP TABLE __Index;
+COMMIT;
+SELECT * FROM t;
+||system table
+
+-- 618
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	CREATE INDEX __Table ON t (i);
+COMMIT;
+SELECT * FROM t;
+||system table
+
+-- 619
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	CREATE INDEX __Column ON t (i);
+COMMIT;
+SELECT * FROM t;
+||system table
+
+-- 620
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	CREATE INDEX __Index ON t (i);
+COMMIT;
+SELECT * FROM t;
+||system table
+
+-- 621
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	CREATE INDEX x ON __Table (Name);
+COMMIT;
+SELECT * FROM t;
+||system table
+
+-- 622
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	CREATE INDEX x ON __Column (Name);
+COMMIT;
+SELECT * FROM t;
+||system table
+
+-- 623
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	CREATE INDEX x ON __Index (Name);
+COMMIT;
+SELECT * FROM t;
+||system table
+
+-- 624
+SELECT * FROM __Table;
+|?Name, ?Schema
+
+-- 625
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int, s string);
+COMMIT;
+SELECT * FROM __Table ORDER BY Name;
+|sName, sSchema
+[t CREATE TABLE t (i int64, s string);]
+
+-- 626
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int, s string);
+	CREATE TABLE u (b bool, i bigint, t time, d duration);
+COMMIT;
+SELECT * FROM __Table ORDER BY Name;
+|sName, sSchema
+[t CREATE TABLE t (i int64, s string);]
+[u CREATE TABLE u (b bool, i bigint, t time, d duration);]
+
+-- 627
+SELECT * FROM __Column;
+|?TableName, ?Ordinal, ?Name, ?Type
+
+-- 628
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int, s string);
+COMMIT;
+SELECT * FROM __Column ORDER BY TableName, Name;
+|sTableName, lOrdinal, sName, sType
+[t 1 i int64]
+[t 2 s string]
+
+-- 629
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int, s string);
+	CREATE TABLE u (b bool, i bigint, t time, d duration);
+COMMIT;
+SELECT * FROM __Column ORDER BY TableName, Ordinal;
+|sTableName, lOrdinal, sName, sType
+[t 1 i int64]
+[t 2 s string]
+[u 1 b bool]
+[u 2 i bigint]
+[u 3 t time]
+[u 4 d duration]
+
+-- 630
+SELECT * FROM __Index;
+|?TableName, ?ColumnName, ?Name, ?Unique
+
+-- 631
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int, s string);
+COMMIT;
+SELECT * FROM __Index ORDER BY TableName, Name;
+|?TableName, ?ColumnName, ?Name, ?Unique
+
+-- 632
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int, s string);
+	CREATE INDEX x ON t (i);
+COMMIT;
+SELECT * FROM __Index ORDER BY TableName, ColumnName, Name;
+|sTableName, sColumnName, sName, bUnique
+[t i x false]
+
+-- 633
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int, s string);
+	CREATE INDEX x ON t (i);
+	CREATE INDEX id ON t (id());
+	CREATE TABLE u (b bool, i bigint, t time, d duration);
+COMMIT;
+SELECT * FROM __Index ORDER BY TableName, ColumnName, Name;
+|sTableName, sColumnName, sName, bUnique
+[t i x false]
+[t id() id false]
+
+-- 634
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int, s string);
+	CREATE INDEX x ON t (i);
+	CREATE INDEX id ON t (id());
+	CREATE TABLE u (b bool, i bigint, t time, d duration);
+	CREATE INDEX z ON u (t);
+	CREATE UNIQUE INDEX y ON u (i);
+COMMIT;
+SELECT * FROM __Index ORDER BY TableName, ColumnName, Name;
+|sTableName, sColumnName, sName, bUnique
+[t i x false]
+[t id() id false]
+[u i y true]
+[u t z false]
+
+-- 635
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int, s string);
+	CREATE INDEX x ON t (i);
+	CREATE INDEX id ON t (id());
+	CREATE TABLE u (b bool, i bigint, t time, d duration);
+	CREATE INDEX z ON u (t);
+	CREATE UNIQUE INDEX y ON u (i);
+COMMIT;
+SELECT c.TableName, c.Ordinal, c.Name
+FROM __Table AS t, __Column AS c
+WHERE t.Name == "u" && t.Name == c.TableName
+ORDER BY c.Ordinal;
+|sc.TableName, lc.Ordinal, sc.Name
+[u 1 b]
+[u 2 i]
+[u 3 t]
+[u 4 d]

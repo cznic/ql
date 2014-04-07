@@ -581,7 +581,7 @@ func (r *root) updated() (err error) {
 
 func (r *root) createTable(name string, cols []*col) (t *table, err error) {
 	if _, ok := r.tables[name]; ok {
-		log.Panic("internal error")
+		log.Panic("internal error 065")
 	}
 
 	if t, err = newTable(r.store, name, r.head, cols, nil, r.thead); err != nil {

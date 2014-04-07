@@ -466,12 +466,12 @@ func (r *driverRows) Next(dest []driver.Value) error {
 				case string:
 					dest[i] = []byte(v)
 				default:
-					return fmt.Errorf("internal error: unexpected type %T", v)
+					return fmt.Errorf("internal error 004")
 				}
 			}
 			return nil
 		default:
-			return fmt.Errorf("internal error: unexpected type %T", x)
+			return fmt.Errorf("internal error 005")
 		}
 	case <-r.done:
 		return io.EOF

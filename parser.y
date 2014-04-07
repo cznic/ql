@@ -199,7 +199,12 @@ CreateIndexStmt:
 		$$ = &createIndexStmt{$2.(bool), indexName, tableName, columnName}
 		if indexName == tableName || indexName == columnName {
 			yylex.(*lexer).err("index name collision: %s", indexName)
-			goto ret1
+			return 1
+		}
+
+		if isSytemName[indexName] || isSytemName[tableName] {
+			yylex.(*lexer).err("name is used for system tables: %s", indexName)
+			return 1
 		}
 	}
 |	create CreateIndexStmtUnique index identifier on identifier '(' identifier '(' ')' ')'
@@ -208,12 +213,17 @@ CreateIndexStmt:
 		$$ = &createIndexStmt{$2.(bool), indexName, tableName, "id()"}
 		if $8.(string) != "id" {
 			yylex.(*lexer).err("only the built-in function id() can be used in index: %s()", columnName)
-			goto ret1
+			return 1
 		}
 
 		if indexName == tableName {
 			yylex.(*lexer).err("index name collision: %s", indexName)
-			goto ret1
+			return 1
+		}
+
+		if isSytemName[indexName] || isSytemName[tableName] {
+			yylex.(*lexer).err("name is used for system tables: %s", indexName)
+			return 1
 		}
 	}
 
@@ -229,11 +239,21 @@ CreateIndexStmtUnique:
 CreateTableStmt:
 	create tableKwd TableName '(' ColumnDef CreateTableStmt1 CreateTableStmt2 ')'
 	{
-		$$ = &createTableStmt{tableName: $3.(string), cols: append([]*col{$5.(*col)}, $6.([]*col)...)}
+		nm := $3.(string)
+		$$ = &createTableStmt{tableName: nm, cols: append([]*col{$5.(*col)}, $6.([]*col)...)}
+		if isSytemName[nm] {
+			yylex.(*lexer).err("name is used for system tables: %s", nm)
+			return 1
+		}
 	}
 |	create tableKwd ifKwd not exists TableName '(' ColumnDef CreateTableStmt1 CreateTableStmt2 ')'
 	{
-		$$ = &createTableStmt{ifNotExists: true, tableName: $6.(string), cols: append([]*col{$8.(*col)}, $9.([]*col)...)}
+		nm := $6.(string)
+		$$ = &createTableStmt{ifNotExists: true, tableName: nm, cols: append([]*col{$8.(*col)}, $9.([]*col)...)}
+		if isSytemName[nm] {
+			yylex.(*lexer).err("name is used for system tables: %s", nm)
+			return 1
+		}
 	}
 
 CreateTableStmt1:
@@ -269,11 +289,21 @@ DropIndexStmt:
 DropTableStmt:
 	drop tableKwd TableName
 	{
-		$$ = &dropTableStmt{tableName: $3.(string)}
+		nm := $3.(string)
+		$$ = &dropTableStmt{tableName: nm}
+		if isSytemName[nm] {
+			yylex.(*lexer).err("name is used for system tables: %s", nm)
+			return 1
+		}
 	}
 |	drop tableKwd ifKwd exists TableName
 	{
-		$$ = &dropTableStmt{ifExists: true, tableName: $5.(string)}
+		nm := $5.(string)
+		$$ = &dropTableStmt{ifExists: true, tableName: nm}
+		if isSytemName[nm] {
+			yylex.(*lexer).err("name is used for system tables: %s", nm)
+			return 1
+		}
 	}
 
 EmptyStmt:
@@ -289,7 +319,7 @@ Expression:
 		var err error
 		if $$, err = newBinaryOperation(oror, $1, $3); err != nil {
 			yylex.(*lexer).err("%v", err)
-			goto ret1
+			return 1
 		}
 	}
 
@@ -347,7 +377,7 @@ Factor1:
 		var err error
 		if $$, err = newBinaryOperation(ge, $1, $3); err != nil {
 			yylex.(*lexer).err("%v", err)
-			goto ret1
+			return 1
 		}
         }
 |       Factor1 '>' PrimaryFactor
@@ -355,7 +385,7 @@ Factor1:
 		var err error
 		if $$, err = newBinaryOperation('>', $1, $3); err != nil {
 			yylex.(*lexer).err("%v", err)
-			goto ret1
+			return 1
 		}
         }
 |       Factor1 le PrimaryFactor
@@ -363,7 +393,7 @@ Factor1:
 		var err error
 		if $$, err = newBinaryOperation(le, $1, $3); err != nil {
 			yylex.(*lexer).err("%v", err)
-			goto ret1
+			return 1
 		}
         }
 |       Factor1 '<' PrimaryFactor
@@ -371,7 +401,7 @@ Factor1:
 		var err error
 		if $$, err = newBinaryOperation('<', $1, $3); err != nil {
 			yylex.(*lexer).err("%v", err)
-			goto ret1
+			return 1
 		}
         }
 |       Factor1 neq PrimaryFactor
@@ -379,7 +409,7 @@ Factor1:
 		var err error
 		if $$, err = newBinaryOperation(neq, $1, $3); err != nil {
 			yylex.(*lexer).err("%v", err)
-			goto ret1
+			return 1
 		}
         }
 |       Factor1 eq PrimaryFactor
@@ -387,7 +417,7 @@ Factor1:
 		var err error
 		if $$, err = newBinaryOperation(eq, $1, $3); err != nil {
 			yylex.(*lexer).err("%v", err)
-			goto ret1
+			return 1
 		}
         }
 
@@ -425,7 +455,7 @@ FieldList:
 		if f.name != "" {
 			if f := findFld(l, f.name); f != nil {
 				yylex.(*lexer).err("duplicate field name %q", f.name)
-				goto ret1
+				return 1
 			}
 		}
 
@@ -500,7 +530,7 @@ Operand:
 		l.params = mathutil.Max(l.params, n)
 		if n == 0 {
 			l.err("parameter number must be non zero")
-			goto ret1
+			return 1
 		}
 	}
 |	QualifiedIdent
@@ -540,7 +570,7 @@ PrimaryExpression:
 		var err error
 		if $$, err = newIndex($1.(expression), $2.(expression)); err != nil {
 			yylex.(*lexer).err("%v", err)
-			goto ret1
+			return 1
 		}
 	}
 |	PrimaryExpression Slice
@@ -549,7 +579,7 @@ PrimaryExpression:
 		s := $2.([2]*expression)
 		if $$, err = newSlice($1.(expression), s[0], s[1]); err != nil {
 			yylex.(*lexer).err("%v", err)
-			goto ret1
+			return 1
 		}
 	}
 |	PrimaryExpression Call
@@ -558,14 +588,14 @@ PrimaryExpression:
 		f, ok := $1.(*ident)
 		if !ok {
 			x.err("expected identifier or qualified identifier")
-			goto ret1
+			return 1
 		}
 
 		var err error
 		var agg bool
 		if $$, agg, err = newCall(f.s, $2.([]expression)); err != nil {
 			x.err("%v", err)
-			goto ret1
+			return 1
 		}
 		if n := len(x.agg); n > 0 {
 			x.agg[n-1] = x.agg[n-1] || agg
@@ -579,7 +609,7 @@ PrimaryFactor:
 		var err error
 		if $$, err = newBinaryOperation('^', $1, $3); err != nil {
 			yylex.(*lexer).err("%v", err)
-			goto ret1
+			return 1
 		}
 	}
 |	PrimaryFactor '|' PrimaryTerm
@@ -587,7 +617,7 @@ PrimaryFactor:
 		var err error
 		if $$, err = newBinaryOperation('|', $1, $3); err != nil {
 			yylex.(*lexer).err("%v", err)
-			goto ret1
+			return 1
 		}
 	}
 |	PrimaryFactor '-' PrimaryTerm
@@ -595,7 +625,7 @@ PrimaryFactor:
 		var err error
 		if $$, err = newBinaryOperation('-', $1, $3); err != nil {
 			yylex.(*lexer).err("%v", err)
-			goto ret1
+			return 1
 		}
 	}
 |	PrimaryFactor '+' PrimaryTerm
@@ -604,7 +634,7 @@ PrimaryFactor:
 		$$, err = newBinaryOperation('+', $1, $3)
 		if err != nil {
 			yylex.(*lexer).err("%v", err)
-			goto ret1
+			return 1
 		}
 	}
 
@@ -616,7 +646,7 @@ PrimaryTerm:
 		$$, err = newBinaryOperation(andnot, $1, $3)
 		if err != nil {
 			yylex.(*lexer).err("%v", err)
-			goto ret1
+			return 1
 		}
 	}
 |	PrimaryTerm '&' UnaryExpr
@@ -625,7 +655,7 @@ PrimaryTerm:
 		$$, err = newBinaryOperation('&', $1, $3)
 		if err != nil {
 			yylex.(*lexer).err("%v", err)
-			goto ret1
+			return 1
 		}
 	}
 |	PrimaryTerm lsh UnaryExpr
@@ -634,7 +664,7 @@ PrimaryTerm:
 		$$, err = newBinaryOperation(lsh, $1, $3)
 		if err != nil {
 			yylex.(*lexer).err("%v", err)
-			goto ret1
+			return 1
 		}
 	}
 |	PrimaryTerm rsh UnaryExpr
@@ -643,7 +673,7 @@ PrimaryTerm:
 		$$, err = newBinaryOperation(rsh, $1, $3)
 		if err != nil {
 			yylex.(*lexer).err("%v", err)
-			goto ret1
+			return 1
 		}
 	}
 |	PrimaryTerm '%' UnaryExpr
@@ -652,7 +682,7 @@ PrimaryTerm:
 		$$, err = newBinaryOperation('%', $1, $3)
 		if err != nil {
 			yylex.(*lexer).err("%v", err)
-			goto ret1
+			return 1
 		}
 	}
 |	PrimaryTerm '/' UnaryExpr
@@ -661,7 +691,7 @@ PrimaryTerm:
 		$$, err = newBinaryOperation('/', $1, $3)
 		if err != nil {
 			yylex.(*lexer).err("%v", err)
-			goto ret1
+			return 1
 		}
 	}
 |	PrimaryTerm '*' UnaryExpr
@@ -670,7 +700,7 @@ PrimaryTerm:
 		$$, err = newBinaryOperation('*', $1, $3)
 		if err != nil {
 			yylex.(*lexer).err("%v", err)
-			goto ret1
+			return 1
 		}
 	}
 
@@ -863,7 +893,7 @@ Term:
 		var err error
 		if $$, err = newBinaryOperation(andand, $1, $3); err != nil {
 			yylex.(*lexer).err("%v", err)
-			goto ret1
+			return 1
 		}
 	}
 
@@ -920,7 +950,7 @@ UnaryExpr:
 		$$, err = newUnaryOperation('^', $2)
 		if err != nil {
 			yylex.(*lexer).err("%v", err)
-			goto ret1
+			return 1
 		}
 	}
 |	'!' PrimaryExpression
@@ -929,7 +959,7 @@ UnaryExpr:
 		$$, err = newUnaryOperation('!', $2)
 		if err != nil {
 			yylex.(*lexer).err("%v", err)
-			goto ret1
+			return 1
 		}
 	}
 |	'-' PrimaryExpression
@@ -938,7 +968,7 @@ UnaryExpr:
 		$$, err = newUnaryOperation('-', $2)
 		if err != nil {
 			yylex.(*lexer).err("%v", err)
-			goto ret1
+			return 1
 		}
 	}
 |	'+' PrimaryExpression
@@ -947,7 +977,7 @@ UnaryExpr:
 		$$, err = newUnaryOperation('+', $2)
 		if err != nil {
 			yylex.(*lexer).err("%v", err)
-			goto ret1
+			return 1
 		}
 	}
 
