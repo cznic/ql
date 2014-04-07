@@ -376,7 +376,7 @@
 // list passed to DB.Run or DB.Execute. Using '?' or '$' is completely
 // equivalent.
 //
-//  ql_parameter = ( "?" | "$" ) "0" … "9" { "0" … "9" } .
+//  ql_parameter = ( "?" | "$" ) "1" … "9" { "0" … "9" } .
 //
 // For example
 //

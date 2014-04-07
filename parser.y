@@ -498,6 +498,10 @@ Operand:
 		$$ = parameter{n}
 		l := yylex.(*lexer)
 		l.params = mathutil.Max(l.params, n)
+		if n == 0 {
+			l.err("parameter number must be non zero")
+			goto ret1
+		}
 	}
 |	QualifiedIdent
 	{

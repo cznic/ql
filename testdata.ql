@@ -7151,3 +7151,11 @@ BEGIN TRANSACTION;
 COMMIT;
 SELECT * FROM t WHERE i < 30;
 ||duplicate
+
+-- 611 // Issue #34
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(42);
+COMMIT;
+SELECT * FROM t WHERE i == $0;
+||parameter.*non zero
