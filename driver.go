@@ -70,17 +70,33 @@ func params(args []driver.Value) []interface{} {
 	return r
 }
 
+var (
+	fileDriver     = &sqlDriver{dbs: map[string]*driverDB{}}
+	fileDriverOnce sync.Once
+	memDriver      = &sqlDriver{isMem: true, dbs: map[string]*driverDB{}}
+	memDriverOnce  sync.Once
+)
+
 // RegisterDriver registers a QL database/sql/driver[0] named "ql". The name
 // parameter of
 //
 //	sql.Open("ql", name)
 //
 // is interpreted as a path name to a named DB file which will be created if
-// not present. The underlying QL database data are persisted on db.Close()
+// not present. The underlying QL database data are persisted on db.Close().
+// RegisterDriver can be safely called multiple times, it'll register the
+// driver only once.
+//
+// The name argument can be optionally prefixed by "file://". In that case the
+// prefix is stripped before interpreting it as a file name.
+//
+// The name argument can be optionally prefixed by "memory://". In that case
+// the prefix is stripped before interpreting it as a name of a memory-only,
+// volatile DB.
 //
 //  [0]: http://golang.org/pkg/database/sql/driver/
 func RegisterDriver() {
-	sql.Register("ql", &sqlDriver{dbs: map[string]*driverDB{}})
+	fileDriverOnce.Do(func() { sql.Register("ql", fileDriver) })
 }
 
 // RegisterMemDriver registers a QL memory database/sql/driver[0] named
@@ -90,11 +106,12 @@ func RegisterDriver() {
 //
 // is interpreted as an unique memory DB name which will be created if not
 // present. The underlying QL memory database data are not persisted on
-// db.Close()
+// db.Close(). RegisterMemDriver can be safely called multiple times, it'll
+// register the driver only once.
 //
 //  [0]: http://golang.org/pkg/database/sql/driver/
 func RegisterMemDriver() {
-	sql.Register("ql-mem", &sqlDriver{isMem: true, dbs: map[string]*driverDB{}})
+	memDriverOnce.Do(func() { sql.Register("ql-mem", memDriver) })
 }
 
 type driverDB struct {
@@ -128,6 +145,17 @@ func (d *sqlDriver) lock() func() {
 //
 // The returned connection is only used by one goroutine at a time.
 func (d *sqlDriver) Open(name string) (driver.Conn, error) {
+	if d != fileDriver && d != memDriver {
+		return nil, fmt.Errorf("open: unexpected/unsupported instance of driver.Driver: %p", d)
+	}
+
+	switch {
+	case d == fileDriver && strings.HasPrefix(name, "file://"):
+		name = name[len("file://"):]
+	case d == fileDriver && strings.HasPrefix(name, "memory://"):
+		d = memDriver
+		name = name[len("memory://"):]
+	}
 	name = filepath.Clean(name)
 	if name == "" || name == "." || name == string(os.PathSeparator) {
 		return nil, fmt.Errorf("invalid DB name %q", name)

@@ -21,14 +21,22 @@ A skeleton program using ql/driver.
 
 	func main() {
 		...
+		// Disk file DB
 		db, err := sql.Open("ql", "ql.db")  // [2]
+		// alternatively
+		db, err := sql.Open("ql", "file://ql.db")
+
 		// and/or
+
+		// RAM DB
 		mdb, err := sql.Open("ql-mem", "mem.db")
+		// alternatively
+		mdb, err := sql.Open("ql", "memory://mem.db")
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		// Use db here
+		// Use db/mdb here
 		...
 	}
 

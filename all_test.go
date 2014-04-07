@@ -6,6 +6,7 @@ package ql
 
 import (
 	"bytes"
+	"database/sql"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -2034,6 +2035,62 @@ func TestIssue35(t *testing.T) {
 			panic("unreachable")
 		}
 	}); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestIssue28(t *testing.T) {
+	RegisterDriver()
+	dir, err := ioutil.TempDir("", "ql-test-")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer os.RemoveAll(dir)
+	pth := filepath.Join(dir, "ql.db")
+	sdb, err := sql.Open("ql", "file://"+pth)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer sdb.Close()
+	tx, err := sdb.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if _, err = tx.Exec("CREATE TABLE t (i int);"); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = tx.Commit(); err != nil {
+		t.Fatal(err)
+	}
+
+	if _, err = os.Stat(pth); err != nil {
+		t.Fatal(err)
+	}
+
+	pth = filepath.Join(dir, "mem.db")
+	mdb, err := sql.Open("ql", "memory://"+pth)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer mdb.Close()
+	if tx, err = mdb.Begin(); err != nil {
+		t.Fatal(err)
+	}
+
+	if _, err = tx.Exec("CREATE TABLE t (i int);"); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = tx.Commit(); err != nil {
+		t.Fatal(err)
+	}
+
+	if _, err = os.Stat(pth); err == nil {
 		t.Fatal(err)
 	}
 }
