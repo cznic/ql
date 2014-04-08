@@ -592,13 +592,13 @@ func (r *whereRset) tryUseIndex(ctx *execCtx, f func(id interface{}, data []inte
 	}
 
 	tabName, ok := c.isSingleTable()
-	if !ok {
+	if !ok || isSytemName[tabName] {
 		return false, nil
 	}
 
 	t := ctx.db.root.tables[tabName]
 	if t == nil {
-		return true, fmt.Errorf("table %s does not exist", r)
+		return true, fmt.Errorf("table %s does not exist", tabName)
 	}
 
 	if !t.hasIndices() {

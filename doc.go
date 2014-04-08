@@ -1540,7 +1540,10 @@
 // System Tables
 //
 // To allow to query for DB meta data, there exist specially named virtual
-// tables. These tables have unique but meaningless and unstable record IDs.
+// tables.
+//
+// Note: System tables have fake table-wise unique but meaningless and unstable
+// record IDs. Do not apply the built-in id() to any system table.
 //
 // Tables Table
 //
@@ -1556,7 +1559,7 @@
 //
 //	CREATE TABLE __Column (TableName string, Ordinal int, Name string, Type string);
 //
-// The Ordnial column defines the 1-based index of the column in the record.
+// The Ordinal column defines the 1-based index of the column in the record.
 //
 // Indices table
 //

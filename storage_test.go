@@ -25,6 +25,8 @@ var (
 	dropP          = MustCompile("BEGIN TRANSACTION; DROP TABLE p; COMMIT;")
 	dropT          = MustCompile("BEGIN TRANSACTION; DROP TABLE t; COMMIT;")
 	dropU          = MustCompile("BEGIN TRANSACTION; DROP TABLE u; COMMIT;")
+	dropArtist     = MustCompile("BEGIN TRANSACTION; DROP TABLE artist; COMMIT;")
+	dropDataTypes  = MustCompile("BEGIN TRANSACTION; DROP TABLE data_types; COMMIT;")
 
 	oN = flag.Int("N", 0, "")
 	oM = flag.Int("M", 0, "")
@@ -286,6 +288,8 @@ func test(t *testing.T, s testDB) (panicked error) {
 				db.Execute(tctx, dropP)
 				db.Execute(tctx, dropT)
 				db.Execute(tctx, dropU)
+				db.Execute(tctx, dropArtist)
+				db.Execute(tctx, dropDataTypes)
 			}()
 
 			if err = s.mark(); err != nil {

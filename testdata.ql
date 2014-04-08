@@ -7390,3 +7390,75 @@ COMMIT;
 SELECT * FROM t WHERE s == "test";
 |li, ss
 [1 test]
+
+-- 638 // https://github.com/cznic/ql/issues/37
+BEGIN TRANSACTION;
+	CREATE TABLE artist (id int64, name string);
+	CREATE TABLE data_types (id int64, _uint int64, _uint8 int64, _uint16
+		int64, _uint32 int64, _uint64 int64, _int int64, _int8 int64,
+		_int16 int64, _int32 int64, _int64 int64, _float32 float32,
+		_float64 float64, _bool bool, _string string, _date time, _time
+		time);
+COMMIT;
+SELECT * FROM __Table ORDER BY Name; // Must sort, map range is not deterministic.
+|sName, sSchema
+[artist CREATE TABLE artist (id int64, name string);]
+[data_types CREATE TABLE data_types (id int64, _uint int64, _uint8 int64, _uint16 int64, _uint32 int64, _uint64 int64, _int int64, _int8 int64, _int16 int64, _int32 int64, _int64 int64, _float32 float32, _float64 float64, _bool bool, _string string, _date time, _time time);]
+
+-- 639 // https://github.com/cznic/ql/issues/37
+BEGIN TRANSACTION;
+	CREATE TABLE artist (id int64, name string);
+	CREATE TABLE data_types (id int64, _uint int64, _uint8 int64, _uint16
+		int64, _uint32 int64, _uint64 int64, _int int64, _int8 int64,
+		_int16 int64, _int32 int64, _int64 int64, _float32 float32,
+		_float64 float64, _bool bool, _string string, _date time, _time
+		time);
+COMMIT;
+SELECT * FROM __Table WHERE Name == "artist";
+|sName, sSchema
+[artist CREATE TABLE artist (id int64, name string);]
+
+-- 640 // https://github.com/cznic/ql/issues/37
+BEGIN TRANSACTION;
+	CREATE TABLE artist (id int64, name string);
+	CREATE TABLE data_types (id int64, _uint int64, _uint8 int64, _uint16
+		int64, _uint32 int64, _uint64 int64, _int int64, _int8 int64,
+		_int16 int64, _int32 int64, _int64 int64, _float32 float32,
+		_float64 float64, _bool bool, _string string, _date time, _time
+		time);
+COMMIT;
+SELECT * FROM __Column ORDER BY TableName, Ordinal;
+|sTableName, lOrdinal, sName, sType
+[artist 1 id int64]
+[artist 2 name string]
+[data_types 1 id int64]
+[data_types 2 _uint int64]
+[data_types 3 _uint8 int64]
+[data_types 4 _uint16 int64]
+[data_types 5 _uint32 int64]
+[data_types 6 _uint64 int64]
+[data_types 7 _int int64]
+[data_types 8 _int8 int64]
+[data_types 9 _int16 int64]
+[data_types 10 _int32 int64]
+[data_types 11 _int64 int64]
+[data_types 12 _float32 float32]
+[data_types 13 _float64 float64]
+[data_types 14 _bool bool]
+[data_types 15 _string string]
+[data_types 16 _date time]
+[data_types 17 _time time]
+
+-- 641 // https://github.com/cznic/ql/issues/37
+BEGIN TRANSACTION;
+	CREATE TABLE artist (id int64, name string);
+	CREATE TABLE data_types (id int64, _uint int64, _uint8 int64, _uint16
+		int64, _uint32 int64, _uint64 int64, _int int64, _int8 int64,
+		_int16 int64, _int32 int64, _int64 int64, _float32 float32,
+		_float64 float64, _bool bool, _string string, _date time, _time
+		time);
+COMMIT;
+SELECT * FROM __Column WHERE TableName == "artist" ORDER BY TableName, Ordinal;
+|sTableName, lOrdinal, sName, sType
+[artist 1 id int64]
+[artist 2 name string]
