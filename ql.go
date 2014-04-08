@@ -497,7 +497,9 @@ func (r *whereRset) tryBinOp(t *table, id *ident, v value, op int, f func(id int
 	}
 
 	data := []interface{}{v.val}
-	if err := typeCheck(data, []*col{c}); err != nil {
+	cc := *c
+	cc.index = 0
+	if err := typeCheck(data, []*col{&cc}); err != nil {
 		return true, err
 	}
 

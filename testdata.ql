@@ -7371,3 +7371,22 @@ ORDER BY c.Ordinal;
 [u 2 i]
 [u 3 t]
 [u 4 d]
+
+-- 636 // https://github.com/cznic/ql/issues/36
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int, s string);
+	INSERT INTO t VALUES (1, "test");
+COMMIT;
+SELECT * FROM t WHERE s == "test";
+|li, ss
+[1 test]
+
+-- 637 // https://github.com/cznic/ql/issues/36
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int, s string);
+	INSERT INTO t VALUES (1, "test");
+	CREATE INDEX idx_s ON t (s);
+COMMIT;
+SELECT * FROM t WHERE s == "test";
+|li, ss
+[1 test]
