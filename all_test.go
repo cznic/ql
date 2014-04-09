@@ -2094,3 +2094,66 @@ func TestIssue28(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestIsPossiblyRewriteableCrossJoinWhereExpression(t *testing.T) {
+	db, err := OpenMem()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	table := []struct {
+		q string
+		e bool
+	}{
+		{"SELECT * FROM t WHERE !c", false},
+		{"SELECT * FROM t WHERE !t.c && 4 < !u.c", false},
+		{"SELECT * FROM t WHERE c && c", false},
+		{"SELECT * FROM t WHERE c && u.c", false},
+		{"SELECT * FROM t WHERE c == 42", false},
+		{"SELECT * FROM t WHERE c > 3", false},
+		{"SELECT * FROM t WHERE c", false},
+		{"SELECT * FROM t WHERE t.c && c", false},
+		{"SELECT * FROM t WHERE u.c == ^t.c", false},
+		{"SELECT * FROM t WHERE u.c == !t.c", false},
+		{"SELECT * FROM t WHERE false == ^t.c", false},
+		{"SELECT * FROM t WHERE false == !t.c", false}, //TODO make this work
+
+		{"SELECT * FROM t WHERE !t.c && 4 < u.c", true},
+		{"SELECT * FROM t WHERE !t.c", true},
+		{"SELECT * FROM t WHERE 3 < c", false},
+		{"SELECT * FROM t WHERE 3 < t.c", true},
+		{"SELECT * FROM t WHERE t.c && 4 < u.c", true},
+		{"SELECT * FROM t WHERE t.c && u.c && v.c > 0", true},
+		{"SELECT * FROM t WHERE t.c && u.c && v.c", true},
+		{"SELECT * FROM t WHERE t.c && u.c > 0 && v.c > 0", true},
+		{"SELECT * FROM t WHERE t.c && u.c", true},
+		{"SELECT * FROM t WHERE t.c > 0 && u.c && v.c", true},
+		{"SELECT * FROM t WHERE t.c > 0 && u.c > 0 && v.c > 0", true},
+		{"SELECT * FROM t WHERE t.c > 3 && 4 < u.c", true},
+		{"SELECT * FROM t WHERE t.c > 3 && u.c", true},
+		{"SELECT * FROM t WHERE t.c > 3", true},
+		{"SELECT * FROM t WHERE t.c", true},
+		{"SELECT * FROM t WHERE u.c == 42", true},
+		{"SELECT * FROM t WHERE false == t.c", true},
+	}
+
+	for i, test := range table {
+		q, e := test.q, test.e
+		l, err := Compile(q)
+		if err != nil {
+			t.Fatalf("%s\n%v", q, err)
+		}
+
+		rs, _, err := db.Execute(nil, l)
+		if err != nil {
+			t.Fatalf("%s\n%v", q, err)
+		}
+
+		r := rs[0].(recordset)
+		sel := r.rset.(*selectRset)
+		where := sel.src.(*whereRset)
+		if g := isPossiblyRewriteableCrossJoinWhereExpression(where.expr); g != e {
+			t.Fatalf("%d: %sg: %v e: %v", i, l, g, e)
+		}
+	}
+}

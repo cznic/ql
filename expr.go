@@ -42,6 +42,60 @@ type (
 	idealUint    uint64
 )
 
+func isPossiblyRewriteableCrossJoinWhereExpression(expr expression) bool {
+	switch x := expr.(type) {
+	case *ident:
+		return x.isQualified()
+	case *unaryOperation:
+		return x.isNotQIdent()
+	case *binaryOperation:
+		if x.isQIdentRelOpFixedValue() {
+			return true
+		}
+
+		if x.op != andand {
+			return false
+		}
+
+		switch r := x.r.(type) {
+		case *ident:
+			if !r.isQualified() {
+				return false
+			}
+		case *unaryOperation:
+			panic("TODO")
+			if !r.isNotQIdent() {
+				panic("TODO")
+				return false
+			}
+		case *binaryOperation:
+			if !r.isQIdentRelOpFixedValue() {
+				return false
+			}
+		}
+
+		switch l := x.l.(type) {
+		case *ident:
+			return l.isQualified()
+		case *unaryOperation:
+			return l.isNotQIdent()
+		case *binaryOperation:
+			if l.isQIdentRelOpFixedValue() {
+				return true
+			}
+
+			if l.op != andand {
+				panic("TODO")
+				return false
+			}
+
+			return isPossiblyRewriteableCrossJoinWhereExpression(l)
+		}
+	}
+	panic("TODO")
+	return false
+}
+
 type pexpr struct {
 	expr expression
 }
@@ -158,6 +212,38 @@ func newBinaryOperation(op int, x, y interface{}) (v expression, err error) {
 	val, err := b.eval(nil, nil)
 	return value{val}, err
 }
+
+func (o *binaryOperation) isRelOp() bool {
+	op := o.op
+	return op == '<' || op == le || op == eq || op == ge || op == '>'
+}
+
+// ident relOp fixedValue or vice versa
+func (o *binaryOperation) isQIdentRelOpFixedValue() bool {
+	if !o.isRelOp() {
+		return false
+	}
+
+	switch lhs := o.l.(type) {
+	case *ident:
+		if !lhs.isQualified() {
+			return false
+		}
+
+		switch o.r.(type) {
+		case *parameter, value:
+			return true
+		}
+	case *parameter, value:
+		id, ok := o.r.(*ident)
+		if ok && id.isQualified() {
+			return true
+		}
+	}
+	return false
+}
+
+func (o *binaryOperation) isBoolAnd() bool { return o.op == andand }
 
 func (o *binaryOperation) isStatic() bool { return o.l.isStatic() && o.r.isStatic() }
 
@@ -2680,6 +2766,8 @@ type ident struct {
 	s string
 }
 
+func (i *ident) isQualified() bool { return strings.Contains(i.s, ".") }
+
 func (i *ident) isStatic() bool { return false }
 
 func (i *ident) String() string { return i.s }
@@ -2826,6 +2914,16 @@ func newUnaryOperation(op int, x interface{}) (v expression, err error) {
 func (u *unaryOperation) isStatic() bool { return u.v.isStatic() }
 
 func (u *unaryOperation) String() string { return fmt.Sprintf("%s%s", iop(u.op), u.v) }
+
+// !ident
+func (u *unaryOperation) isNotQIdent() bool {
+	if u.op != '!' {
+		return false
+	}
+
+	id, ok := u.v.(*ident)
+	return ok && id.isQualified()
+}
 
 func (u *unaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{}) (r interface{}, err error) {
 	defer func() {
