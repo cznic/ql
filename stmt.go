@@ -710,7 +710,11 @@ type createIndexStmt struct {
 }
 
 func (s *createIndexStmt) String() string {
-	return fmt.Sprintf("CREATE INDEX %s ON %s (%s);", s.indexName, s.tableName, s.colName)
+	u := ""
+	if s.unique {
+		u = "UNIQUE "
+	}
+	return fmt.Sprintf("CREATE %sINDEX %s ON %s (%s);", u, s.indexName, s.tableName, s.colName)
 }
 
 func (s *createIndexStmt) exec(ctx *execCtx) (Recordset, error) {
