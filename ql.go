@@ -720,12 +720,15 @@ func (r *whereRset) tryUseIndex(ctx *execCtx, f func(id interface{}, data []inte
 }
 
 func (r *whereRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
+	//dbg("====")
 	if !onlyNames {
 		if ok, err := r.tryUseIndex(ctx, f); ok || err != nil {
+			//dbg("ok %t, err %v", ok, err)
 			return err
 		}
 	}
 
+	//dbg("not using indices")
 	m := map[interface{}]interface{}{}
 	var flds []*fld
 	ok := false
@@ -1106,6 +1109,33 @@ type crossJoinRset struct {
 	sources []interface{}
 }
 
+func (r *crossJoinRset) tables() []struct {
+	i            int
+	name, rename string
+} {
+	var ret []struct {
+		i            int
+		name, rename string
+	}
+	//dbg("---- %p", r)
+	for i, pair0 := range r.sources {
+		//dbg("%d/%d, %#v", i, len(r.sources), pair0)
+		pair := pair0.([]interface{})
+		altName := pair[1].(string)
+		switch x := pair[0].(type) {
+		case string: // table name
+			if altName == "" {
+				altName = x
+			}
+			ret = append(ret, struct {
+				i            int
+				name, rename string
+			}{i, x, altName})
+		}
+	}
+	return ret
+}
+
 func (r *crossJoinRset) String() string {
 	a := make([]string, len(r.sources))
 	for i, pair0 := range r.sources {
@@ -1147,8 +1177,10 @@ func (r *crossJoinRset) isSingleTable() (string, bool) {
 func (r *crossJoinRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
 	rsets := make([]rset, len(r.sources))
 	altNames := make([]string, len(r.sources))
+	//dbg(".... %p", r)
 	for i, pair0 := range r.sources {
 		pair := pair0.([]interface{})
+		//dbg("%d: %#v", len(pair), pair)
 		altName := pair[1].(string)
 		switch x := pair[0].(type) {
 		case string: // table name
@@ -1197,7 +1229,7 @@ func (r *crossJoinRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, 
 
 			ok = true
 			if !fldsSent {
-				f0 := in[0].([]*fld)
+				f0 := append([]*fld(nil), in[0].([]*fld)...)
 				q := altNames[iq]
 				for i, elem := range f0 {
 					nf := &fld{}

@@ -7462,3 +7462,79 @@ SELECT * FROM __Column WHERE TableName == "artist" ORDER BY TableName, Ordinal;
 |sTableName, lOrdinal, sName, sType
 [artist 1 id int64]
 [artist 2 name string]
+
+-- 642
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int, j int, k int);
+	INSERT INTO t VALUES
+		(1, 2, 3),
+		(4, 5, 6);
+	CREATE TABLE u (x int, y int, z int);
+	INSERT INTO u VALUES
+		(10, 20, 30),
+		(40, 50, 60);
+COMMIT;
+SELECT * FROM t, u WHERE u.y < 60 && t.k < 7;
+|lt.i, lt.j, lt.k, lu.x, lu.y, lu.z
+[4 5 6 40 50 60]
+[4 5 6 10 20 30]
+[1 2 3 40 50 60]
+[1 2 3 10 20 30]
+
+-- 643 // order -> xk used
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int, j int, k int);
+	CREATE INDEX xk ON t (k);
+	INSERT INTO t VALUES
+		(1, 2, 3),
+		(4, 5, 6);
+	CREATE TABLE u (x int, y int, z int);
+	INSERT INTO u VALUES
+		(10, 20, 30),
+		(40, 50, 60);
+COMMIT;
+SELECT * FROM t, u WHERE u.y < 60 && t.k < 7;
+|lt.i, lt.j, lt.k, lu.x, lu.y, lu.z
+[1 2 3 40 50 60]
+[1 2 3 10 20 30]
+[4 5 6 40 50 60]
+[4 5 6 10 20 30]
+
+-- 644 // order -> xy used
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int, j int, k int);
+	INSERT INTO t VALUES
+		(1, 2, 3),
+		(4, 5, 6);
+	CREATE TABLE u (x int, y int, z int);
+	CREATE INDEX xy ON u (y);
+	INSERT INTO u VALUES
+		(10, 20, 30),
+		(40, 50, 60);
+COMMIT;
+SELECT * FROM t, u WHERE u.y < 60 && t.k < 7;
+|lt.i, lt.j, lt.k, lu.x, lu.y, lu.z
+[4 5 6 10 20 30]
+[4 5 6 40 50 60]
+[1 2 3 10 20 30]
+[1 2 3 40 50 60]
+
+-- 645 // order -> both xk and xy used
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int, j int, k int);
+	CREATE INDEX xk ON t (k);
+	INSERT INTO t VALUES
+		(1, 2, 3),
+		(4, 5, 6);
+	CREATE TABLE u (x int, y int, z int);
+	CREATE INDEX xy ON u (y);
+	INSERT INTO u VALUES
+		(10, 20, 30),
+		(40, 50, 60);
+COMMIT;
+SELECT * FROM t, u WHERE u.y < 60 && t.k < 7;
+|lt.i, lt.j, lt.k, lu.x, lu.y, lu.z
+[1 2 3 10 20 30]
+[1 2 3 40 50 60]
+[4 5 6 10 20 30]
+[4 5 6 40 50 60]

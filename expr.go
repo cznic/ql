@@ -42,58 +42,52 @@ type (
 	idealUint    uint64
 )
 
-func isPossiblyRewriteableCrossJoinWhereExpression(expr expression) bool {
+type exprTab struct {
+	expr  expression
+	table string
+}
+
+func isPossiblyRewriteableCrossJoinWhereExpression(expr expression) (bool, []exprTab) {
+	//dbg("....\n\texpr %v", expr)
+	//defer func() { dbg("\t\t%v: %v %v", expr, TODOb, TODOl) }()
 	switch x := expr.(type) {
-	case *ident:
-		return x.isQualified()
-	case *unaryOperation:
-		return x.isNotQIdent()
 	case *binaryOperation:
-		if x.isQIdentRelOpFixedValue() {
-			return true
+		if ok, tab, nx := x.isQIdentRelOpFixedValue(); ok {
+			return true, []exprTab{{nx, tab}}
 		}
 
 		if x.op != andand {
-			return false
+			return false, nil
 		}
 
-		switch r := x.r.(type) {
-		case *ident:
-			if !r.isQualified() {
-				return false
-			}
-		case *unaryOperation:
-			panic("TODO")
-			if !r.isNotQIdent() {
-				panic("TODO")
-				return false
-			}
-		case *binaryOperation:
-			if !r.isQIdentRelOpFixedValue() {
-				return false
-			}
+		ok, rlist := isPossiblyRewriteableCrossJoinWhereExpression(x.r)
+		if !ok {
+			return false, nil
 		}
 
-		switch l := x.l.(type) {
-		case *ident:
-			return l.isQualified()
-		case *unaryOperation:
-			return l.isNotQIdent()
-		case *binaryOperation:
-			if l.isQIdentRelOpFixedValue() {
-				return true
-			}
-
-			if l.op != andand {
-				panic("TODO")
-				return false
-			}
-
-			return isPossiblyRewriteableCrossJoinWhereExpression(l)
+		ok, llist := isPossiblyRewriteableCrossJoinWhereExpression(x.l)
+		if !ok {
+			return false, nil
 		}
+
+		return true, append(llist, rlist...)
+	case *ident:
+		if !x.isQualified() {
+			return false, nil
+		}
+
+		return true, []exprTab{{&ident{mustSelector(x.s)}, mustQualifier(x.s)}}
+	case *unaryOperation:
+		ok, tab, nx := x.isNotQIdent()
+		if !ok {
+			return false, nil
+		}
+
+		return true, []exprTab{{nx, tab}}
+	default:
+		//dbg("%T: %v", x, x)
+		return false, nil
 	}
-	panic("TODO")
-	return false
 }
 
 type pexpr struct {
@@ -215,32 +209,53 @@ func newBinaryOperation(op int, x, y interface{}) (v expression, err error) {
 
 func (o *binaryOperation) isRelOp() bool {
 	op := o.op
-	return op == '<' || op == le || op == eq || op == ge || op == '>'
+	return op == '<' || op == le || op == eq || op == neq || op == ge || op == '>'
 }
 
-// ident relOp fixedValue or vice versa
-func (o *binaryOperation) isQIdentRelOpFixedValue() bool {
+// [!]qident relOp fixedValue or vice versa
+func (o *binaryOperation) isQIdentRelOpFixedValue() ( /* ok */ bool /* tableName */, string, expression) {
 	if !o.isRelOp() {
-		return false
+		return false, "", nil
 	}
 
 	switch lhs := o.l.(type) {
-	case *ident:
-		if !lhs.isQualified() {
-			return false
+	case *unaryOperation:
+		ok, tab, nx := lhs.isNotQIdent()
+		if !ok {
+			return false, "", nil
 		}
 
-		switch o.r.(type) {
+		switch rhs := o.r.(type) {
 		case *parameter, value:
-			return true
+			return true, tab, &binaryOperation{o.op, nx, rhs}
+		}
+	case *ident:
+		if !lhs.isQualified() {
+			return false, "", nil
+		}
+
+		switch rhs := o.r.(type) {
+		case *parameter, value:
+			return true, mustQualifier(lhs.s), &binaryOperation{o.op, &ident{mustSelector(lhs.s)}, rhs}
 		}
 	case *parameter, value:
-		id, ok := o.r.(*ident)
-		if ok && id.isQualified() {
-			return true
+		switch rhs := o.r.(type) {
+		case *ident:
+			if !rhs.isQualified() {
+				return false, "", nil
+			}
+
+			return true, mustQualifier(rhs.s), &binaryOperation{o.op, lhs, &ident{mustSelector(rhs.s)}}
+		case *unaryOperation:
+			ok, tab, nx := rhs.isNotQIdent()
+			if !ok {
+				return false, "", nil
+			}
+
+			return true, tab, &binaryOperation{o.op, lhs, nx}
 		}
 	}
-	return false
+	return false, "", nil
 }
 
 func (o *binaryOperation) isBoolAnd() bool { return o.op == andand }
@@ -2916,13 +2931,17 @@ func (u *unaryOperation) isStatic() bool { return u.v.isStatic() }
 func (u *unaryOperation) String() string { return fmt.Sprintf("%s%s", iop(u.op), u.v) }
 
 // !ident
-func (u *unaryOperation) isNotQIdent() bool {
+func (u *unaryOperation) isNotQIdent() (bool, string, expression) {
 	if u.op != '!' {
-		return false
+		return false, "", nil
 	}
 
 	id, ok := u.v.(*ident)
-	return ok && id.isQualified()
+	if ok && id.isQualified() {
+		return true, mustQualifier(id.s), &unaryOperation{'!', &ident{mustSelector(id.s)}}
+	}
+
+	return false, "", nil
 }
 
 func (u *unaryOperation) eval(ctx map[interface{}]interface{}, arg []interface{}) (r interface{}, err error) {

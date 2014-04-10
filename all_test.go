@@ -18,6 +18,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"runtime/debug"
+	"sort"
 	"strings"
 	"sync"
 	"testing"
@@ -2102,43 +2103,51 @@ func TestIsPossiblyRewriteableCrossJoinWhereExpression(t *testing.T) {
 	}
 
 	table := []struct {
-		q string
-		e bool
+		q     string
+		e     bool
+		slist string
 	}{
-		{"SELECT * FROM t WHERE !c", false},
-		{"SELECT * FROM t WHERE !t.c && 4 < !u.c", false},
-		{"SELECT * FROM t WHERE c && c", false},
-		{"SELECT * FROM t WHERE c && u.c", false},
-		{"SELECT * FROM t WHERE c == 42", false},
-		{"SELECT * FROM t WHERE c > 3", false},
-		{"SELECT * FROM t WHERE c", false},
-		{"SELECT * FROM t WHERE t.c && c", false},
-		{"SELECT * FROM t WHERE u.c == ^t.c", false},
-		{"SELECT * FROM t WHERE u.c == !t.c", false},
-		{"SELECT * FROM t WHERE false == ^t.c", false},
-		{"SELECT * FROM t WHERE false == !t.c", false}, //TODO make this work
-
-		{"SELECT * FROM t WHERE !t.c && 4 < u.c", true},
-		{"SELECT * FROM t WHERE !t.c", true},
-		{"SELECT * FROM t WHERE 3 < c", false},
-		{"SELECT * FROM t WHERE 3 < t.c", true},
-		{"SELECT * FROM t WHERE t.c && 4 < u.c", true},
-		{"SELECT * FROM t WHERE t.c && u.c && v.c > 0", true},
-		{"SELECT * FROM t WHERE t.c && u.c && v.c", true},
-		{"SELECT * FROM t WHERE t.c && u.c > 0 && v.c > 0", true},
-		{"SELECT * FROM t WHERE t.c && u.c", true},
-		{"SELECT * FROM t WHERE t.c > 0 && u.c && v.c", true},
-		{"SELECT * FROM t WHERE t.c > 0 && u.c > 0 && v.c > 0", true},
-		{"SELECT * FROM t WHERE t.c > 3 && 4 < u.c", true},
-		{"SELECT * FROM t WHERE t.c > 3 && u.c", true},
-		{"SELECT * FROM t WHERE t.c > 3", true},
-		{"SELECT * FROM t WHERE t.c", true},
-		{"SELECT * FROM t WHERE u.c == 42", true},
-		{"SELECT * FROM t WHERE false == t.c", true},
+		// 0
+		{"SELECT * FROM t WHERE !c", false, ""},
+		{"SELECT * FROM t WHERE !t.c && 4 < !u.c", true, "!c|4<!c"},
+		{"SELECT * FROM t WHERE !t.c && 4 < u.c", true, "!c|4<c"},
+		{"SELECT * FROM t WHERE !t.c", true, "!c"},
+		{"SELECT * FROM t WHERE 3 < c", false, ""},
+		// 5
+		{"SELECT * FROM t WHERE 3 < t.c", true, "3<c"},
+		{"SELECT * FROM t WHERE c && c", false, ""},
+		{"SELECT * FROM t WHERE c && u.c", false, ""},
+		{"SELECT * FROM t WHERE c == 42", false, ""},
+		{"SELECT * FROM t WHERE c > 3", false, ""},
+		// 10
+		{"SELECT * FROM t WHERE c", false, ""},
+		{"SELECT * FROM t WHERE false == !t.c", true, "false==!c"}, //TODO(indices) support !c relOp fixedValue (rewrite false==!c -> !c, true==c -> c, true != c -> !c, etc.)
+		{"SELECT * FROM t WHERE false == ^t.c", false, ""},
+		{"SELECT * FROM t WHERE false == t.c", true, "false==c"},
+		{"SELECT * FROM t WHERE t.c && 4 < u.c", true, "c|4<c"},
+		// 15
+		{"SELECT * FROM t WHERE t.c && c", false, ""},
+		{"SELECT * FROM t WHERE t.c && u.c && v.c > 0", true, "c|c|c>0"},
+		{"SELECT * FROM t WHERE t.c && u.c && v.c", true, "c|c|c"},
+		{"SELECT * FROM t WHERE t.c && u.c > 0 && v.c > 0", true, "c|c>0|c>0"},
+		{"SELECT * FROM t WHERE t.c && u.c", true, "c|c"},
+		// 20
+		{"SELECT * FROM t WHERE t.c < 3 && u.c > 2 && v.c != 42", true, "c<3|c>2|c!=42"},
+		{"SELECT * FROM t WHERE t.c > 0 && u.c && v.c", true, "c>0|c|c"},
+		{"SELECT * FROM t WHERE t.c > 0 && u.c > 0 && v.c > 0", true, "c>0|c>0|c>0"},
+		{"SELECT * FROM t WHERE t.c > 3 && 4 < u.c", true, "c>3|4<c"},
+		{"SELECT * FROM t WHERE t.c > 3 && u.c", true, "c>3|c"},
+		// 25
+		{"SELECT * FROM t WHERE t.c > 3", true, "c>3"},
+		{"SELECT * FROM t WHERE t.c", true, "c"},
+		{"SELECT * FROM t WHERE u.c == !t.c", false, ""},
+		{"SELECT * FROM t WHERE u.c == 42", true, "c==42"},
+		{"SELECT * FROM t WHERE u.c == ^t.c", false, ""},
 	}
 
 	for i, test := range table {
-		q, e := test.q, test.e
+		q, e, list := test.q, test.e, strings.Split(test.slist, "|")
+		sort.Strings(list)
 		l, err := Compile(q)
 		if err != nil {
 			t.Fatalf("%s\n%v", q, err)
@@ -2152,8 +2161,36 @@ func TestIsPossiblyRewriteableCrossJoinWhereExpression(t *testing.T) {
 		r := rs[0].(recordset)
 		sel := r.rset.(*selectRset)
 		where := sel.src.(*whereRset)
-		if g := isPossiblyRewriteableCrossJoinWhereExpression(where.expr); g != e {
+		g, glist := isPossiblyRewriteableCrossJoinWhereExpression(where.expr)
+		if g != e {
 			t.Fatalf("%d: %sg: %v e: %v", i, l, g, e)
 		}
+
+		if !g {
+			continue
+		}
+
+		a := []string{}
+		for _, v := range glist {
+			a = append(a, v.expr.String())
+		}
+		sort.Strings(a)
+		if g, e := len(glist), len(list); g != e {
+			t.Fatalf("%d: g: %v, e: %v", i, glist, list)
+		}
+
+		for j, g := range a {
+			if e := list[j]; g != e {
+				t.Fatalf("%d[%d]: g: %v e: %v", i, j, g, e)
+			}
+		}
 	}
+}
+
+func dumpFields(f []*fld) string {
+	a := []string{}
+	for _, v := range f {
+		a = append(a, fmt.Sprintf("%p: %q", v, v.name))
+	}
+	return strings.Join(a, ", ")
 }

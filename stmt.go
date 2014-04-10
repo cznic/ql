@@ -486,8 +486,58 @@ func (s *selectStmt) do(ctx *execCtx, onlyNames bool, f func(id interface{}, dat
 
 func (s *selectStmt) exec0() (r rset) { //LATER overlapping goroutines/pipelines
 	r = rset(s.from)
-	if s := s.where; s != nil {
-		r = &whereRset{expr: s.expr, src: r}
+	if w := s.where; w != nil {
+		switch ok, list := isPossiblyRewriteableCrossJoinWhereExpression(w.expr); ok && len(s.from.sources) > 1 {
+		case true:
+			//dbg("====(in, %d)\n%s\n----", len(list), s)
+			tables := s.from.tables()
+			if len(list) != len(tables) {
+				r = &whereRset{expr: w.expr, src: r}
+				break
+			}
+
+			m := map[string]int{}
+			for i, v := range tables {
+				m[v.name] = i
+			}
+			list2 := make([]int, len(list))
+			for i, v := range list {
+				itab, ok := m[v.table]
+				if !ok {
+					break
+				}
+
+				delete(m, v.table)
+				list2[i] = itab
+				if i == len(list)-1 { // last cycle
+					if len(m) != 0 { // all tabs "consumed" exactly once
+						break
+					}
+
+					// Can rewrite
+					crs := s.from
+					for i, v := range list {
+						sel := &selectStmt{
+							flds:  []*fld{}, // SELECT *
+							from:  &crossJoinRset{sources: []interface{}{[]interface{}{v.table, ""}}},
+							where: &whereRset{expr: v.expr},
+						}
+						info := tables[list2[i]]
+						crs.sources[info.i] = []interface{}{sel, info.rename}
+					}
+					r = rset(crs)
+					s.where = nil
+					//dbg("====(out)\n%s\n----", s)
+				}
+			}
+			if s.where == nil {
+				break
+			}
+
+			fallthrough
+		default:
+			r = &whereRset{expr: w.expr, src: r}
+		}
 	}
 	switch {
 	case !s.hasAggregates && s.group == nil: // nop

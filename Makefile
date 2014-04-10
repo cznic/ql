@@ -31,7 +31,7 @@ cover:
 cpu: ql.test
 	go test -c
 	./$< -test.bench . -test.cpuprofile cpu.out
-	go tool pprof $< cpu.out
+	go tool pprof --lines $< cpu.out
 
 editor: check scanner.go parser.go coerce.go
 	go fmt
@@ -45,7 +45,7 @@ internalError:
 mem: ql.test
 	go test -c
 	./$< -test.bench . -test.memprofile mem.out
-	go tool pprof $< mem.out
+	go tool pprof --lines --web --alloc_space $< mem.out
 
 nuke:
 	go clean -i

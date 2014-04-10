@@ -11,6 +11,7 @@ import (
 	"log"
 	"math"
 	"math/big"
+	"strings"
 	"time"
 )
 
@@ -2642,4 +2643,36 @@ var isSytemName = map[string]bool{
 	"__Column": true,
 	"__Index":  true,
 	"__Table":  true,
+}
+
+func qualifier(s string) string {
+	if pos := strings.IndexByte(s, '.'); pos >= 0 {
+		s = s[:pos]
+	}
+	return s
+}
+
+func mustQualifier(s string) string {
+	q := qualifier(s)
+	if q == s {
+		panic("internal error 068")
+	}
+
+	return q
+}
+
+func selector(s string) string {
+	if pos := strings.IndexByte(s, '.'); pos >= 0 {
+		s = s[pos+1:]
+	}
+	return s
+}
+
+func mustSelector(s string) string {
+	q := selector(s)
+	if q == s {
+		panic("internal error 069")
+	}
+
+	return q
 }

@@ -15,6 +15,8 @@
 //
 // Release notes
 //
+// 2014-04-10: Introduction of query rewriting.
+//
 // 2014-04-07: Introduction of indices.
 //
 // Notation
@@ -2024,13 +2026,16 @@
 // equality operator both operands must be of comparable types. For all other
 // operators both operands must be of ordered types. The constant expression is
 // a compile time constant expression. Some constant folding is still a TODO.
-// Parameter is a QL parameter ($1 etc.).  The limited set of index-use
-// patterns currently requires hand optimization of some cases. For example,
-// consider tables t and u, both with an indexed field f. The statement
+// Parameter is a QL parameter ($1 etc.).
+//
+// Query rewriting
+//
+// Consider tables t and u, both with an indexed field f. The WHERE expression
+// doesn't comply with the above simple detected cases.
 //
 //	SELECT * FROM t, u WHERE t.f < x && u.f < y;
 //
-// will not yet use the indices. However it can be manually rewritten as
+// However, such query is now automatically rewritten to
 //
 //	SELECT * FROM
 //		(SELECT * FROM t WHERE f < x),
