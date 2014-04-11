@@ -7538,3 +7538,342 @@ SELECT * FROM t, u WHERE u.y < 60 && t.k < 7;
 [1 2 3 40 50 60]
 [4 5 6 10 20 30]
 [4 5 6 40 50 60]
+
+-- 646 // https://github.com/cznic/ql/issues/41
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+COMMIT;
+SELECT * FROM t OFFSET -1; // no rows -> not evaluated
+|?i
+
+-- 647 // https://github.com/cznic/ql/issues/41
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+COMMIT;
+SELECT * FROM t OFFSET 0; // no rows -> not evaluated
+|?i
+
+-- 648 // https://github.com/cznic/ql/issues/41
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+COMMIT;
+SELECT * FROM t OFFSET 1; // no rows -> not evaluated
+|?i
+
+-- 649 // https://github.com/cznic/ql/issues/41
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(42), (24);
+COMMIT;
+SELECT * FROM t ORDER BY id() OFFSET -1;
+||invalid .* -1 .*must.* non-negative
+
+-- 650 // https://github.com/cznic/ql/issues/41
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(42), (24);
+COMMIT;
+SELECT * FROM t ORDER BY id() OFFSET 0;
+|li
+[42]
+[24]
+
+-- 651 // https://github.com/cznic/ql/issues/41
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(42), (24);
+COMMIT;
+SELECT * FROM t ORDER BY id() OFFSET 1;
+|li
+[24]
+
+-- 652 // https://github.com/cznic/ql/issues/41
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(42), (24);
+COMMIT;
+SELECT * FROM t ORDER BY id() OFFSET 2;
+|?i
+
+-- 653 // https://github.com/cznic/ql/issues/41
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+COMMIT;
+SELECT * FROM t ORDER BY id() LIMIT -1; // no rows -> not evaluated
+|?i
+
+-- 654 // https://github.com/cznic/ql/issues/41
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+COMMIT;
+SELECT * FROM t ORDER BY id() LIMIT 0; // no rows -> not evaluated
+|?i
+
+-- 655 // https://github.com/cznic/ql/issues/41
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+COMMIT;
+SELECT * FROM t ORDER BY id() LIMIT 1; // no rows -> not evaluated
+|?i
+
+-- 656 // https://github.com/cznic/ql/issues/41
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(42), (24);
+COMMIT;
+SELECT * FROM t ORDER BY id() LIMIT -1;
+||invalid .* -1 .*must.* non-negative
+
+-- 657 // https://github.com/cznic/ql/issues/41
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(42), (24);
+COMMIT;
+SELECT * FROM t ORDER BY id() LIMIT 0;
+|?i
+
+-- 658 // https://github.com/cznic/ql/issues/41
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(42), (24);
+COMMIT;
+SELECT * FROM t ORDER BY id() LIMIT 1;
+|li
+[42]
+
+-- 659 // https://github.com/cznic/ql/issues/41
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(42), (24);
+COMMIT;
+SELECT * FROM t ORDER BY id() LIMIT 2;
+|li
+[42]
+[24]
+
+-- 660 // https://github.com/cznic/ql/issues/41
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(42), (24);
+COMMIT;
+SELECT * FROM t ORDER BY id() LIMIT 3;
+|li
+[42]
+[24]
+
+-- 661 // https://github.com/cznic/ql/issues/41
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(42), (24);
+COMMIT;
+SELECT * FROM t ORDER BY id() LIMIT 0 OFFSET 0;
+|?i
+
+-- 662 // https://github.com/cznic/ql/issues/41
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(42), (24);
+COMMIT;
+SELECT * FROM t ORDER BY id() LIMIT 0 OFFSET 1;
+|?i
+
+-- 663 // https://github.com/cznic/ql/issues/41
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(42), (24);
+COMMIT;
+SELECT * FROM t ORDER BY id() LIMIT 0 OFFSET 2;
+|?i
+
+-- 664 // https://github.com/cznic/ql/issues/41
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(42), (24);
+COMMIT;
+SELECT * FROM t ORDER BY id() LIMIT 0 OFFSET 3;
+|?i
+
+-- 665 // https://github.com/cznic/ql/issues/41
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(42), (24);
+COMMIT;
+SELECT * FROM t ORDER BY id() LIMIT 1 OFFSET 0;
+|li
+[42]
+
+-- 666 // https://github.com/cznic/ql/issues/41
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(42), (24);
+COMMIT;
+SELECT * FROM t ORDER BY id() LIMIT 1 OFFSET 1;
+|li
+[24]
+
+-- 667 // https://github.com/cznic/ql/issues/41
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(42), (24);
+COMMIT;
+SELECT * FROM t ORDER BY id() LIMIT 1 OFFSET 2;
+|?i
+
+-- 668 // https://github.com/cznic/ql/issues/41
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(42), (24);
+COMMIT;
+SELECT * FROM t ORDER BY id() LIMIT 1 OFFSET 3;
+|?i
+
+-- 669 // https://github.com/cznic/ql/issues/41
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(42), (24);
+COMMIT;
+SELECT * FROM t ORDER BY id() LIMIT 2 OFFSET 0;
+|li
+[42]
+[24]
+
+-- 670 // https://github.com/cznic/ql/issues/41
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(42), (24);
+COMMIT;
+SELECT * FROM t ORDER BY id() LIMIT 2 OFFSET 1;
+|li
+[24]
+
+-- 671 // https://github.com/cznic/ql/issues/41
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(42), (24);
+COMMIT;
+SELECT * FROM t ORDER BY id() LIMIT 2 OFFSET 2;
+|?i
+
+-- 672 // https://github.com/cznic/ql/issues/41
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(42), (24);
+COMMIT;
+SELECT * FROM t ORDER BY id() LIMIT 2 OFFSET 3;
+|?i
+
+-- 673 // https://github.com/cznic/ql/issues/41
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(42), (24);
+COMMIT;
+SELECT * FROM t ORDER BY id() LIMIT 3 OFFSET 0;
+|li
+[42]
+[24]
+
+-- 674 // https://github.com/cznic/ql/issues/41
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(42), (24);
+COMMIT;
+SELECT * FROM t ORDER BY id() LIMIT 3 OFFSET 1;
+|li
+[24]
+
+-- 675 // https://github.com/cznic/ql/issues/41
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(42), (24);
+COMMIT;
+SELECT * FROM t ORDER BY id() LIMIT 3 OFFSET 2;
+|?i
+
+-- 676 // https://github.com/cznic/ql/issues/41
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(42), (24);
+COMMIT;
+SELECT * FROM t ORDER BY id() LIMIT 3 OFFSET 3;
+|?i
+
+-- 677 // https://github.com/cznic/ql/issues/41
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(1), (2), (3);
+	CREATE TABLE u (i int);
+	INSERT INTO u VALUES(10), (20), (30);
+COMMIT;
+SELECT * FROM
+	(SELECT * FROM t ORDER BY i LIMIT 2 OFFSET 1;) AS a,
+	(SELECT * FROM u ORDER BY i) AS b,
+ORDER BY a.i, b.i;
+|la.i, lb.i
+[2 10]
+[2 20]
+[2 30]
+[3 10]
+[3 20]
+[3 30]
+
+-- 678 // https://github.com/cznic/ql/issues/41
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(1), (2), (3);
+	CREATE TABLE u (i int);
+	INSERT INTO u VALUES(10), (20), (30);
+COMMIT;
+SELECT * FROM
+	(SELECT * FROM t ORDER BY i LIMIT 2 OFFSET 1;) AS a,
+	(SELECT * FROM u ORDER BY i OFFSET 1) AS b,
+ORDER BY a.i, b.i;
+|la.i, lb.i
+[2 20]
+[2 30]
+[3 20]
+[3 30]
+
+-- 679 // https://github.com/cznic/ql/issues/41
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(1), (2), (3);
+	CREATE TABLE u (i int);
+	INSERT INTO u VALUES(10), (20), (30);
+COMMIT;
+SELECT * FROM
+	(SELECT * FROM t ORDER BY i LIMIT 2 OFFSET 1;) AS a,
+	(SELECT * FROM u ORDER BY i LIMIT 1) AS b,
+ORDER BY a.i, b.i;
+|la.i, lb.i
+[2 10]
+[3 10]
+
+-- 680 // https://github.com/cznic/ql/issues/41
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(1), (2), (3);
+	CREATE TABLE u (i int);
+	INSERT INTO u VALUES(10), (20), (30);
+COMMIT;
+SELECT * FROM
+	(SELECT * FROM t ORDER BY i LIMIT 2 OFFSET 1;) AS a,
+	(SELECT * FROM u ORDER BY i LIMIT 1 OFFSET 1) AS b,
+ORDER BY a.i, b.i;
+|la.i, lb.i
+[2 20]
+[3 20]
+
+-- 681 // https://github.com/cznic/ql/issues/41
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(1), (2), (3);
+	CREATE TABLE u (i int);
+	INSERT INTO u VALUES(10), (20), (30);
+COMMIT;
+SELECT * FROM
+	(SELECT * FROM t ORDER BY i LIMIT 2 OFFSET 1;) AS a,
+	(SELECT * FROM u ORDER BY i LIMIT 1 OFFSET 1) AS b,
+ORDER BY a.i, b.i
+LIMIT 1;
+|la.i, lb.i
+[2 20]

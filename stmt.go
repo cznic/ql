@@ -434,12 +434,14 @@ func (s *alterTableAddStmt) exec(ctx *execCtx) (Recordset, error) {
 func (s *alterTableAddStmt) isUpdating() bool { return true }
 
 type selectStmt struct {
-	mu            sync.Mutex
 	distinct      bool
 	flds          []*fld
 	from          *crossJoinRset
 	group         *groupByRset
 	hasAggregates bool
+	limit         *limitRset
+	mu            sync.Mutex
+	offset        *offsetRset
 	order         *orderByRset
 	where         *whereRset
 }
@@ -477,6 +479,14 @@ func (s *selectStmt) String() string {
 	if s.order != nil {
 		b.WriteString(" ORDER BY ")
 		b.WriteString(s.order.String())
+	}
+	if s.limit != nil {
+		b.WriteString(" LIMIT ")
+		b.WriteString(s.limit.expr.String())
+	}
+	if s.offset != nil {
+		b.WriteString(" OFFSET ")
+		b.WriteString(s.offset.expr.String())
 	}
 	b.WriteRune(';')
 	return b.String()
@@ -558,6 +568,12 @@ func (s *selectStmt) exec0() (r rset) { //LATER overlapping goroutines/pipelines
 	}
 	if s := s.order; s != nil {
 		r = &orderByRset{asc: s.asc, by: s.by, src: r}
+	}
+	if s := s.offset; s != nil {
+		r = &offsetRset{s.expr, r}
+	}
+	if s := s.limit; s != nil {
+		r = &limitRset{s.expr, r}
 	}
 	return
 }

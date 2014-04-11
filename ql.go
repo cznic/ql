@@ -33,6 +33,8 @@ var (
 	_ rset = (*crossJoinRset)(nil)
 	_ rset = (*distinctRset)(nil)
 	_ rset = (*groupByRset)(nil)
+	_ rset = (*limitRset)(nil)
+	_ rset = (*offsetRset)(nil)
 	_ rset = (*orderByRset)(nil)
 	_ rset = (*selectRset)(nil)
 	_ rset = (*selectStmt)(nil)
@@ -759,6 +761,105 @@ func (r *whereRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, data
 			}
 
 			return f(rid, in)
+		}
+
+		flds = in[0].([]*fld)
+		ok = true
+		m, err := f(nil, in)
+		return m && !onlyNames, err
+	})
+}
+
+type offsetRset struct {
+	expr expression
+	src  rset
+}
+
+func (r *offsetRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
+	m := map[interface{}]interface{}{}
+	var flds []*fld
+	var ok, eval bool
+	var off uint64
+	return r.src.do(ctx, onlyNames, func(rid interface{}, in []interface{}) (more bool, err error) {
+		if ok {
+			if !eval {
+				for i, fld := range flds {
+					if nm := fld.name; nm != "" {
+						m[nm] = in[i]
+					}
+				}
+				m["$id"] = rid
+				val, err := r.expr.eval(m, ctx.arg)
+				if err != nil {
+					return false, err
+				}
+
+				if val == nil {
+					return true, nil
+				}
+
+				if off, err = limOffExpr(val); err != nil {
+					return false, err
+				}
+
+				eval = true
+			}
+			if off > 0 {
+				off--
+				return true, nil
+			}
+
+			return f(rid, in)
+		}
+
+		flds = in[0].([]*fld)
+		ok = true
+		m, err := f(nil, in)
+		return m && !onlyNames, err
+	})
+}
+
+type limitRset struct {
+	expr expression
+	src  rset
+}
+
+func (r *limitRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
+	m := map[interface{}]interface{}{}
+	var flds []*fld
+	var ok, eval bool
+	var lim uint64
+	return r.src.do(ctx, onlyNames, func(rid interface{}, in []interface{}) (more bool, err error) {
+		if ok {
+			if !eval {
+				for i, fld := range flds {
+					if nm := fld.name; nm != "" {
+						m[nm] = in[i]
+					}
+				}
+				m["$id"] = rid
+				val, err := r.expr.eval(m, ctx.arg)
+				if err != nil {
+					return false, err
+				}
+
+				if val == nil {
+					return true, nil
+				}
+
+				if lim, err = limOffExpr(val); err != nil {
+					return false, err
+				}
+
+				eval = true
+			}
+			switch lim {
+			case 0:
+				return false, nil
+			default:
+				lim--
+				return f(rid, in)
+			}
 		}
 
 		flds = in[0].([]*fld)

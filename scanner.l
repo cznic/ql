@@ -157,7 +157,9 @@ index		{i}{n}{d}{e}{x}
 insert		{i}{n}{s}{e}{r}{t}
 into		{i}{n}{t}{o}
 is		{i}{s}
+limit           {l}{i}{m}{i}{t}
 not		{n}{o}{t}
+offset          {o}{f}{f}{s}{e}{t}
 on		{o}{n}
 order		{o}{r}{d}{e}{r}
 rollback	{r}{o}{l}{l}{b}{a}{c}{k}
@@ -260,7 +262,9 @@ ident		{idchar0}{idchars}*
 {into}			return into
 {in}			return in
 {is}			return is
+{limit}                 return limit
 {not}			return not
+{offset}                return offset
 {on}			return on
 {order}			return order
 {rollback}		return rollback

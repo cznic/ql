@@ -1358,7 +1358,7 @@
 // clause.
 //
 //  SelectStmt = "SELECT" [ "DISTINCT" ] ( "*" | FieldList ) "FROM" RecordSetList
-//  	[ WhereClause ] [ GroupByClause ] [ OrderBy ] .
+//  	[ WhereClause ] [ GroupByClause ] [ OrderBy ] [ Limit ] [ Offset ].
 //
 //  RecordSet = ( TableName | "(" SelectStmt [ ";" ] ")" ) [ "AS" identifier ] .
 //  RecordSetList = RecordSet { "," RecordSet } [ "," ] .
@@ -1493,20 +1493,77 @@
 //
 //  GroupByClause = "GROUP BY" ColumnNameList .
 //
+// Skipping records
+//
+// The optional OFFSET clause allows to ignore first N records.  For example
+//
+//	SELECT * FROM t OFFSET 10;
+//
+// The above will produce only rows 11, 12, ... of the record set, if they
+// exist. The value of the expression must a non negative integer, but not
+// bigint or duration.
+//
+//  Offset = "OFFSET" Expression .
+//
+// Limiting the result set size
+//
+// The optional LIMIT clause allows to ignore all but first N records.  For
+// example
+//
+//	SELECT * FROM t LIMIT 10;
+//
+// The above will return at most the first 10 records of the record set. The
+// value of the expression must a non negative integer, but not bigint or
+// duration.
+//
+//  Limit = "Limit" Expression .
+//
+// The LIMIT and OFFSET clauses can be combined. For example
+//
+//	SELECT * FROM t LIMIT 5 OFFSET 3;
+//
+// Considering table t has, say 10 records, the above will produce only records
+// 4 - 8.
+//
+//	#1:	Ignore 1/3
+//	#2:	Ignore 2/3
+//	#3:	Ignore 3/3
+//	#4:	Return 1/5
+//	#4:	Return 2/5
+//	#6:	Return 3/5
+//	#7:	Return 4/5
+//	#8:	Return 5/5
+//
+// After returning record #8, no more result rows/records are computed.
+//
 // Select statement evaluation order
 //
 // 1. The FROM clause is evaluated, producing a Cartesian product of its source
 // record sets (tables or nested SELECT statements).
 //
-// 2. If present, the WHERE clause is evaluated.
+// 2. If present, the WHERE clause is evaluated on the result set of the
+// previous evaluation.
 //
-// 3. If present, the GROUP BY clause is evaluated.
+// 3. If present, the GROUP BY clause is evaluated on the result set of the
+// previous evaluation(s).
 //
-// 4. The SELECT field expressions are evaluated.
+// 4. The SELECT field expressions are evaluated on the result set of the
+// previous evaluation(s).
 //
-// 5. If present, the DISTINCT modifier is evaluated.
+// 5. If present, the DISTINCT modifier is evaluated on the result set of the
+// previous evaluation(s).
 //
-// 6. If present, the ORDER BY clause is evaluated.
+// 6. If present, the ORDER BY clause is evaluated on the result set of the
+// previous evaluation(s).
+//
+// 7. If present, the OFFSET clause is evaluated on the result set of the
+// previous evaluation(s). The offset expression is evaluated once for the
+// first record produced by the previous evaluations.
+//
+// 8. If present, the LIMIT clause is evaluated on the result set of the
+// previous evaluation(s). The limit expression is evaluated once for the first
+// record produced by the previous evaluations.
+//
 //
 // TRUNCATE TABLE
 //

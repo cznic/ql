@@ -100,6 +100,7 @@ IndexName = identifier .
 InsertIntoStmt = "INSERT" "INTO" TableName [
 		 "(" ColumnNameList ")"
 	  ] ( Values | SelectStmt ) .
+Limit = "Limit" Expression .
 Literal = "FALSE"
 	| "NULL"
 	| "TRUE"
@@ -109,6 +110,7 @@ Literal = "FALSE"
 	| rune_lit
 	| string_lit
 	| ql_parameter .
+Offset = "OFFSET" Expression .
 Operand = Literal
 	| QualifiedIdent
 	| "(" Expression ")" .
@@ -150,7 +152,7 @@ RecordSet = (
 	  ) [ "AS" identifier ] .
 RecordSetList = RecordSet { "," RecordSet } [ "," ] .
 RollbackStmt = "ROLLBACK" .
-SelectStmt = "SELECT" [ "DISTINCT" ] ( "*" | FieldList ) "FROM" RecordSetList [ WhereClause ] [ GroupByClause ] [ OrderBy ] .
+SelectStmt = "SELECT" [ "DISTINCT" ] ( "*" | FieldList ) "FROM" RecordSetList [ WhereClause ] [ GroupByClause ] [ OrderBy ] [ Limit ] [ Offset ] .
 Slice = "[" [ Expression ] ":" [ Expression ] "]" .
 Statement = EmptyStmt
 	| AlterTableStmt

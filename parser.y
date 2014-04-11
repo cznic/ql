@@ -40,9 +40,9 @@ import (
 	ge group
 	identifier ifKwd imaginaryLit in index insert intType int16Type
 	int32Type int64Type int8Type into intLit is
-	le lsh 
+	le limit lsh 
 	neq not null
-	on order oror
+	offset on order oror
 	qlParam
 	rollback rsh runeType
 	selectKwd stringType stringLit
@@ -83,9 +83,9 @@ import (
 	QualifiedIdent
 	PrimaryExpression PrimaryFactor PrimaryTerm
 	RecordSet RecordSet1 RecordSet2 RollbackStmt
-	SelectStmt SelectStmtDistinct SelectStmtFieldList
-	SelectStmtWhere SelectStmtGroup SelectStmtOrder Slice Statement
-	StatementList
+	SelectStmt SelectStmtDistinct SelectStmtFieldList SelectStmtLimit
+	SelectStmtWhere SelectStmtGroup SelectStmtOffset SelectStmtOrder Slice
+	Statement StatementList
 	TableName Term TruncateTableStmt Type
 	UnaryExpr UpdateStmt UpdateStmt1
 	WhereClause
@@ -755,7 +755,8 @@ RollbackStmt:
 	}
 
 SelectStmt:
-	selectKwd SelectStmtDistinct SelectStmtFieldList from RecordSetList SelectStmtWhere SelectStmtGroup SelectStmtOrder
+	selectKwd SelectStmtDistinct SelectStmtFieldList from RecordSetList
+	SelectStmtWhere SelectStmtGroup SelectStmtOrder SelectStmtLimit SelectStmtOffset
 	{
 		x := yylex.(*lexer)
 		n := len(x.agg)
@@ -767,10 +768,13 @@ SelectStmt:
 			where:         $6.(*whereRset),
 			group:         $7.(*groupByRset),
 			order:         $8.(*orderByRset),
+			limit:         $9.(*limitRset),
+			offset:        $10.(*offsetRset),
 		}
 		x.agg = x.agg[:n-1]
 	}
-|	selectKwd SelectStmtDistinct SelectStmtFieldList from RecordSetList ',' SelectStmtWhere SelectStmtGroup SelectStmtOrder
+|	selectKwd SelectStmtDistinct SelectStmtFieldList from RecordSetList ','
+	SelectStmtWhere SelectStmtGroup SelectStmtOrder SelectStmtLimit SelectStmtOffset
 	{
 		x := yylex.(*lexer)
 		n := len(x.agg)
@@ -782,8 +786,28 @@ SelectStmt:
 			where:         $7.(*whereRset),
 			group:         $8.(*groupByRset),
 			order:         $9.(*orderByRset),
+			limit:         $10.(*limitRset),
+			offset:        $11.(*offsetRset),
 		}
 		x.agg = x.agg[:n-1]
+	}
+
+SelectStmtLimit:
+	{
+		$$ = (*limitRset)(nil)
+	}
+|	limit Expression
+	{
+		$$ = &limitRset{expr: $2.(expression)}
+	}
+
+SelectStmtOffset:
+	{
+		$$ = (*offsetRset)(nil)
+	}
+|	offset Expression
+	{
+		$$ = &offsetRset{expr: $2.(expression)}
 	}
 
 SelectStmtDistinct:

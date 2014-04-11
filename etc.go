@@ -88,6 +88,10 @@ func invNegX(x interface{}) error {
 	return fmt.Errorf("invalid string index %v (index must be non-negative)", x)
 }
 
+func invNegLO(x interface{}) error {
+	return fmt.Errorf("invalid LIMIT or OFFSET value %v (must be non-negative)", x)
+}
+
 func invSliceNegX(x interface{}) error {
 	return fmt.Errorf("invalid slice index %v (index must be non-negative)", x)
 }
@@ -98,6 +102,63 @@ func invBoundX(s string, x uint64) error {
 
 func invSliceBoundX(s string, x uint64) error {
 	return fmt.Errorf("invalid slice index %d (out of bounds for %d-byte string)", x, len(s))
+}
+
+func limOffExpr(x interface{}) (i uint64, err error) {
+	switch x := x.(type) {
+	case idealInt:
+		if x < 0 {
+			return 0, invNegLO(x)
+		}
+
+		return uint64(x), nil
+	case idealRune:
+		if x < 0 {
+			return 0, invNegLO(x)
+		}
+
+		return uint64(x), nil
+	case idealUint:
+		if x < 0 {
+			return 0, invNegLO(x)
+		}
+
+		return uint64(x), nil
+	case int8:
+		if x < 0 {
+			return 0, invNegLO(x)
+		}
+
+		return uint64(x), nil
+	case int16:
+		if x < 0 {
+			return 0, invNegLO(x)
+		}
+
+		return uint64(x), nil
+	case int32:
+		if x < 0 {
+			return 0, invNegLO(x)
+		}
+
+		return uint64(x), nil
+	case int64:
+		if x < 0 {
+			return 0, invNegLO(x)
+		}
+
+		return uint64(x), nil
+	case uint8:
+		return uint64(x), nil
+	case uint16:
+		return uint64(x), nil
+	case uint32:
+		return uint64(x), nil
+	case uint64:
+		return uint64(x), nil
+	default:
+		return 0, fmt.Errorf("non-integer used in LIMIT or OFFSET: %v (value of type %T)", x, x)
+	}
 }
 
 func indexExpr(s *string, x interface{}) (i uint64, err error) {
