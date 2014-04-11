@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"sync"
 )
 
 // NOTE: all stmt implementations must be safe for concurrent use by multiple
@@ -433,6 +434,7 @@ func (s *alterTableAddStmt) exec(ctx *execCtx) (Recordset, error) {
 func (s *alterTableAddStmt) isUpdating() bool { return true }
 
 type selectStmt struct {
+	mu            sync.Mutex
 	distinct      bool
 	flds          []*fld
 	from          *crossJoinRset
@@ -485,6 +487,8 @@ func (s *selectStmt) do(ctx *execCtx, onlyNames bool, f func(id interface{}, dat
 }
 
 func (s *selectStmt) exec0() (r rset) { //LATER overlapping goroutines/pipelines
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	r = rset(s.from)
 	if w := s.where; w != nil {
 		switch ok, list := isPossiblyRewriteableCrossJoinWhereExpression(w.expr); ok && len(s.from.sources) > 1 {
