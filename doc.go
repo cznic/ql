@@ -15,7 +15,7 @@
 //
 // Change list
 //
-// 2014-04-10: Introduction of LIMIT, OFFSET.
+// 2014-04-11: Introduction of LIMIT, OFFSET.
 //
 // 2014-04-10: Introduction of query rewriting.
 //
