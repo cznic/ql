@@ -13,7 +13,9 @@
 // QL is a SQL-like language. It is less complex and less powerful than SQL
 // (whichever specification SQL is considered to be).
 //
-// Release notes
+// Change list
+//
+// 2014-04-10: Introduction of LIMIT, OFFSET.
 //
 // 2014-04-10: Introduction of query rewriting.
 //
