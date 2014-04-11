@@ -796,7 +796,7 @@ yydefault:
 				return 1
 			}
 
-			if isSytemName[indexName] || isSytemName[tableName] {
+			if isSystemName[indexName] || isSystemName[tableName] {
 				yylex.(*lexer).err("name is used for system tables: %s", indexName)
 				return 1
 			}
@@ -816,7 +816,7 @@ yydefault:
 				return 1
 			}
 
-			if isSytemName[indexName] || isSytemName[tableName] {
+			if isSystemName[indexName] || isSystemName[tableName] {
 				yylex.(*lexer).err("name is used for system tables: %s", indexName)
 				return 1
 			}
@@ -836,7 +836,7 @@ yydefault:
 		{
 			nm := yyS[yypt-5].item.(string)
 			yyVAL.item = &createTableStmt{tableName: nm, cols: append([]*col{yyS[yypt-3].item.(*col)}, yyS[yypt-2].item.([]*col)...)}
-			if isSytemName[nm] {
+			if isSystemName[nm] {
 				yylex.(*lexer).err("name is used for system tables: %s", nm)
 				return 1
 			}
@@ -846,7 +846,7 @@ yydefault:
 		{
 			nm := yyS[yypt-5].item.(string)
 			yyVAL.item = &createTableStmt{ifNotExists: true, tableName: nm, cols: append([]*col{yyS[yypt-3].item.(*col)}, yyS[yypt-2].item.([]*col)...)}
-			if isSytemName[nm] {
+			if isSystemName[nm] {
 				yylex.(*lexer).err("name is used for system tables: %s", nm)
 				return 1
 			}
@@ -881,7 +881,7 @@ yydefault:
 		{
 			nm := yyS[yypt-0].item.(string)
 			yyVAL.item = &dropTableStmt{tableName: nm}
-			if isSytemName[nm] {
+			if isSystemName[nm] {
 				yylex.(*lexer).err("name is used for system tables: %s", nm)
 				return 1
 			}
@@ -891,7 +891,7 @@ yydefault:
 		{
 			nm := yyS[yypt-0].item.(string)
 			yyVAL.item = &dropTableStmt{ifExists: true, tableName: nm}
-			if isSytemName[nm] {
+			if isSystemName[nm] {
 				yylex.(*lexer).err("name is used for system tables: %s", nm)
 				return 1
 			}

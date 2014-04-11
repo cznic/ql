@@ -573,7 +573,7 @@
 //
 // 	s[x]
 //
-// denotes the element of a string indexed by x. It's type is byte. The value x
+// denotes the element of a string indexed by x. Its type is byte. The value x
 // is called the index.  The following rules apply
 //
 // - The index x must be of integer type except bigint or duration; it is in

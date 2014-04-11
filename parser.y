@@ -202,7 +202,7 @@ CreateIndexStmt:
 			return 1
 		}
 
-		if isSytemName[indexName] || isSytemName[tableName] {
+		if isSystemName[indexName] || isSystemName[tableName] {
 			yylex.(*lexer).err("name is used for system tables: %s", indexName)
 			return 1
 		}
@@ -221,7 +221,7 @@ CreateIndexStmt:
 			return 1
 		}
 
-		if isSytemName[indexName] || isSytemName[tableName] {
+		if isSystemName[indexName] || isSystemName[tableName] {
 			yylex.(*lexer).err("name is used for system tables: %s", indexName)
 			return 1
 		}
@@ -241,7 +241,7 @@ CreateTableStmt:
 	{
 		nm := $3.(string)
 		$$ = &createTableStmt{tableName: nm, cols: append([]*col{$5.(*col)}, $6.([]*col)...)}
-		if isSytemName[nm] {
+		if isSystemName[nm] {
 			yylex.(*lexer).err("name is used for system tables: %s", nm)
 			return 1
 		}
@@ -250,7 +250,7 @@ CreateTableStmt:
 	{
 		nm := $6.(string)
 		$$ = &createTableStmt{ifNotExists: true, tableName: nm, cols: append([]*col{$8.(*col)}, $9.([]*col)...)}
-		if isSytemName[nm] {
+		if isSystemName[nm] {
 			yylex.(*lexer).err("name is used for system tables: %s", nm)
 			return 1
 		}
@@ -291,7 +291,7 @@ DropTableStmt:
 	{
 		nm := $3.(string)
 		$$ = &dropTableStmt{tableName: nm}
-		if isSytemName[nm] {
+		if isSystemName[nm] {
 			yylex.(*lexer).err("name is used for system tables: %s", nm)
 			return 1
 		}
@@ -300,7 +300,7 @@ DropTableStmt:
 	{
 		nm := $5.(string)
 		$$ = &dropTableStmt{ifExists: true, tableName: nm}
-		if isSytemName[nm] {
+		if isSystemName[nm] {
 			yylex.(*lexer).err("name is used for system tables: %s", nm)
 			return 1
 		}

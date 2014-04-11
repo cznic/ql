@@ -2639,7 +2639,7 @@ func isOrderedType(v interface{}) (y interface{}, r bool, err error) {
 	return v, false, nil
 }
 
-var isSytemName = map[string]bool{
+var isSystemName = map[string]bool{
 	"__Column": true,
 	"__Index":  true,
 	"__Table":  true,

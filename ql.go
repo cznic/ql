@@ -592,7 +592,7 @@ func (r *whereRset) tryUseIndex(ctx *execCtx, f func(id interface{}, data []inte
 	}
 
 	tabName, ok := c.isSingleTable()
-	if !ok || isSytemName[tabName] {
+	if !ok || isSystemName[tabName] {
 		return false, nil
 	}
 
