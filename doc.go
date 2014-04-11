@@ -141,16 +141,16 @@
 //
 // The following keywords are reserved and may not be used as identifiers.
 //
-//	ADD      BY          duration  INDEX   ON        uint32
-//	ALTER    byte        EXISTS    INSERT  ORDER     uint64
-//	AND      COLUMN      false     int     SELECT    uint8
-//	AS       complex128  float     int16   string    UNIQUE
-//	ASC      complex64   float32   int32   TABLE     UPDATE
-//	BETWEEN  CREATE      float64   int64   time      VALUES
-//	bigint   DELETE      FROM      int8    true      WHERE
-//	bigrat   DESC        GROUP     INTO    TRUNCATE
-//	blob     DISTINCT    IF        NOT     uint
-//	bool     DROP        IN        NULL    uint16
+//	ADD      BY          duration  INDEX   NULL      uint
+//	ALTER    byte        EXISTS    INSERT  OFFSET    uint16
+//	AND      COLUMN      false     int     ON        uint32
+//	AS       complex128  float     int16   ORDER     uint64
+//	ASC      complex64   float32   int32   SELECT    uint8
+//	BETWEEN  CREATE      float64   int64   string    UNIQUE
+//	bigint   DELETE      FROM      int8    TABLE     UPDATE
+//	bigrat   DESC        GROUP     INTO    time      VALUES
+//	blob     DISTINCT    IF        LIMIT   true      WHERE
+//	bool     DROP        IN        NOT     TRUNCATE
 //
 // Keywords are not case sensitive.
 //
