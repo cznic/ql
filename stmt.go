@@ -207,7 +207,7 @@ func (s *deleteStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 
 	m := map[interface{}]interface{}{}
 	var ph, h, nh int64
-	var pdata, data []interface{}
+	var data []interface{}
 	blobCols := t.blobCols()
 	cc := ctx.db.cc
 	for h = t.head; h != 0; ph, h = h, nh {
@@ -219,7 +219,6 @@ func (s *deleteStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 
 			data[i] = c.b
 		}
-		pdata = append(pdata[:0], data...)
 		// Read can return lazily expanded chunks
 		data, err = t.store.Read(nil, h, t.cols...)
 		if err != nil {
@@ -279,6 +278,16 @@ func (s *deleteStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 		case ph != 0 && nh == 0: // "last"
 			fallthrough
 		case ph != 0 && nh != 0: // "inner"
+			pdata, err := t.store.Read(nil, ph, t.cols...)
+			if err != nil {
+				return nil, err
+			}
+
+			for i, v := range pdata {
+				if x, ok := v.(chunk); ok {
+					pdata[i] = x.b
+				}
+			}
 			pdata[0] = nh
 			if err = t.store.Update(ph, pdata...); err != nil {
 				return nil, err

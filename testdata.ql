@@ -7877,3 +7877,440 @@ ORDER BY a.i, b.i
 LIMIT 1;
 |la.i, lb.i
 [2 20]
+
+-- 682 // https://github.com/cznic/ql/issues/42
+BEGIN TRANSACTION;
+  DROP TABLE IF EXISTS fibonacci;
+  CREATE TABLE fibonacci(
+    input int,
+    output int
+  );
+COMMIT;
+
+BEGIN TRANSACTION;
+  INSERT INTO fibonacci (input, output) VALUES (0, 0);
+  INSERT INTO fibonacci (input, output) VALUES (1, 1);
+  INSERT INTO fibonacci (input, output) VALUES (2, 1);
+  INSERT INTO fibonacci (input, output) VALUES (3, 2);
+  INSERT INTO fibonacci (input, output) VALUES (4, 3);
+  INSERT INTO fibonacci (input, output) VALUES (5, 5);
+  INSERT INTO fibonacci (input, output) VALUES (6, 8);
+  INSERT INTO fibonacci (input, output) VALUES (7, 13);
+  INSERT INTO fibonacci (input, output) VALUES (8, 21);
+  INSERT INTO fibonacci (input, output) VALUES (9, 34);
+COMMIT;
+
+--' Should print 4.
+SELECT count(1) AS total FROM fibonacci WHERE input >= 5 && input <= 7 &oror; input == 3;
+|ltotal
+[4]
+
+-- 683 // https://github.com/cznic/ql/issues/42
+BEGIN TRANSACTION;
+  DROP TABLE IF EXISTS fibonacci;
+  CREATE TABLE fibonacci(
+    input int,
+    output int
+  );
+COMMIT;
+
+BEGIN TRANSACTION;
+  INSERT INTO fibonacci (input, output) VALUES (0, 0);
+  INSERT INTO fibonacci (input, output) VALUES (1, 1);
+  INSERT INTO fibonacci (input, output) VALUES (2, 1);
+  INSERT INTO fibonacci (input, output) VALUES (3, 2);
+  INSERT INTO fibonacci (input, output) VALUES (4, 3);
+  INSERT INTO fibonacci (input, output) VALUES (5, 5);
+  INSERT INTO fibonacci (input, output) VALUES (6, 8);
+  INSERT INTO fibonacci (input, output) VALUES (7, 13);
+  INSERT INTO fibonacci (input, output) VALUES (8, 21);
+  INSERT INTO fibonacci (input, output) VALUES (9, 34);
+COMMIT;
+
+--' Should output (6, 8) (5, 5).
+SELECT * FROM fibonacci WHERE input >= 5 && input <= 7 &oror; input == 3 ORDER BY input DESC LIMIT 2 OFFSET 1;
+|linput, loutput
+[6 8]
+[5 5]
+
+-- 684 // https://github.com/cznic/ql/issues/42
+BEGIN TRANSACTION;
+  DROP TABLE IF EXISTS fibonacci;
+  CREATE TABLE fibonacci(
+    input int,
+    output int
+  );
+COMMIT;
+
+BEGIN TRANSACTION;
+  INSERT INTO fibonacci (input, output) VALUES (0, 0);
+  INSERT INTO fibonacci (input, output) VALUES (1, 1);
+  INSERT INTO fibonacci (input, output) VALUES (2, 1);
+  INSERT INTO fibonacci (input, output) VALUES (3, 2);
+  INSERT INTO fibonacci (input, output) VALUES (4, 3);
+  INSERT INTO fibonacci (input, output) VALUES (5, 5);
+  INSERT INTO fibonacci (input, output) VALUES (6, 8);
+  INSERT INTO fibonacci (input, output) VALUES (7, 13);
+  INSERT INTO fibonacci (input, output) VALUES (8, 21);
+  INSERT INTO fibonacci (input, output) VALUES (9, 34);
+  --' Let's delete 4 rows.
+  // Delete where input == 5, input == 6, input == 7 or input == 3
+  DELETE FROM fibonacci WHERE input >= 5 && input <= 7 &oror; input == 3;
+COMMIT;
+SELECT * FROM fibonacci ORDER BY input;
+|linput, loutput
+[0 0]
+[1 1]
+[2 1]
+[4 3]
+[8 21]
+[9 34]
+
+-- 685 // https://github.com/cznic/ql/issues/42
+BEGIN TRANSACTION;
+  DROP TABLE IF EXISTS fibonacci;
+  CREATE TABLE fibonacci(
+    input int,
+    output int
+  );
+COMMIT;
+
+BEGIN TRANSACTION;
+  INSERT INTO fibonacci (input, output) VALUES (0, 0);
+  INSERT INTO fibonacci (input, output) VALUES (1, 1);
+  INSERT INTO fibonacci (input, output) VALUES (2, 1);
+  INSERT INTO fibonacci (input, output) VALUES (3, 2);
+  INSERT INTO fibonacci (input, output) VALUES (4, 3);
+  INSERT INTO fibonacci (input, output) VALUES (5, 5);
+  INSERT INTO fibonacci (input, output) VALUES (6, 8);
+  INSERT INTO fibonacci (input, output) VALUES (7, 13);
+  INSERT INTO fibonacci (input, output) VALUES (8, 21);
+  INSERT INTO fibonacci (input, output) VALUES (9, 34);
+COMMIT;
+--' Let's delete 4 rows.
+BEGIN TRANSACTION;
+  // Delete where input == 5, input == 6, input == 7 or input == 3
+  DELETE FROM fibonacci WHERE input >= 5 && input <= 7 &oror; input == 3;
+COMMIT;
+SELECT * FROM fibonacci ORDER BY input;
+|linput, loutput
+[0 0]
+[1 1]
+[2 1]
+[4 3]
+[8 21]
+[9 34]
+
+-- 686 // https://github.com/cznic/ql/issues/42
+BEGIN TRANSACTION;
+  DROP TABLE IF EXISTS fibonacci;
+  CREATE TABLE fibonacci(
+    input int,
+    output int
+  );
+COMMIT;
+
+BEGIN TRANSACTION;
+  INSERT INTO fibonacci (input, output) VALUES (0, 0);
+  INSERT INTO fibonacci (input, output) VALUES (1, 1);
+  INSERT INTO fibonacci (input, output) VALUES (2, 1);
+  INSERT INTO fibonacci (input, output) VALUES (3, 2);
+  INSERT INTO fibonacci (input, output) VALUES (4, 3);
+  INSERT INTO fibonacci (input, output) VALUES (5, 5);
+  INSERT INTO fibonacci (input, output) VALUES (6, 8);
+  INSERT INTO fibonacci (input, output) VALUES (7, 13);
+  INSERT INTO fibonacci (input, output) VALUES (8, 21);
+  INSERT INTO fibonacci (input, output) VALUES (9, 34);
+  --' Let's delete 4 rows.
+  // Delete where input == 5, input == 6, input == 7 or input == 3
+  DELETE FROM fibonacci WHERE input >= 5 && input <= 7 &oror; input == 3;
+COMMIT;
+--' Try to count the rows we've just deleted, using the very same condition. Result is 1, should be 0.
+SELECT count() AS total FROM fibonacci WHERE input >= 5 && input <= 7 &oror; input == 3;
+|ltotal
+[0]
+
+-- 687 // https://github.com/cznic/ql/issues/42
+BEGIN TRANSACTION;
+  DROP TABLE IF EXISTS fibonacci;
+  CREATE TABLE fibonacci(
+    input int,
+    output int
+  );
+COMMIT;
+
+BEGIN TRANSACTION;
+  INSERT INTO fibonacci (input, output) VALUES (0, 0);
+  INSERT INTO fibonacci (input, output) VALUES (1, 1);
+  INSERT INTO fibonacci (input, output) VALUES (2, 1);
+  INSERT INTO fibonacci (input, output) VALUES (3, 2);
+  INSERT INTO fibonacci (input, output) VALUES (4, 3);
+  INSERT INTO fibonacci (input, output) VALUES (5, 5);
+  INSERT INTO fibonacci (input, output) VALUES (6, 8);
+  INSERT INTO fibonacci (input, output) VALUES (7, 13);
+  INSERT INTO fibonacci (input, output) VALUES (8, 21);
+  INSERT INTO fibonacci (input, output) VALUES (9, 34);
+COMMIT;
+BEGIN TRANSACTION;
+  --' Let's delete 4 rows.
+  // Delete where input == 5, input == 6, input == 7 or input == 3
+  DELETE FROM fibonacci WHERE input >= 5 && input <= 7 &oror; input == 3;
+COMMIT;
+--' Try to count the rows we've just deleted, using the very same condition. Result is 1, should be 0.
+SELECT count() AS total FROM fibonacci WHERE input >= 5 && input <= 7 &oror; input == 3;
+|ltotal
+[0]
+
+-- 688
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(1);
+	DELETE FROM t WHERE i == 1;
+COMMIT;
+SELECT * FROM t ORDER BY i;
+|?i
+
+-- 689
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(1), (2);
+	DELETE FROM t WHERE i == 1;
+COMMIT;
+SELECT * FROM t ORDER BY i;
+|li
+[2]
+
+-- 690
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(1), (2);
+	DELETE FROM t WHERE i == 2;
+COMMIT;
+SELECT * FROM t ORDER BY i;
+|li
+[1]
+
+-- 691
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(1), (2), (3);
+	DELETE FROM t WHERE i == 1;
+COMMIT;
+SELECT * FROM t ORDER BY i;
+|li
+[2]
+[3]
+
+-- 692
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(1), (2), (3);
+	DELETE FROM t WHERE i == 2;
+COMMIT;
+SELECT * FROM t ORDER BY i;
+|li
+[1]
+[3]
+
+-- 693
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(1), (2), (3);
+	DELETE FROM t WHERE i == 3;
+COMMIT;
+SELECT * FROM t ORDER BY i;
+|li
+[1]
+[2]
+
+-- 694
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(1), (2), (3), (4);
+	DELETE FROM t WHERE i == 1;
+COMMIT;
+SELECT * FROM t ORDER BY i;
+|li
+[2]
+[3]
+[4]
+
+-- 695
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(1), (2), (3), (4);
+	DELETE FROM t WHERE i == 2;
+COMMIT;
+SELECT * FROM t ORDER BY i;
+|li
+[1]
+[3]
+[4]
+
+-- 696
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(1), (2), (3), (4);
+	DELETE FROM t WHERE i == 3;
+COMMIT;
+SELECT * FROM t ORDER BY i;
+|li
+[1]
+[2]
+[4]
+
+-- 697
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(1), (2), (3), (4);
+	DELETE FROM t WHERE i == 4;
+COMMIT;
+SELECT * FROM t ORDER BY i;
+|li
+[1]
+[2]
+[3]
+
+-- 698
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(1), (2), (3), (4);
+	DELETE FROM t WHERE i == 1;
+	DELETE FROM t WHERE i == 2;
+COMMIT;
+SELECT * FROM t ORDER BY i;
+|li
+[3]
+[4]
+
+-- 699
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(1), (2), (3), (4);
+	DELETE FROM t WHERE i == 2;
+	DELETE FROM t WHERE i == 1;
+COMMIT;
+SELECT * FROM t ORDER BY i;
+|li
+[3]
+[4]
+
+-- 700
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(1), (2), (3), (4);
+	DELETE FROM t WHERE i == 2;
+	DELETE FROM t WHERE i == 3;
+COMMIT;
+SELECT * FROM t ORDER BY i;
+|li
+[1]
+[4]
+
+-- 701
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(1), (2), (3), (4);
+	DELETE FROM t WHERE i == 3;
+	DELETE FROM t WHERE i == 2;
+COMMIT;
+SELECT * FROM t ORDER BY i;
+|li
+[1]
+[4]
+
+-- 702
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(1), (2), (3), (4);
+	DELETE FROM t WHERE i == 3;
+	DELETE FROM t WHERE i == 4;
+COMMIT;
+SELECT * FROM t ORDER BY i;
+|li
+[1]
+[2]
+
+-- 703
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(1), (2), (3), (4);
+	DELETE FROM t WHERE i == 4;
+	DELETE FROM t WHERE i == 3;
+COMMIT;
+SELECT * FROM t ORDER BY i;
+|li
+[1]
+[2]
+
+-- 704
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(1), (2), (3), (4);
+	DELETE FROM t WHERE i == 1;
+	DELETE FROM t WHERE i == 3;
+COMMIT;
+SELECT * FROM t ORDER BY i;
+|li
+[2]
+[4]
+
+-- 705
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(1), (2), (3), (4);
+	DELETE FROM t WHERE i == 3;
+	DELETE FROM t WHERE i == 1;
+COMMIT;
+SELECT * FROM t ORDER BY i;
+|li
+[2]
+[4]
+
+-- 706
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(1), (2), (3), (4);
+	DELETE FROM t WHERE i == 1;
+	DELETE FROM t WHERE i == 4;
+COMMIT;
+SELECT * FROM t ORDER BY i;
+|li
+[2]
+[3]
+
+-- 707
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(1), (2), (3), (4);
+	DELETE FROM t WHERE i == 4;
+	DELETE FROM t WHERE i == 1;
+COMMIT;
+SELECT * FROM t ORDER BY i;
+|li
+[2]
+[3]
+
+-- 708
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(1), (2), (3), (4);
+	DELETE FROM t WHERE i == 2;
+	DELETE FROM t WHERE i == 4;
+COMMIT;
+SELECT * FROM t ORDER BY i;
+|li
+[1]
+[3]
+
+-- 709
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(1), (2), (3), (4);
+	DELETE FROM t WHERE i == 4;
+	DELETE FROM t WHERE i == 2;
+COMMIT;
+SELECT * FROM t ORDER BY i;
+|li
+[1]
+[3]

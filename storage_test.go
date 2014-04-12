@@ -17,16 +17,17 @@ import (
 )
 
 var (
-	dropA          = MustCompile("BEGIN TRANSACTION; DROP TABLE a; COMMIT;")
-	dropB          = MustCompile("BEGIN TRANSACTION; DROP TABLE b; COMMIT;")
-	dropC          = MustCompile("BEGIN TRANSACTION; DROP TABLE c; COMMIT;")
-	dropDepartment = MustCompile("BEGIN TRANSACTION; DROP TABLE department; COMMIT;")
-	dropEmployee   = MustCompile("BEGIN TRANSACTION; DROP TABLE employee; COMMIT;")
-	dropP          = MustCompile("BEGIN TRANSACTION; DROP TABLE p; COMMIT;")
-	dropT          = MustCompile("BEGIN TRANSACTION; DROP TABLE t; COMMIT;")
-	dropU          = MustCompile("BEGIN TRANSACTION; DROP TABLE u; COMMIT;")
-	dropArtist     = MustCompile("BEGIN TRANSACTION; DROP TABLE artist; COMMIT;")
-	dropDataTypes  = MustCompile("BEGIN TRANSACTION; DROP TABLE data_types; COMMIT;")
+	dropA          = MustCompile("BEGIN TRANSACTION; DROP TABLE IF EXISTS a; COMMIT;")
+	dropB          = MustCompile("BEGIN TRANSACTION; DROP TABLE IF EXISTS b; COMMIT;")
+	dropC          = MustCompile("BEGIN TRANSACTION; DROP TABLE IF EXISTS c; COMMIT;")
+	dropDepartment = MustCompile("BEGIN TRANSACTION; DROP TABLE IF EXISTS department; COMMIT;")
+	dropEmployee   = MustCompile("BEGIN TRANSACTION; DROP TABLE IF EXISTS employee; COMMIT;")
+	dropP          = MustCompile("BEGIN TRANSACTION; DROP TABLE IF EXISTS p; COMMIT;")
+	dropT          = MustCompile("BEGIN TRANSACTION; DROP TABLE IF EXISTS t; COMMIT;")
+	dropU          = MustCompile("BEGIN TRANSACTION; DROP TABLE IF EXISTS u; COMMIT;")
+	dropArtist     = MustCompile("BEGIN TRANSACTION; DROP TABLE IF EXISTS artist; COMMIT;")
+	dropDataTypes  = MustCompile("BEGIN TRANSACTION; DROP TABLE IF EXISTS data_types; COMMIT;")
+	dropFibonacci  = MustCompile("BEGIN TRANSACTION; DROP TABLE IF EXISTS fibonacci; COMMIT;")
 
 	oN = flag.Int("N", 0, "")
 	oM = flag.Int("M", 0, "")
@@ -280,6 +281,7 @@ func test(t *testing.T, s testDB) (panicked error) {
 		tctx := NewRWCtx()
 		if !func() (ok bool) {
 			defer func() {
+				//TODO Iterate DB.Info.Tables()
 				db.Execute(tctx, dropA)
 				db.Execute(tctx, dropB)
 				db.Execute(tctx, dropC)
@@ -290,6 +292,7 @@ func test(t *testing.T, s testDB) (panicked error) {
 				db.Execute(tctx, dropU)
 				db.Execute(tctx, dropArtist)
 				db.Execute(tctx, dropDataTypes)
+				db.Execute(tctx, dropFibonacci)
 			}()
 
 			if err = s.mark(); err != nil {
