@@ -7307,14 +7307,14 @@ SELECT * FROM __Column ORDER BY TableName, Ordinal;
 
 -- 630
 SELECT * FROM __Index;
-|?TableName, ?ColumnName, ?Name, ?Unique
+|?TableName, ?ColumnName, ?Name, ?IsUnique
 
 -- 631
 BEGIN TRANSACTION;
 	CREATE TABLE t (i int, s string);
 COMMIT;
 SELECT * FROM __Index ORDER BY TableName, Name;
-|?TableName, ?ColumnName, ?Name, ?Unique
+|?TableName, ?ColumnName, ?Name, ?IsUnique
 
 -- 632
 BEGIN TRANSACTION;
@@ -7322,7 +7322,7 @@ BEGIN TRANSACTION;
 	CREATE INDEX x ON t (i);
 COMMIT;
 SELECT * FROM __Index ORDER BY TableName, ColumnName, Name;
-|sTableName, sColumnName, sName, bUnique
+|sTableName, sColumnName, sName, bIsUnique
 [t i x false]
 
 -- 633
@@ -7333,7 +7333,7 @@ BEGIN TRANSACTION;
 	CREATE TABLE u (b bool, i bigint, t time, d duration);
 COMMIT;
 SELECT * FROM __Index ORDER BY TableName, ColumnName, Name;
-|sTableName, sColumnName, sName, bUnique
+|sTableName, sColumnName, sName, bIsUnique
 [t i x false]
 [t id() id false]
 
@@ -7347,7 +7347,7 @@ BEGIN TRANSACTION;
 	CREATE UNIQUE INDEX y ON u (i);
 COMMIT;
 SELECT * FROM __Index ORDER BY TableName, ColumnName, Name;
-|sTableName, sColumnName, sName, bUnique
+|sTableName, sColumnName, sName, bIsUnique
 [t i x false]
 [t id() id false]
 [u i y true]
@@ -8314,3 +8314,7 @@ SELECT * FROM t ORDER BY i;
 |li
 [1]
 [3]
+
+-- 710 // https://github.com/cznic/ql/issues/43
+SELECT Name, Unique FROM __Index;
+||syntax error

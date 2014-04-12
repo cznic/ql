@@ -15,6 +15,12 @@
 //
 // Change list
 //
+// 2014-04-12:
+//
+// The column Unique in the virtual table __Index was renamed to IsUnique
+// because the old name is a keyword. Unfortunately, this is a breaking change,
+// sorry.
+//
 // 2014-04-11: Introduction of LIMIT, OFFSET.
 //
 // 2014-04-10: Introduction of query rewriting.

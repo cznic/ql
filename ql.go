@@ -1139,7 +1139,7 @@ func (r tableRset) doSysColumn(ctx *execCtx, onlyNames bool, f func(id interface
 }
 
 func (r tableRset) doSysIndex(ctx *execCtx, onlyNames bool, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
-	flds := []*fld{&fld{name: "TableName"}, &fld{name: "ColumnName"}, &fld{name: "Name"}, &fld{name: "Unique"}}
+	flds := []*fld{&fld{name: "TableName"}, &fld{name: "ColumnName"}, &fld{name: "Name"}, &fld{name: "IsUnique"}}
 	m, err := f(nil, []interface{}{flds})
 	if onlyNames {
 		return err
