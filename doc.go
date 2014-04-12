@@ -1632,9 +1632,9 @@
 //
 // The table __Index lists all indices in the DB. The schema is
 //
-//	CREATE TABLE __Index (TableName string, ColumnName string, Name string, Unique bool);
+//	CREATE TABLE __Index (TableName string, ColumnName string, Name string, IsUnique bool);
 //
-// The Unique columns reflects if the index was created using the optional
+// The IsUnique columns reflects if the index was created using the optional
 // UNIQUE clause.
 //
 // Built-in functions
