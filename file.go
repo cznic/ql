@@ -951,7 +951,7 @@ func (s *file) loadChunks(enc []byte) (v interface{}, err error) {
 				return nil, fmt.Errorf("(file-015) corrupted DB: chunk link")
 			}
 
-			b = b[1:]
+			items = items[1:]
 		default:
 			return nil, fmt.Errorf("(file-016) corrupted DB: chunk items %d (%v)", len(items), items)
 		}
