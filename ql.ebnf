@@ -79,9 +79,7 @@ CreateTableStmt = "CREATE" "TABLE" [
 		 "IF" "NOT" "EXISTS"
 	  ] TableName "(" ColumnDef { "," ColumnDef } [ "," ] ")" .
 DeleteFromStmt = "DELETE" "FROM" TableName [ WhereClause ] .
-DropIndexStmt = "DROP" "INDEX" [
-		 "IF" "NOT" "EXISTS"
-	  ] IndexName .
+DropIndexStmt = "DROP" "INDEX" [ "IF" "EXISTS" ] IndexName .
 DropTableStmt = "DROP" "TABLE" [ "IF" "EXISTS" ] TableName .
 EmptyStmt = .
 Expression = Term { oror Term } .

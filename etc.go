@@ -2338,6 +2338,7 @@ func collate1(a, b interface{}) int {
 				return 1
 			}
 		default:
+			//dbg("%T(%#v)", b, b)
 			panic("internal error 024")
 		}
 	case uint8:

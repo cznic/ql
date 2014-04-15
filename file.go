@@ -435,7 +435,7 @@ func newFileFromOSFile(f lldb.OSFile) (fi *file, err error) {
 		}
 
 		if st.Size() != 0 {
-			return nil, fmt.Errorf("non empty WAL file %s exists", wn)
+			return nil, fmt.Errorf("(file-001) non empty WAL file %s exists", wn)
 		}
 	}
 
@@ -503,7 +503,7 @@ func newFileFromOSFile(f lldb.OSFile) (fi *file, err error) {
 		}
 
 		if string(b[:len(magic)]) != magic {
-			return nil, fmt.Errorf("unknown file format")
+			return nil, fmt.Errorf("(file-002) unknown file format")
 		}
 
 		filer := lldb.Filer(lldb.NewOSFiler(f))
@@ -523,7 +523,7 @@ func newFileFromOSFile(f lldb.OSFile) (fi *file, err error) {
 		}
 
 		if len(bid) != 8 {
-			return nil, fmt.Errorf("corrupted id |% x|", bid)
+			return nil, fmt.Errorf("(file-003) corrupted DB: id |% x|", bid)
 		}
 
 		id := int64(0)
@@ -782,12 +782,12 @@ func (s *file) free(h int64, blobCols []*col) (err error) {
 
 	for _, col := range blobCols {
 		if col.index >= len(rec) {
-			return fmt.Errorf("file.free: corrupted DB (record len)")
+			return fmt.Errorf("(file-004) file.free: corrupted DB (record len)")
 		}
 
 		var ok bool
 		if b, ok = rec[col.index+2].([]byte); !ok {
-			return fmt.Errorf("file.free: corrupted DB (chunk []byte)")
+			return fmt.Errorf("(file-005) file.free: corrupted DB (chunk []byte)")
 		}
 
 		if err = s.freeChunks(b); err != nil {
@@ -840,7 +840,7 @@ func (s *file) Read(dst []interface{}, h int64, cols ...*col) (data []interface{
 		case qBlob, qBigInt, qBigRat, qTime, qDuration:
 			b, ok := rec[i].([]byte)
 			if !ok {
-				return nil, fmt.Errorf("corrupted DB: chunk type is not []byte")
+				return nil, fmt.Errorf("(file-006) corrupted DB: chunk type is not []byte")
 			}
 
 			rec[i] = chunk{f: s, b: b}
@@ -865,10 +865,10 @@ func (s *file) freeChunks(enc []byte) (err error) {
 		return
 	case 3:
 		if next, ok = items[1].(int64); !ok || next == 0 {
-			return fmt.Errorf("corrupted DB: first chunk link")
+			return fmt.Errorf("(file-007) corrupted DB: first chunk link")
 		}
 	default:
-		return fmt.Errorf("corrupted DB: first chunk")
+		return fmt.Errorf("(file-008) corrupted DB: first chunk")
 	}
 
 	for next != 0 {
@@ -887,11 +887,11 @@ func (s *file) freeChunks(enc []byte) (err error) {
 			// nop
 		case 2:
 			if h, ok = items[0].(int64); !ok {
-				return fmt.Errorf("corrupted DB: chunk link")
+				return fmt.Errorf("(file-009) corrupted DB: chunk link")
 			}
 
 		default:
-			return fmt.Errorf("corrupted DB: chunk items %d (%v)", len(items), items)
+			return fmt.Errorf("(file-010) corrupted DB: chunk items %d (%v)", len(items), items)
 		}
 
 		if err = s.a.Free(next); err != nil {
@@ -916,20 +916,21 @@ func (s *file) loadChunks(enc []byte) (v interface{}, err error) {
 		// nop
 	case 3:
 		if next, ok = items[1].(int64); !ok || next == 0 {
-			return nil, fmt.Errorf("corrupted DB: first chunk link")
+			return nil, fmt.Errorf("(file-011) corrupted DB: first chunk link")
 		}
 	default:
-		return nil, fmt.Errorf("corrupted DB: first chunk")
+		//fmt.Printf("%d: %#v\n", len(items), items)
+		return nil, fmt.Errorf("(file-012) corrupted DB: first chunk")
 	}
 
 	typ, ok := items[0].(int64)
 	if !ok {
-		return nil, fmt.Errorf("corrupted DB: first chunk tag")
+		return nil, fmt.Errorf("(file-013) corrupted DB: first chunk tag")
 	}
 
 	buf, ok := items[len(items)-1].([]byte)
 	if !ok {
-		return nil, fmt.Errorf("corrupted DB: first chunk data")
+		return nil, fmt.Errorf("(file-014) corrupted DB: first chunk data")
 	}
 
 	for next != 0 {
@@ -947,16 +948,16 @@ func (s *file) loadChunks(enc []byte) (v interface{}, err error) {
 			next = 0
 		case 2:
 			if next, ok = items[0].(int64); !ok {
-				return nil, fmt.Errorf("corrupted DB: chunk link")
+				return nil, fmt.Errorf("(file-015) corrupted DB: chunk link")
 			}
 
 			b = b[1:]
 		default:
-			return nil, fmt.Errorf("corrupted DB: chunk items %d (%v)", len(items), items)
+			return nil, fmt.Errorf("(file-016) corrupted DB: chunk items %d (%v)", len(items), items)
 		}
 
 		if b, ok = items[0].([]byte); !ok {
-			return nil, fmt.Errorf("corrupted DB: chunk data")
+			return nil, fmt.Errorf("(file-017) corrupted DB: chunk data")
 		}
 
 		buf = append(buf, b...)
@@ -1132,7 +1133,7 @@ func (x *fileIndex) Create(indexedValue interface{}, h int64) error {
 
 		return t.Set(k, gbZeroInt64)
 	default: // unique, non NULL
-		k, err := lldb.EncodeScalars(indexedValue, 0)
+		k, err := lldb.EncodeScalars(indexedValue, int64(0))
 		if err != nil {
 			return err
 		}
@@ -1147,7 +1148,7 @@ func (x *fileIndex) Create(indexedValue interface{}, h int64) error {
 				return v, true, nil
 			}
 
-			return nil, false, fmt.Errorf("cannot insert into unique index: duplicate value: %v", indexedValue)
+			return nil, false, fmt.Errorf("(file-018) cannot insert into unique index: duplicate value: %v", indexedValue)
 		})
 		return err
 	}
@@ -1171,7 +1172,7 @@ func (x *fileIndex) Delete(indexedValue interface{}, h int64) error {
 	case indexedValue == nil: // unique, NULL
 		k, err = lldb.EncodeScalars(nil, h)
 	default: // unique, non NULL
-		k, err = lldb.EncodeScalars(indexedValue, gbZeroInt64)
+		k, err = lldb.EncodeScalars(indexedValue, int64(0))
 	}
 	if err != nil {
 		return err

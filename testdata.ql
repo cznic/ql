@@ -8443,3 +8443,43 @@ SELECT s FROM t WHERE s < "z";
 |ss
 [foo]
 [bar]
+
+-- 722
+BEGIN TRANSACTION;
+	CREATE TABLE t (p string, c blob);
+	CREATE UNIQUE INDEX x ON t (p);
+	INSERT INTO t VALUES
+		("empty", blob("")),
+	;
+COMMIT;
+SELECT p, string(c) FROM t;
+|sp, s
+[empty ]
+
+-- 723
+BEGIN TRANSACTION;
+	CREATE TABLE t (p string, c blob);
+	CREATE INDEX x ON t (p);
+	INSERT INTO t VALUES
+		("empty", blob("")),
+	;
+COMMIT;
+BEGIN TRANSACTION;
+	DELETE FROM t WHERE p == "empty";
+COMMIT;
+SELECT p, string(c) FROM t;
+|?p, ?
+
+-- 724
+BEGIN TRANSACTION;
+	CREATE TABLE t (p string, c blob);
+	CREATE UNIQUE INDEX x ON t (p);
+	INSERT INTO t VALUES
+		("empty", blob("")),
+	;
+COMMIT;
+BEGIN TRANSACTION;
+	DELETE FROM t WHERE p == "empty";
+COMMIT;
+SELECT p, string(c) FROM t;
+|?p, ?
