@@ -8318,3 +8318,128 @@ SELECT * FROM t ORDER BY i;
 -- 710 // https://github.com/cznic/ql/issues/43
 SELECT Name, Unique FROM __Index;
 ||syntax error
+
+-- 711
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int, s string);
+	CREATE INDEX x ON t (s);
+	INSERT INTO t VALUES (1, "bar"), (2, "foo");
+COMMIT;
+SELECT s FROM t;
+|ss
+[foo]
+[bar]
+
+-- 712
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int, s string);
+	CREATE INDEX x ON t (s);
+	INSERT INTO t VALUES (1, "bar"), (2, "foo");
+COMMIT;
+SELECT * FROM x;
+|sx
+[bar]
+[foo]
+
+-- 713
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int, s string);
+	CREATE INDEX x ON t (s);
+	CREATE INDEX x ON t (s);
+	INSERT INTO t VALUES (1, "bar"), (2, "foo");
+COMMIT;
+SELECT * FROM x;
+||already
+
+-- 714
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int, s string);
+	CREATE INDEX IF NOT EXISTS x ON t (s);
+	INSERT INTO t VALUES (1, "bar"), (2, "foo");
+COMMIT;
+SELECT * FROM x;
+|sx
+[bar]
+[foo]
+
+-- 715
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int, s string);
+	CREATE INDEX x ON t (s);
+	CREATE INDEX IF NOT EXISTS x ON t (s);
+	INSERT INTO t VALUES (1, "bar"), (2, "foo");
+COMMIT;
+SELECT * FROM x;
+|sx
+[bar]
+[foo]
+
+-- 716
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int, s string);
+	CREATE INDEX IF NOT EXISTS x ON t (s);
+	CREATE INDEX IF NOT EXISTS x ON t (s);
+	INSERT INTO t VALUES (1, "bar"), (2, "foo");
+COMMIT;
+SELECT s FROM t WHERE s != "z";
+|ss
+[foo]
+[bar]
+
+-- 717
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int, s string);
+	CREATE INDEX IF NOT EXISTS x ON t (s);
+	INSERT INTO t VALUES (1, "bar"), (2, "foo");
+COMMIT;
+SELECT s FROM t WHERE s < "z";
+|ss
+[bar]
+[foo]
+
+-- 718
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int, s string);
+	CREATE INDEX IF NOT EXISTS x ON t (s);
+	INSERT INTO t VALUES (1, "bar"), (2, "foo");
+	DROP INDEX x;
+COMMIT;
+SELECT s FROM t WHERE s < "z";
+|ss
+[foo]
+[bar]
+
+-- 719
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int, s string);
+	CREATE INDEX IF NOT EXISTS x ON t (s);
+	INSERT INTO t VALUES (1, "bar"), (2, "foo");
+	DROP INDEX x;
+	DROP INDEX x;
+COMMIT;
+SELECT s FROM t WHERE s < "z";
+||does not exist
+
+-- 720
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int, s string);
+	CREATE INDEX IF NOT EXISTS x ON t (s);
+	INSERT INTO t VALUES (1, "bar"), (2, "foo");
+	DROP INDEX IF EXISTS x;
+	DROP INDEX x;
+COMMIT;
+SELECT s FROM t WHERE s < "z";
+||does not exist
+
+-- 721
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int, s string);
+	CREATE INDEX IF NOT EXISTS x ON t (s);
+	INSERT INTO t VALUES (1, "bar"), (2, "foo");
+	DROP INDEX x;
+	DROP INDEX IF EXISTS x;
+COMMIT;
+SELECT s FROM t WHERE s < "z";
+|ss
+[foo]
+[bar]

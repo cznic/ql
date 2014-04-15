@@ -69,7 +69,9 @@ ColumnName = identifier .
 ColumnNameList = ColumnName { "," ColumnName } [ "," ] .
 CommitStmt = "COMMIT" .
 Conversion = Type "(" Expression ")" .
-CreateIndexStmt = "CREATE" [ "UNIQUE" ] "INDEX" IndexName "ON" TableName "(" (
+CreateIndexStmt = "CREATE" [ "UNIQUE" ] "INDEX" [
+		 "IF" "NOT" "EXISTS"
+	  ] IndexName "ON" TableName "(" (
 		  ColumnName
 		| "id" Call
 	  ) ")" .
@@ -77,7 +79,9 @@ CreateTableStmt = "CREATE" "TABLE" [
 		 "IF" "NOT" "EXISTS"
 	  ] TableName "(" ColumnDef { "," ColumnDef } [ "," ] ")" .
 DeleteFromStmt = "DELETE" "FROM" TableName [ WhereClause ] .
-DropIndexStmt = "DROP" "INDEX" IndexName .
+DropIndexStmt = "DROP" "INDEX" [
+		 "IF" "NOT" "EXISTS"
+	  ] IndexName .
 DropTableStmt = "DROP" "TABLE" [ "IF" "EXISTS" ] TableName .
 EmptyStmt = .
 Expression = Term { oror Term } .

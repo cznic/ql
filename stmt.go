@@ -320,6 +320,7 @@ func (s *truncateTableStmt) exec(ctx *execCtx) (Recordset, error) {
 func (s *truncateTableStmt) isUpdating() bool { return true }
 
 type dropIndexStmt struct {
+	ifExists  bool
 	indexName string
 }
 
@@ -328,6 +329,10 @@ func (s *dropIndexStmt) String() string { return fmt.Sprintf("DROP INDEX %s;", s
 func (s *dropIndexStmt) exec(ctx *execCtx) (Recordset, error) {
 	t, x := ctx.db.root.findIndexByName(s.indexName)
 	if x == nil {
+		if s.ifExists {
+			return nil, nil
+		}
+
 		return nil, fmt.Errorf("DROP INDEX: index %s does not exist", s.indexName)
 	}
 
@@ -782,10 +787,11 @@ func (rollbackStmt) isUpdating() bool {
 }
 
 type createIndexStmt struct {
-	unique    bool
-	indexName string
-	tableName string
-	colName   string // alt. "id()" for index on id()
+	colName     string // alt. "id()" for index on id()
+	ifNotExists bool
+	indexName   string
+	tableName   string
+	unique      bool
 }
 
 func (s *createIndexStmt) String() string {
@@ -798,12 +804,16 @@ func (s *createIndexStmt) String() string {
 
 func (s *createIndexStmt) exec(ctx *execCtx) (Recordset, error) {
 	root := ctx.db.root
-	if root.tables[s.indexName] != nil {
-		return nil, fmt.Errorf("CREATE INDEX: index name collision with existing table: %s", s.indexName)
+	if t, i := root.findIndexByName(s.indexName); i != nil {
+		if s.ifNotExists {
+			return nil, nil
+		}
+
+		return nil, fmt.Errorf("CREATE INDEX: table %s already has an index named %s", t.name, i.name)
 	}
 
-	if t, i := root.findIndexByName(s.indexName); i != nil {
-		return nil, fmt.Errorf("CREATE INDEX: table %s already has an index named %s", t.name, i.name)
+	if root.tables[s.indexName] != nil {
+		return nil, fmt.Errorf("CREATE INDEX: index name collision with existing table: %s", s.indexName)
 	}
 
 	t, ok := root.tables[s.tableName]

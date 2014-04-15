@@ -15,6 +15,11 @@
 //
 // Change list
 //
+// 2014-04-15:
+//
+// Added optional IF NOT EXISTS clause to CREATE INDEX and optional IF EXIST
+// clause to DROP INDEX.
+//
 // 2014-04-12:
 //
 // The column Unique in the virtual table __Index was renamed to IsUnique
@@ -1188,8 +1193,8 @@
 // as any of the existing tables and it also cannot be the same as of any
 // column name of the table the index is on.
 //
-//  CreateIndexStmt = "CREATE" [ "UNIQUE" ] "INDEX" IndexName
-//  	"ON" TableName "(" ( ColumnName | "id" Call ) ")" .
+//  CreateIndexStmt = "CREATE" [ "UNIQUE" ] "INDEX" [ "IF" "NOT" "EXISTS" ]
+//  	IndexName "ON" TableName "(" ( ColumnName | "id" Call ) ")" .
 //
 // For example
 //
@@ -1207,6 +1212,9 @@
 // present.
 //
 // The UNIQUE modifier requires the indexed values to be unique or NULL.
+//
+// The optional IF NOT EXISTS clause makes the statement a no operation if the
+// index already exists.
 //
 // CREATE TABLE
 //
@@ -1236,8 +1244,8 @@
 // 		);
 //	COMMIT;
 //
-// The optional IF NOT EXISTS makes the statement a no operation if the table
-// already exists.
+// The optional IF NOT EXISTS clause makes the statement a no operation if the
+// table already exists.
 //
 // DELETE FROM
 //
@@ -1259,7 +1267,7 @@
 //
 // Drop index statements remove indices from the DB. The index must exist.
 //
-//  DropIndexStmt = "DROP" "INDEX" IndexName .
+//  DropIndexStmt = "DROP" "INDEX" [ "IF" "EXISTS" ] IndexName .
 //  IndexName = identifier .
 //
 // For example
@@ -1267,6 +1275,9 @@
 //	BEGIN TRANSACTION;
 //		DROP INDEX ItemsOrderID;
 //	COMMIT;
+//
+// The optional IF EXISTS clause makes the statement a no operation if the
+// index does not exist.
 //
 // DROP TABLE
 //
@@ -1537,7 +1548,7 @@
 //	#2:	Ignore 2/3
 //	#3:	Ignore 3/3
 //	#4:	Return 1/5
-//	#4:	Return 2/5
+//	#5:	Return 2/5
 //	#6:	Return 3/5
 //	#7:	Return 4/5
 //	#8:	Return 5/5

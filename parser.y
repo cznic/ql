@@ -71,9 +71,9 @@ import (
 	AlterTableStmt Assignment AssignmentList AssignmentList1
 	BeginTransactionStmt
 	Call Call1 ColumnDef ColumnName ColumnNameList ColumnNameList1
-	CommitStmt Conversion CreateIndexStmt CreateIndexStmtUnique
-	CreateTableStmt CreateTableStmt1
-	DeleteFromStmt DropIndexStmt DropTableStmt
+	CommitStmt Conversion CreateIndexStmt CreateIndexIfNotExists
+	CreateIndexStmtUnique CreateTableStmt CreateTableStmt1
+	DeleteFromStmt DropIndexStmt DropIndexIfExists DropTableStmt
 	EmptyStmt Expression ExpressionList ExpressionList1
 	Factor Factor1 Field Field1 FieldList
 	GroupByClause
@@ -193,10 +193,10 @@ Conversion:
 	}
 
 CreateIndexStmt:
-	create CreateIndexStmtUnique index identifier on identifier '(' identifier ')'
+	create CreateIndexStmtUnique index CreateIndexIfNotExists identifier on identifier '(' identifier ')'
 	{
-		indexName, tableName, columnName := $4.(string), $6.(string), $8.(string)
-		$$ = &createIndexStmt{$2.(bool), indexName, tableName, columnName}
+		indexName, tableName, columnName := $5.(string), $7.(string), $9.(string)
+		$$ = &createIndexStmt{unique: $2.(bool), ifNotExists: $4.(bool), indexName: indexName, tableName: tableName, colName: columnName}
 		if indexName == tableName || indexName == columnName {
 			yylex.(*lexer).err("index name collision: %s", indexName)
 			return 1
@@ -207,11 +207,11 @@ CreateIndexStmt:
 			return 1
 		}
 	}
-|	create CreateIndexStmtUnique index identifier on identifier '(' identifier '(' ')' ')'
+|	create CreateIndexStmtUnique index CreateIndexIfNotExists identifier on identifier '(' identifier '(' ')' ')'
 	{
-		indexName, tableName, columnName := $4.(string), $6.(string), $8.(string)
-		$$ = &createIndexStmt{$2.(bool), indexName, tableName, "id()"}
-		if $8.(string) != "id" {
+		indexName, tableName, columnName := $5.(string), $7.(string), $9.(string)
+		$$ = &createIndexStmt{unique: $2.(bool), ifNotExists: $4.(bool), indexName: indexName, tableName: tableName, colName: "id()"}
+		if $9.(string) != "id" {
 			yylex.(*lexer).err("only the built-in function id() can be used in index: %s()", columnName)
 			return 1
 		}
@@ -225,6 +225,15 @@ CreateIndexStmt:
 			yylex.(*lexer).err("name is used for system tables: %s", indexName)
 			return 1
 		}
+	}
+
+CreateIndexIfNotExists:
+	{
+		$$ = false
+	}
+|	ifKwd not exists
+	{
+		$$ = true
 	}
 
 CreateIndexStmtUnique:
@@ -281,9 +290,18 @@ DeleteFromStmt:
 	}
 
 DropIndexStmt:
-	drop index identifier
+	drop index DropIndexIfExists identifier
 	{
-		$$ = &dropIndexStmt{indexName: $3.(string)}
+		$$ = &dropIndexStmt{ifExists: $3.(bool), indexName: $4.(string)}
+	}
+
+DropIndexIfExists:
+	{
+		$$ = false
+	}
+|	ifKwd exists
+	{
+		$$ = true
 	}
 
 DropTableStmt:
