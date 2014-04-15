@@ -231,7 +231,7 @@ func (f *HTTPFS) Open(name string) (http.File, error) {
 			var ok bool
 			fdata, ok = data[0].([]byte)
 			if !ok {
-				return false, fmt.Errorf("open: expcted blob, got %T", data[0])
+				return false, fmt.Errorf("open: expected blob, got %T", data[0])
 			}
 			n++
 			return true, nil
@@ -247,6 +247,9 @@ func (f *HTTPFS) Open(name string) (http.File, error) {
 	}
 
 	dirName := name
+	if dirName[len(dirName)-1] != filepath.Separator {
+		dirName += string(filepath.Separator)
+	}
 	// Open("/a/b"): {/a/b/c.x,/a/b/d.x,/a/e.x,/a/b/f/g.x} -> {c.x,d.x,f}
 	rs, _, err = f.db.Execute(nil, f.dir, dirName)
 	if err != nil {
@@ -257,9 +260,6 @@ func (f *HTTPFS) Open(name string) (http.File, error) {
 	r := &HTTPFile{name: dirName}
 	m := map[string]bool{}
 	x := len(dirName)
-	if x != 1 {
-		x++
-	}
 	if err = rs[0].Do(false, func(data []interface{}) (more bool, err error) {
 		n++
 		switch name := data[0].(type) {

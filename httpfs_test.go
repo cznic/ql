@@ -22,12 +22,12 @@ func TestHTTP(t *testing.T) {
 		BEGIN TRANSACTION;
 			CREATE TABLE t (path string);
 			INSERT INTO t VALUES
-				("/a/b/c/1.x"),
-				("/a/b/c/2.x"),
-				("/a/b/3.x"),
-				("/a/b/4.x"),
-				("/a/5.x"),
-				("/a/6.x"),
+				("/a/b/c/1"),
+				("/a/b/c/2"),
+				("/a/b/3"),
+				("/a/b/4"),
+				("/a/5"),
+				("/a/6"),
 			;
 		COMMIT;
 		`,
@@ -40,7 +40,7 @@ func TestHTTP(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for _, nm := range []string{"/a/b/c/1.x", "/a/b/4.x", "/a/5.x"} {
+	for _, nm := range []string{"/a/b/c/1", "/a/b/4", "/a/5"} {
 		f, err := fs.Open(nm)
 		if err != nil {
 			t.Fatal(err)
@@ -159,7 +159,7 @@ func TestHTTP(t *testing.T) {
 		t.Fatal(a)
 	}
 
-	// ----------------------------------------------------------------- /a
+	// ------------------------------------------------------------------ a
 	d, err = fs.Open("a")
 	if err != nil {
 		t.Fatal(err)
@@ -195,9 +195,9 @@ func TestHTTP(t *testing.T) {
 			}
 		default:
 			switch v.Name() {
-			case "5.x":
+			case "5":
 				a5 = true
-			case "6.x":
+			case "6":
 				a6 = true
 			default:
 				t.Fatal(v.Name())
@@ -208,8 +208,152 @@ func TestHTTP(t *testing.T) {
 		t.Fatal(aB, a5, a6)
 	}
 
-	// --------------------------------------------------------------- /a/b
-	d, err = fs.Open("/a/b")
+	// ----------------------------------------------------------------- a/
+	d, err = fs.Open("a/")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	stat, err = d.Stat()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if g, e := stat.IsDir(), true; g != e {
+		t.Fatal(g, e)
+	}
+
+	list, err = d.Readdir(0)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if g, e := len(list), 3; g != e {
+		t.Fatal(g, e)
+	}
+
+	for _, v := range list {
+		switch v.IsDir() {
+		case true:
+			switch v.Name() {
+			case "b":
+				aB = true
+			default:
+				t.Fatal(v.Name())
+			}
+		default:
+			switch v.Name() {
+			case "5":
+				a5 = true
+			case "6":
+				a6 = true
+			default:
+				t.Fatal(v.Name())
+			}
+		}
+	}
+	if !(aB && a5 && a6) {
+		t.Fatal(aB, a5, a6)
+	}
+
+	// ----------------------------------------------------------------- /a
+	d, err = fs.Open("/a")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	stat, err = d.Stat()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if g, e := stat.IsDir(), true; g != e {
+		t.Fatal(g, e)
+	}
+
+	list, err = d.Readdir(0)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if g, e := len(list), 3; g != e {
+		t.Fatal(g, e)
+	}
+
+	for _, v := range list {
+		switch v.IsDir() {
+		case true:
+			switch v.Name() {
+			case "b":
+				aB = true
+			default:
+				t.Fatal(v.Name())
+			}
+		default:
+			switch v.Name() {
+			case "5":
+				a5 = true
+			case "6":
+				a6 = true
+			default:
+				t.Fatal(v.Name())
+			}
+		}
+	}
+	if !(aB && a5 && a6) {
+		t.Fatal(aB, a5, a6)
+	}
+
+	// ---------------------------------------------------------------- /a/
+	d, err = fs.Open("/a/")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	stat, err = d.Stat()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if g, e := stat.IsDir(), true; g != e {
+		t.Fatal(g, e)
+	}
+
+	list, err = d.Readdir(0)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if g, e := len(list), 3; g != e {
+		t.Fatal(g, e)
+	}
+
+	for _, v := range list {
+		switch v.IsDir() {
+		case true:
+			switch v.Name() {
+			case "b":
+				aB = true
+			default:
+				t.Fatal(v.Name())
+			}
+		default:
+			switch v.Name() {
+			case "5":
+				a5 = true
+			case "6":
+				a6 = true
+			default:
+				t.Fatal(v.Name())
+			}
+		}
+	}
+	if !(aB && a5 && a6) {
+		t.Fatal(aB, a5, a6)
+	}
+
+	// ---------------------------------------------------------------- a/b
+	d, err = fs.Open("a/b")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -244,9 +388,153 @@ func TestHTTP(t *testing.T) {
 			}
 		default:
 			switch v.Name() {
-			case "3.x":
+			case "3":
 				aB3 = true
-			case "4.x":
+			case "4":
+				aB4 = true
+			default:
+				t.Fatal(v.Name())
+			}
+		}
+	}
+	if !(aB3 && aB4 && aBC) {
+		t.Fatal(aB4, aB4, aBC)
+	}
+
+	// --------------------------------------------------------------- a/b/
+	d, err = fs.Open("a/b/")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	stat, err = d.Stat()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if g, e := stat.IsDir(), true; g != e {
+		t.Fatal(g, e)
+	}
+
+	list, err = d.Readdir(0)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if g, e := len(list), 3; g != e {
+		t.Fatal(g, e)
+	}
+
+	for _, v := range list {
+		switch v.IsDir() {
+		case true:
+			switch v.Name() {
+			case "c":
+				aBC = true
+			default:
+				t.Fatal(v.Name())
+			}
+		default:
+			switch v.Name() {
+			case "3":
+				aB3 = true
+			case "4":
+				aB4 = true
+			default:
+				t.Fatal(v.Name())
+			}
+		}
+	}
+	if !(aB3 && aB4 && aBC) {
+		t.Fatal(aB4, aB4, aBC)
+	}
+
+	// -------------------------------------------------------------- /a/b/
+	d, err = fs.Open("/a/b/")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	stat, err = d.Stat()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if g, e := stat.IsDir(), true; g != e {
+		t.Fatal(g, e)
+	}
+
+	list, err = d.Readdir(0)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if g, e := len(list), 3; g != e {
+		t.Fatal(g, e)
+	}
+
+	for _, v := range list {
+		switch v.IsDir() {
+		case true:
+			switch v.Name() {
+			case "c":
+				aBC = true
+			default:
+				t.Fatal(v.Name())
+			}
+		default:
+			switch v.Name() {
+			case "3":
+				aB3 = true
+			case "4":
+				aB4 = true
+			default:
+				t.Fatal(v.Name())
+			}
+		}
+	}
+	if !(aB3 && aB4 && aBC) {
+		t.Fatal(aB4, aB4, aBC)
+	}
+
+	// --------------------------------------------------------------- /a/b
+	d, err = fs.Open("/a/b")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	stat, err = d.Stat()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if g, e := stat.IsDir(), true; g != e {
+		t.Fatal(g, e)
+	}
+
+	list, err = d.Readdir(0)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if g, e := len(list), 3; g != e {
+		t.Fatal(g, e)
+	}
+
+	for _, v := range list {
+		switch v.IsDir() {
+		case true:
+			switch v.Name() {
+			case "c":
+				aBC = true
+			default:
+				t.Fatal(v.Name())
+			}
+		default:
+			switch v.Name() {
+			case "3":
+				aB3 = true
+			case "4":
 				aB4 = true
 			default:
 				t.Fatal(v.Name())
