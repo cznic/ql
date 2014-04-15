@@ -17,7 +17,7 @@
 //
 // 2014-04-15:
 //
-// Added optional IF NOT EXISTS clause to CREATE INDEX and optional IF EXIST
+// Added optional IF NOT EXISTS clause to CREATE INDEX and optional IF EXISTS
 // clause to DROP INDEX.
 //
 // 2014-04-12:
