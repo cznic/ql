@@ -1170,6 +1170,29 @@
 //		INSERT INTO foo VALUES (-1, 2.78);
 //	COMMIT;
 //
+// Mandatory transactions
+//
+// A database cannot be updated (mutated) outside of a transaction. Statements
+// requiring a transaction
+//
+//	ALTER TABLE
+//	COMMIT
+//	CREATE INDEX
+//	CREATE TABLE
+//	DELETE FROM
+//	DROP INDEX
+//	DROP TABLE
+//	INSERT INTO
+//	ROLLBACK
+//	TRUNCATE TABLE
+//	UPDATE
+//
+// A database is effectively read only outside of a transaction. Statements not
+// requiring a transaction
+//
+//	BEGIN TRANSACTION
+//	SELECT FROM
+//
 // COMMIT
 //
 // The commit statement closes the innermost transaction nesting level. If
