@@ -154,16 +154,16 @@
 //
 // The following keywords are reserved and may not be used as identifiers.
 //
-//	ADD      BY          duration  INDEX   NULL      uint
-//	ALTER    byte        EXISTS    INSERT  OFFSET    uint16
-//	AND      COLUMN      false     int     ON        uint32
-//	AS       complex128  float     int16   ORDER     uint64
-//	ASC      complex64   float32   int32   SELECT    uint8
-//	BETWEEN  CREATE      float64   int64   string    UNIQUE
-//	bigint   DELETE      FROM      int8    TABLE     UPDATE
-//	bigrat   DESC        GROUP     INTO    time      VALUES
-//	blob     DISTINCT    IF        LIMIT   true      WHERE
-//	bool     DROP        IN        NOT     TRUNCATE
+//	ADD      BY          duration  INDEX   NULL    TRUNCATE
+//	ALTER    byte        EXISTS    INSERT  OFFSET  uint
+//	AND      COLUMN      false     int     ON      uint16
+//	AS       complex128  float     int16   ORDER   uint32
+//	ASC      complex64   float32   int32   SELECT  uint64
+//	BETWEEN  CREATE      float64   int64   SET     uint8
+//	bigint   DELETE      FROM      int8    string  UNIQUE
+//	bigrat   DESC        GROUP     INTO    TABLE   UPDATE
+//	blob     DISTINCT    IF        LIMIT   time    VALUES
+//	bool     DROP        IN        NOT     true    WHERE
 //
 // Keywords are not case sensitive.
 //
@@ -1624,7 +1624,7 @@
 //
 // Update statements change values of fields in rows of a table.
 //
-//  UpdateStmt = "UPDATE" TableName AssignmentList [ WhereClause ] .
+//  UpdateStmt = "UPDATE" TableName [ "SET" ] AssignmentList [ WhereClause ] .
 //
 //  AssignmentList = Assignment { "," Assignment } [ "," ] .
 //  Assignment = ColumnName "=" Expression .
@@ -1637,6 +1637,8 @@
 //			DepartmentID = 1000+DepartmentID,
 //		WHERE DepartmentID < 1000;
 //	COMMIT;
+//
+// Note: The SET clause is optional.
 //
 // System Tables
 //

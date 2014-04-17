@@ -204,7 +204,7 @@ UnaryExpr = [
 		| "-"
 		| "+"
 	  ] PrimaryExpression .
-UpdateStmt = "UPDATE" TableName AssignmentList [ WhereClause ] .
+UpdateStmt = "UPDATE" TableName [ "SET" ] AssignmentList [ WhereClause ] .
 Values = "VALUES" "(" ExpressionList ")" {
 		 "," "(" ExpressionList ")"
 	  } [ "," ] .

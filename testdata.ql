@@ -8483,3 +8483,37 @@ BEGIN TRANSACTION;
 COMMIT;
 SELECT p, string(c) FROM t;
 |?p, ?
+
+-- S 725
+BEGIN TRANSACTION;
+	UPDATE none SET
+		DepartmentID = DepartmentID+1000,
+	WHERE DepartmentID == 33;
+COMMIT;
+SELECT * FROM employee;
+||table.*not.*exist
+
+-- S 726
+BEGIN TRANSACTION;
+	UPDATE employee SET
+		FirstName = "John"
+	WHERE DepartmentID == 33;
+COMMIT;
+SELECT * FROM employee;
+||unknown.*FirstName
+
+-- S 727
+BEGIN TRANSACTION;
+	UPDATE employee SET
+		DepartmentID = DepartmentID+1000,
+	WHERE DepartmentID == 33;
+COMMIT;
+SELECT * FROM employee
+ORDER BY LastName;
+|sLastName, lDepartmentID
+[Heisenberg 1033]
+[John <nil>]
+[Jones 1033]
+[Rafferty 31]
+[Robinson 34]
+[Smith 34]

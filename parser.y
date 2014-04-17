@@ -45,7 +45,7 @@ import (
 	offset on order oror
 	qlParam
 	rollback rsh runeType
-	selectKwd stringType stringLit
+	selectKwd set stringType stringLit
 	tableKwd timeType transaction trueKwd truncate
 	uintType uint16Type uint32Type uint64Type uint8Type unique update
 	values
@@ -972,9 +972,9 @@ Type:
 |	uint8Type
 
 UpdateStmt:
-	update TableName AssignmentList UpdateStmt1
+	update TableName oSet AssignmentList UpdateStmt1
 	{
-		$$ = &updateStmt{tableName: $2.(string), list: $3.([]assignment), where: $4.(*whereRset).expr}
+		$$ = &updateStmt{tableName: $2.(string), list: $4.([]assignment), where: $5.(*whereRset).expr}
 	}
 
 UpdateStmt1:
@@ -1029,3 +1029,6 @@ WhereClause:
 		$$ = &whereRset{expr: $2.(expression)}
 	}
 
+
+oSet:
+|	set
