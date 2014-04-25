@@ -977,7 +977,6 @@ func (r *selectRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, dat
 
 	var flds []*fld
 	m := map[interface{}]interface{}{}
-	out := make([]interface{}, len(r.flds))
 	ok := false
 	return r.src.do(ctx, onlyNames, func(rid interface{}, in []interface{}) (more bool, err error) {
 		if ok {
@@ -987,6 +986,7 @@ func (r *selectRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, dat
 				}
 			}
 			m["$id"] = rid
+			out := make([]interface{}, len(r.flds))
 			for i, fld := range r.flds {
 				if out[i], err = fld.expr.eval(m, ctx.arg); err != nil {
 					return false, err

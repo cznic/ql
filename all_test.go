@@ -6,6 +6,7 @@ package ql
 
 import (
 	"bytes"
+	"crypto/md5"
 	"database/sql"
 	"fmt"
 	"io"
@@ -22,6 +23,7 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/cznic/strutil"
 )
@@ -2193,4 +2195,153 @@ func dumpFields(f []*fld) string {
 		a = append(a, fmt.Sprintf("%p: %q", v, v.name))
 	}
 	return strings.Join(a, ", ")
+}
+
+func rndBytes(n int, seed int64) []byte {
+	rng := rand.New(rand.NewSource(seed))
+	b := make([]byte, n)
+	for i := range b {
+		b[i] = byte(rng.Int())
+	}
+	return b
+}
+
+func TestIssue50(t *testing.T) { // https://github.com/cznic/ql/issues/50
+	const dbFileName = "scans.qldb"
+
+	type Scan struct {
+		ID        int
+		Jobname   string
+		Timestamp time.Time
+		Data      []byte
+
+		X, Y, Z            float64
+		Alpha, Beta, Gamma float64
+	}
+
+	// querys
+	const dbCreateTables = `
+CREATE TABLE IF NOT EXISTS Scans (
+	X float,
+	Y float,
+	Z float,
+	Alpha float,
+	Beta float,
+	Gamma float,
+	Timestamp time,
+	Jobname string,
+	Data blob
+);
+CREATE INDEX IF NOT EXISTS ScansId on Scans (id());
+`
+
+	const dbInsertScan = `
+INSERT INTO Scans (Timestamp,Jobname,X,Y,Z,Alpha,Beta,Gamma,Data) VALUES(
+$1,
+$2,
+$3,$4,$5,
+$6,$7,$8,
+$9
+);
+`
+
+	const dbSelectOverview = `SELECT id() as ID, Jobname, Timestamp, Data, Y,Z, Gamma From Scans;`
+
+	dir, err := ioutil.TempDir("", "ql-test-")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(dir)
+
+	// create db
+	t.Log("Opening db.")
+	RegisterDriver()
+	db, err := sql.Open("ql", filepath.Join(dir, dbFileName))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	tx, err := db.Begin()
+	if err != nil {
+		return
+	}
+	_, err = tx.Exec(dbCreateTables)
+	if err != nil {
+		t.Fatal("could not create Table.", err)
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		t.Fatal("could not commit transaction.", err)
+	}
+
+	// insert some data
+	tx, err = db.Begin()
+	if err != nil {
+		t.Fatalf("db.Begin() Error - %v", err)
+	}
+
+	stmt, err := tx.Prepare(dbInsertScan)
+	if err != nil {
+		t.Fatalf("tx.Prepare(dbInsertScan) Error - %v", err)
+	}
+	defer stmt.Close()
+
+	scanFnames := []string{"1.xyz", "2.xyz", "3.xyz"}
+	for _, fname := range scanFnames {
+		scanData, err := ioutil.ReadFile(filepath.Join("_testdata", fname))
+		if err != nil {
+			t.Fatalf("ioutil.ReadFile(%s) Error - %v", fname, err)
+		}
+
+		// hash before insert
+		h := md5.New()
+		h.Write(scanData)
+
+		t.Logf("md5 of %s: %x", fname, h.Sum(nil))
+
+		_, err = stmt.Exec(time.Now(), "Job-0815", 1.0, 2.0, 3.0, 0.1, 0.2, 0.3, scanData)
+		if err != nil {
+			t.Fatalf("stmt.Exec() Error - %v", err)
+			return
+		}
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		t.Fatalf("tx.Commit() Error - %v", err)
+	}
+
+	// select the inserted data
+	rows, err := db.Query(dbSelectOverview)
+	if err != nil {
+		t.Fatalf("db.Query(dbSelectOverview) Error - %v", err)
+	}
+	defer rows.Close()
+
+	var scans []Scan
+	for rows.Next() {
+		var s Scan
+		var data []byte
+
+		err = rows.Scan(&s.ID, &s.Jobname, &s.Timestamp, &data, &s.Y, &s.Z, &s.Gamma)
+		if err != nil {
+			t.Fatalf("rows.Scan(&s..) Error - %v", err)
+		}
+		scans = append(scans, s)
+
+		// hash after select
+		h := md5.New()
+		h.Write(data)
+
+		t.Logf("md5 of %d: %x", s.ID, h.Sum(nil))
+	}
+
+	err = rows.Err()
+	if err != nil {
+		t.Fatalf("rows.Err() Error - %v", err)
+	}
+
+	t.Log("Done:", scans)
 }
