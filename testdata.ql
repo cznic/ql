@@ -8517,3 +8517,129 @@ ORDER BY LastName;
 [Rafferty 31]
 [Robinson 34]
 [Smith 34]
+
+-- 728 // https://github.com/cznic/ql/issues/49
+BEGIN TRANSACTION;
+	CREATE TABLE IF NOT EXISTS t (username string, departname string, created time, detail_id int, height float64, avatar blob, is_man bool);
+	CREATE UNIQUE INDEX UQE_userinfo_username ON t (username);
+	INSERT INTO t (username, departname, created, detail_id, height, avatar, is_man) VALUES ( 
+		"xiaolunwen",
+		"dev",
+		now(),
+		1,
+		1.78,
+		blob("012"),
+		true,
+	);
+	DELETE FROM t WHERE id() == 1;
+COMMIT;
+SELECT * FROM t;
+|?username, ?departname, ?created, ?detail_id, ?height, ?avatar, ?is_man
+
+-- 729 // https://github.com/cznic/ql/issues/49
+BEGIN TRANSACTION;
+	CREATE TABLE IF NOT EXISTS t (username string, departname string, created time, detail_id int, height float64, avatar blob, is_man bool);
+	CREATE UNIQUE INDEX UQE_userinfo_username ON t (username);
+	INSERT INTO t (username, departname, created, detail_id, height, avatar, is_man) VALUES ( 
+		"xiaolunwen",
+		"dev",
+		now(),
+		1,
+		1.78,
+		__testBlob(256),
+		true,
+	);
+	DELETE FROM t WHERE id() == 1;
+COMMIT;
+SELECT * FROM t;
+|?username, ?departname, ?created, ?detail_id, ?height, ?avatar, ?is_man
+
+-- 730 // https://github.com/cznic/ql/issues/49
+BEGIN TRANSACTION;
+	CREATE TABLE IF NOT EXISTS t (username string, departname string, created time, detail_id int, height float64, avatar blob, is_man bool);
+	CREATE UNIQUE INDEX UQE_userinfo_username ON t (username);
+	INSERT INTO t (username, departname, created, detail_id, height, avatar, is_man) VALUES ( 
+		"xiaolunwen",
+		"dev",
+		now(),
+		1,
+		1.78,
+		__testBlob(1<<16),
+		true,
+	);
+	DELETE FROM t WHERE id() == 1;
+COMMIT;
+SELECT * FROM t;
+|?username, ?departname, ?created, ?detail_id, ?height, ?avatar, ?is_man
+
+-- 731 // https://github.com/cznic/ql/issues/49
+BEGIN TRANSACTION;
+	CREATE TABLE IF NOT EXISTS t (username string, departname string, created time, detail_id int, height float64, avatar blob, is_man bool);
+	CREATE UNIQUE INDEX UQE_userinfo_username ON t (username);
+	INSERT INTO t (username, departname, created, detail_id, height, avatar, is_man) VALUES ( 
+		"xiaolunwen",
+		"dev",
+		now(),
+		1,
+		1.78,
+		__testBlob(1<<20),
+		true,
+	);
+	DELETE FROM t WHERE id() == 1;
+COMMIT;
+SELECT * FROM t;
+|?username, ?departname, ?created, ?detail_id, ?height, ?avatar, ?is_man
+
+-- 732 // https://github.com/cznic/ql/issues/49
+BEGIN TRANSACTION;
+	CREATE TABLE IF NOT EXISTS t (username string, departname string, created time, detail_id int, height float64, avatar blob, is_man bool);
+	CREATE UNIQUE INDEX UQE_userinfo_username ON t (username);
+	INSERT INTO t (username, departname, created, detail_id, height, avatar, is_man) VALUES ( 
+		"xiaolunwen",
+		"dev",
+		now(),
+		1,
+		1.78,
+		__testBlob(1<<20),
+		true,
+	), (
+		"2xiaolunwen",
+		"2dev",
+		now(),
+		2,
+		2.78,
+		__testBlob(1<<21),
+		true,
+	);
+	DELETE FROM t WHERE id() == 1;
+COMMIT;
+SELECT id() == 2, username == "2xiaolunwen", len(string(avatar)) == 1<<21 FROM t;
+|b, b, b
+[true true true]
+
+-- 733 // https://github.com/cznic/ql/issues/49
+BEGIN TRANSACTION;
+	CREATE TABLE IF NOT EXISTS t (username string, departname string, created time, detail_id int, height float64, avatar blob, is_man bool);
+	CREATE UNIQUE INDEX UQE_userinfo_username ON t (username);
+	INSERT INTO t (username, departname, created, detail_id, height, avatar, is_man) VALUES ( 
+		"xiaolunwen",
+		"dev",
+		now(),
+		1,
+		1.78,
+		__testBlob(1<<20),
+		true,
+	), (
+		"2xiaolunwen",
+		"2dev",
+		now(),
+		2,
+		2.78,
+		__testBlob(1<<21),
+		true,
+	);
+	DELETE FROM t WHERE id() == 2;
+COMMIT;
+SELECT id() == 1, username == "xiaolunwen", len(string(avatar)) == 1<<20 FROM t;
+|b, b, b
+[true true true]

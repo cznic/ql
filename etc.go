@@ -104,6 +104,63 @@ func invSliceBoundX(s string, x uint64) error {
 	return fmt.Errorf("invalid slice index %d (out of bounds for %d-byte string)", x, len(s))
 }
 
+func intExpr(x interface{}) (i int64, err error) {
+	switch x := x.(type) {
+	case idealInt:
+		if x < 0 {
+			return 0, invNegLO(x)
+		}
+
+		return int64(x), nil
+	case idealRune:
+		if x < 0 {
+			return 0, invNegLO(x)
+		}
+
+		return int64(x), nil
+	case idealUint:
+		if x < 0 {
+			return 0, invNegLO(x)
+		}
+
+		return int64(x), nil
+	case int8:
+		if x < 0 {
+			return 0, invNegLO(x)
+		}
+
+		return int64(x), nil
+	case int16:
+		if x < 0 {
+			return 0, invNegLO(x)
+		}
+
+		return int64(x), nil
+	case int32:
+		if x < 0 {
+			return 0, invNegLO(x)
+		}
+
+		return int64(x), nil
+	case int64:
+		if x < 0 {
+			return 0, invNegLO(x)
+		}
+
+		return int64(x), nil
+	case uint8:
+		return int64(x), nil
+	case uint16:
+		return int64(x), nil
+	case uint32:
+		return int64(x), nil
+	case uint64:
+		return int64(x), nil
+	default:
+		return 0, fmt.Errorf("non-integer expression: %v (value of type %T)", x, x)
+	}
+}
+
 func limOffExpr(x interface{}) (i uint64, err error) {
 	switch x := x.(type) {
 	case idealInt:

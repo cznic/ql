@@ -7,6 +7,7 @@ package ql
 import (
 	"fmt"
 	"log"
+	"math/rand"
 	"reflect"
 	"strings"
 	"time"
@@ -21,38 +22,40 @@ var builtin = map[string]struct {
 	isStatic    bool
 	isAggregate bool
 }{
-	"avg":         {builtinAvg, 1, 1, false, true},
-	"complex":     {builtinComplex, 2, 2, true, false},
-	"contains":    {builtinContains, 2, 2, true, false},
-	"count":       {builtinCount, 0, 1, false, true},
-	"date":        {builtinDate, 8, 8, true, false},
-	"day":         {builtinDay, 1, 1, true, false},
-	"formatTime":  {builtinFormatTime, 2, 2, true, false},
-	"hasPrefix":   {builtinHasPrefix, 2, 2, true, false},
-	"hasSuffix":   {builtinHasSuffix, 2, 2, true, false},
-	"hour":        {builtinHour, 1, 1, true, false},
-	"hours":       {builtinHours, 1, 1, true, false},
-	"id":          {builtinID, 0, 0, false, false},
-	"imag":        {builtinImag, 1, 1, true, false},
-	"len":         {builtinLen, 1, 1, true, false},
-	"max":         {builtinMax, 1, 1, false, true},
-	"min":         {builtinMin, 1, 1, false, true},
-	"minute":      {builtinMinute, 1, 1, true, false},
-	"minutes":     {builtinMinutes, 1, 1, true, false},
-	"month":       {builtinMonth, 1, 1, true, false},
-	"nanosecond":  {builtinNanosecond, 1, 1, true, false},
-	"nanoseconds": {builtinNanoseconds, 1, 1, true, false},
-	"now":         {builtinNow, 0, 0, false, false},
-	"parseTime":   {builtinParseTime, 2, 2, true, false},
-	"real":        {builtinReal, 1, 1, true, false},
-	"second":      {builtinSecond, 1, 1, true, false},
-	"seconds":     {builtinSeconds, 1, 1, true, false},
-	"since":       {builtinSince, 1, 1, false, false},
-	"sum":         {builtinSum, 1, 1, false, true},
-	"timeIn":      {builtinTimeIn, 2, 2, true, false},
-	"weekday":     {builtinWeekday, 1, 1, true, false},
-	"year":        {builtinYear, 1, 1, true, false},
-	"yearDay":     {builtinYearday, 1, 1, true, false},
+	"__testBlob":   {builtinTestBlob, 1, 1, true, false},
+	"__testString": {builtinTestString, 1, 1, true, false},
+	"avg":          {builtinAvg, 1, 1, false, true},
+	"complex":      {builtinComplex, 2, 2, true, false},
+	"contains":     {builtinContains, 2, 2, true, false},
+	"count":        {builtinCount, 0, 1, false, true},
+	"date":         {builtinDate, 8, 8, true, false},
+	"day":          {builtinDay, 1, 1, true, false},
+	"formatTime":   {builtinFormatTime, 2, 2, true, false},
+	"hasPrefix":    {builtinHasPrefix, 2, 2, true, false},
+	"hasSuffix":    {builtinHasSuffix, 2, 2, true, false},
+	"hour":         {builtinHour, 1, 1, true, false},
+	"hours":        {builtinHours, 1, 1, true, false},
+	"id":           {builtinID, 0, 0, false, false},
+	"imag":         {builtinImag, 1, 1, true, false},
+	"len":          {builtinLen, 1, 1, true, false},
+	"max":          {builtinMax, 1, 1, false, true},
+	"min":          {builtinMin, 1, 1, false, true},
+	"minute":       {builtinMinute, 1, 1, true, false},
+	"minutes":      {builtinMinutes, 1, 1, true, false},
+	"month":        {builtinMonth, 1, 1, true, false},
+	"nanosecond":   {builtinNanosecond, 1, 1, true, false},
+	"nanoseconds":  {builtinNanoseconds, 1, 1, true, false},
+	"now":          {builtinNow, 0, 0, false, false},
+	"parseTime":    {builtinParseTime, 2, 2, true, false},
+	"real":         {builtinReal, 1, 1, true, false},
+	"second":       {builtinSecond, 1, 1, true, false},
+	"seconds":      {builtinSeconds, 1, 1, true, false},
+	"since":        {builtinSince, 1, 1, false, false},
+	"sum":          {builtinSum, 1, 1, false, true},
+	"timeIn":       {builtinTimeIn, 2, 2, true, false},
+	"weekday":      {builtinWeekday, 1, 1, true, false},
+	"year":         {builtinYear, 1, 1, true, false},
+	"yearDay":      {builtinYearday, 1, 1, true, false},
 }
 
 func badNArgs(min int, s string, arg []interface{}) error {
@@ -70,6 +73,34 @@ func badNArgs(min int, s string, arg []interface{}) error {
 
 func invArg(arg interface{}, s string) error {
 	return fmt.Errorf("invalid argument %v (type %T) for %s", arg, arg, s)
+}
+
+func builtinTestBlob(arg []interface{}, ctx map[interface{}]interface{}) (v interface{}, err error) {
+	n, err := intExpr(arg[0])
+	if err != nil {
+		return nil, err
+	}
+
+	rng := rand.New(rand.NewSource(n))
+	b := make([]byte, n)
+	for i := range b {
+		b[i] = byte(rng.Int())
+	}
+	return b, nil
+}
+
+func builtinTestString(arg []interface{}, ctx map[interface{}]interface{}) (v interface{}, err error) {
+	n, err := intExpr(arg[0])
+	if err != nil {
+		return nil, err
+	}
+
+	rng := rand.New(rand.NewSource(n))
+	b := make([]byte, n)
+	for i := range b {
+		b[i] = byte(rng.Int())
+	}
+	return string(b), nil
 }
 
 func builtinAvg(arg []interface{}, ctx map[interface{}]interface{}) (v interface{}, err error) {
