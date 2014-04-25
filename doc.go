@@ -911,8 +911,6 @@
 //
 // - String values are comparable and ordered, lexically byte-wise.
 //
-// - Blob values are comparable and ordered, lexically byte-wise.
-//
 // - Time values are comparable and ordered.
 //
 // Whenever any operand of any comparison operation is NULL, the result is
