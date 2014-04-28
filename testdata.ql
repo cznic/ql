@@ -8643,3 +8643,14 @@ COMMIT;
 SELECT id() == 1, username == "xiaolunwen", len(string(avatar)) == 1<<20 FROM t;
 |b, b, b
 [true true true]
+
+-- 734 // https://github.com/cznic/ql/issues/51
+BEGIN TRANSACTION;
+	CREATE TABLE IF NOT EXISTS no_id_user (user string, remain int, total int);
+	CREATE UNIQUE INDEX UQE_no_id_user_user ON no_id_user (user);
+	DELETE FROM no_id_user WHERE user == "xlw";
+	INSERT INTO no_id_user (user, remain, total) VALUES ("xlw", 20, 100);
+COMMIT;
+SELECT user, remain, total FROM no_id_user WHERE user == "xlw" LIMIT 1;
+|suser, lremain, ltotal
+[xlw 20 100]

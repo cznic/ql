@@ -2038,7 +2038,7 @@ func (db *DB) Info() (r *DbInfo, err error) {
 			case i == 0:
 				cn = "id()"
 			default:
-				cn = t.cols[i-1].name
+				cn = t.cols0[i-1].name
 			}
 			r.Indices = append(r.Indices, IndexInfo{x.name, nm, cn, x.unique})
 		}
