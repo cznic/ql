@@ -380,8 +380,8 @@ type file struct {
 	f0       lldb.OSFile
 	id       int64
 	lck      io.Closer
+	mu       sync.Mutex
 	name     string
-	rwmu     sync.RWMutex
 	tempFile func(dir, prefix string) (f lldb.OSFile, err error)
 	wal      *os.File
 }
@@ -580,19 +580,12 @@ func errSet(p *error, errs ...error) (err error) {
 }
 
 func (s *file) lock() func() {
-	s.rwmu.Lock()
-	return s.rwmu.Unlock
-}
-
-func (s *file) rLock() func() {
-	s.rwmu.RLock()
-	return s.rwmu.RUnlock
+	s.mu.Lock()
+	return s.mu.Unlock
 }
 
 func (s *file) Close() (err error) {
-	if s.wal != nil {
-		defer s.lock()()
-	}
+	defer s.lock()()
 
 	es := s.f0.Sync()
 	ef := s.f0.Close()
@@ -607,9 +600,7 @@ func (s *file) Close() (err error) {
 func (s *file) Name() string { return s.name }
 
 func (s *file) Verify() (allocs int64, err error) {
-	if s.wal != nil {
-		defer s.lock()()
-	}
+	defer s.lock()()
 	var stat lldb.AllocStats
 	if err = s.a.Verify(lldb.NewMemFiler(), nil, &stat); err != nil {
 		return
@@ -697,30 +688,21 @@ func (s *file) CreateTemp(asc bool) (bt temp, err error) {
 }
 
 func (s *file) BeginTransaction() (err error) {
-	if s.wal != nil {
-		defer s.lock()()
-	}
+	defer s.lock()()
 	return s.f.BeginUpdate()
 }
 
 func (s *file) Rollback() (err error) {
-	if s.wal != nil {
-		defer s.lock()()
-	}
+	defer s.lock()()
 	return s.f.Rollback()
 }
 
 func (s *file) Commit() (err error) {
-	if s.wal != nil {
-		defer s.lock()()
-	}
+	defer s.lock()()
 	return s.f.EndUpdate()
 }
 
 func (s *file) Create(data ...interface{}) (h int64, err error) {
-	if s.wal != nil {
-		defer s.lock()()
-	}
 	if err = expand(data); err != nil {
 		return
 	}
@@ -734,15 +716,14 @@ func (s *file) Create(data ...interface{}) (h int64, err error) {
 		return
 	}
 
+	defer s.lock()()
 	return s.a.Alloc(b)
 }
 
 func (s *file) Delete(h int64, blobCols ...*col) (err error) {
-	if s.wal != nil {
-		defer s.lock()()
-	}
 	switch len(blobCols) {
 	case 0:
+		defer s.lock()()
 		return s.a.Free(h)
 	default:
 		return s.free(h, blobCols)
@@ -755,9 +736,8 @@ func (s *file) ResetID() (err error) {
 }
 
 func (s *file) ID() (int64, error) {
-	if s.wal != nil {
-		defer s.lock()()
-	}
+	defer s.lock()()
+
 	s.id++
 	b := make([]byte, 8)
 	id := s.id
@@ -770,7 +750,9 @@ func (s *file) ID() (int64, error) {
 }
 
 func (s *file) free(h int64, blobCols []*col) (err error) {
+	s.mu.Lock()
 	b, err := s.a.Get(nil, h) //LATER +bufs
+	s.mu.Unlock()
 	if err != nil {
 		return
 	}
@@ -794,14 +776,14 @@ func (s *file) free(h int64, blobCols []*col) (err error) {
 			return
 		}
 	}
+	defer s.lock()()
 	return s.a.Free(h)
 }
 
 func (s *file) Read(dst []interface{}, h int64, cols ...*col) (data []interface{}, err error) { //NTYPE
-	if s.wal != nil {
-		defer s.rLock()()
-	}
+	s.mu.Lock()
 	b, err := s.a.Get(nil, h) //LATER +bufs
+	s.mu.Unlock()
 	if err != nil {
 		return
 	}
@@ -872,7 +854,9 @@ func (s *file) freeChunks(enc []byte) (err error) {
 	}
 
 	for next != 0 {
+		s.mu.Lock()
 		b, err := s.a.Get(nil, next)
+		s.mu.Unlock()
 		if err != nil {
 			return err
 		}
@@ -894,10 +878,13 @@ func (s *file) freeChunks(enc []byte) (err error) {
 			return fmt.Errorf("(file-010) corrupted DB: chunk items %d (%v)", len(items), items)
 		}
 
+		s.mu.Lock()
 		if err = s.a.Free(next); err != nil {
+			s.mu.Unlock()
 			return err
 		}
 
+		s.mu.Unlock()
 		next = h
 	}
 	return
@@ -934,7 +921,9 @@ func (s *file) loadChunks(enc []byte) (v interface{}, err error) {
 	}
 
 	for next != 0 {
+		s.mu.Lock()
 		b, err := s.a.Get(nil, next)
+		s.mu.Unlock()
 		if err != nil {
 			return nil, err
 		}
@@ -966,14 +955,12 @@ func (s *file) loadChunks(enc []byte) (v interface{}, err error) {
 }
 
 func (s *file) Update(h int64, data ...interface{}) (err error) {
-	if s.wal != nil {
-		defer s.lock()()
-	}
 	b, err := lldb.EncodeScalars(data...)
 	if err != nil {
 		return
 	}
 
+	defer s.lock()()
 	return s.a.Realloc(h, b)
 }
 
@@ -1052,7 +1039,9 @@ func (s *file) flatten(data []interface{}) (err error) {
 				return
 			}
 
+			s.mu.Lock()
 			h, err := s.a.Alloc(buf)
+			s.mu.Unlock()
 			if err != nil {
 				return err
 			}
@@ -1113,9 +1102,6 @@ func init() {
 // The []byte version of the key in the BTree shares chunks, if any, with
 // the value stored in the record.
 func (x *fileIndex) Create(indexedValue interface{}, h int64) error {
-	if x.f.wal != nil {
-		defer x.f.lock()()
-	}
 	t := x.t
 	switch {
 	case !x.unique:
@@ -1155,9 +1141,6 @@ func (x *fileIndex) Create(indexedValue interface{}, h int64) error {
 }
 
 func (x *fileIndex) Delete(indexedValue interface{}, h int64) error {
-	if x.f.wal != nil {
-		defer x.f.lock()()
-	}
 	chunk, ok := indexedValue.(chunk)
 	if ok {
 		indexedValue = chunk.b
@@ -1182,9 +1165,6 @@ func (x *fileIndex) Delete(indexedValue interface{}, h int64) error {
 }
 
 func (x *fileIndex) Drop() error {
-	if x.f.wal != nil {
-		defer x.f.lock()()
-	}
 	if err := x.Clear(); err != nil {
 		return err
 	}
