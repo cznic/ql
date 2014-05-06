@@ -41,6 +41,20 @@ type schemaField struct {
 	unmarshalType reflect.Type
 }
 
+func (s *schemaField) check(ft reflect.Type, v interface{}) error {
+	t := reflect.TypeOf(v)
+	if ft.AssignableTo(t) {
+		return nil
+	}
+
+	if !ft.ConvertibleTo(t) {
+		return fmt.Errorf("type %s (%v) cannot be converted to %T", ft.Name(), ft.Kind(), t.Name())
+	}
+
+	s.marshalType, s.unmarshalType = t, ft
+	return nil
+}
+
 func parseTag(s string) map[string]string {
 	m := map[string]string{}
 	for _, v := range strings.Split(s, ",") {
@@ -79,7 +93,6 @@ func schemaFor(v interface{}) (*schemaTable, error) {
 	}
 
 	r := &schemaTable{ptr: schemaPtr}
-
 	for i := 0; i < t.NumField(); i++ {
 		f := t.Field(i)
 		fn := f.Name
@@ -131,23 +144,16 @@ func schemaFor(v interface{}) (*schemaTable, error) {
 			fk = ft.Kind()
 		}
 
-		var mt, ut reflect.Type
+		sf := &schemaField{}
 		qt := Type(-1)
 		switch fk {
 		case reflect.Bool:
 			qt = Bool
 		case reflect.Int:
 			qt = Int64
-			t := reflect.TypeOf(int64(0))
-			if ft.AssignableTo(t) {
-				break
+			if err := sf.check(ft, int64(0)); err != nil {
+				return nil, err
 			}
-
-			if !ft.ConvertibleTo(t) {
-				return nil, fmt.Errorf("type %s (%v) cannot be converted to %T", ft.Name(), fk, t.Name())
-			}
-
-			mt, ut = t, ft
 		case reflect.Int8:
 			qt = Int8
 		case reflect.Int16:
@@ -200,23 +206,16 @@ func schemaFor(v interface{}) (*schemaTable, error) {
 			}
 		case reflect.String:
 			qt = String
-			t := reflect.TypeOf("")
-			if ft.AssignableTo(t) {
-				break
+			if err := sf.check(ft, ""); err != nil {
+				return nil, err
 			}
-
-			if !ft.ConvertibleTo(t) {
-				return nil, fmt.Errorf("type %s (%v) cannot be converted to %T", ft.Name(), fk, t.Name())
-			}
-
-			mt, ut = t, ft
 		}
 
 		if qt < 0 {
 			return nil, fmt.Errorf("cannot derive schema for type %s (%v)", ft.Name(), fk)
 		}
 
-		r.fields = append(r.fields, &schemaField{i, fn == "ID" && r.hasID, ptr, fn, qt, mt, ut})
+		r.fields = append(r.fields, &schemaField{i, fn == "ID" && r.hasID, ptr, fn, qt, sf.marshalType, sf.unmarshalType})
 	}
 
 	schemaMu.Lock()
