@@ -8,20 +8,65 @@ import (
 	"testing"
 )
 
-type testSchema struct {
-	a int8
-	A int8
-}
+type (
+	testSchema struct {
+		a  int8
+		ID int64
+		A  int8
+		b  int
+		B  int `ql:"-"`
+	}
+
+	testSchema2 struct{}
+
+	testSchema3 struct {
+		a  int8
+		ID uint64
+		A  int8
+		b  int
+		B  int `ql:"-"`
+		c  bool
+		C  bool `ql:"name cc"`
+	}
+
+	testSchema4 struct {
+		a  int8
+		ID int64 `ql:"name id"`
+		A  int8
+		b  int
+		B  int `ql:"-"`
+		c  bool
+		C  bool `ql:"name cc"`
+	}
+
+	testSchema5 struct {
+		I int `ql:"index x,uindex u"`
+	}
+
+	testSchema6 struct {
+		A string `ql:"index x"`
+	}
+
+	testSchema7 struct {
+		A int
+		B string `ql:"uindex x"`
+		C bool
+	}
+)
 
 const (
-	testSchemaSFFF = "create table testSchema (A int8)"
-	testSchemaSFFT = "create table ql_testSchema (A int8)"
-	testSchemaSFTF = "create table if not exists testSchema (A int8)"
-	testSchemaSFTT = "create table if not exists ql_testSchema (A int8)"
-	testSchemaSTFF = "begin transaction; create table testSchema (A int8); commit;"
-	testSchemaSTFT = "begin transaction; create table ql_testSchema (A int8); commit;"
-	testSchemaSTTF = "begin transaction; create table if not exists testSchema (A int8); commit;"
-	testSchemaSTTT = "begin transaction; create table if not exists ql_testSchema (A int8); commit;"
+	testSchemaSFFF = "begin transaction; create table if not exists testSchema (A int8); commit;"
+	testSchemaSFFT = "begin transaction; create table if not exists ql_testSchema (A int8); commit;"
+	testSchemaSFTF = "begin transaction; create table testSchema (A int8); commit;"
+	testSchemaSFTT = "begin transaction; create table ql_testSchema (A int8); commit;"
+	testSchemaSTFF = "create table if not exists testSchema (A int8)"
+	testSchemaSTFT = "create table if not exists ql_testSchema (A int8)"
+	testSchemaSTTF = "create table testSchema (A int8)"
+	testSchemaSTTT = "create table ql_testSchema (A int8)"
+	testSchema3S   = "begin transaction; create table if not exists testSchema3 (ID uint64, A int8, cc bool); commit;"
+	testSchema4S   = "begin transaction; create table if not exists testSchema4 (id int64, A int8, cc bool); commit;"
+	testSchema6S   = "create table testSchema6 (A string); create index x on testSchema6 (A);"
+	testSchema7S   = "begin transaction; create table testSchema7 (A int64, B string, C bool); create unique index x on testSchema7 (B); commit;"
 )
 
 func TestSchema(t *testing.T) {
@@ -39,13 +84,19 @@ func TestSchema(t *testing.T) {
 		{testSchema{}, "", &SchemaOptions{}, false, testSchemaSFFF},
 		{testSchema{}, "", &SchemaOptions{KeepPrefix: true}, false, testSchemaSFFT},
 		// 5
-		{testSchema{}, "", &SchemaOptions{IfNotExists: true}, false, testSchemaSFTF},
-		{testSchema{}, "", &SchemaOptions{IfNotExists: true, KeepPrefix: true}, false, testSchemaSFTT},
-		{testSchema{}, "", &SchemaOptions{Transaction: true}, false, testSchemaSTFF},
-		{testSchema{}, "", &SchemaOptions{Transaction: true, KeepPrefix: true}, false, testSchemaSTFT},
-		{testSchema{}, "", &SchemaOptions{Transaction: true, IfNotExists: true}, false, testSchemaSTTF},
+		{testSchema{}, "", &SchemaOptions{NoIfNotExists: true}, false, testSchemaSFTF},
+		{testSchema{}, "", &SchemaOptions{NoIfNotExists: true, KeepPrefix: true}, false, testSchemaSFTT},
+		{testSchema{}, "", &SchemaOptions{NoTransaction: true}, false, testSchemaSTFF},
+		{testSchema{}, "", &SchemaOptions{NoTransaction: true, KeepPrefix: true}, false, testSchemaSTFT},
+		{testSchema{}, "", &SchemaOptions{NoTransaction: true, NoIfNotExists: true}, false, testSchemaSTTF},
 		// 10
-		{testSchema{}, "", &SchemaOptions{Transaction: true, IfNotExists: true, KeepPrefix: true}, false, testSchemaSTTT},
+		{testSchema{}, "", &SchemaOptions{NoTransaction: true, NoIfNotExists: true, KeepPrefix: true}, false, testSchemaSTTT},
+		{testSchema2{}, "", nil, true, ""},
+		{testSchema3{}, "", nil, false, testSchema3S},
+		{testSchema4{}, "", nil, false, testSchema4S},
+		{testSchema5{}, "", nil, true, ""},
+		{testSchema6{}, "", &SchemaOptions{NoTransaction: true, NoIfNotExists: true}, false, testSchema6S},
+		{testSchema7{}, "", &SchemaOptions{NoIfNotExists: true}, false, testSchema7S},
 	}
 
 	for iTest, test := range tab {
@@ -55,6 +106,7 @@ func TestSchema(t *testing.T) {
 		}
 
 		if err != nil {
+			t.Log(iTest, err)
 			continue
 		}
 

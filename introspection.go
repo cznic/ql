@@ -37,6 +37,20 @@ type schemaField struct {
 	typ  Type
 }
 
+func parseTag(s string) map[string]string {
+	m := map[string]string{}
+	for _, v := range strings.Split(s, ",") {
+		v = strings.TrimSpace(v)
+		switch n := strings.IndexRune(v, ' '); {
+		case n < 0:
+			m[v] = ""
+		default:
+			m[v[:n]] = v[n+1:]
+		}
+	}
+	return m
+}
+
 func schemaFor(v interface{}) (*schemaTable, error) {
 	if v == nil {
 		return nil, fmt.Errorf("cannot derive schema for %T(%v)", v, v)
@@ -68,32 +82,35 @@ func schemaFor(v interface{}) (*schemaTable, error) {
 			continue
 		}
 
-		tag := string(f.Tag)
-		tags := strings.Split(tag, " ")
-		tag = ""
-		for _, v := range tags {
-			if strings.HasPrefix(tag, "ql:") {
-				tag = strings.TrimSpace(v[3:])
-				break
-			}
-		}
-		if tag == "-" {
+		tags := parseTag(f.Tag.Get("ql"))
+		if _, ok := tags["-"]; ok {
 			continue
 		}
 
-		if fn == "ID" {
+		if s := tags["name"]; s != "" {
+			fn = s
+		}
+
+		if fn == "ID" && f.Type.Kind() == reflect.Int64 {
 			r.hasID = true
 		}
 		var ix, unique bool
 		var xn string
-		switch {
-		case strings.HasPrefix(tag, "index"):
-			ix, xn = true, strings.TrimSpace(tag[5:])
-		case strings.HasPrefix(tag, "uindex"):
-			ix, unique, xn = true, true, strings.TrimSpace(tag[6:])
+		if s := tags["index"]; s != "" {
+			if _, ok := tags["uindex"]; ok {
+				return nil, fmt.Errorf("both index and uindex in QL struct tag")
+			}
+
+			ix, xn = true, s
+		} else if s := tags["uindex"]; s != "" {
+			if _, ok := tags["index"]; ok {
+				return nil, fmt.Errorf("both index and uindex in QL struct tag")
+			}
+
+			ix, unique, xn = true, true, s
 		}
 		if ix {
-			if fn == "ID" {
+			if fn == "ID" && r.hasID {
 				xn = "id()"
 			}
 			r.indices = append(r.indices, &schemaIndex{xn, fn, unique})
@@ -159,7 +176,7 @@ func schemaFor(v interface{}) (*schemaTable, error) {
 			return nil, fmt.Errorf("cannot derive schema for type %s (%v)", ft.Name(), fk)
 		}
 
-		r.fields = append(r.fields, &schemaField{fn == "ID", ptr, fn, qt})
+		r.fields = append(r.fields, &schemaField{fn == "ID" && r.hasID, ptr, fn, qt})
 	}
 
 	schemaMu.Lock()
@@ -172,14 +189,15 @@ func schemaFor(v interface{}) (*schemaTable, error) {
 }
 
 type SchemaOptions struct {
-	// Wrap the CREATE statement(s) in a transaction.
-	Transaction bool
+	// Don't wrap the CREATE statement(s) in a transaction.
+	NoTransaction bool
 
-	// Insert the IF NOT EXISTS clause in the CREATE statement(s).
-	IfNotExists bool
+	// Don't insert the IF NOT EXISTS clause in the CREATE statement(s).
+	NoIfNotExists bool
 
 	// Do not strip the "pkg." part from type name "pkg.Type", produce
-	// "pkg_Type" table name instead.
+	// "pkg_Type" table name instead. Applies only when no name is not
+	// passed to Schema().
 	KeepPrefix bool
 }
 
@@ -193,16 +211,23 @@ var zeroSchemaOptions SchemaOptions
 //
 // Every struct field type must be one of the QL types or the field's type base
 // type must be one of the QL types or a pointer to one of them. Only exported
-// fields are considered. If an exported field tag contains `ql:"-"` then such
-// field is not considered. A field with name ID corresponds to id() - and is
-// thus not a part of the CREATE statement. A field tag containing ql:"index
-// name" or ql:"uindex name" triggers additionally creating an index or unique
-// index on the respective field.  Fields are considered in the order of
-// appearance.
+// fields are considered. If an exported field QL tag contains "-" (`ql:"-"`)
+// then such field is not considered. A field with name ID, having type int64,
+// corresponds to id() - and is thus not a part of the CREATE statement. A
+// field QL tag containing "index name" or "uindex name" triggers additionally
+// creating an index or unique index on the respective field.  Fields can be
+// renamed using a QL tag "name newName". Fields are considered in the order of
+// appearance. A QL tag is a struct tag part prefixed by "ql:". Tags can be
+// combined, for example:
 //
-// If opts.Transaction == true then the statement(s) is/are wrapped in a
-// transaction. If opt.IfNotExists == true then the CREATE statement(s) use the IF
-// NOT EXISTS clause. Passing nil opts is equal to passing &SchemaOptions{}
+//	type T struct {
+//		Foo	string	`ql:"index xFoo,name Bar"`
+//	}
+//
+// If opts.NoTransaction == true then the statement(s) are not wrapped in a
+// transaction. If opt.NoIfNotExists == true then the CREATE statement(s) omits
+// the IF NOT EXISTS clause. Passing nil opts is equal to passing
+// &SchemaOptions{}
 func Schema(v interface{}, name string, opt *SchemaOptions) (List, error) {
 	if opt == nil {
 		opt = &zeroSchemaOptions
@@ -213,11 +238,11 @@ func Schema(v interface{}, name string, opt *SchemaOptions) (List, error) {
 	}
 
 	var buf bytes.Buffer
-	if opt.Transaction {
+	if !opt.NoTransaction {
 		buf.WriteString("BEGIN TRANSACTION; ")
 	}
 	buf.WriteString("CREATE TABLE ")
-	if opt.IfNotExists {
+	if !opt.NoIfNotExists {
 		buf.WriteString("IF NOT EXISTS ")
 	}
 	if name == "" {
@@ -254,17 +279,21 @@ func Schema(v interface{}, name string, opt *SchemaOptions) (List, error) {
 		if v.unique {
 			buf.WriteString("UNIQUE ")
 		}
-		buf.WriteString("INDEX")
-		if opt.IfNotExists {
+		buf.WriteString("INDEX ")
+		if !opt.NoIfNotExists {
 			buf.WriteString("IF NOT EXISTS ")
 		}
 		buf.WriteString(fmt.Sprintf("%s ON %s (%s); ", v.name, name, v.colName))
 	}
-	if opt.Transaction {
+	if !opt.NoTransaction {
 		buf.WriteString("COMMIT; ")
 	}
-	//dbg("", buf.String())
-	return Compile(buf.String())
+	l, err := Compile(buf.String())
+	if err != nil {
+		return List{}, fmt.Errorf("%s: %v", buf.String(), err)
+	}
+
+	return l, nil
 }
 
 // Marshal converts, in order of appearance, fields of a struct instance v to
@@ -273,10 +302,10 @@ func Schema(v interface{}, name string, opt *SchemaOptions) (List, error) {
 //
 // Every struct field type must be one of the QL types or the field's type base
 // type must be one of the QL types or a pointer to one of them. Only exported
-// fields are considered. If an exported field tag contains `ql:"-"` then such
-// field is not considered.  Field with name ID corresponds to id() - and is
-// thus not part of the result.  Fields are considered in the order of
-// appearance.
+// fields are considered. If an exported field QL tag contains "-" then such
+// field is not considered. A QL tag is a struct tag part prefixed by "ql:".
+// Field with name ID, having type int64, corresponds to id() - and is thus
+// not part of the result.  Fields are considered in the order of appearance.
 func Marshal(v interface{}) ([]interface{}, error) {
 	panic("TODO")
 }
@@ -286,8 +315,9 @@ func Marshal(v interface{}) ([]interface{}, error) {
 //
 // Every struct field type must be one of the QL types or the field's type base
 // type must be one of the QL types or a pointer to one of them. Only exported
-// fields are considered. If an exported field tag contains `ql:"-"` then such
-// field is not considered.  Fields are considered in the order of appearance.
+// fields are considered. If an exported field QL tag contains "-" then such
+// field is not considered. A QL tag is a struct tag part prefixed by "ql:".
+// Fields are considered in the order of appearance.
 func Unmarshal(v interface{}, data []interface{}) error {
 	panic("TODO")
 }
