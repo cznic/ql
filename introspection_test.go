@@ -124,7 +124,7 @@ const (
 	testSchema7S   = "begin transaction; create table testSchema7 (A int64, B string, C bool); create unique index x on testSchema7 (B); commit;"
 	testSchema8S   = `
 		begin transaction;
-			create table testSchema8 (
+			create table if not exists testSchema8 (
 				A  bool,
 				B  int64,
 				C  int8,
@@ -172,8 +172,8 @@ const (
 	testSchema9S = `
 		begin transaction;
 			create table if not exists testSchema9 (DepartmentName string);
-			create index xID on testSchema9 (id());
-			create unique index xDepartmentName on testSchema9 (DepartmentName);
+			create index if not exists xID on testSchema9 (id());
+			create unique index if not exists xDepartmentName on testSchema9 (DepartmentName);
 		commit;`
 )
 
@@ -279,9 +279,9 @@ func ExampleSchema() {
 	f("SELECT * FROM __Index;")
 	// Output:
 	// BEGIN TRANSACTION;
-	// 	CREATE TABLE department (Name string, HQ int64);
-	// 	CREATE INDEX xID ON department (id());
-	// 	CREATE UNIQUE INDEX xName ON department (Name);
+	// 	CREATE TABLE IF NOT EXISTS department (Name string, HQ int64);
+	// 	CREATE INDEX IF NOT EXISTS xID ON department (id());
+	// 	CREATE UNIQUE INDEX IF NOT EXISTS xName ON department (Name);
 	// COMMIT;
 	//
 	// SELECT * FROM __Table;

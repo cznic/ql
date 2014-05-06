@@ -799,7 +799,11 @@ func (s *createIndexStmt) String() string {
 	if s.unique {
 		u = "UNIQUE "
 	}
-	return fmt.Sprintf("CREATE %sINDEX %s ON %s (%s);", u, s.indexName, s.tableName, s.colName)
+	e := ""
+	if s.ifNotExists {
+		e = "IF NOT EXISTS "
+	}
+	return fmt.Sprintf("CREATE %sINDEX %s%s ON %s (%s);", u, e, s.indexName, s.tableName, s.colName)
 }
 
 func (s *createIndexStmt) exec(ctx *execCtx) (Recordset, error) {
@@ -858,7 +862,11 @@ func (s *createTableStmt) String() string {
 	for i, v := range s.cols {
 		a[i] = fmt.Sprintf("%s %s", v.name, typeStr(v.typ))
 	}
-	return fmt.Sprintf("CREATE TABLE %s (%s);", s.tableName, strings.Join(a, ", "))
+	e := ""
+	if s.ifNotExists {
+		e = "IF NOT EXISTS "
+	}
+	return fmt.Sprintf("CREATE TABLE %s%s (%s);", e, s.tableName, strings.Join(a, ", "))
 }
 
 func (s *createTableStmt) exec(ctx *execCtx) (_ Recordset, err error) {
