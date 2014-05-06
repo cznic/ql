@@ -7,6 +7,7 @@ package ql
 import (
 	"math/big"
 	"testing"
+	"time"
 )
 
 type (
@@ -74,6 +75,8 @@ type (
 		Q  big.Int
 		R  big.Rat
 		S  string
+		T  time.Time
+		U  time.Duration
 		PA *bool
 		PB *int
 		PC *int8
@@ -93,6 +96,8 @@ type (
 		PQ *big.Int
 		PR *big.Rat
 		PS *string
+		PT *time.Time
+		PU *time.Duration
 	}
 )
 
@@ -130,6 +135,8 @@ const (
 		Q  bigInt,
 		R  bigRat,
 		S  string,
+		T  time,
+		U  duration,
 		PA bool,
 		PB int64,
 		PC int8,
@@ -149,6 +156,8 @@ const (
 		PQ bigInt,
 		PR bigRat,
 		PS string,
+		PT time,
+		PU  duration,
 	);
 	commit;`
 )
@@ -183,6 +192,7 @@ func TestSchema(t *testing.T) {
 		{testSchema6{}, "", &SchemaOptions{NoTransaction: true, NoIfNotExists: true}, false, testSchema6S},
 		{testSchema7{}, "", &SchemaOptions{NoIfNotExists: true}, false, testSchema7S},
 		{testSchema8{}, "", nil, false, testSchema8S},
+		{&testSchema8{}, "", nil, false, testSchema8S},
 	}
 
 	for iTest, test := range tab {

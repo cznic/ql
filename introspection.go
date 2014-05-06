@@ -15,7 +15,7 @@ import (
 
 var (
 	schemaCache = map[reflect.Type]*schemaTable{}
-	schemaMu    sync.Mutex
+	schemaMu    sync.RWMutex
 )
 
 type schemaTable struct {
@@ -57,14 +57,13 @@ func schemaFor(v interface{}) (*schemaTable, error) {
 	}
 
 	typ := reflect.TypeOf(v)
-	schemaMu.Lock()
+	schemaMu.RLock()
 	if r, ok := schemaCache[typ]; ok {
-		schemaMu.Unlock()
+		schemaMu.RUnlock()
 		return r, nil
 	}
 
-	schemaMu.Unlock()
-
+	schemaMu.RUnlock()
 	t := typ
 	if t.Kind() == reflect.Ptr {
 		t = t.Elem()
@@ -138,6 +137,11 @@ func schemaFor(v interface{}) (*schemaTable, error) {
 		case reflect.Int32:
 			qt = Int32
 		case reflect.Int64:
+			if ft.Name() == "Duration" && ft.PkgPath() == "time" {
+				qt = Duration
+				break
+			}
+
 			qt = Int64
 		case reflect.Uint:
 			qt = Uint64
@@ -162,15 +166,19 @@ func schemaFor(v interface{}) (*schemaTable, error) {
 				qt = Blob
 			}
 		case reflect.Struct:
-			if ft.PkgPath() != "math/big" {
-				break
-			}
-
-			switch ft.Name() {
-			case "Int":
-				qt = BigInt
-			case "Rat":
-				qt = BigRat
+			switch ft.PkgPath() {
+			case "math/big":
+				switch ft.Name() {
+				case "Int":
+					qt = BigInt
+				case "Rat":
+					qt = BigRat
+				}
+			case "time":
+				switch ft.Name() {
+				case "Time":
+					qt = Time
+				}
 			}
 		case reflect.String:
 			qt = String
