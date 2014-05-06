@@ -95,6 +95,7 @@ func schemaFor(v interface{}) (*schemaTable, error) {
 		}
 		var ix, unique bool
 		var xn string
+		xfn := fn
 		if s := tags["index"]; s != "" {
 			if _, ok := tags["uindex"]; ok {
 				return nil, fmt.Errorf("both index and uindex in QL struct tag")
@@ -110,9 +111,9 @@ func schemaFor(v interface{}) (*schemaTable, error) {
 		}
 		if ix {
 			if fn == "ID" && r.hasID {
-				xn = "id()"
+				xfn = "id()"
 			}
-			r.indices = append(r.indices, &schemaIndex{xn, fn, unique})
+			r.indices = append(r.indices, &schemaIndex{xn, xfn, unique})
 		}
 
 		ft := f.Type

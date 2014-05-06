@@ -5,6 +5,7 @@
 package ql
 
 import (
+	"fmt"
 	"math/big"
 	"testing"
 	"time"
@@ -99,6 +100,13 @@ type (
 		PT *time.Time
 		PU *time.Duration
 	}
+
+	testSchema9 struct {
+		i              int
+		ID             int64  `ql:"index xID"`
+		Other          string `ql:"-"`
+		DepartmentName string `ql:"uindex xDepartmentName"`
+	}
 )
 
 const (
@@ -114,52 +122,59 @@ const (
 	testSchema4S   = "begin transaction; create table if not exists testSchema4 (id int64, A int8, cc bool); commit;"
 	testSchema6S   = "create table testSchema6 (A string); create index x on testSchema6 (A);"
 	testSchema7S   = "begin transaction; create table testSchema7 (A int64, B string, C bool); create unique index x on testSchema7 (B); commit;"
-	testSchema8S   = `begin transaction;
-	create table testSchema8 (
-		A  bool,
-		B  int64,
-		C  int8,
-		D  int16,
-		E  int32,
-		F  int64,
-		G  uint64,
-		H  uint8,
-		I  uint16,
-		J  uint32,
-		K  uint64,
-		L  float32,
-		M  float64,
-		N  complex64,
-		O  complex128,
-		P  blob,
-		Q  bigInt,
-		R  bigRat,
-		S  string,
-		T  time,
-		U  duration,
-		PA bool,
-		PB int64,
-		PC int8,
-		PD int16,
-		PE int32,
-		PF int64,
-		PG uint64,
-		PH uint8,
-		PI uint16,
-		PJ uint32,
-		PK uint64,
-		PL float32,
-		PM float64,
-		PN complex64,
-		PO complex128,
-		PP blob,
-		PQ bigInt,
-		PR bigRat,
-		PS string,
-		PT time,
-		PU  duration,
-	);
-	commit;`
+	testSchema8S   = `
+		begin transaction;
+			create table testSchema8 (
+				A  bool,
+				B  int64,
+				C  int8,
+				D  int16,
+				E  int32,
+				F  int64,
+				G  uint64,
+				H  uint8,
+				I  uint16,
+				J  uint32,
+				K  uint64,
+				L  float32,
+				M  float64,
+				N  complex64,
+				O  complex128,
+				P  blob,
+				Q  bigInt,
+				R  bigRat,
+				S  string,
+				T  time,
+				U  duration,
+				PA bool,
+				PB int64,
+				PC int8,
+				PD int16,
+				PE int32,
+				PF int64,
+				PG uint64,
+				PH uint8,
+				PI uint16,
+				PJ uint32,
+				PK uint64,
+				PL float32,
+				PM float64,
+				PN complex64,
+				PO complex128,
+				PP blob,
+				PQ bigInt,
+				PR bigRat,
+				PS string,
+				PT time,
+				PU  duration,
+			);
+		commit;`
+	testSchema9S = `
+		begin transaction;
+			create table if not exists testSchema9 (DepartmentName string);
+			create index xID on testSchema9 (id());
+			create unique index xDepartmentName on testSchema9 (DepartmentName);
+		commit;`
 )
 
 func TestSchema(t *testing.T) {
@@ -193,6 +208,7 @@ func TestSchema(t *testing.T) {
 		{testSchema7{}, "", &SchemaOptions{NoIfNotExists: true}, false, testSchema7S},
 		{testSchema8{}, "", nil, false, testSchema8S},
 		{&testSchema8{}, "", nil, false, testSchema8S},
+		{&testSchema9{}, "", nil, false, testSchema9S},
 	}
 
 	for iTest, test := range tab {
@@ -215,4 +231,70 @@ func TestSchema(t *testing.T) {
 			t.Fatalf("%d\n----\n%s\n----\n%s", iTest, g, e)
 		}
 	}
+}
+
+func ExampleSchema() {
+	type department struct {
+		a              int    // unexported -> ignored
+		ID             int64  `ql:"index xID"`
+		Other          string `xml:"-" ql:"-"` // ignored by QL tag
+		DepartmentName string `ql:"name Name, uindex xName" json:"foo"`
+		m              bool
+		HQ             int
+		z              string
+	}
+
+	var d department
+	list, err := Schema(&d, "", nil)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(list)
+	db, err := OpenMem()
+	if err != nil {
+		panic(err)
+	}
+
+	if _, _, err = db.Execute(NewRWCtx(), list); err != nil {
+		panic(err)
+	}
+
+	f := func(q string) {
+		rs, _, err := db.Run(nil, q)
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Println(q)
+		rs[0].Do(true, func(data []interface{}) (bool, error) {
+			fmt.Println(data)
+			return true, nil
+		})
+		fmt.Println()
+	}
+
+	f("SELECT * FROM __Table;")
+	f("SELECT * FROM __Column;")
+	f("SELECT * FROM __Index;")
+	// Output:
+	// BEGIN TRANSACTION;
+	// 	CREATE TABLE department (Name string, HQ int64);
+	// 	CREATE INDEX xID ON department (id());
+	// 	CREATE UNIQUE INDEX xName ON department (Name);
+	// COMMIT;
+	//
+	// SELECT * FROM __Table;
+	// [Name Schema]
+	// [department CREATE TABLE department (Name string, HQ int64);]
+	//
+	// SELECT * FROM __Column;
+	// [TableName Ordinal Name Type]
+	// [department 1 Name string]
+	// [department 2 HQ int64]
+	//
+	// SELECT * FROM __Index;
+	// [TableName ColumnName Name IsUnique]
+	// [department id() xID false]
+	// [department Name xName true]
 }
