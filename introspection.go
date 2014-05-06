@@ -31,19 +31,14 @@ type schemaIndex struct {
 	unique  bool
 }
 
-const (
-	_ = iota
-	expand64
-	uexpand64
-)
-
 type schemaField struct {
-	index  int
-	id     bool
-	ptr    bool
-	name   string
-	typ    Type
-	expand int
+	index         int
+	id            bool
+	ptr           bool
+	name          string
+	typ           Type
+	marshalType   reflect.Type
+	unmarshalType reflect.Type
 }
 
 func parseTag(s string) map[string]string {
@@ -136,14 +131,23 @@ func schemaFor(v interface{}) (*schemaTable, error) {
 			fk = ft.Kind()
 		}
 
-		x64 := 0
+		var mt, ut reflect.Type
 		qt := Type(-1)
 		switch fk {
 		case reflect.Bool:
 			qt = Bool
 		case reflect.Int:
-			x64 = expand64
 			qt = Int64
+			t := reflect.TypeOf(int64(0))
+			if ft.AssignableTo(t) {
+				break
+			}
+
+			if !ft.ConvertibleTo(t) {
+				return nil, fmt.Errorf("type %s (%v) cannot be converted to %T", ft.Name(), fk, t.Name())
+			}
+
+			mt, ut = t, ft
 		case reflect.Int8:
 			qt = Int8
 		case reflect.Int16:
@@ -158,7 +162,6 @@ func schemaFor(v interface{}) (*schemaTable, error) {
 
 			qt = Int64
 		case reflect.Uint:
-			x64 = uexpand64
 			qt = Uint64
 		case reflect.Uint8:
 			qt = Uint8
@@ -197,13 +200,23 @@ func schemaFor(v interface{}) (*schemaTable, error) {
 			}
 		case reflect.String:
 			qt = String
+			t := reflect.TypeOf("")
+			if ft.AssignableTo(t) {
+				break
+			}
+
+			if !ft.ConvertibleTo(t) {
+				return nil, fmt.Errorf("type %s (%v) cannot be converted to %T", ft.Name(), fk, t.Name())
+			}
+
+			mt, ut = t, ft
 		}
 
 		if qt < 0 {
 			return nil, fmt.Errorf("cannot derive schema for type %s (%v)", ft.Name(), fk)
 		}
 
-		r.fields = append(r.fields, &schemaField{i, fn == "ID" && r.hasID, ptr, fn, qt, x64})
+		r.fields = append(r.fields, &schemaField{i, fn == "ID" && r.hasID, ptr, fn, qt, mt, ut})
 	}
 
 	schemaMu.Lock()
@@ -379,15 +392,10 @@ func Marshal(v interface{}) ([]interface{}, error) {
 
 			f = f.Elem()
 		}
-		fv := f.Interface()
-		switch v.expand {
-		case expand64:
-			r[j] = int64(fv.(int))
-		case uexpand64:
-			r[j] = uint64(fv.(uint))
-		default:
-			r[j] = fv
+		if m := v.marshalType; m != nil {
+			f = f.Convert(m)
 		}
+		r[j] = f.Interface()
 		j++
 	}
 	return r, nil

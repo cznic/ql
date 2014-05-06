@@ -755,14 +755,17 @@ func TestMarshal(t *testing.T) {
 }
 
 func ExampleMarshal() {
+	type myInt int
+	type myString string
 	type item struct {
 		ID   int64
-		Name string
-		Qty  *int // pointer enables nil values
+		Name myString
+		Qty  *myInt // pointer enables nil values
+		Bar  int
 	}
 
 	schema := MustSchema((*item)(nil), "", nil)
-	ins := MustCompile("BEGIN TRANSACTION; INSERT INTO item VALUES($1, $2); COMMIT;")
+	ins := MustCompile("BEGIN TRANSACTION; INSERT INTO item VALUES($1, $2, $3); COMMIT;")
 
 	db, err := OpenMem()
 	if err != nil {
@@ -774,11 +777,11 @@ func ExampleMarshal() {
 		panic(err)
 	}
 
-	if _, _, err := db.Execute(ctx, ins, MustMarshal(&item{Name: "foo"})...); err != nil {
+	if _, _, err := db.Execute(ctx, ins, MustMarshal(&item{Name: "foo", Bar: -1})...); err != nil {
 		panic(err)
 	}
 
-	q := 42
+	q := myInt(42)
 	if _, _, err := db.Execute(ctx, ins, MustMarshal(&item{Name: "bar", Qty: &q})...); err != nil {
 		panic(err)
 	}
@@ -793,7 +796,7 @@ func ExampleMarshal() {
 		return true, nil
 	})
 	// Output:
-	// [Name Qty]
-	// [foo <nil>]
-	// [bar 42]
+	// [Name Qty Bar]
+	// [foo <nil> -1]
+	// [bar 42 0]
 }
