@@ -19,6 +19,7 @@ var (
 )
 
 type schemaTable struct {
+	ptr     bool
 	hasID   bool
 	fields  []*schemaField
 	indices []*schemaIndex
@@ -31,10 +32,11 @@ type schemaIndex struct {
 }
 
 type schemaField struct {
-	id   bool
-	ptr  bool
-	name string
-	typ  Type
+	index int
+	id    bool
+	ptr   bool
+	name  string
+	typ   Type
 }
 
 func parseTag(s string) map[string]string {
@@ -64,15 +66,17 @@ func schemaFor(v interface{}) (*schemaTable, error) {
 	}
 
 	schemaMu.RUnlock()
+	var schemaPtr bool
 	t := typ
 	if t.Kind() == reflect.Ptr {
 		t = t.Elem()
+		schemaPtr = true
 	}
 	if k := t.Kind(); k != reflect.Struct {
 		return nil, fmt.Errorf("cannot derive schema for type %T (%v)", v, k)
 	}
 
-	r := &schemaTable{}
+	r := &schemaTable{ptr: schemaPtr}
 
 	for i := 0; i < t.NumField(); i++ {
 		f := t.Field(i)
@@ -189,13 +193,15 @@ func schemaFor(v interface{}) (*schemaTable, error) {
 			return nil, fmt.Errorf("cannot derive schema for type %s (%v)", ft.Name(), fk)
 		}
 
-		r.fields = append(r.fields, &schemaField{fn == "ID" && r.hasID, ptr, fn, qt})
+		r.fields = append(r.fields, &schemaField{i, fn == "ID" && r.hasID, ptr, fn, qt})
 	}
 
 	schemaMu.Lock()
 	schemaCache[typ] = r
 	if t != typ {
-		schemaCache[t] = r
+		r2 := *r
+		r2.ptr = false
+		schemaCache[t] = &r2
 	}
 	schemaMu.Unlock()
 	return r, nil
@@ -324,8 +330,8 @@ func MustSchema(v interface{}, name string, opt *SchemaOptions) List {
 	return l
 }
 
-// Marshal converts, in order of appearance, fields of a struct instance v to
-// []interface{} or an error, if any. Value v can be also a pointer to a
+// Marshal converts, in the order of appearance, fields of a struct instance v
+// to []interface{} or an error, if any. Value v can be also a pointer to a
 // struct.
 //
 // Every struct field type must be one of the QL types or the field's type base
@@ -333,9 +339,31 @@ func MustSchema(v interface{}, name string, opt *SchemaOptions) List {
 // fields are considered. If an exported field QL tag contains "-" then such
 // field is not considered. A QL tag is a struct tag part prefixed by "ql:".
 // Field with name ID, having type int64, corresponds to id() - and is thus
-// not part of the result.  Fields are considered in the order of appearance.
+// not part of the result.
 func Marshal(v interface{}) ([]interface{}, error) {
-	panic("TODO")
+	s, err := schemaFor(v)
+	if err != nil {
+		return nil, err
+	}
+
+	val := reflect.ValueOf(v)
+	if s.ptr {
+		val = val.Elem()
+	}
+	r := make([]interface{}, len(s.fields))
+	for i, v := range s.fields {
+		f := val.Field(v.index)
+		if v.ptr {
+			if f.IsNil() {
+				r[i] = nil
+				continue
+			}
+
+			f = f.Elem()
+		}
+		r[i] = f.Interface()
+	}
+	return r, nil
 }
 
 // Unmarshal stores data from []interface{} in the struct value pointed to by

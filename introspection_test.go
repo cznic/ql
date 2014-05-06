@@ -5,10 +5,13 @@
 package ql
 
 import (
+	"bytes"
 	"fmt"
 	"math/big"
 	"testing"
 	"time"
+
+	"github.com/cznic/mathutil"
 )
 
 type (
@@ -293,4 +296,460 @@ func ExampleMustSchema() {
 	// [TableName ColumnName Name IsUnique]
 	// [department id() xID false]
 	// [department Name xName true]
+}
+
+func TestMarshal(t *testing.T) {
+	now := time.Now()
+	dur := time.Millisecond
+	schema8 := testSchema8{
+		A: true,
+		B: 1,
+		C: 2,
+		D: 3,
+		E: 4,
+		F: 5,
+		G: 6,
+		H: 7,
+		I: 8,
+		J: 9,
+		K: 10,
+		L: 11,
+		M: 12,
+		N: -1,
+		O: -2,
+		P: []byte("abc"),
+		Q: *big.NewInt(1),
+		R: *big.NewRat(3, 2),
+		S: "string",
+		T: now,
+		U: dur,
+	}
+	schema8.PA = &schema8.A
+	schema8.PB = &schema8.B
+	schema8.PC = &schema8.C
+	schema8.PD = &schema8.D
+	schema8.PE = &schema8.E
+	schema8.PF = &schema8.F
+	schema8.PG = &schema8.G
+	schema8.PH = &schema8.H
+	schema8.PI = &schema8.I
+	schema8.PJ = &schema8.J
+	schema8.PK = &schema8.K
+	schema8.PL = &schema8.L
+	schema8.PM = &schema8.M
+	schema8.PN = &schema8.N
+	schema8.PO = &schema8.O
+	schema8.PP = &schema8.P
+	schema8.PQ = &schema8.Q
+	schema8.PR = &schema8.R
+	schema8.PS = &schema8.S
+	schema8.PT = &schema8.T
+	schema8.PU = &schema8.U
+
+	type u int
+	tab := []struct {
+		inst interface{}
+		err  bool
+		r    []interface{}
+	}{
+		{42, true, nil},
+		{new(u), true, nil},
+		{testSchema8{}, false, []interface{}{
+			false,
+			int64(0),
+			int8(0),
+			int16(0),
+			int32(0),
+			int64(0),
+			uint64(0),
+			uint8(0),
+			uint16(0),
+			uint32(0),
+			uint64(0),
+			float32(0),
+			float64(0),
+			complex64(0),
+			complex128(0),
+			[]byte(nil),
+			big.Int{},
+			big.Rat{},
+			"",
+			time.Time{},
+			time.Duration(0),
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+		}},
+		{&testSchema8{}, false, []interface{}{
+			false,
+			int64(0),
+			int8(0),
+			int16(0),
+			int32(0),
+			int64(0),
+			uint64(0),
+			uint8(0),
+			uint16(0),
+			uint32(0),
+			uint64(0),
+			float32(0),
+			float64(0),
+			complex64(0),
+			complex128(0),
+			[]byte(nil),
+			big.Int{},
+			big.Rat{},
+			"",
+			time.Time{},
+			time.Duration(0),
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+			nil,
+		}},
+		{schema8, false, []interface{}{
+			true,
+			int64(1),
+			int8(2),
+			int16(3),
+			int32(4),
+			int64(5),
+			uint64(6),
+			uint8(7),
+			uint16(8),
+			uint32(9),
+			uint64(10),
+			float32(11),
+			float64(12),
+			complex64(-1),
+			complex128(-2),
+			[]byte("abc"),
+			*big.NewInt(1),
+			*big.NewRat(3, 2),
+			"string",
+			now,
+			dur,
+			true,
+			int64(1),
+			int8(2),
+			int16(3),
+			int32(4),
+			int64(5),
+			uint64(6),
+			uint8(7),
+			uint16(8),
+			uint32(9),
+			uint64(10),
+			float32(11),
+			float64(12),
+			complex64(-1),
+			complex128(-2),
+			[]byte("abc"),
+			*big.NewInt(1),
+			*big.NewRat(3, 2),
+			"string",
+			now,
+			dur,
+		}},
+		{&schema8, false, []interface{}{
+			true,
+			int64(1),
+			int8(2),
+			int16(3),
+			int32(4),
+			int64(5),
+			uint64(6),
+			uint8(7),
+			uint16(8),
+			uint32(9),
+			uint64(10),
+			float32(11),
+			float64(12),
+			complex64(-1),
+			complex128(-2),
+			[]byte("abc"),
+			*big.NewInt(1),
+			*big.NewRat(3, 2),
+			"string",
+			now,
+			dur,
+			true,
+			int64(1),
+			int8(2),
+			int16(3),
+			int32(4),
+			int64(5),
+			uint64(6),
+			uint8(7),
+			uint16(8),
+			uint32(9),
+			uint64(10),
+			float32(11),
+			float64(12),
+			complex64(-1),
+			complex128(-2),
+			[]byte("abc"),
+			*big.NewInt(1),
+			*big.NewRat(3, 2),
+			"string",
+			now,
+			dur,
+		}},
+	}
+	for iTest, test := range tab {
+		r, err := Marshal(test.inst)
+		if g, e := err != nil, test.err; g != e {
+			t.Fatal(iTest, g, e)
+		}
+
+		if err != nil {
+			t.Log(err)
+			continue
+		}
+
+		for i := 0; i < mathutil.Min(len(r), len(test.r)); i++ {
+			g, e := r[i], test.r[i]
+			use(e)
+			switch x := g.(type) {
+			case bool:
+				switch y := e.(type) {
+				case bool:
+					if x != y {
+						t.Fatal(iTest, x, y)
+					}
+				default:
+					t.Fatalf("%d: %T <-> %T", iTest, x, y)
+				}
+			case int:
+				switch y := e.(type) {
+				case int64:
+					if int64(x) != y {
+						t.Fatal(iTest, x, y)
+					}
+				default:
+					t.Fatalf("%d: %T <-> %T", iTest, x, y)
+				}
+			case int8:
+				switch y := e.(type) {
+				case int8:
+					if x != y {
+						t.Fatal(iTest, x, y)
+					}
+				default:
+					t.Fatalf("%d: %T <-> %T", iTest, x, y)
+				}
+			case int16:
+				switch y := e.(type) {
+				case int16:
+					if x != y {
+						t.Fatal(iTest, x, y)
+					}
+				default:
+					t.Fatalf("%d: %T <-> %T", iTest, x, y)
+				}
+			case int32:
+				switch y := e.(type) {
+				case int32:
+					if x != y {
+						t.Fatal(iTest, x, y)
+					}
+				default:
+					t.Fatalf("%d: %T <-> %T", iTest, x, y)
+				}
+			case int64:
+				switch y := e.(type) {
+				case int64:
+					if x != y {
+						t.Fatal(iTest, x, y)
+					}
+				default:
+					t.Fatalf("%d: %T <-> %T", iTest, x, y)
+				}
+			case uint:
+				switch y := e.(type) {
+				case uint64:
+					if uint64(x) != y {
+						t.Fatal(iTest, x, y)
+					}
+				default:
+					t.Fatalf("%d: %T <-> %T", iTest, x, y)
+				}
+			case uint8:
+				switch y := e.(type) {
+				case uint8:
+					if x != y {
+						t.Fatal(iTest, x, y)
+					}
+				default:
+					t.Fatalf("%d: %T <-> %T", iTest, x, y)
+				}
+			case uint16:
+				switch y := e.(type) {
+				case uint16:
+					if x != y {
+						t.Fatal(iTest, x, y)
+					}
+				default:
+					t.Fatalf("%d: %T <-> %T", iTest, x, y)
+				}
+			case uint32:
+				switch y := e.(type) {
+				case uint32:
+					if x != y {
+						t.Fatal(iTest, x, y)
+					}
+				default:
+					t.Fatalf("%d: %T <-> %T", iTest, x, y)
+				}
+			case uint64:
+				switch y := e.(type) {
+				case uint64:
+					if x != y {
+						t.Fatal(iTest, x, y)
+					}
+				default:
+					t.Fatalf("%d: %T <-> %T", iTest, x, y)
+				}
+			case float32:
+				switch y := e.(type) {
+				case float32:
+					if x != y {
+						t.Fatal(iTest, x, y)
+					}
+				default:
+					t.Fatalf("%d: %T <-> %T", iTest, x, y)
+				}
+			case float64:
+				switch y := e.(type) {
+				case float64:
+					if x != y {
+						t.Fatal(iTest, x, y)
+					}
+				default:
+					t.Fatalf("%d: %T <-> %T", iTest, x, y)
+				}
+			case complex64:
+				switch y := e.(type) {
+				case complex64:
+					if x != y {
+						t.Fatal(iTest, x, y)
+					}
+				default:
+					t.Fatalf("%d: %T <-> %T", iTest, x, y)
+				}
+			case complex128:
+				switch y := e.(type) {
+				case complex128:
+					if x != y {
+						t.Fatal(iTest, x, y)
+					}
+				default:
+					t.Fatalf("%d: %T <-> %T", iTest, x, y)
+				}
+			case []byte:
+				switch y := e.(type) {
+				case []byte:
+					if bytes.Compare(x, y) != 0 {
+						t.Fatal(iTest, x, y)
+					}
+				default:
+					t.Fatalf("%d: %T <-> %T", iTest, x, y)
+				}
+			case big.Int:
+				switch y := e.(type) {
+				case big.Int:
+					if x.Cmp(&y) != 0 {
+						t.Fatal(iTest, &x, &y)
+					}
+				default:
+					t.Fatalf("%d: %T <-> %T", iTest, x, y)
+				}
+			case big.Rat:
+				switch y := e.(type) {
+				case big.Rat:
+					if x.Cmp(&y) != 0 {
+						t.Fatal(iTest, &x, &y)
+					}
+				default:
+					t.Fatalf("%d: %T <-> %T", iTest, x, y)
+				}
+			case string:
+				switch y := e.(type) {
+				case string:
+					if x != y {
+						t.Fatal(iTest, x, y)
+					}
+				default:
+					t.Fatalf("%d: %T <-> %T", iTest, x, y)
+				}
+			case time.Time:
+				switch y := e.(type) {
+				case time.Time:
+					if !x.Equal(y) {
+						t.Fatal(iTest, x, y)
+					}
+				default:
+					t.Fatalf("%d: %T <-> %T", iTest, x, y)
+				}
+			case time.Duration:
+				switch y := e.(type) {
+				case time.Duration:
+					if x != y {
+						t.Fatal(iTest, x, y)
+					}
+				default:
+					t.Fatalf("%d: %T <-> %T", iTest, x, y)
+				}
+			case nil:
+				switch y := e.(type) {
+				case nil:
+					// ok
+				default:
+					t.Fatalf("%d: %T <-> %T", iTest, x, y)
+				}
+			default:
+				panic(fmt.Errorf("%T", x))
+			}
+		}
+
+		if g, e := len(r), len(test.r); g != e {
+			t.Fatal(iTest, g, e)
+		}
+
+	}
 }
