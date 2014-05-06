@@ -149,6 +149,9 @@ func schemaFor(v interface{}) (*schemaTable, error) {
 		switch fk {
 		case reflect.Bool:
 			qt = Bool
+			if err := sf.check(ft, false); err != nil {
+				return nil, err
+			}
 		case reflect.Int:
 			qt = Int64
 			if err := sf.check(ft, int64(0)); err != nil {
@@ -156,9 +159,18 @@ func schemaFor(v interface{}) (*schemaTable, error) {
 			}
 		case reflect.Int8:
 			qt = Int8
+			if err := sf.check(ft, int8(0)); err != nil {
+				return nil, err
+			}
 		case reflect.Int16:
+			if err := sf.check(ft, int16(0)); err != nil {
+				return nil, err
+			}
 			qt = Int16
 		case reflect.Int32:
+			if err := sf.check(ft, int32(0)); err != nil {
+				return nil, err
+			}
 			qt = Int32
 		case reflect.Int64:
 			if ft.Name() == "Duration" && ft.PkgPath() == "time" {
@@ -167,27 +179,58 @@ func schemaFor(v interface{}) (*schemaTable, error) {
 			}
 
 			qt = Int64
+			if err := sf.check(ft, int64(0)); err != nil {
+				return nil, err
+			}
 		case reflect.Uint:
 			qt = Uint64
+			if err := sf.check(ft, uint64(0)); err != nil {
+				return nil, err
+			}
 		case reflect.Uint8:
 			qt = Uint8
+			if err := sf.check(ft, uint8(0)); err != nil {
+				return nil, err
+			}
 		case reflect.Uint16:
 			qt = Uint16
+			if err := sf.check(ft, uint16(0)); err != nil {
+				return nil, err
+			}
 		case reflect.Uint32:
 			qt = Uint32
+			if err := sf.check(ft, uint32(0)); err != nil {
+				return nil, err
+			}
 		case reflect.Uint64:
 			qt = Uint64
+			if err := sf.check(ft, uint64(0)); err != nil {
+				return nil, err
+			}
 		case reflect.Float32:
 			qt = Float32
+			if err := sf.check(ft, float32(0)); err != nil {
+				return nil, err
+			}
 		case reflect.Float64:
 			qt = Float64
+			if err := sf.check(ft, float64(0)); err != nil {
+				return nil, err
+			}
 		case reflect.Complex64:
 			qt = Complex64
+			if err := sf.check(ft, complex64(0)); err != nil {
+				return nil, err
+			}
 		case reflect.Complex128:
 			qt = Complex128
+			if err := sf.check(ft, complex128(0)); err != nil {
+				return nil, err
+			}
 		case reflect.Slice:
-			if ft.Elem().Name() == "uint8" {
-				qt = Blob
+			qt = Blob
+			if err := sf.check(ft, []byte(nil)); err != nil {
+				return nil, err
 			}
 		case reflect.Struct:
 			switch ft.PkgPath() {
@@ -250,7 +293,8 @@ var zeroSchemaOptions SchemaOptions
 // conforming characters are replaced by underscores. Value v can be also a
 // pointer to a struct.
 //
-// Every considered struct field type must be one of the QL types or a pointer
+// Every considered struct field type must be one of the QL types or a type
+// convertible to string, bool, int*, uint*, float* or complex* type or pointer
 // to such type. Only exported fields are considered. If an exported field QL
 // tag contains "-" (`ql:"-"`) then such field is not considered. A field with
 // name ID, having type int64, corresponds to id() - and is thus not a part of
@@ -355,7 +399,8 @@ func MustSchema(v interface{}, name string, opt *SchemaOptions) List {
 // to []interface{} or an error, if any. Value v can be also a pointer to a
 // struct.
 //
-// Every considered struct field type must be one of the QL types or a pointer
+// Every considered struct field type must be one of the QL types or a type
+// convertible to string, bool, int*, uint*, float* or complex* type or pointer
 // to such type. Only exported fields are considered. If an exported field QL
 // tag contains "-" then such field is not considered. A QL tag is a struct tag
 // part prefixed by "ql:".  Field with name ID, having type int64, corresponds
@@ -401,7 +446,7 @@ func Marshal(v interface{}) ([]interface{}, error) {
 }
 
 // MustMarshal is like Marshal but panics on error. It simplifies marshaling of
-// "safe" types, like those which were already verified by Schema or
+// "safe" types, like eg. those which were already verified by Schema or
 // MustSchema.  When the underlying Marshal returns an error, MustMarshal
 // panics.
 //
@@ -418,7 +463,9 @@ func MustMarshal(v interface{}) []interface{} {
 // Unmarshal stores data from []interface{} in the struct value pointed to by
 // v.
 //
-// Every considered struct field type must be one of the QL types or a pointer
+
+// Every considered struct field type must be one of the QL types or a type
+// convertible to string, bool, int*, uint*, float* or complex* type or pointer
 // to such type. Only exported fields are considered. If an exported field QL
 // tag contains "-" then such field is not considered. A QL tag is a struct tag
 // part prefixed by "ql:".  Fields are considered in the order of appearance.

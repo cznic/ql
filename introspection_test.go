@@ -756,7 +756,9 @@ func TestMarshal(t *testing.T) {
 
 func ExampleMarshal() {
 	type myInt int
+
 	type myString string
+
 	type item struct {
 		ID   int64
 		Name myString
