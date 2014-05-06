@@ -209,18 +209,18 @@ type SchemaOptions struct {
 	NoIfNotExists bool
 
 	// Do not strip the "pkg." part from type name "pkg.Type", produce
-	// "pkg_Type" table name instead. Applies only when no name is not
-	// passed to Schema().
+	// "pkg_Type" table name instead. Applies only when no name is passed
+	// to Schema().
 	KeepPrefix bool
 }
 
 var zeroSchemaOptions SchemaOptions
 
-// Schema returns a CREATE TABLE statement for a table derived from a struct or
-// an error, if any.  The table is named using the name parameter. If name is
-// an empty string then the name of the struct is used while non conforming
-// characters are replace by underscores. Value v can be also a pointer to a
-// struct.
+// Schema returns a CREATE TABLE/INDEX statement(s) for a table derived from a
+// struct or an error, if any.  The table is named using the name parameter. If
+// name is an empty string then the type name of the struct is used while non
+// conforming characters are replaced by underscores. Value v can be also a
+// pointer to a struct.
 //
 // Every struct field type must be one of the QL types or the field's type base
 // type must be one of the QL types or a pointer to one of them. Only exported
@@ -234,13 +234,15 @@ var zeroSchemaOptions SchemaOptions
 // combined, for example:
 //
 //	type T struct {
-//		Foo	string	`ql:"index xFoo,name Bar"`
+//		Foo	string	`ql:"index xFoo, name Bar"`
 //	}
 //
 // If opts.NoTransaction == true then the statement(s) are not wrapped in a
 // transaction. If opt.NoIfNotExists == true then the CREATE statement(s) omits
 // the IF NOT EXISTS clause. Passing nil opts is equal to passing
 // &SchemaOptions{}
+//
+// Schema is safe for concurrent use by multiple goroutines.
 func Schema(v interface{}, name string, opt *SchemaOptions) (List, error) {
 	if opt == nil {
 		opt = &zeroSchemaOptions
@@ -307,6 +309,19 @@ func Schema(v interface{}, name string, opt *SchemaOptions) (List, error) {
 	}
 
 	return l, nil
+}
+
+// MustSchema is like Schema but panics on error. It simplifies safe
+// initialization of global variables holding compiled schemas.
+//
+// MustSchema is safe for concurrent use by multiple goroutines.
+func MustSchema(v interface{}, name string, opt *SchemaOptions) List {
+	l, err := Schema(v, name, opt)
+	if err != nil {
+		panic(err)
+	}
+
+	return l
 }
 
 // Marshal converts, in order of appearance, fields of a struct instance v to

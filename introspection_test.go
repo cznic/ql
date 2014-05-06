@@ -233,7 +233,7 @@ func TestSchema(t *testing.T) {
 	}
 }
 
-func ExampleSchema() {
+func ExampleMustSchema() {
 	type department struct {
 		a              int    // unexported -> ignored
 		ID             int64  `ql:"index xID"`
@@ -245,18 +245,14 @@ func ExampleSchema() {
 	}
 
 	var d department
-	list, err := Schema(&d, "", nil)
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(list)
+	schema := MustSchema(&d, "", nil)
+	fmt.Println(schema)
 	db, err := OpenMem()
 	if err != nil {
 		panic(err)
 	}
 
-	if _, _, err = db.Execute(NewRWCtx(), list); err != nil {
+	if _, _, err = db.Execute(NewRWCtx(), schema); err != nil {
 		panic(err)
 	}
 

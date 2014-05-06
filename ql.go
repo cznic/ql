@@ -1992,8 +1992,9 @@ type ColumnInfo struct {
 type TableInfo struct {
 	// Table name.
 	Name string
-	// Table schema. Columns as listed in the order in which they appear in
-	// the schema.
+
+	// Table schema. Columns are listed in the order in which they appear
+	// in the schema.
 	Columns []ColumnInfo
 }
 
