@@ -5,6 +5,7 @@
 package ql
 
 import (
+	"math/big"
 	"testing"
 )
 
@@ -52,6 +53,47 @@ type (
 		B string `ql:"uindex x"`
 		C bool
 	}
+
+	testSchema8 struct {
+		A  bool
+		B  int
+		C  int8
+		D  int16
+		E  int32
+		F  int64
+		G  uint
+		H  uint8
+		I  uint16
+		J  uint32
+		K  uint64
+		L  float32
+		M  float64
+		N  complex64
+		O  complex128
+		P  []byte
+		Q  big.Int
+		R  big.Rat
+		S  string
+		PA *bool
+		PB *int
+		PC *int8
+		PD *int16
+		PE *int32
+		PF *int64
+		PG *uint
+		PH *uint8
+		PI *uint16
+		PJ *uint32
+		PK *uint64
+		PL *float32
+		PM *float64
+		PN *complex64
+		PO *complex128
+		PP *[]byte
+		PQ *big.Int
+		PR *big.Rat
+		PS *string
+	}
 )
 
 const (
@@ -67,6 +109,48 @@ const (
 	testSchema4S   = "begin transaction; create table if not exists testSchema4 (id int64, A int8, cc bool); commit;"
 	testSchema6S   = "create table testSchema6 (A string); create index x on testSchema6 (A);"
 	testSchema7S   = "begin transaction; create table testSchema7 (A int64, B string, C bool); create unique index x on testSchema7 (B); commit;"
+	testSchema8S   = `begin transaction;
+	create table testSchema8 (
+		A  bool,
+		B  int64,
+		C  int8,
+		D  int16,
+		E  int32,
+		F  int64,
+		G  uint64,
+		H  uint8,
+		I  uint16,
+		J  uint32,
+		K  uint64,
+		L  float32,
+		M  float64,
+		N  complex64,
+		O  complex128,
+		P  blob,
+		Q  bigInt,
+		R  bigRat,
+		S  string,
+		PA bool,
+		PB int64,
+		PC int8,
+		PD int16,
+		PE int32,
+		PF int64,
+		PG uint64,
+		PH uint8,
+		PI uint16,
+		PJ uint32,
+		PK uint64,
+		PL float32,
+		PM float64,
+		PN complex64,
+		PO complex128,
+		PP blob,
+		PQ bigInt,
+		PR bigRat,
+		PS string,
+	);
+	commit;`
 )
 
 func TestSchema(t *testing.T) {
@@ -95,8 +179,10 @@ func TestSchema(t *testing.T) {
 		{testSchema3{}, "", nil, false, testSchema3S},
 		{testSchema4{}, "", nil, false, testSchema4S},
 		{testSchema5{}, "", nil, true, ""},
+		// 15
 		{testSchema6{}, "", &SchemaOptions{NoTransaction: true, NoIfNotExists: true}, false, testSchema6S},
 		{testSchema7{}, "", &SchemaOptions{NoIfNotExists: true}, false, testSchema7S},
+		{testSchema8{}, "", nil, false, testSchema8S},
 	}
 
 	for iTest, test := range tab {

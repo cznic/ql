@@ -162,10 +162,14 @@ func schemaFor(v interface{}) (*schemaTable, error) {
 				qt = Blob
 			}
 		case reflect.Struct:
+			if ft.PkgPath() != "math/big" {
+				break
+			}
+
 			switch ft.Name() {
-			case "big.Int":
+			case "Int":
 				qt = BigInt
-			case "big.Rat":
+			case "Rat":
 				qt = BigRat
 			}
 		case reflect.String:
