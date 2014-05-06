@@ -236,7 +236,7 @@ func TestSchema(t *testing.T) {
 	}
 }
 
-func ExampleMustSchema() {
+func ExampleSchema() {
 	type department struct {
 		a              int    // unexported -> ignored
 		ID             int64  `ql:"index xID"`
@@ -752,4 +752,48 @@ func TestMarshal(t *testing.T) {
 		}
 
 	}
+}
+
+func ExampleMarshal() {
+	type item struct {
+		ID   int64
+		Name string
+		Qty  *int // pointer enables nil values
+	}
+
+	schema := MustSchema((*item)(nil), "", nil)
+	ins := MustCompile("BEGIN TRANSACTION; INSERT INTO item VALUES($1, $2); COMMIT;")
+
+	db, err := OpenMem()
+	if err != nil {
+		panic(err)
+	}
+
+	ctx := NewRWCtx()
+	if _, _, err := db.Execute(ctx, schema); err != nil {
+		panic(err)
+	}
+
+	if _, _, err := db.Execute(ctx, ins, MustMarshal(&item{Name: "foo"})...); err != nil {
+		panic(err)
+	}
+
+	q := 42
+	if _, _, err := db.Execute(ctx, ins, MustMarshal(&item{Name: "bar", Qty: &q})...); err != nil {
+		panic(err)
+	}
+
+	rs, _, err := db.Run(nil, "SELECT * FROM item ORDER BY id();")
+	if err != nil {
+		panic(err)
+	}
+
+	rs[0].Do(true, func(data []interface{}) (bool, error) {
+		fmt.Println(data)
+		return true, nil
+	})
+	// Output:
+	// [Name Qty]
+	// [foo <nil>]
+	// [bar 42]
 }

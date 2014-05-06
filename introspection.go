@@ -31,12 +31,19 @@ type schemaIndex struct {
 	unique  bool
 }
 
+const (
+	_ = iota
+	expand64
+	uexpand64
+)
+
 type schemaField struct {
-	index int
-	id    bool
-	ptr   bool
-	name  string
-	typ   Type
+	index  int
+	id     bool
+	ptr    bool
+	name   string
+	typ    Type
+	expand int
 }
 
 func parseTag(s string) map[string]string {
@@ -129,11 +136,13 @@ func schemaFor(v interface{}) (*schemaTable, error) {
 			fk = ft.Kind()
 		}
 
+		x64 := 0
 		qt := Type(-1)
 		switch fk {
 		case reflect.Bool:
 			qt = Bool
 		case reflect.Int:
+			x64 = expand64
 			qt = Int64
 		case reflect.Int8:
 			qt = Int8
@@ -149,6 +158,7 @@ func schemaFor(v interface{}) (*schemaTable, error) {
 
 			qt = Int64
 		case reflect.Uint:
+			x64 = uexpand64
 			qt = Uint64
 		case reflect.Uint8:
 			qt = Uint8
@@ -193,7 +203,7 @@ func schemaFor(v interface{}) (*schemaTable, error) {
 			return nil, fmt.Errorf("cannot derive schema for type %s (%v)", ft.Name(), fk)
 		}
 
-		r.fields = append(r.fields, &schemaField{i, fn == "ID" && r.hasID, ptr, fn, qt})
+		r.fields = append(r.fields, &schemaField{i, fn == "ID" && r.hasID, ptr, fn, qt, x64})
 	}
 
 	schemaMu.Lock()
@@ -228,16 +238,15 @@ var zeroSchemaOptions SchemaOptions
 // conforming characters are replaced by underscores. Value v can be also a
 // pointer to a struct.
 //
-// Every struct field type must be one of the QL types or the field's type base
-// type must be one of the QL types or a pointer to one of them. Only exported
-// fields are considered. If an exported field QL tag contains "-" (`ql:"-"`)
-// then such field is not considered. A field with name ID, having type int64,
-// corresponds to id() - and is thus not a part of the CREATE statement. A
-// field QL tag containing "index name" or "uindex name" triggers additionally
-// creating an index or unique index on the respective field.  Fields can be
-// renamed using a QL tag "name newName". Fields are considered in the order of
-// appearance. A QL tag is a struct tag part prefixed by "ql:". Tags can be
-// combined, for example:
+// Every considered struct field type must be one of the QL types or a pointer
+// to such type. Only exported fields are considered. If an exported field QL
+// tag contains "-" (`ql:"-"`) then such field is not considered. A field with
+// name ID, having type int64, corresponds to id() - and is thus not a part of
+// the CREATE statement. A field QL tag containing "index name" or "uindex
+// name" triggers additionally creating an index or unique index on the
+// respective field.  Fields can be renamed using a QL tag "name newName".
+// Fields are considered in the order of appearance. A QL tag is a struct tag
+// part prefixed by "ql:". Tags can be combined, for example:
 //
 //	type T struct {
 //		Foo	string	`ql:"index xFoo, name Bar"`
@@ -334,12 +343,11 @@ func MustSchema(v interface{}, name string, opt *SchemaOptions) List {
 // to []interface{} or an error, if any. Value v can be also a pointer to a
 // struct.
 //
-// Every struct field type must be one of the QL types or the field's type base
-// type must be one of the QL types or a pointer to one of them. Only exported
-// fields are considered. If an exported field QL tag contains "-" then such
-// field is not considered. A QL tag is a struct tag part prefixed by "ql:".
-// Field with name ID, having type int64, corresponds to id() - and is thus
-// not part of the result.
+// Every considered struct field type must be one of the QL types or a pointer
+// to such type. Only exported fields are considered. If an exported field QL
+// tag contains "-" then such field is not considered. A QL tag is a struct tag
+// part prefixed by "ql:".  Field with name ID, having type int64, corresponds
+// to id() - and is thus not part of the result.
 func Marshal(v interface{}) ([]interface{}, error) {
 	s, err := schemaFor(v)
 	if err != nil {
@@ -350,30 +358,63 @@ func Marshal(v interface{}) ([]interface{}, error) {
 	if s.ptr {
 		val = val.Elem()
 	}
-	r := make([]interface{}, len(s.fields))
-	for i, v := range s.fields {
+	n := len(s.fields)
+	if s.hasID {
+		n--
+	}
+	r := make([]interface{}, n)
+	j := 0
+	for _, v := range s.fields {
+		if v.id {
+			continue
+		}
+
 		f := val.Field(v.index)
 		if v.ptr {
 			if f.IsNil() {
-				r[i] = nil
+				r[j] = nil
+				j++
 				continue
 			}
 
 			f = f.Elem()
 		}
-		r[i] = f.Interface()
+		fv := f.Interface()
+		switch v.expand {
+		case expand64:
+			r[j] = int64(fv.(int))
+		case uexpand64:
+			r[j] = uint64(fv.(uint))
+		default:
+			r[j] = fv
+		}
+		j++
 	}
 	return r, nil
+}
+
+// MustMarshal is like Marshal but panics on error. It simplifies marshaling of
+// "safe" types, like those which were already verified by Schema or
+// MustSchema.  When the underlying Marshal returns an error, MustMarshal
+// panics.
+//
+// MustMarshal is safe for concurrent use by multiple goroutines.
+func MustMarshal(v interface{}) []interface{} {
+	r, err := Marshal(v)
+	if err != nil {
+		panic(err)
+	}
+
+	return r
 }
 
 // Unmarshal stores data from []interface{} in the struct value pointed to by
 // v.
 //
-// Every struct field type must be one of the QL types or the field's type base
-// type must be one of the QL types or a pointer to one of them. Only exported
-// fields are considered. If an exported field QL tag contains "-" then such
-// field is not considered. A QL tag is a struct tag part prefixed by "ql:".
-// Fields are considered in the order of appearance.
+// Every considered struct field type must be one of the QL types or a pointer
+// to such type. Only exported fields are considered. If an exported field QL
+// tag contains "-" then such field is not considered. A QL tag is a struct tag
+// part prefixed by "ql:".  Fields are considered in the order of appearance.
 func Unmarshal(v interface{}, data []interface{}) error {
 	panic("TODO")
 }
