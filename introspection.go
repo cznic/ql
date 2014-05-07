@@ -35,23 +35,31 @@ type schemaField struct {
 	index         int
 	id            bool
 	ptr           bool
+	zPtr          reflect.Value
 	name          string
 	typ           Type
+	rType         reflect.Type
 	marshalType   reflect.Type
 	unmarshalType reflect.Type
 }
 
 func (s *schemaField) check(ft reflect.Type, v interface{}) error {
 	t := reflect.TypeOf(v)
-	if ft.AssignableTo(t) {
-		return nil
+	if !ft.AssignableTo(t) {
+		if !ft.ConvertibleTo(t) {
+			return fmt.Errorf("type %s (%v) cannot be converted to %T", ft.Name(), ft.Kind(), t.Name())
+		}
+
+		s.marshalType = t
 	}
 
-	if !ft.ConvertibleTo(t) {
-		return fmt.Errorf("type %s (%v) cannot be converted to %T", ft.Name(), ft.Kind(), t.Name())
-	}
+	if !t.AssignableTo(ft) {
+		if !t.ConvertibleTo(ft) {
+			return fmt.Errorf("type %s (%v) cannot be converted to %T", t.Name(), t.Kind(), ft.Name())
+		}
 
-	s.marshalType, s.unmarshalType = t, ft
+		s.unmarshalType = ft
+	}
 	return nil
 }
 
@@ -138,8 +146,10 @@ func schemaFor(v interface{}) (*schemaTable, error) {
 		ft := f.Type
 		fk := ft.Kind()
 		var ptr bool
+		var zPtr reflect.Value
 		if fk == reflect.Ptr {
 			ptr = true
+			zPtr = reflect.Zero(ft)
 			ft = ft.Elem()
 			fk = ft.Kind()
 		}
@@ -250,7 +260,10 @@ func schemaFor(v interface{}) (*schemaTable, error) {
 			return nil, fmt.Errorf("cannot derive schema for type %s (%v)", ft.Name(), fk)
 		}
 
-		r.fields = append(r.fields, &schemaField{i, fn == "ID" && r.hasID, ptr, fn, qt, sf.marshalType, sf.unmarshalType})
+		r.fields = append(
+			r.fields,
+			&schemaField{i, fn == "ID" && r.hasID, ptr, zPtr, fn, qt, ft, sf.marshalType, sf.unmarshalType},
+		)
 	}
 
 	schemaMu.Lock()
@@ -264,6 +277,7 @@ func schemaFor(v interface{}) (*schemaTable, error) {
 	return r, nil
 }
 
+// SchemaOptions amend the result of Schema.
 type SchemaOptions struct {
 	// Don't wrap the CREATE statement(s) in a transaction.
 	NoTransaction bool
@@ -287,14 +301,15 @@ var zeroSchemaOptions SchemaOptions
 //
 // Every considered struct field type must be one of the QL types or a type
 // convertible to string, bool, int*, uint*, float* or complex* type or pointer
-// to such type. Only exported fields are considered. If an exported field QL
-// tag contains "-" (`ql:"-"`) then such field is not considered. A field with
-// name ID, having type int64, corresponds to id() - and is thus not a part of
-// the CREATE statement. A field QL tag containing "index name" or "uindex
-// name" triggers additionally creating an index or unique index on the
-// respective field.  Fields can be renamed using a QL tag "name newName".
-// Fields are considered in the order of appearance. A QL tag is a struct tag
-// part prefixed by "ql:". Tags can be combined, for example:
+// to such type. Integers with a width dependent on the architecture can not be
+// used. Only exported fields are considered. If an exported field QL tag
+// contains "-" (`ql:"-"`) then such field is not considered. A field with name
+// ID, having type int64, corresponds to id() - and is thus not a part of the
+// CREATE statement. A field QL tag containing "index name" or "uindex name"
+// triggers additionally creating an index or unique index on the respective
+// field.  Fields can be renamed using a QL tag "name newName".  Fields are
+// considered in the order of appearance. A QL tag is a struct tag part
+// prefixed by "ql:". Tags can be combined, for example:
 //
 //	type T struct {
 //		Foo	string	`ql:"index xFoo, name Bar"`
@@ -393,8 +408,9 @@ func MustSchema(v interface{}, name string, opt *SchemaOptions) List {
 //
 // Every considered struct field type must be one of the QL types or a type
 // convertible to string, bool, int*, uint*, float* or complex* type or pointer
-// to such type. Only exported fields are considered. If an exported field QL
-// tag contains "-" then such field is not considered. A QL tag is a struct tag
+// to such type. Integers with a width dependent on the architecture can not be
+// used. Only exported fields are considered. If an exported field QL tag
+// contains "-" then such field is not considered. A QL tag is a struct tag
 // part prefixed by "ql:".  Field with name ID, having type int64, corresponds
 // to id() - and is thus not part of the result.
 func Marshal(v interface{}) ([]interface{}, error) {
@@ -455,12 +471,131 @@ func MustMarshal(v interface{}) []interface{} {
 // Unmarshal stores data from []interface{} in the struct value pointed to by
 // v.
 //
-
 // Every considered struct field type must be one of the QL types or a type
 // convertible to string, bool, int*, uint*, float* or complex* type or pointer
-// to such type. Only exported fields are considered. If an exported field QL
-// tag contains "-" then such field is not considered. A QL tag is a struct tag
+// to such type. Integers with a width dependent on the architecture can not be
+// used. Only exported fields are considered. If an exported field QL tag
+// contains "-" then such field is not considered. A QL tag is a struct tag
 // part prefixed by "ql:".  Fields are considered in the order of appearance.
-func Unmarshal(v interface{}, data []interface{}) error {
-	panic("TODO")
+// Types of values in data must be compatible with the corresponding considered
+// field of v.
+//
+// If the struct has no ID field then the number of values in data must be equal
+// to the number of considered fields of v.
+//
+//	type T struct {
+//		A bool
+//		B string
+//	}
+//
+// Assuming the schema is
+//
+//	CREATE TABLE T (A bool, B string);
+//
+// Data might be a result of queries like
+//
+//	SELECT * FROM T;
+//	SELECT A, B FROM T;
+//
+// If the struct has a considered ID field then the number of values in data
+// must be equal to the number of considered fields in v - or one less. In the
+// later case the ID field is not set.
+//
+//	type U struct {
+//		ID int64
+//		A  bool
+//		B  string
+//	}
+//
+// Assuming the schema is
+//
+//	CREATE TABLE T (A bool, B string);
+//
+// Data might be a result of queries like
+//
+//	SELECT * FROM T;             // ID not set
+//	SELECT A, B FROM T;          // ID not set
+//	SELECT id(), A, B FROM T;    // ID is set
+//
+// To unmarshal a value from data into a pointer field of v, Unmarshal first
+// handles the case of the value being nil. In that case, Unmarshal sets the
+// pointer to nil. Otherwise, Unmarshal unmarshals the data value into value
+// pointed at by the pointer. If the pointer is nil, Unmarshal allocates a new
+// value for it to point to.
+func Unmarshal(v interface{}, data []interface{}) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			var ok bool
+			if err, ok = r.(error); !ok {
+				err = fmt.Errorf("%v", r)
+			}
+			err = fmt.Errorf("unmarshal: %v", err)
+		}
+	}()
+
+	s, err := schemaFor(v)
+	if err != nil {
+		return err
+	}
+
+	if !s.ptr {
+		return fmt.Errorf("unmarshal: need a pointer to a struct")
+	}
+
+	id := false
+	nv, nf := len(data), len(s.fields)
+	switch s.hasID {
+	case true:
+		switch {
+		case nv == nf:
+			id = true
+		case nv == nf-1:
+			// ok
+		default:
+			return fmt.Errorf("unmarshal: got %d values, need %d or %d", nv, nf-1, nf)
+		}
+	default:
+		switch {
+		case nv == nf:
+			// ok
+		default:
+			return fmt.Errorf("unmarshal: got %d values, need %d", nv, nf)
+		}
+	}
+
+	j := 0
+	vVal := reflect.ValueOf(v)
+	if s.ptr {
+		vVal = vVal.Elem()
+	}
+	for _, sf := range s.fields {
+		if sf.id && !id {
+			continue
+		}
+
+		d := data[j]
+		val := reflect.ValueOf(d)
+		j++
+
+		fVal := vVal.Field(sf.index)
+		if u := sf.unmarshalType; u != nil {
+			val = val.Convert(u)
+		}
+		if !sf.ptr {
+			fVal.Set(val)
+			continue
+		}
+
+		if d == nil {
+			fVal.Set(sf.zPtr)
+			continue
+		}
+
+		if fVal.IsNil() {
+			fVal.Set(reflect.New(sf.rType))
+		}
+
+		fVal.Elem().Set(val)
+	}
+	return nil
 }

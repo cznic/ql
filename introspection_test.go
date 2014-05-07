@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"fmt"
 	"math/big"
+	//"reflect"
 	"testing"
 	"time"
 
@@ -247,9 +248,14 @@ func ExampleSchema() {
 		z              string
 	}
 
-	var d department
-	schema := MustSchema(&d, "", nil)
-	fmt.Println(schema)
+	schema := MustSchema((*department)(nil), "", nil)
+	sel := MustCompile(`
+		SELECT * FROM __Table;
+		SELECT * FROM __Column;
+		SELECT * FROM __Index;`,
+	)
+	fmt.Print(schema)
+
 	db, err := OpenMem()
 	if err != nil {
 		panic(err)
@@ -259,40 +265,34 @@ func ExampleSchema() {
 		panic(err)
 	}
 
-	f := func(q string) {
-		rs, _, err := db.Run(nil, q)
-		if err != nil {
-			panic(err)
-		}
-
-		fmt.Println(q)
-		rs[0].Do(true, func(data []interface{}) (bool, error) {
-			fmt.Println(data)
-			return true, nil
-		})
-		fmt.Println()
+	rs, _, err := db.Execute(nil, sel)
+	if err != nil {
+		panic(err)
 	}
 
-	f("SELECT * FROM __Table;")
-	f("SELECT * FROM __Column;")
-	f("SELECT * FROM __Index;")
+	for _, rs := range rs {
+		fmt.Println("----")
+		if err = rs.Do(true, func(data []interface{}) (bool, error) {
+			fmt.Println(data)
+			return true, nil
+		}); err != nil {
+			panic(err)
+		}
+	}
 	// Output:
 	// BEGIN TRANSACTION;
 	// 	CREATE TABLE IF NOT EXISTS department (Name string, HQ int32);
 	// 	CREATE INDEX IF NOT EXISTS xID ON department (id());
 	// 	CREATE UNIQUE INDEX IF NOT EXISTS xName ON department (Name);
 	// COMMIT;
-	//
-	// SELECT * FROM __Table;
+	// ----
 	// [Name Schema]
 	// [department CREATE TABLE department (Name string, HQ int32);]
-	//
-	// SELECT * FROM __Column;
+	// ----
 	// [TableName Ordinal Name Type]
 	// [department 1 Name string]
 	// [department 2 HQ int32]
-	//
-	// SELECT * FROM __Index;
+	// ----
 	// [TableName ColumnName Name IsUnique]
 	// [department id() xID false]
 	// [department Name xName true]
@@ -767,7 +767,11 @@ func ExampleMarshal() {
 	}
 
 	schema := MustSchema((*item)(nil), "", nil)
-	ins := MustCompile("BEGIN TRANSACTION; INSERT INTO item VALUES($1, $2, $3); COMMIT;")
+	ins := MustCompile(`
+		BEGIN TRANSACTION;
+			INSERT INTO item VALUES($1, $2, $3);
+		COMMIT;`,
+	)
 
 	db, err := OpenMem()
 	if err != nil {
@@ -793,12 +797,275 @@ func ExampleMarshal() {
 		panic(err)
 	}
 
-	rs[0].Do(true, func(data []interface{}) (bool, error) {
+	if err = rs[0].Do(true, func(data []interface{}) (bool, error) {
 		fmt.Println(data)
 		return true, nil
-	})
+	}); err != nil {
+		panic(err)
+	}
 	// Output:
 	// [Name Qty Bar]
 	// [foo <nil> -1]
 	// [bar 42 0]
+}
+
+func TestUnmarshal0(t *testing.T) {
+	type t1 struct {
+		I, J int64
+	}
+
+	// ---- value field
+	v1 := &t1{-1, -2}
+	if err := Unmarshal(v1, []interface{}{int64(42), int64(314)}); err != nil {
+		t.Fatal(err)
+	}
+
+	if g, e := v1.I, int64(42); g != e {
+		t.Fatal(g, e)
+	}
+
+	if g, e := v1.J, int64(314); g != e {
+		t.Fatal(g, e)
+	}
+
+	type t2 struct {
+		P *int64
+	}
+
+	// ---- nil into nil ptr field
+	v2 := &t2{P: nil}
+	if err := Unmarshal(v2, []interface{}{nil}); err != nil {
+		t.Fatal(err)
+	}
+
+	if g, e := v2.P, (*int64)(nil); g != e {
+		t.Fatal(g, e)
+	}
+
+	v2 = &t2{P: nil}
+	if err := Unmarshal(v2, []interface{}{interface{}(nil)}); err != nil {
+		t.Fatal(err)
+	}
+
+	if g, e := v2.P, (*int64)(nil); g != e {
+		t.Fatal(g, e)
+	}
+
+	// ---- nil into non nil ptr field
+	i := int64(42)
+	v2 = &t2{P: &i}
+	if err := Unmarshal(v2, []interface{}{nil}); err != nil {
+		t.Fatal(err)
+	}
+
+	if g, e := v2.P, (*int64)(nil); g != e {
+		t.Fatal(g, e)
+	}
+
+	if g, e := i, int64(42); g != e {
+		t.Fatal(g, e)
+	}
+
+	v2 = &t2{P: &i}
+	if err := Unmarshal(v2, []interface{}{interface{}(nil)}); err != nil {
+		t.Fatal(err)
+	}
+
+	if g, e := v2.P, (*int64)(nil); g != e {
+		t.Fatal(g, e)
+	}
+
+	if g, e := i, int64(42); g != e {
+		t.Fatal(g, e)
+	}
+
+	// ---- non nil value into non nil ptr field
+	i = 42
+	v2 = &t2{P: &i}
+	if err := Unmarshal(v2, []interface{}{int64(314)}); err != nil {
+		t.Fatal(err)
+	}
+
+	if g, e := v2.P, &i; g != e {
+		t.Fatal(g, e)
+	}
+
+	if g, e := i, int64(314); g != e {
+		t.Fatal(g, e)
+	}
+
+	// ---- non nil value into nil ptr field
+	v2 = &t2{P: nil}
+	if err := Unmarshal(v2, []interface{}{int64(314)}); err != nil {
+		t.Fatal(err)
+	}
+
+	if g, e := v2.P != nil, true; g != e {
+		t.Fatal(g, e)
+	}
+
+	if g, e := *v2.P, int64(314); g != e {
+		t.Fatal(g, e)
+	}
+}
+
+func TestUnmarshal(t *testing.T) {
+	type myString string
+
+	type t1 struct {
+		A bool
+		B myString
+	}
+
+	type t2 struct {
+		A  bool
+		ID int64
+		B  myString
+	}
+
+	f := func(v interface{}) int64 {
+		if x, ok := v.(*t2); ok {
+			return x.ID
+		}
+
+		return -1
+	}
+
+	tab := []struct {
+		inst interface{}
+		data []interface{}
+		err  bool
+	}{
+		// 0
+		{t1{}, []interface{}{true, "foo"}, true},      // not a ptr
+		{&t1{}, []interface{}{true}, true},            // too few values
+		{&t1{}, []interface{}{"foo"}, true},           // too few values
+		{&t1{}, []interface{}{true, "foo", 42}, true}, // too many values
+		{&t1{}, []interface{}{"foo", true, 42}, true}, // too many values
+		// 5
+		{&t1{}, []interface{}{true, "foo"}, false},
+		{&t1{}, []interface{}{false, "bar"}, false},
+		{&t1{}, []interface{}{"bar", "baz"}, true},
+		{&t1{}, []interface{}{true, 42.7}, true},
+		{&t2{}, []interface{}{1}, true}, // too few values
+		// 10
+		{&t2{}, []interface{}{1, 2, 3, 4}, true}, // too many values
+		{&t2{}, []interface{}{false, int64(314), "foo"}, false},
+		{&t2{}, []interface{}{true, int64(42), "foo"}, false},
+		{&t2{}, []interface{}{false, "foo"}, false},
+		// 15
+		{&t2{}, []interface{}{true, "foo"}, false},
+	}
+
+	for iTest, test := range tab {
+		inst := test.inst
+		err := Unmarshal(inst, test.data)
+		if g, e := err != nil, test.err; g != e {
+			t.Fatal(iTest, g, e)
+		}
+
+		if err != nil {
+			t.Log(iTest, err)
+			continue
+		}
+
+		data, err := Marshal(inst)
+		if err != nil {
+			t.Fatal(iTest, err)
+		}
+
+		if g, e := len(data), len(test.data); g > e {
+			t.Fatal(iTest, g, e)
+		}
+
+		j := 0
+		for _, v := range data {
+			v2 := test.data[j]
+			j++
+			if _, ok := v2.(int64); ok {
+				if g, e := f(inst), v2; g != e {
+					t.Fatal(iTest, g, e)
+				}
+
+				continue
+			}
+
+			if g, e := v, v2; g != e {
+				t.Fatal(iTest, g, e)
+			}
+		}
+	}
+}
+
+func ExampleUnmarshal() {
+	type myString string
+
+	type row struct {
+		ID int64
+		S  myString
+		P  *int64
+	}
+
+	schema := MustSchema((*row)(nil), "", nil)
+	ins := MustCompile(`
+		BEGIN TRANSACTION;
+			INSERT INTO row VALUES($1, $2);
+		COMMIT;`,
+	)
+	sel := MustCompile(`
+		SELECT id(), S, P FROM row ORDER by id();
+		SELECT * FROM row ORDER by id();`,
+	)
+
+	db, err := OpenMem()
+	if err != nil {
+		panic(err)
+	}
+
+	ctx := NewRWCtx()
+	if _, _, err = db.Execute(ctx, schema); err != nil {
+		panic(err)
+	}
+
+	if _, _, err = db.Execute(ctx, ins, MustMarshal(row{S: "foo"})...); err != nil {
+		panic(err)
+	}
+
+	i42 := int64(42)
+	if _, _, err = db.Execute(ctx, ins, MustMarshal(row{S: "bar", P: &i42})...); err != nil {
+		panic(err)
+	}
+
+	rs, _, err := db.Execute(nil, sel)
+	if err != nil {
+		panic(err)
+	}
+
+	for _, rs := range rs {
+		fmt.Println("----")
+		if err := rs.Do(false, func(data []interface{}) (bool, error) {
+			r := &row{}
+			if err := Unmarshal(r, data); err != nil {
+				return false, err
+			}
+
+			fmt.Printf("ID %d, S %q, P ", r.ID, r.S)
+			switch r.P == nil {
+			case true:
+				fmt.Println("<nil>")
+			default:
+				fmt.Println(*r.P)
+			}
+			return true, nil
+		}); err != nil {
+			panic(err)
+		}
+	}
+	// Output:
+	// ----
+	// ID 1, S "foo", P <nil>
+	// ID 2, S "bar", P 42
+	// ----
+	// ID 0, S "foo", P <nil>
+	// ID 0, S "bar", P 42
 }
