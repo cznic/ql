@@ -413,6 +413,8 @@ func MustSchema(v interface{}, name string, opt *SchemaOptions) List {
 // contains "-" then such field is not considered. A QL tag is a struct tag
 // part prefixed by "ql:".  Field with name ID, having type int64, corresponds
 // to id() - and is thus not part of the result.
+//
+// Marshal is safe for concurrent use by multiple goroutines.
 func Marshal(v interface{}) ([]interface{}, error) {
 	s, err := schemaFor(v)
 	if err != nil {
@@ -522,6 +524,8 @@ func MustMarshal(v interface{}) []interface{} {
 // pointer to nil. Otherwise, Unmarshal unmarshals the data value into value
 // pointed at by the pointer. If the pointer is nil, Unmarshal allocates a new
 // value for it to point to.
+//
+// Unmarshal is safe for concurrent use by multiple goroutines.
 func Unmarshal(v interface{}, data []interface{}) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
