@@ -152,11 +152,8 @@ func schemaFor(v interface{}) (*schemaTable, error) {
 			if err := sf.check(ft, false); err != nil {
 				return nil, err
 			}
-		case reflect.Int:
-			qt = Int64
-			if err := sf.check(ft, int64(0)); err != nil {
-				return nil, err
-			}
+		case reflect.Int, reflect.Uint:
+			return nil, fmt.Errorf("only integers of fixed size can be used to derive a schema: %v", fk)
 		case reflect.Int8:
 			qt = Int8
 			if err := sf.check(ft, int8(0)); err != nil {
@@ -180,11 +177,6 @@ func schemaFor(v interface{}) (*schemaTable, error) {
 
 			qt = Int64
 			if err := sf.check(ft, int64(0)); err != nil {
-				return nil, err
-			}
-		case reflect.Uint:
-			qt = Uint64
-			if err := sf.check(ft, uint64(0)); err != nil {
 				return nil, err
 			}
 		case reflect.Uint8:

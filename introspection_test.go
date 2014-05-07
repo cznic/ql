@@ -54,19 +54,19 @@ type (
 	}
 
 	testSchema7 struct {
-		A int
+		A int64
 		B string `ql:"uindex x"`
 		C bool
 	}
 
 	testSchema8 struct {
-		A  bool
-		B  int
-		C  int8
-		D  int16
-		E  int32
-		F  int64
-		G  uint
+		A bool
+		//B  int
+		C int8
+		D int16
+		E int32
+		F int64
+		//G  uint
 		H  uint8
 		I  uint16
 		J  uint32
@@ -82,12 +82,12 @@ type (
 		T  time.Time
 		U  time.Duration
 		PA *bool
-		PB *int
+		//PB *int
 		PC *int8
 		PD *int16
 		PE *int32
 		PF *int64
-		PG *uint
+		//PG *uint
 		PH *uint8
 		PI *uint16
 		PJ *uint32
@@ -129,12 +129,12 @@ const (
 		begin transaction;
 			create table if not exists testSchema8 (
 				A  bool,
-				B  int64,
+				//B  int64,
 				C  int8,
 				D  int16,
 				E  int32,
 				F  int64,
-				G  uint64,
+				//G  uint64,
 				H  uint8,
 				I  uint16,
 				J  uint32,
@@ -150,12 +150,12 @@ const (
 				T  time,
 				U  duration,
 				PA bool,
-				PB int64,
+				//PB int64,
 				PC int8,
 				PD int16,
 				PE int32,
 				PF int64,
-				PG uint64,
+				//PG uint64,
 				PH uint8,
 				PI uint16,
 				PJ uint32,
@@ -227,7 +227,7 @@ func TestSchema(t *testing.T) {
 
 		s, err := Compile(test.s)
 		if err != nil {
-			panic("internal error")
+			panic("internal error 070")
 		}
 
 		if g, e := l.String(), s.String(); g != e {
@@ -243,7 +243,7 @@ func ExampleSchema() {
 		Other          string `xml:"-" ql:"-"` // ignored by QL tag
 		DepartmentName string `ql:"name Name, uindex xName" json:"foo"`
 		m              bool
-		HQ             int
+		HQ             int32
 		z              string
 	}
 
@@ -278,19 +278,19 @@ func ExampleSchema() {
 	f("SELECT * FROM __Index;")
 	// Output:
 	// BEGIN TRANSACTION;
-	// 	CREATE TABLE IF NOT EXISTS department (Name string, HQ int64);
+	// 	CREATE TABLE IF NOT EXISTS department (Name string, HQ int32);
 	// 	CREATE INDEX IF NOT EXISTS xID ON department (id());
 	// 	CREATE UNIQUE INDEX IF NOT EXISTS xName ON department (Name);
 	// COMMIT;
 	//
 	// SELECT * FROM __Table;
 	// [Name Schema]
-	// [department CREATE TABLE department (Name string, HQ int64);]
+	// [department CREATE TABLE department (Name string, HQ int32);]
 	//
 	// SELECT * FROM __Column;
 	// [TableName Ordinal Name Type]
 	// [department 1 Name string]
-	// [department 2 HQ int64]
+	// [department 2 HQ int32]
 	//
 	// SELECT * FROM __Index;
 	// [TableName ColumnName Name IsUnique]
@@ -303,12 +303,12 @@ func TestMarshal(t *testing.T) {
 	dur := time.Millisecond
 	schema8 := testSchema8{
 		A: true,
-		B: 1,
+		//B: 1,
 		C: 2,
 		D: 3,
 		E: 4,
 		F: 5,
-		G: 6,
+		//G: 6,
 		H: 7,
 		I: 8,
 		J: 9,
@@ -325,12 +325,12 @@ func TestMarshal(t *testing.T) {
 		U: dur,
 	}
 	schema8.PA = &schema8.A
-	schema8.PB = &schema8.B
+	//schema8.PB = &schema8.B
 	schema8.PC = &schema8.C
 	schema8.PD = &schema8.D
 	schema8.PE = &schema8.E
 	schema8.PF = &schema8.F
-	schema8.PG = &schema8.G
+	//schema8.PG = &schema8.G
 	schema8.PH = &schema8.H
 	schema8.PI = &schema8.I
 	schema8.PJ = &schema8.J
@@ -356,12 +356,12 @@ func TestMarshal(t *testing.T) {
 		{new(u), true, nil},
 		{testSchema8{}, false, []interface{}{
 			false,
-			int64(0),
+			//int64(0),
 			int8(0),
 			int16(0),
 			int32(0),
 			int64(0),
-			uint64(0),
+			//uint64(0),
 			uint8(0),
 			uint16(0),
 			uint32(0),
@@ -377,12 +377,12 @@ func TestMarshal(t *testing.T) {
 			time.Time{},
 			time.Duration(0),
 			nil,
+			//nil,
 			nil,
 			nil,
 			nil,
 			nil,
-			nil,
-			nil,
+			//nil,
 			nil,
 			nil,
 			nil,
@@ -400,12 +400,12 @@ func TestMarshal(t *testing.T) {
 		}},
 		{&testSchema8{}, false, []interface{}{
 			false,
-			int64(0),
+			//int64(0),
 			int8(0),
 			int16(0),
 			int32(0),
 			int64(0),
-			uint64(0),
+			//uint64(0),
 			uint8(0),
 			uint16(0),
 			uint32(0),
@@ -421,12 +421,12 @@ func TestMarshal(t *testing.T) {
 			time.Time{},
 			time.Duration(0),
 			nil,
+			//nil,
 			nil,
 			nil,
 			nil,
 			nil,
-			nil,
-			nil,
+			//nil,
 			nil,
 			nil,
 			nil,
@@ -444,12 +444,12 @@ func TestMarshal(t *testing.T) {
 		}},
 		{schema8, false, []interface{}{
 			true,
-			int64(1),
+			//int64(1),
 			int8(2),
 			int16(3),
 			int32(4),
 			int64(5),
-			uint64(6),
+			//uint64(6),
 			uint8(7),
 			uint16(8),
 			uint32(9),
@@ -465,12 +465,12 @@ func TestMarshal(t *testing.T) {
 			now,
 			dur,
 			true,
-			int64(1),
+			//int64(1),
 			int8(2),
 			int16(3),
 			int32(4),
 			int64(5),
-			uint64(6),
+			//uint64(6),
 			uint8(7),
 			uint16(8),
 			uint32(9),
@@ -488,12 +488,12 @@ func TestMarshal(t *testing.T) {
 		}},
 		{&schema8, false, []interface{}{
 			true,
-			int64(1),
+			//int64(1),
 			int8(2),
 			int16(3),
 			int32(4),
 			int64(5),
-			uint64(6),
+			//uint64(6),
 			uint8(7),
 			uint16(8),
 			uint32(9),
@@ -509,12 +509,12 @@ func TestMarshal(t *testing.T) {
 			now,
 			dur,
 			true,
-			int64(1),
+			//int64(1),
 			int8(2),
 			int16(3),
 			int32(4),
 			int64(5),
-			uint64(6),
+			//uint64(6),
 			uint8(7),
 			uint16(8),
 			uint32(9),
@@ -755,7 +755,7 @@ func TestMarshal(t *testing.T) {
 }
 
 func ExampleMarshal() {
-	type myInt int
+	type myInt int16
 
 	type myString string
 
@@ -763,7 +763,7 @@ func ExampleMarshal() {
 		ID   int64
 		Name myString
 		Qty  *myInt // pointer enables nil values
-		Bar  int
+		Bar  int8
 	}
 
 	schema := MustSchema((*item)(nil), "", nil)
