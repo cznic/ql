@@ -298,7 +298,32 @@ func (c *driverConn) Exec(query string, args []driver.Value) (driver.Result, err
 		return nil, err
 	}
 
-	return driverExec(c.db, c.ctx, list, args)
+	//return driverExec(c.db, c.ctx, list, args)
+	return c.driverExec(c.db, list, args)
+}
+
+func (c *driverConn) driverExec(db *driverDB, list List, args []driver.Value) (driver.Result, error) {
+	internalCtx := (c.ctx == nil)
+
+	if internalCtx {
+		_, err := c.Begin()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	result, err1 := driverExec(db, c.ctx, list, args)
+
+	if internalCtx {
+		if err1 != nil {
+			c.Rollback()
+		} else {
+			c.Commit()
+		}
+		c.ctx = nil
+	}
+
+	return result, err1
 }
 
 func driverExec(db *driverDB, ctx *TCtx, list List, args []driver.Value) (driver.Result, error) {
@@ -513,7 +538,8 @@ func (s *driverStmt) NumInput() int {
 // Exec executes a query that doesn't return rows, such as an INSERT or UPDATE.
 func (s *driverStmt) Exec(args []driver.Value) (driver.Result, error) {
 	c := s.conn
-	return driverExec(c.db, c.ctx, s.stmt, args)
+	//return driverExec(c.db, c.ctx, s.stmt, args)
+	return c.driverExec(c.db, s.stmt, args)
 }
 
 // Exec executes a query that may return rows, such as a SELECT.
