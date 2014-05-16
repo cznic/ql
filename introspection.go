@@ -14,51 +14,57 @@ import (
 )
 
 var (
-	schemaCache = map[reflect.Type]*schemaTable{}
+	schemaCache = map[reflect.Type]*StructInfo{}
 	schemaMu    sync.RWMutex
 )
 
-type schemaTable struct {
-	ptr     bool
-	hasID   bool
-	fields  []*schemaField
-	indices []*schemaIndex
+// StructInfo describes a struct type. An instance of StructInfo obtained from
+// StructSchema is shared and must not be mutated.  That includes the values
+// pointed to by the elements of Fields and Indices.
+type StructInfo struct {
+	Fields  []*StructField // Fields describe the considered fields of a struct type.
+	HasID   bool           // Whether the struct has a considered field named ID of type int64.
+	Indices []*StructIndex // Indices describe indices defined by the index or uindex ql tags.
+	IsPtr   bool           // Whether the StructInfo was derived from a pointer to a struct.
 }
 
-type schemaIndex struct {
-	name    string
-	colName string
-	unique  bool
+// StructIndex describes an index defined by the ql tag index or uindex.
+type StructIndex struct {
+	ColumnName string // Name of the column the index is on.
+	Name       string // Name of the index.
+	Unique     bool   // Whether the index is unique.
 }
 
-type schemaField struct {
-	index         int
-	id            bool
-	ptr           bool
-	zPtr          reflect.Value
-	name          string
-	typ           Type
-	rType         reflect.Type
-	marshalType   reflect.Type
-	unmarshalType reflect.Type
+// StructField describes a considered field of a struct type.
+type StructField struct {
+	Index         int               // Index is the index of the field for reflect.Value.Field.
+	IsID          bool              // Whether the field corresponds to record id().
+	IsPtr         bool              // Whether the field is a pointer type.
+	MarshalType   reflect.Type      // The reflect.Type a field must be converted to when marshaling or nil when it is assignable directly. (Field->value)
+	Name          string            // Field name or value of the name tag (like in `ql:"name foo"`).
+	ReflectType   reflect.Type      // The reflect.Type of the field.
+	Tags          map[string]string // QL tags of this field. (`ql:"a, b c, d"` -> {"a": "", "b": "c", "d": ""})
+	Type          Type              // QL type of the field.
+	UnmarshalType reflect.Type      // The reflect.Type a value must be converted to when unmarshaling or nil when it is assignable directly. (Field<-value)
+	ZeroPtr       reflect.Value     // The reflect.Zero value of the field if it's a pointer type.
 }
 
-func (s *schemaField) check(ft reflect.Type, v interface{}) error {
+func (s *StructField) check(v interface{}) error {
 	t := reflect.TypeOf(v)
-	if !ft.AssignableTo(t) {
-		if !ft.ConvertibleTo(t) {
-			return fmt.Errorf("type %s (%v) cannot be converted to %T", ft.Name(), ft.Kind(), t.Name())
+	if !s.ReflectType.AssignableTo(t) {
+		if !s.ReflectType.ConvertibleTo(t) {
+			return fmt.Errorf("type %s (%v) cannot be converted to %T", s.ReflectType.Name(), s.ReflectType.Kind(), t.Name())
 		}
 
-		s.marshalType = t
+		s.MarshalType = t
 	}
 
-	if !t.AssignableTo(ft) {
-		if !t.ConvertibleTo(ft) {
-			return fmt.Errorf("type %s (%v) cannot be converted to %T", t.Name(), t.Kind(), ft.Name())
+	if !t.AssignableTo(s.ReflectType) {
+		if !t.ConvertibleTo(s.ReflectType) {
+			return fmt.Errorf("type %s (%v) cannot be converted to %T", t.Name(), t.Kind(), s.ReflectType.Name())
 		}
 
-		s.unmarshalType = ft
+		s.UnmarshalType = s.ReflectType
 	}
 	return nil
 }
@@ -77,7 +83,14 @@ func parseTag(s string) map[string]string {
 	return m
 }
 
-func schemaFor(v interface{}) (*schemaTable, error) {
+// StructSchema returns StructInfo for v which must be a struct instance or a
+// pointer to a struct.  The info is computed only once for every type.
+// Subsequent calls to StructSchema for the same type return a cached
+// StructInfo.
+//
+// Note: The returned StructSchema is shared and must be not mutated, including
+// any other data structures it may point to.
+func StructSchema(v interface{}) (*StructInfo, error) {
 	if v == nil {
 		return nil, fmt.Errorf("cannot derive schema for %T(%v)", v, v)
 	}
@@ -100,7 +113,7 @@ func schemaFor(v interface{}) (*schemaTable, error) {
 		return nil, fmt.Errorf("cannot derive schema for type %T (%v)", v, k)
 	}
 
-	r := &schemaTable{ptr: schemaPtr}
+	r := &StructInfo{IsPtr: schemaPtr}
 	for i := 0; i < t.NumField(); i++ {
 		f := t.Field(i)
 		fn := f.Name
@@ -118,7 +131,7 @@ func schemaFor(v interface{}) (*schemaTable, error) {
 		}
 
 		if fn == "ID" && f.Type.Kind() == reflect.Int64 {
-			r.hasID = true
+			r.HasID = true
 		}
 		var ix, unique bool
 		var xn string
@@ -137,144 +150,151 @@ func schemaFor(v interface{}) (*schemaTable, error) {
 			ix, unique, xn = true, true, s
 		}
 		if ix {
-			if fn == "ID" && r.hasID {
+			if fn == "ID" && r.HasID {
 				xfn = "id()"
 			}
-			r.indices = append(r.indices, &schemaIndex{xn, xfn, unique})
+			r.Indices = append(r.Indices, &StructIndex{Name: xn, ColumnName: xfn, Unique: unique})
 		}
 
-		ft := f.Type
-		fk := ft.Kind()
-		var ptr bool
-		var zPtr reflect.Value
+		sf := &StructField{Index: i, Name: fn, Tags: tags, Type: Type(-1), ReflectType: f.Type}
+		fk := sf.ReflectType.Kind()
 		if fk == reflect.Ptr {
-			ptr = true
-			zPtr = reflect.Zero(ft)
-			ft = ft.Elem()
-			fk = ft.Kind()
+			sf.IsPtr = true
+			sf.ZeroPtr = reflect.Zero(sf.ReflectType)
+			sf.ReflectType = sf.ReflectType.Elem()
+			fk = sf.ReflectType.Kind()
 		}
 
-		sf := &schemaField{}
-		qt := Type(-1)
 		switch fk {
 		case reflect.Bool:
-			qt = Bool
-			if err := sf.check(ft, false); err != nil {
+			sf.Type = Bool
+			if err := sf.check(false); err != nil {
 				return nil, err
 			}
 		case reflect.Int, reflect.Uint:
 			return nil, fmt.Errorf("only integers of fixed size can be used to derive a schema: %v", fk)
 		case reflect.Int8:
-			qt = Int8
-			if err := sf.check(ft, int8(0)); err != nil {
+			sf.Type = Int8
+			if err := sf.check(int8(0)); err != nil {
 				return nil, err
 			}
 		case reflect.Int16:
-			if err := sf.check(ft, int16(0)); err != nil {
+			if err := sf.check(int16(0)); err != nil {
 				return nil, err
 			}
-			qt = Int16
+			sf.Type = Int16
 		case reflect.Int32:
-			if err := sf.check(ft, int32(0)); err != nil {
+			if err := sf.check(int32(0)); err != nil {
 				return nil, err
 			}
-			qt = Int32
+			sf.Type = Int32
 		case reflect.Int64:
-			if ft.Name() == "Duration" && ft.PkgPath() == "time" {
-				qt = Duration
+			if sf.ReflectType.Name() == "Duration" && sf.ReflectType.PkgPath() == "time" {
+				sf.Type = Duration
 				break
 			}
 
-			qt = Int64
-			if err := sf.check(ft, int64(0)); err != nil {
+			sf.Type = Int64
+			if err := sf.check(int64(0)); err != nil {
 				return nil, err
 			}
 		case reflect.Uint8:
-			qt = Uint8
-			if err := sf.check(ft, uint8(0)); err != nil {
+			sf.Type = Uint8
+			if err := sf.check(uint8(0)); err != nil {
 				return nil, err
 			}
 		case reflect.Uint16:
-			qt = Uint16
-			if err := sf.check(ft, uint16(0)); err != nil {
+			sf.Type = Uint16
+			if err := sf.check(uint16(0)); err != nil {
 				return nil, err
 			}
 		case reflect.Uint32:
-			qt = Uint32
-			if err := sf.check(ft, uint32(0)); err != nil {
+			sf.Type = Uint32
+			if err := sf.check(uint32(0)); err != nil {
 				return nil, err
 			}
 		case reflect.Uint64:
-			qt = Uint64
-			if err := sf.check(ft, uint64(0)); err != nil {
+			sf.Type = Uint64
+			if err := sf.check(uint64(0)); err != nil {
 				return nil, err
 			}
 		case reflect.Float32:
-			qt = Float32
-			if err := sf.check(ft, float32(0)); err != nil {
+			sf.Type = Float32
+			if err := sf.check(float32(0)); err != nil {
 				return nil, err
 			}
 		case reflect.Float64:
-			qt = Float64
-			if err := sf.check(ft, float64(0)); err != nil {
+			sf.Type = Float64
+			if err := sf.check(float64(0)); err != nil {
 				return nil, err
 			}
 		case reflect.Complex64:
-			qt = Complex64
-			if err := sf.check(ft, complex64(0)); err != nil {
+			sf.Type = Complex64
+			if err := sf.check(complex64(0)); err != nil {
 				return nil, err
 			}
 		case reflect.Complex128:
-			qt = Complex128
-			if err := sf.check(ft, complex128(0)); err != nil {
+			sf.Type = Complex128
+			if err := sf.check(complex128(0)); err != nil {
 				return nil, err
 			}
 		case reflect.Slice:
-			qt = Blob
-			if err := sf.check(ft, []byte(nil)); err != nil {
+			sf.Type = Blob
+			if err := sf.check([]byte(nil)); err != nil {
 				return nil, err
 			}
 		case reflect.Struct:
-			switch ft.PkgPath() {
+			switch sf.ReflectType.PkgPath() {
 			case "math/big":
-				switch ft.Name() {
+				switch sf.ReflectType.Name() {
 				case "Int":
-					qt = BigInt
+					sf.Type = BigInt
 				case "Rat":
-					qt = BigRat
+					sf.Type = BigRat
 				}
 			case "time":
-				switch ft.Name() {
+				switch sf.ReflectType.Name() {
 				case "Time":
-					qt = Time
+					sf.Type = Time
 				}
 			}
 		case reflect.String:
-			qt = String
-			if err := sf.check(ft, ""); err != nil {
+			sf.Type = String
+			if err := sf.check(""); err != nil {
 				return nil, err
 			}
 		}
 
-		if qt < 0 {
-			return nil, fmt.Errorf("cannot derive schema for type %s (%v)", ft.Name(), fk)
+		if sf.Type < 0 {
+			return nil, fmt.Errorf("cannot derive schema for type %s (%v)", sf.ReflectType.Name(), fk)
 		}
 
-		r.fields = append(
-			r.fields,
-			&schemaField{i, fn == "ID" && r.hasID, ptr, zPtr, fn, qt, ft, sf.marshalType, sf.unmarshalType},
-		)
+		sf.IsID = fn == "ID" && r.HasID
+		r.Fields = append(r.Fields, sf)
 	}
 
 	schemaMu.Lock()
 	schemaCache[typ] = r
 	if t != typ {
 		r2 := *r
-		r2.ptr = false
+		r2.IsPtr = false
 		schemaCache[t] = &r2
 	}
 	schemaMu.Unlock()
 	return r, nil
+}
+
+// MustStructSchema is like StructSchema but panics on error. It simplifies
+// safe initialization of global variables holding StructInfo.
+//
+// MustStructSchema is safe for concurrent use by multiple goroutines.
+func MustStructSchema(v interface{}) *StructInfo {
+	s, err := StructSchema(v)
+	if err != nil {
+		panic(err)
+	}
+
+	return s
 }
 
 // SchemaOptions amend the result of Schema.
@@ -325,7 +345,7 @@ func Schema(v interface{}, name string, opt *SchemaOptions) (List, error) {
 	if opt == nil {
 		opt = &zeroSchemaOptions
 	}
-	s, err := schemaFor(v)
+	s, err := StructSchema(v)
 	if err != nil {
 		return List{}, err
 	}
@@ -359,24 +379,24 @@ func Schema(v interface{}, name string, opt *SchemaOptions) (List, error) {
 		name = string(nm)
 	}
 	buf.WriteString(name + " (")
-	for _, v := range s.fields {
-		if v.id {
+	for _, v := range s.Fields {
+		if v.IsID {
 			continue
 		}
 
-		buf.WriteString(fmt.Sprintf("%s %s, ", v.name, v.typ))
+		buf.WriteString(fmt.Sprintf("%s %s, ", v.Name, v.Type))
 	}
 	buf.WriteString("); ")
-	for _, v := range s.indices {
+	for _, v := range s.Indices {
 		buf.WriteString("CREATE ")
-		if v.unique {
+		if v.Unique {
 			buf.WriteString("UNIQUE ")
 		}
 		buf.WriteString("INDEX ")
 		if !opt.NoIfNotExists {
 			buf.WriteString("IF NOT EXISTS ")
 		}
-		buf.WriteString(fmt.Sprintf("%s ON %s (%s); ", v.name, name, v.colName))
+		buf.WriteString(fmt.Sprintf("%s ON %s (%s); ", v.Name, name, v.ColumnName))
 	}
 	if !opt.NoTransaction {
 		buf.WriteString("COMMIT; ")
@@ -416,28 +436,28 @@ func MustSchema(v interface{}, name string, opt *SchemaOptions) List {
 //
 // Marshal is safe for concurrent use by multiple goroutines.
 func Marshal(v interface{}) ([]interface{}, error) {
-	s, err := schemaFor(v)
+	s, err := StructSchema(v)
 	if err != nil {
 		return nil, err
 	}
 
 	val := reflect.ValueOf(v)
-	if s.ptr {
+	if s.IsPtr {
 		val = val.Elem()
 	}
-	n := len(s.fields)
-	if s.hasID {
+	n := len(s.Fields)
+	if s.HasID {
 		n--
 	}
 	r := make([]interface{}, n)
 	j := 0
-	for _, v := range s.fields {
-		if v.id {
+	for _, v := range s.Fields {
+		if v.IsID {
 			continue
 		}
 
-		f := val.Field(v.index)
-		if v.ptr {
+		f := val.Field(v.Index)
+		if v.IsPtr {
 			if f.IsNil() {
 				r[j] = nil
 				j++
@@ -446,7 +466,7 @@ func Marshal(v interface{}) ([]interface{}, error) {
 
 			f = f.Elem()
 		}
-		if m := v.marshalType; m != nil {
+		if m := v.MarshalType; m != nil {
 			f = f.Convert(m)
 		}
 		r[j] = f.Interface()
@@ -537,18 +557,18 @@ func Unmarshal(v interface{}, data []interface{}) (err error) {
 		}
 	}()
 
-	s, err := schemaFor(v)
+	s, err := StructSchema(v)
 	if err != nil {
 		return err
 	}
 
-	if !s.ptr {
+	if !s.IsPtr {
 		return fmt.Errorf("unmarshal: need a pointer to a struct")
 	}
 
 	id := false
-	nv, nf := len(data), len(s.fields)
-	switch s.hasID {
+	nv, nf := len(data), len(s.Fields)
+	switch s.HasID {
 	case true:
 		switch {
 		case nv == nf:
@@ -569,11 +589,11 @@ func Unmarshal(v interface{}, data []interface{}) (err error) {
 
 	j := 0
 	vVal := reflect.ValueOf(v)
-	if s.ptr {
+	if s.IsPtr {
 		vVal = vVal.Elem()
 	}
-	for _, sf := range s.fields {
-		if sf.id && !id {
+	for _, sf := range s.Fields {
+		if sf.IsID && !id {
 			continue
 		}
 
@@ -581,22 +601,22 @@ func Unmarshal(v interface{}, data []interface{}) (err error) {
 		val := reflect.ValueOf(d)
 		j++
 
-		fVal := vVal.Field(sf.index)
-		if u := sf.unmarshalType; u != nil {
+		fVal := vVal.Field(sf.Index)
+		if u := sf.UnmarshalType; u != nil {
 			val = val.Convert(u)
 		}
-		if !sf.ptr {
+		if !sf.IsPtr {
 			fVal.Set(val)
 			continue
 		}
 
 		if d == nil {
-			fVal.Set(sf.zPtr)
+			fVal.Set(sf.ZeroPtr)
 			continue
 		}
 
 		if fVal.IsNil() {
-			fVal.Set(reflect.New(sf.rType))
+			fVal.Set(reflect.New(sf.ReflectType))
 		}
 
 		fVal.Elem().Set(val)

@@ -1027,12 +1027,14 @@ func ExampleUnmarshal() {
 		panic(err)
 	}
 
-	if _, _, err = db.Execute(ctx, ins, MustMarshal(row{S: "foo"})...); err != nil {
+	r := &row{S: "foo"}
+	if _, _, err = db.Execute(ctx, ins, MustMarshal(r)...); err != nil {
 		panic(err)
 	}
 
 	i42 := int64(42)
-	if _, _, err = db.Execute(ctx, ins, MustMarshal(row{S: "bar", P: &i42})...); err != nil {
+	r = &row{S: "bar", P: &i42}
+	if _, _, err = db.Execute(ctx, ins, MustMarshal(r)...); err != nil {
 		panic(err)
 	}
 
