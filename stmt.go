@@ -20,13 +20,13 @@ var (
 	_ stmt = (*alterTableDropColumnStmt)(nil)
 	_ stmt = (*createIndexStmt)(nil)
 	_ stmt = (*createTableStmt)(nil)
-	_ stmt = (*deleteStmt)(nil)
+	_ stmt = (*deleteStmt)(nil) //TODO use indices (need dlist)
 	_ stmt = (*dropIndexStmt)(nil)
 	_ stmt = (*dropTableStmt)(nil)
 	_ stmt = (*insertIntoStmt)(nil)
 	_ stmt = (*selectStmt)(nil)
 	_ stmt = (*truncateTableStmt)(nil)
-	_ stmt = (*updateStmt)(nil)
+	_ stmt = (*updateStmt)(nil) //TODO use indices
 	_ stmt = beginTransactionStmt{}
 	_ stmt = commitStmt{}
 	_ stmt = rollbackStmt{}

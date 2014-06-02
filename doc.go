@@ -15,6 +15,8 @@
 //
 // Change list
 //
+// 2014-06-02: Indices on id() are now used by SELECT statements.
+//
 // 2014-05-07: Introduction of Marshal, Schema, Unmarshal.
 //
 // 2014-04-15:
@@ -2148,8 +2150,6 @@
 // substantial (cf.  BenchmarkCrossJoin*) if the resulting rows have low
 // "selectivity", ie. only few rows from both tables are selected by the
 // respective WHERE filtering.
-//
-// Note: The id() value of a table can be indexed on but cannot yet be used.
 //
 // Note: Existing QL DBs can be used and indices can be added to them. However,
 // once any indices are present in the DB, the old QL versions cannot work with

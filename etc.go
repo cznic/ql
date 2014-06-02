@@ -2692,6 +2692,7 @@ func collate1(a, b interface{}) int {
 			panic("internal error 035")
 		}
 	default:
+		//dbg("%T(%v) %T(%v)", a, a, b, b)
 		panic("internal error 036")
 	}
 }

@@ -8654,3 +8654,95 @@ COMMIT;
 SELECT user, remain, total FROM no_id_user WHERE user == "xlw" LIMIT 1;
 |suser, lremain, ltotal
 [xlw 20 100]
+
+-- 735
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES (1), (2), (3), (4), (5), (6);
+COMMIT;
+SELECT * FROM t WHERE id() < 4; // reverse order -> no index used
+|li
+[3]
+[2]
+[1]
+
+-- 736
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	CREATE INDEX x ON t (id());
+	INSERT INTO t VALUES (1), (2), (3), (4), (5), (6);
+COMMIT;
+SELECT * FROM t WHERE id() < 4; // ordered -> index is used
+|li
+[1]
+[2]
+[3]
+
+-- 737
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	CREATE INDEX x ON t (id());
+	INSERT INTO t VALUES (1), (2), (3), (4), (5), (6);
+COMMIT;
+SELECT * FROM t WHERE id() <= 4; // ordered -> index is used
+|li
+[1]
+[2]
+[3]
+[4]
+
+-- 738
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	CREATE INDEX x ON t (id());
+	INSERT INTO t VALUES (1), (2), (3), (4), (5), (6);
+COMMIT;
+SELECT * FROM t WHERE id() == 4;
+|li
+[4]
+
+-- 739
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	CREATE INDEX x ON t (id());
+	INSERT INTO t VALUES (1), (2), (3), (4), (5), (6);
+COMMIT;
+SELECT * FROM t WHERE id() >= 4; // ordered -> index is used
+|li
+[4]
+[5]
+[6]
+
+-- 740
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	CREATE INDEX x ON t (id());
+	INSERT INTO t VALUES (1), (2), (3), (4), (5), (6);
+COMMIT;
+SELECT * FROM t WHERE id() > 4;
+|li
+[6]
+[5]
+
+-- 741
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	CREATE INDEX x ON t (id());
+	CREATE TABLE u (i int);
+	CREATE INDEX y ON u (i);
+	INSERT INTO t VALUES (1), (2), (3), (4), (5), (6);
+	INSERT INTO u VALUES (10), (20), (30), (40), (50), (60);
+COMMIT;
+SELECT t.ID, t.i, u.i FROM
+	(SELECT id() as ID, i FROM t WHERE id() < 4) AS t,
+	(SELECT * FROM u WHERE i < 40) AS u; // ordered -> both indices are used
+|lt.ID, lt.i, lu.i
+[1 1 10]
+[1 1 20]
+[1 1 30]
+[2 2 10]
+[2 2 20]
+[2 2 30]
+[3 3 10]
+[3 3 20]
+[3 3 30]

@@ -586,6 +586,98 @@ func (r *whereRset) tryBinOp(t *table, id *ident, v value, op int, f func(id int
 	}
 }
 
+func (r *whereRset) tryBinOpID(t *table, v value, op int, f func(id interface{}, data []interface{}) (more bool, err error)) (bool, error) {
+	xCol := t.indices[0]
+	if xCol == nil { // no index for id()
+		return false, nil
+	}
+
+	data := []interface{}{v.val}
+	if err := typeCheck(data, []*col{&col{typ: qInt64}}); err != nil {
+		return true, err
+	}
+
+	v.val = data[0]
+	ex := &binaryOperation{op, nil, v}
+	switch op {
+	case '<', le:
+		v.val = int64(1)
+		fallthrough
+	case eq, ge:
+		m, err := f(nil, []interface{}{t.flds()})
+		if !m || err != nil {
+			return true, err
+		}
+
+		en, _, err := xCol.x.Seek(v.val)
+		if err != nil {
+			return true, noEOF(err)
+		}
+
+		for {
+			k, h, err := en.Next()
+			if k == nil {
+				return true, nil
+			}
+
+			if err != nil {
+				return true, noEOF(err)
+			}
+
+			ex.l = value{k}
+			eval, err := ex.eval(nil, nil)
+			if err != nil {
+				return true, err
+			}
+
+			if !eval.(bool) {
+				return true, nil
+			}
+
+			if _, err := tableRset("").doOne(t, h, f); err != nil {
+				return true, err
+			}
+		}
+	case '>':
+		m, err := f(nil, []interface{}{t.flds()})
+		if !m || err != nil {
+			return true, err
+		}
+
+		en, err := xCol.x.SeekLast()
+		if err != nil {
+			return true, noEOF(err)
+		}
+
+		for {
+			k, h, err := en.Prev()
+			if k == nil {
+				return true, nil
+			}
+
+			if err != nil {
+				return true, noEOF(err)
+			}
+
+			ex.l = value{k}
+			eval, err := ex.eval(nil, nil)
+			if err != nil {
+				return true, err
+			}
+
+			if !eval.(bool) {
+				return true, nil
+			}
+
+			if _, err := tableRset("").doOne(t, h, f); err != nil {
+				return true, err
+			}
+		}
+	default:
+		panic("internal error 071")
+	}
+}
+
 func (r *whereRset) tryUseIndex(ctx *execCtx, f func(id interface{}, data []interface{}) (more bool, err error)) (bool, error) {
 	//TODO(indices) support IS [NOT] NULL
 	c, ok := r.src.(*crossJoinRset)
@@ -662,7 +754,7 @@ func (r *whereRset) tryUseIndex(ctx *execCtx, f func(id interface{}, data []inte
 
 		return true, r.doIndexedBool(t, en, true, f)
 	case *binaryOperation:
-		//TODO handle id()
+		//DONE handle id()
 		var invOp int
 		switch ex.op {
 		case '<':
@@ -680,6 +772,24 @@ func (r *whereRset) tryUseIndex(ctx *execCtx, f func(id interface{}, data []inte
 		}
 
 		switch lhs := ex.l.(type) {
+		case *call:
+			if !(lhs.f == "id" && len(lhs.arg) == 0) {
+				return false, nil
+			}
+
+			switch rhs := ex.r.(type) {
+			case parameter:
+				v, err := rhs.eval(nil, ctx.arg)
+				if err != nil {
+					return false, err
+				}
+
+				return r.tryBinOpID(t, value{v}, ex.op, f)
+			case value:
+				return r.tryBinOpID(t, rhs, ex.op, f)
+			default:
+				return false, nil
+			}
 		case *ident:
 			switch rhs := ex.r.(type) {
 			case parameter:
@@ -696,6 +806,17 @@ func (r *whereRset) tryUseIndex(ctx *execCtx, f func(id interface{}, data []inte
 			}
 		case parameter:
 			switch rhs := ex.r.(type) {
+			case *call:
+				if !(rhs.f == "id" && len(rhs.arg) == 0) {
+					return false, nil
+				}
+
+				v, err := lhs.eval(nil, ctx.arg)
+				if err != nil {
+					return false, err
+				}
+
+				return r.tryBinOpID(t, value{v}, invOp, f)
 			case *ident:
 				v, err := lhs.eval(nil, ctx.arg)
 				if err != nil {
@@ -708,6 +829,12 @@ func (r *whereRset) tryUseIndex(ctx *execCtx, f func(id interface{}, data []inte
 			}
 		case value:
 			switch rhs := ex.r.(type) {
+			case *call:
+				if !(rhs.f == "id" && len(rhs.arg) == 0) {
+					return false, nil
+				}
+
+				return r.tryBinOpID(t, lhs, invOp, f)
 			case *ident:
 				return r.tryBinOp(t, rhs, lhs, invOp, f)
 			default:
