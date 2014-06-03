@@ -346,7 +346,12 @@ func driverQuery(db *driverDB, ctx *TCtx, list List, args []driver.Value) (drive
 	case 0:
 		return nil, errNoResult
 	case 1:
-		return newdriverRows(rss[len(rss)-1]), nil
+		rs := rss[n-1]
+		if x, ok := rss[n-1].(recordset); ok {
+			x.tx = ctx
+			rs = x
+		}
+		return newdriverRows(rs), nil
 	default:
 		return nil, fmt.Errorf("query produced %d result sets, expected only one", n)
 	}

@@ -91,6 +91,7 @@ type rset interface {
 type recordset struct {
 	ctx *execCtx
 	rset
+	tx *TCtx
 }
 
 func (r recordset) Do(names bool, f func(data []interface{}) (more bool, err error)) (err error) {
@@ -2010,12 +2011,21 @@ func (db *DB) do(r recordset, names int, f func(data []interface{}) (more bool, 
 	case false:
 		db.rwmu.RLock() // can safely grab before Unlock
 		db.mu.Unlock()
-	case true:
-		db.mu.Unlock() // must Unlock before RLock
-		db.rwmu.RLock()
+		defer db.rwmu.RUnlock()
+	default: // case true:
+		if r.tx == nil {
+			db.mu.Unlock() // must Unlock before RLock
+			db.rwmu.RLock()
+			defer db.rwmu.RUnlock()
+			break
+		}
+
+		defer db.mu.Unlock()
+		if r.tx != db.cc {
+			return fmt.Errorf("invalid passed transaction context")
+		}
 	}
 
-	defer db.rwmu.RUnlock()
 	ok := false
 	return r.do(r.ctx, names == onlyNames, func(id interface{}, data []interface{}) (more bool, err error) {
 		if ok {

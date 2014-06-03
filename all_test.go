@@ -2345,3 +2345,68 @@ $9
 
 	t.Log("Done:", scans)
 }
+
+func TestIssue56(t *testing.T) {
+	var schema = `
+CREATE TABLE IF NOT EXISTS Test (
+	A string,
+	B string,
+	Suppressed bool,
+);
+CREATE INDEX IF NOT EXISTS aIdx ON Test (A);
+CREATE INDEX IF NOT EXISTS bIdx ON Test (B);
+`
+
+	RegisterDriver()
+	dir, err := ioutil.TempDir("", "ql-test-")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer os.RemoveAll(dir)
+	pth := filepath.Join(dir, "test.db")
+	db, err := sql.Open("ql", "file://"+pth)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer db.Close()
+
+	tx, err := db.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = tx.Exec(schema)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Open a new transaction and do a SELECT
+
+	tx, err = db.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var id int64
+	row := tx.QueryRow("SELECT * FROM Test")
+	err = row.Scan(&id) // <-- Blocks here
+
+	switch err {
+	case sql.ErrNoRows:
+		break
+	case nil:
+		break
+	default:
+		t.Fatal(err)
+	}
+
+	tx.Rollback()
+	return
+}

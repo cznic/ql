@@ -593,7 +593,7 @@ func (s *selectStmt) exec0() (r rset) { //LATER overlapping goroutines/pipelines
 }
 
 func (s *selectStmt) exec(ctx *execCtx) (rs Recordset, err error) {
-	return recordset{ctx, s.exec0()}, nil
+	return recordset{ctx, s.exec0(), nil}, nil
 }
 
 func (s *selectStmt) isUpdating() bool { return false }
