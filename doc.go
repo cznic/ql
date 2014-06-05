@@ -15,6 +15,8 @@
 //
 // Change list
 //
+// 2014-06-05: RecordSet interface extended by new methods FirstRow and Rows.
+//
 // 2014-06-02: Indices on id() are now used by SELECT statements.
 //
 // 2014-05-07: Introduction of Marshal, Schema, Unmarshal.

@@ -2410,3 +2410,145 @@ CREATE INDEX IF NOT EXISTS bIdx ON Test (B);
 	tx.Rollback()
 	return
 }
+
+func TestRecordSetRows(t *testing.T) {
+	db, err := OpenMem()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rss, _, err := db.Run(NewRWCtx(), `
+		BEGIN TRANSACTION;
+			CREATE TABLE t (i int);
+			INSERT INTO t VALUES (1), (2), (3), (4), (5);
+		COMMIT;
+		SELECT * FROM t ORDER BY i;
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	tab := []struct {
+		limit, offset int
+		result        []int64
+	}{
+		// 0
+		{-1, 0, []int64{1, 2, 3, 4, 5}},
+		{0, 0, nil},
+		{1, 0, []int64{1}},
+		{2, 0, []int64{1, 2}},
+		{3, 0, []int64{1, 2, 3}},
+		// 5
+		{4, 0, []int64{1, 2, 3, 4}},
+		{5, 0, []int64{1, 2, 3, 4, 5}},
+		{6, 0, []int64{1, 2, 3, 4, 5}},
+		{-1, 0, []int64{1, 2, 3, 4, 5}},
+		{-1, 1, []int64{2, 3, 4, 5}},
+		// 10
+		{-1, 2, []int64{3, 4, 5}},
+		{-1, 3, []int64{4, 5}},
+		{-1, 4, []int64{5}},
+		{-1, 5, nil},
+		{3, 0, []int64{1, 2, 3}},
+		// 15
+		{3, 1, []int64{2, 3, 4}},
+		{3, 2, []int64{3, 4, 5}},
+		{3, 3, []int64{4, 5}},
+		{3, 4, []int64{5}},
+		{3, 5, nil},
+		// 20
+		{-1, 2, []int64{3, 4, 5}},
+		{0, 2, nil},
+		{1, 2, []int64{3}},
+		{2, 2, []int64{3, 4}},
+		{3, 2, []int64{3, 4, 5}},
+		// 25
+		{4, 2, []int64{3, 4, 5}},
+	}
+
+	rs := rss[0]
+	for iTest, test := range tab {
+		t.Log(iTest)
+		rows, err := rs.Rows(test.limit, test.offset)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if g, e := len(rows), len(test.result); g != e {
+			t.Log(rows, test.result)
+			t.Fatal(g, e)
+		}
+
+		for i, row := range rows {
+			if g, e := len(row), 1; g != e {
+				t.Fatal(i, g, i)
+			}
+
+			if g, e := row[0], test.result[i]; g != e {
+				t.Fatal(i, g, e)
+			}
+		}
+	}
+}
+
+func TestRecordFirst(t *testing.T) {
+	q := MustCompile("SELECT * FROM t WHERE i > $1 ORDER BY i;")
+	db, err := OpenMem()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if _, _, err = db.Run(NewRWCtx(), `
+		BEGIN TRANSACTION;
+			CREATE TABLE t (i int);
+			INSERT INTO t VALUES (1), (2), (3), (4), (5);
+		COMMIT;
+	`); err != nil {
+		t.Fatal(err)
+	}
+
+	tab := []struct {
+		par    int64
+		result int64
+	}{
+		{-1, 1},
+		{0, 1},
+		{1, 2},
+		{2, 3},
+		{3, 4},
+		{4, 5},
+		{5, -1},
+	}
+
+	for iTest, test := range tab {
+		t.Log(iTest)
+		rss, _, err := db.Execute(nil, q, test.par)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		row, err := rss[0].FirstRow()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		switch {
+		case test.result < 0:
+			if row != nil {
+				t.Fatal(row)
+			}
+		default:
+			if row == nil {
+				t.Fatal(row)
+			}
+
+			if g, e := len(row), 1; g != e {
+				t.Fatal(g, e)
+			}
+
+			if g, e := row[0], test.result; g != e {
+				t.Fatal(g, e)
+			}
+		}
+	}
+}

@@ -120,6 +120,44 @@ func (r recordset) Fields() (names []string, err error) {
 	return
 }
 
+func (r recordset) FirstRow() (row []interface{}, err error) {
+	rows, err := r.Rows(1, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(rows) != 0 {
+		return rows[0], nil
+	}
+
+	return nil, nil
+}
+
+func (r recordset) Rows(limit, offset int) (rows [][]interface{}, err error) {
+	if err := r.Do(false, func(row []interface{}) (bool, error) {
+		if offset > 0 {
+			offset--
+			return true, nil
+		}
+
+		switch {
+		case limit < 0:
+			rows = append(rows, row)
+			return true, nil
+		case limit == 0:
+			return false, nil
+		default: // limit > 0
+			rows = append(rows, row)
+			limit--
+			return limit > 0, nil
+		}
+	}); err != nil {
+		return nil, err
+	}
+
+	return rows, nil
+}
+
 type groupByRset struct {
 	colNames []string
 	src      rset
@@ -280,9 +318,23 @@ func NewRWCtx() *TCtx { return &TCtx{} }
 // running Do later. In exchange, calling Fields is cheap - compared to
 // actually computing a first row of a query having, say cross joins on n
 // relations (1^n is always 1, n ∈ N).
+//
+// FirstRow
+//
+// FirstRow will return the first row of the RecordSet or an error, if any. If
+// the Recordset has no rows the result is (nil, nil).
+//
+// Rows
+//
+// Rows will return rows in Recordset or an error of any. The semantics of
+// limit and offset are the same as of the LIMIT and OFFSET clauses of the
+// SELECT statement. To get all rows pass limit < 0. If there are no rows to
+// return the result is (nil, nil).
 type Recordset interface {
 	Do(names bool, f func(data []interface{}) (more bool, err error)) error
 	Fields() (names []string, err error)
+	FirstRow() (row []interface{}, err error)
+	Rows(limit, offset int) (rows [][]interface{}, err error)
 }
 
 type assignment struct {
