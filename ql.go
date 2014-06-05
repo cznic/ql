@@ -326,7 +326,7 @@ func NewRWCtx() *TCtx { return &TCtx{} }
 //
 // Rows
 //
-// Rows will return rows in Recordset or an error of any. The semantics of
+// Rows will return rows in Recordset or an error, if any. The semantics of
 // limit and offset are the same as of the LIMIT and OFFSET clauses of the
 // SELECT statement. To get all rows pass limit < 0. If there are no rows to
 // return the result is (nil, nil).
