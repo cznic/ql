@@ -2552,3 +2552,37 @@ func TestRecordFirst(t *testing.T) {
 		}
 	}
 }
+
+var (
+	issue63 = MustCompile(`
+BEGIN TRANSACTION;
+	CREATE TABLE Forecast (WeatherProvider string, Timestamp time, MinTemp int32, MaxTemp int32);
+	INSERT INTO Forecast VALUES ("dwd.de", now(), 20, 22);
+COMMIT;
+SELECT * FROM Forecast WHERE Timestamp > 0;`)
+)
+
+func TestIssue63(t *testing.T) {
+	db, err := OpenMem()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rs, _, err := db.Execute(NewRWCtx(), issue63)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if _, err = rs[0].Rows(-1, 0); err == nil {
+		t.Fatal(err)
+	}
+
+	t.Log(err)
+	if g, e := strings.Contains(err.Error(), "invalid operation"), true; g != e {
+		t.Fatal(g, e)
+	}
+
+	if g, e := strings.Contains(err.Error(), "mismatched types time.Time and int64"), true; g != e {
+		t.Fatal(g, e)
+	}
+}
