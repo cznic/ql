@@ -8746,3 +8746,145 @@ SELECT t.ID, t.i, u.i FROM
 [3 3 10]
 [3 3 20]
 [3 3 30]
+
+-- 742 // https://github.com/cznic/ql/pull/65
+BEGIN TRANSACTION;
+	CREATE TABLE t (t time);
+	INSERT INTO t VALUES
+		(NULL),
+	;
+COMMIT;
+SELECT max(t) as T FROM t;
+|?T
+[<nil>]
+
+-- 743 // https://github.com/cznic/ql/pull/65
+BEGIN TRANSACTION;
+	CREATE TABLE t (t time);
+	INSERT INTO t VALUES
+		(NULL),
+		(NULL),
+	;
+COMMIT;
+SELECT max(t) as T FROM t;
+|?T
+[<nil>]
+
+-- 744 // https://github.com/cznic/ql/pull/65
+BEGIN TRANSACTION;
+	CREATE TABLE t (t time);
+	INSERT INTO t VALUES
+		(NULL),
+		(parseTime("2006-01-02 15:04:05", "2014-08-08 14:05:11")),
+	;
+COMMIT;
+SELECT max(t) as T FROM t;
+|?T
+[2014-08-08 14:05:11 +0000 UTC]
+
+-- 745 // https://github.com/cznic/ql/pull/65
+BEGIN TRANSACTION;
+	CREATE TABLE t (t time);
+	INSERT INTO t VALUES
+		(parseTime("2006-01-02 15:04:05", "2014-08-08 14:05:11")),
+		(NULL),
+	;
+COMMIT;
+SELECT max(t) as T FROM t;
+|?T
+[2014-08-08 14:05:11 +0000 UTC]
+
+-- 746 // https://github.com/cznic/ql/pull/65
+BEGIN TRANSACTION;
+	CREATE TABLE t (t time);
+	INSERT INTO t VALUES
+		(parseTime("2006-01-02 15:04:05", "2014-08-08 14:05:11")),
+		(parseTime("2006-01-02 15:04:05", "2014-08-08 14:05:12")),
+	;
+COMMIT;
+SELECT max(t) as T FROM t;
+|?T
+[2014-08-08 14:05:12 +0000 UTC]
+
+-- 746 // https://github.com/cznic/ql/pull/65
+BEGIN TRANSACTION;
+	CREATE TABLE t (t time);
+	INSERT INTO t VALUES
+		(parseTime("2006-01-02 15:04:05", "2014-08-08 14:05:12")),
+		(parseTime("2006-01-02 15:04:05", "2014-08-08 14:05:11")),
+	;
+COMMIT;
+SELECT max(t) as T FROM t;
+|?T
+[2014-08-08 14:05:12 +0000 UTC]
+
+-- 747 // https://github.com/cznic/ql/pull/65
+BEGIN TRANSACTION;
+	CREATE TABLE t (t time);
+	INSERT INTO t VALUES
+		(NULL),
+	;
+COMMIT;
+SELECT min(t) as T FROM t;
+|?T
+[<nil>]
+
+-- 748 // https://github.com/cznic/ql/pull/65
+BEGIN TRANSACTION;
+	CREATE TABLE t (t time);
+	INSERT INTO t VALUES
+		(NULL),
+		(NULL),
+	;
+COMMIT;
+SELECT min(t) as T FROM t;
+|?T
+[<nil>]
+
+-- 749 // https://github.com/cznic/ql/pull/65
+BEGIN TRANSACTION;
+	CREATE TABLE t (t time);
+	INSERT INTO t VALUES
+		(NULL),
+		(parseTime("2006-01-02 15:04:05", "2014-08-08 14:05:11")),
+	;
+COMMIT;
+SELECT min(t) as T FROM t;
+|?T
+[2014-08-08 14:05:11 +0000 UTC]
+
+-- 750 // https://github.com/cznic/ql/pull/65
+BEGIN TRANSACTION;
+	CREATE TABLE t (t time);
+	INSERT INTO t VALUES
+		(parseTime("2006-01-02 15:04:05", "2014-08-08 14:05:11")),
+		(NULL),
+	;
+COMMIT;
+SELECT min(t) as T FROM t;
+|?T
+[2014-08-08 14:05:11 +0000 UTC]
+
+-- 751 // https://github.com/cznic/ql/pull/65
+BEGIN TRANSACTION;
+	CREATE TABLE t (t time);
+	INSERT INTO t VALUES
+		(parseTime("2006-01-02 15:04:05", "2014-08-08 14:05:11")),
+		(parseTime("2006-01-02 15:04:05", "2014-08-08 14:05:12")),
+	;
+COMMIT;
+SELECT min(t) as T FROM t;
+|?T
+[2014-08-08 14:05:11 +0000 UTC]
+
+-- 752 // https://github.com/cznic/ql/pull/65
+BEGIN TRANSACTION;
+	CREATE TABLE t (t time);
+	INSERT INTO t VALUES
+		(parseTime("2006-01-02 15:04:05", "2014-08-08 14:05:12")),
+		(parseTime("2006-01-02 15:04:05", "2014-08-08 14:05:11")),
+	;
+COMMIT;
+SELECT min(t) as T FROM t;
+|?T
+[2014-08-08 14:05:11 +0000 UTC]

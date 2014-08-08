@@ -15,6 +15,9 @@
 //
 // Change list
 //
+// 2014-08-08: The built in functions max and min now accept also time values.
+// Thanks opennota! (https://github.com/opennota)
+//
 // 2014-06-05: RecordSet interface extended by new methods FirstRow and Rows.
 //
 // 2014-06-02: Indices on id() are now used by SELECT statements.

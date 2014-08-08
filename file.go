@@ -767,13 +767,13 @@ func (s *file) free(h int64, blobCols []*col) (err error) {
 			return fmt.Errorf("(file-004) file.free: corrupted DB (record len)")
 		}
 
-		var ok bool
-		if b, ok = rec[col.index+2].([]byte); !ok {
-			return fmt.Errorf("(file-005) file.free: corrupted DB (chunk []byte)")
-		}
-
-		if err = s.freeChunks(b); err != nil {
-			return
+		switch x := rec[col.index+2].(type) {
+		case nil:
+			// nop
+		case []byte:
+			if err = s.freeChunks(x); err != nil {
+				return
+			}
 		}
 	}
 	defer s.lock()()
@@ -820,12 +820,14 @@ func (s *file) Read(dst []interface{}, h int64, cols ...*col) (data []interface{
 			rec[i] = uint32(rec[i].(uint64))
 		case qUint64:
 		case qBlob, qBigInt, qBigRat, qTime, qDuration:
-			b, ok := rec[i].([]byte)
-			if !ok {
-				return nil, fmt.Errorf("(file-006) corrupted DB: chunk type is not []byte")
+			switch x := rec[i].(type) {
+			case nil:
+				rec[i] = nil
+			case []byte:
+				rec[i] = chunk{f: s, b: x}
+			default:
+				return nil, fmt.Errorf("(file-006) corrupted DB: non nil chunk type is not []byte")
 			}
-
-			rec[i] = chunk{f: s, b: b}
 		default:
 			log.Panic("internal error 045")
 		}
