@@ -463,7 +463,7 @@ func builtinMax(arg []interface{}, ctx map[interface{}]interface{}) (v interface
 	switch x := max.(type) {
 	case nil:
 		switch y := y.(type) {
-		case float32, float64, string, int8, int16, int32, int64, uint8, uint16, uint32, uint64:
+		case float32, float64, string, int8, int16, int32, int64, uint8, uint16, uint32, uint64, time.Time:
 			max = y
 		default:
 			return nil, fmt.Errorf("max: cannot accept %v (value if type %T)", y, y)
@@ -512,6 +512,10 @@ func builtinMax(arg []interface{}, ctx map[interface{}]interface{}) (v interface
 		if y := y.(uint64); y > x {
 			max = y
 		}
+	case time.Time:
+		if y := y.(time.Time); y.After(x) {
+			max = y
+		}
 	}
 	ctx[fn] = max
 	return
@@ -539,7 +543,7 @@ func builtinMin(arg []interface{}, ctx map[interface{}]interface{}) (v interface
 	switch x := min.(type) {
 	case nil:
 		switch y := y.(type) {
-		case float32, float64, string, int8, int16, int32, int64, uint8, uint16, uint32, uint64:
+		case float32, float64, string, int8, int16, int32, int64, uint8, uint16, uint32, uint64, time.Time:
 			min = y
 		default:
 			return nil, fmt.Errorf("min: cannot accept %v (value if type %T)", y, y)
@@ -586,6 +590,10 @@ func builtinMin(arg []interface{}, ctx map[interface{}]interface{}) (v interface
 		}
 	case uint64:
 		if y := y.(uint64); y < x {
+			min = y
+		}
+	case time.Time:
+		if y := y.(time.Time); y.Before(x) {
 			min = y
 		}
 	}
