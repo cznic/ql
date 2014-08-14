@@ -2553,14 +2553,12 @@ func TestRecordFirst(t *testing.T) {
 	}
 }
 
-var (
-	issue63 = MustCompile(`
+var issue63 = MustCompile(`
 BEGIN TRANSACTION;
 	CREATE TABLE Forecast (WeatherProvider string, Timestamp time, MinTemp int32, MaxTemp int32);
 	INSERT INTO Forecast VALUES ("dwd.de", now(), 20, 22);
 COMMIT;
 SELECT * FROM Forecast WHERE Timestamp > 0;`)
-)
 
 func TestIssue63(t *testing.T) {
 	db, err := OpenMem()
@@ -2585,4 +2583,99 @@ func TestIssue63(t *testing.T) {
 	if g, e := strings.Contains(err.Error(), "mismatched types time.Time and int64"), true; g != e {
 		t.Fatal(g, e)
 	}
+}
+
+const issue66Src = `
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	CREATE UNIQUE INDEX x ON t (i);
+	INSERT INTO t VALUES (1), (1);
+COMMIT;`
+
+var issue66 = MustCompile(issue66Src)
+
+func TestIssue66Mem(t *testing.T) {
+	db, err := OpenMem()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, _, err = db.Execute(NewRWCtx(), issue66)
+	if err == nil {
+		t.Fatal(err)
+	}
+
+	t.Log(err)
+}
+
+func TestIssue66File(t *testing.T) {
+	dir, err := ioutil.TempDir("", "ql-test-")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer os.RemoveAll(dir)
+
+	db, err := OpenFile(filepath.Join(dir, "test.db"), &Options{CanCreate: true})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer db.Close()
+
+	_, _, err = db.Execute(NewRWCtx(), issue66)
+	if err == nil {
+		t.Fatal(err)
+	}
+
+	t.Log(err)
+}
+
+func TestIssue66MemDriver(t *testing.T) {
+	RegisterMemDriver()
+	db, err := sql.Open("ql-mem", "TestIssue66MemDriver-"+fmt.Sprintf("%d", time.Now().UnixNano()))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer db.Close()
+
+	tx, err := db.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if _, err = tx.Exec(issue66Src); err == nil {
+		t.Fatal(err)
+	}
+
+	t.Log(err)
+}
+
+func TestIssue66FileDriver(t *testing.T) {
+	RegisterDriver()
+	dir, err := ioutil.TempDir("", "ql-test-")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer os.RemoveAll(dir)
+
+	db, err := sql.Open("ql", filepath.Join(dir, "TestIssue66MemDriver"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer db.Close()
+
+	tx, err := db.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if _, err = tx.Exec(issue66Src); err == nil {
+		t.Fatal(err)
+	}
+
+	t.Log(err)
 }
