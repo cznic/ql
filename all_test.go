@@ -2679,3 +2679,52 @@ func TestIssue66FileDriver(t *testing.T) {
 
 	t.Log(err)
 }
+
+func Example_lIKE() {
+	db, err := OpenMem()
+	if err != nil {
+		panic(err)
+	}
+
+	rss, _, err := db.Run(NewRWCtx(), `
+        BEGIN TRANSACTION;
+            CREATE TABLE t (i int, s string);
+            INSERT INTO t VALUES
+            	(1, "seafood"),
+            	(2, "A fool on the hill"),
+            	(3, NULL),
+            	(4, "barbaz"),
+            	(5, "foobar"),
+            ;
+        COMMIT;
+        
+        SELECT * FROM t WHERE s LIKE "foo" ORDER BY i;
+        SELECT * FROM t WHERE s LIKE "^bar" ORDER BY i;
+        SELECT * FROM t WHERE s LIKE "bar$" ORDER BY i;
+        SELECT * FROM t WHERE !(s LIKE "foo") ORDER BY i;`,
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	for _, rs := range rss {
+		if err := rs.Do(false, func(data []interface{}) (bool, error) {
+			fmt.Println(data)
+			return true, nil
+		}); err != nil {
+			panic(err)
+		}
+		fmt.Println("----")
+	}
+	// Output:
+	// [1 seafood]
+	// [2 A fool on the hill]
+	// [5 foobar]
+	// ----
+	// [4 barbaz]
+	// ----
+	// [5 foobar]
+	// ----
+	// [4 barbaz]
+	// ----
+}

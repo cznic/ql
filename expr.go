@@ -8,19 +8,21 @@ import (
 	"fmt"
 	"log"
 	"math/big"
+	"regexp"
 	"strings"
 	"time"
 )
 
 var (
-	_ expression = (*pBetween)(nil)
 	_ expression = (*binaryOperation)(nil)
 	_ expression = (*call)(nil)
 	_ expression = (*conversion)(nil)
 	_ expression = (*ident)(nil)
-	_ expression = (*pIn)(nil)
 	_ expression = (*indexOp)(nil)
 	_ expression = (*isNull)(nil)
+	_ expression = (*pBetween)(nil)
+	_ expression = (*pIn)(nil)
+	_ expression = (*pLike)(nil)
 	_ expression = (*parameter)(nil)
 	_ expression = (*pexpr)(nil)
 	_ expression = (*slice)(nil)
@@ -150,6 +152,71 @@ func (b *pBetween) eval(ctx map[interface{}]interface{}, arg []interface{}) (v i
 	}
 
 	return (&binaryOperation{le, value{lhs}, b.h}).eval(ctx, arg)
+}
+
+type pLike struct {
+	expr    expression
+	pattern expression
+	re      *regexp.Regexp
+	sexpr   *string
+}
+
+func (p *pLike) isStatic() bool { return p.expr.isStatic() && p.pattern.isStatic() }
+func (p *pLike) String() string { return fmt.Sprintf("%q LIKE %q", p.expr, p.pattern) }
+
+func (p *pLike) eval(ctx map[interface{}]interface{}, arg []interface{}) (v interface{}, err error) {
+	var sexpr string
+	var ok bool
+	switch {
+	case p.sexpr != nil:
+		sexpr = *p.sexpr
+	default:
+		expr, err := expand1(p.expr.eval(ctx, arg))
+		if err != nil {
+			return nil, err
+		}
+
+		if expr == nil {
+			return nil, nil
+		}
+
+		sexpr, ok = expr.(string)
+		if !ok {
+			return nil, fmt.Errorf("non-string expression: %v (value of type %T)", expr, expr)
+		}
+
+		if p.expr.isStatic() {
+			p.sexpr = new(string)
+			*p.sexpr = sexpr
+		}
+	}
+
+	re := p.re
+	if re == nil {
+		pattern, err := expand1(p.pattern.eval(ctx, arg))
+		if err != nil {
+			return nil, err
+		}
+
+		if pattern == nil {
+			return nil, nil
+		}
+
+		spattern, ok := pattern.(string)
+		if !ok {
+			return nil, fmt.Errorf("non-string expression: %v (value of type %T)", pattern, pattern)
+		}
+
+		if re, err = regexp.Compile(spattern); err != nil {
+			return nil, err
+		}
+
+		if p.pattern.isStatic() {
+			p.re = re
+		}
+	}
+
+	return re.MatchString(sexpr), nil
 }
 
 type binaryOperation struct {

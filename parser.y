@@ -40,7 +40,7 @@ import (
 	ge group
 	identifier ifKwd imaginaryLit in index insert intType int16Type
 	int32Type int64Type int8Type into intLit is
-	le limit lsh 
+	le like limit lsh 
 	neq not null
 	offset on order oror
 	qlParam
@@ -654,6 +654,10 @@ PrimaryFactor:
 			yylex.(*lexer).err("%v", err)
 			return 1
 		}
+	}
+|	PrimaryTerm like PrimaryTerm
+	{
+		$$ = &pLike{expr: $1.(expression), pattern: $3.(expression)}
 	}
 
 PrimaryTerm:

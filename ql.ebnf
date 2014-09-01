@@ -118,10 +118,11 @@ Operand = Literal
 	| "(" Expression ")" .
 OrderBy = "ORDER" "BY" ExpressionList [ "ASC" | "DESC" ] .
 Predicate = (
-		 [ "NOT" ] (
+		  [ "NOT" ] (
 			  "IN" "(" ExpressionList ")"
 			| "BETWEEN" PrimaryFactor "AND" PrimaryFactor
-		  ) "IS" [ "NOT" ] "NULL"
+		  )
+		| "IS" [ "NOT" ] "NULL"
 	  ) .
 PrimaryExpression = Operand
 	| Conversion
@@ -134,6 +135,7 @@ PrimaryFactor = PrimaryTerm {
 			| "|"
 			| "-"
 			| "+"
+			| "LIKE"
 		  ) PrimaryTerm
 	  } .
 PrimaryTerm = UnaryExpr {

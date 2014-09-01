@@ -15,7 +15,8 @@
 //
 // Change list
 //
-// 2014-09-01: Added the DB.Flush() method.
+// 2014-09-01: Added the DB.Flush() method and the LIKE pattern matching
+// predicate.
 //
 // 2014-08-08: The built in functions max and min now accept also time values.
 // Thanks opennota! (https://github.com/opennota)
@@ -174,7 +175,8 @@
 //	bigint   DELETE      FROM      int8    string  UNIQUE
 //	bigrat   DESC        GROUP     INTO    TABLE   UPDATE
 //	blob     DISTINCT    IF        LIMIT   time    VALUES
-//	bool     DROP        IN        NOT     true    WHERE
+//	bool     DROP        IN        LIKE    true    WHERE
+//	                               NOT
 //
 // Keywords are not case sensitive.
 //
@@ -672,7 +674,7 @@
 //
 //  ExpressionList = Expression { "," Expression } [ "," ].
 //  Factor =  PrimaryFactor  { ( ge | ">" | le | "<" | neq | eq ) PrimaryFactor } [ Predicate ] .
-//  PrimaryFactor = PrimaryTerm  { ( "^" | "|" | "-" | "+" ) PrimaryTerm } .
+//  PrimaryFactor = PrimaryTerm  { ( "^" | "|" | "-" | "+" | "LIKE" ) PrimaryTerm } .
 //  PrimaryTerm = UnaryExpr { ( andnot | "&" | lsh | rsh | "%" | "/" | "*" ) UnaryExpr } .
 //  Term = Factor { andand Factor } .
 //  UnaryExpr = [ "^" | "!" | "-" | "+" ] PrimaryExpression .
@@ -692,9 +694,20 @@
 // the type of the constant is what it would be if the shift expression were
 // replaced by its left operand alone.
 //
+// Pattern matching
+//
+// Expressions of the form
+//
+//	expr1 LIKE expr2
+//
+// yeild a boolean value true if expr2, a regular expression, matches expr1
+// (see also [6]).  Both expression must be of type string. If any one of the
+// expressions is NULL the result is NULL.
+//
 // Predicates
 //
 // Predicates are special form expressions having a boolean result type.
+//
 // Expressions of the form
 //
 //	expr IN ( expr1, expr2, expr3, ... )		// case A
@@ -730,8 +743,7 @@
 //  			  "IN" "(" ExpressionList ")"
 //  			| "BETWEEN" PrimaryFactor "AND" PrimaryFactor
 //  			)
-//		|
-//  			"IS" [ "NOT" ] "NULL"
+//              |       "IS" [ "NOT" ] "NULL"
 //  	).
 //
 // Expressions of the form
@@ -2113,6 +2125,7 @@
 //	[3]: http://code.google.com/policies.html
 //	[4]: http://creativecommons.org/licenses/by/3.0/
 //	[5]: http://golang.org/LICENSE
+//	[6]: http://golang.org/pkg/regexp/#Regexp.MatchString
 //
 // Implementation details
 //

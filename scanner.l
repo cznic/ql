@@ -157,6 +157,7 @@ index           {i}{n}{d}{e}{x}
 insert          {i}{n}{s}{e}{r}{t}
 into            {i}{n}{t}{o}
 is              {i}{s}
+like            {l}{i}{k}{e}
 limit           {l}{i}{m}{i}{t}
 not             {n}{o}{t}
 offset          {o}{f}{f}{s}{e}{t}
@@ -263,6 +264,7 @@ ident           {idchar0}{idchars}*
 {into}                  return into
 {in}                    return in
 {is}                    return is
+{like}                  return like
 {limit}                 return limit
 {not}                   return not
 {offset}                return offset

@@ -1,6 +1,6 @@
 /*
 
-Copyright (c) 2014 ql Authors. All rights reserved.
+Copyright (c) 2014 The ql Authors. All rights reserved.
 Use of this source code is governed by a BSD-style
 license that can be found in the LICENSE file.
 
@@ -102,9 +102,9 @@ yystate0:
 	case 0: // start condition: INITIAL
 		goto yystart1
 	case 1: // start condition: S1
-		goto yystart289
+		goto yystart291
 	case 2: // start condition: S2
-		goto yystart294
+		goto yystart296
 	}
 
 	goto yystate1 // silence unused label error
@@ -157,21 +157,21 @@ yystart1:
 	case c == 'L' || c == 'l':
 		goto yystate184
 	case c == 'N' || c == 'n':
-		goto yystate189
+		goto yystate191
 	case c == 'O' || c == 'o':
-		goto yystate195
+		goto yystate197
 	case c == 'R' || c == 'r':
-		goto yystate206
+		goto yystate208
 	case c == 'S' || c == 's':
-		goto yystate217
+		goto yystate219
 	case c == 'T' || c == 't':
-		goto yystate229
+		goto yystate231
 	case c == 'U' || c == 'u':
-		goto yystate254
+		goto yystate256
 	case c == 'V' || c == 'v':
-		goto yystate275
+		goto yystate277
 	case c == 'W' || c == 'w':
-		goto yystate281
+		goto yystate283
 	case c == '\'':
 		goto yystate14
 	case c == '\n':
@@ -181,9 +181,9 @@ yystart1:
 	case c == '\x00':
 		goto yystate2
 	case c == '`':
-		goto yystate286
+		goto yystate288
 	case c == '|':
-		goto yystate287
+		goto yystate289
 	case c >= '1' && c <= '9':
 		goto yystate38
 	}
@@ -194,7 +194,7 @@ yystate2:
 
 yystate3:
 	c = l.next()
-	goto yyrule92
+	goto yyrule93
 
 yystate4:
 	c = l.next()
@@ -218,7 +218,7 @@ yystate6:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule92
+		goto yyrule93
 	case c == '=':
 		goto yystate7
 	}
@@ -235,7 +235,7 @@ yystate9:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule92
+		goto yyrule93
 	case c >= '0' && c <= '9':
 		goto yystate10
 	}
@@ -244,7 +244,7 @@ yystate10:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule91
+		goto yyrule92
 	case c >= '0' && c <= '9':
 		goto yystate10
 	}
@@ -253,7 +253,7 @@ yystate11:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule92
+		goto yyrule93
 	case c == '&':
 		goto yystate12
 	case c == '^':
@@ -272,7 +272,7 @@ yystate14:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule92
+		goto yyrule93
 	case c == '\'':
 		goto yystate16
 	case c == '\\':
@@ -328,7 +328,7 @@ yystate19:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule92
+		goto yyrule93
 	case c == '-':
 		goto yystate20
 	}
@@ -346,7 +346,7 @@ yystate21:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule92
+		goto yyrule93
 	case c >= '0' && c <= '9':
 		goto yystate22
 	}
@@ -403,7 +403,7 @@ yystate27:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule92
+		goto yyrule93
 	case c == '*':
 		goto yystate28
 	case c == '/':
@@ -554,7 +554,7 @@ yystate40:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule92
+		goto yyrule93
 	case c == '<':
 		goto yystate41
 	case c == '=':
@@ -573,7 +573,7 @@ yystate43:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule92
+		goto yyrule93
 	case c == '=':
 		goto yystate44
 	}
@@ -586,7 +586,7 @@ yystate45:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule92
+		goto yyrule93
 	case c == '=':
 		goto yystate46
 	case c == '>':
@@ -605,7 +605,7 @@ yystate48:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'D' || c == 'd':
 		goto yystate50
 	case c == 'L' || c == 'l':
@@ -622,7 +622,7 @@ yystate49:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
 		goto yystate49
 	}
@@ -631,7 +631,7 @@ yystate50:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'D' || c == 'd':
 		goto yystate51
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'C' || c >= 'E' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'c' || c >= 'e' && c <= 'z':
@@ -651,7 +651,7 @@ yystate52:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'T' || c == 't':
 		goto yystate53
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'S' || c >= 'U' && c <= 'Z' || c == '_' || c >= 'a' && c <= 's' || c >= 'u' && c <= 'z':
@@ -662,7 +662,7 @@ yystate53:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'E' || c == 'e':
 		goto yystate54
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'D' || c >= 'F' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'd' || c >= 'f' && c <= 'z':
@@ -673,7 +673,7 @@ yystate54:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'R' || c == 'r':
 		goto yystate55
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Q' || c >= 'S' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'q' || c >= 's' && c <= 'z':
@@ -693,7 +693,7 @@ yystate56:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'D' || c == 'd':
 		goto yystate57
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'C' || c >= 'E' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'c' || c >= 'e' && c <= 'z':
@@ -733,7 +733,7 @@ yystate60:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'E' || c == 'e':
 		goto yystate61
 	case c == 'I' || c == 'i':
@@ -752,7 +752,7 @@ yystate61:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'G' || c == 'g':
 		goto yystate62
 	case c == 'T' || c == 't':
@@ -765,7 +765,7 @@ yystate62:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'I' || c == 'i':
 		goto yystate63
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'H' || c >= 'J' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'h' || c >= 'j' && c <= 'z':
@@ -776,7 +776,7 @@ yystate63:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'N' || c == 'n':
 		goto yystate64
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'M' || c >= 'O' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'm' || c >= 'o' && c <= 'z':
@@ -796,7 +796,7 @@ yystate65:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'W' || c == 'w':
 		goto yystate66
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'V' || c >= 'X' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'v' || c >= 'x' && c <= 'z':
@@ -807,7 +807,7 @@ yystate66:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'E' || c == 'e':
 		goto yystate67
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'D' || c >= 'F' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'd' || c >= 'f' && c <= 'z':
@@ -818,7 +818,7 @@ yystate67:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'E' || c == 'e':
 		goto yystate68
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'D' || c >= 'F' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'd' || c >= 'f' && c <= 'z':
@@ -829,7 +829,7 @@ yystate68:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'N' || c == 'n':
 		goto yystate69
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'M' || c >= 'O' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'm' || c >= 'o' && c <= 'z':
@@ -849,7 +849,7 @@ yystate70:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'G' || c == 'g':
 		goto yystate71
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'F' || c >= 'H' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'f' || c >= 'h' && c <= 'z':
@@ -860,7 +860,7 @@ yystate71:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'I' || c == 'i':
 		goto yystate72
 	case c == 'R' || c == 'r':
@@ -873,7 +873,7 @@ yystate72:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'N' || c == 'n':
 		goto yystate73
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'M' || c >= 'O' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'm' || c >= 'o' && c <= 'z':
@@ -884,7 +884,7 @@ yystate73:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'T' || c == 't':
 		goto yystate74
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'S' || c >= 'U' && c <= 'Z' || c == '_' || c >= 'a' && c <= 's' || c >= 'u' && c <= 'z':
@@ -895,7 +895,7 @@ yystate74:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule66
+		goto yyrule67
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
 		goto yystate49
 	}
@@ -904,7 +904,7 @@ yystate75:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'A' || c == 'a':
 		goto yystate76
 	case c >= '0' && c <= '9' || c >= 'B' && c <= 'Z' || c == '_' || c >= 'b' && c <= 'z':
@@ -915,7 +915,7 @@ yystate76:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'T' || c == 't':
 		goto yystate77
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'S' || c >= 'U' && c <= 'Z' || c == '_' || c >= 'a' && c <= 's' || c >= 'u' && c <= 'z':
@@ -926,7 +926,7 @@ yystate77:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule67
+		goto yyrule68
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
 		goto yystate49
 	}
@@ -935,7 +935,7 @@ yystate78:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'O' || c == 'o':
 		goto yystate79
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'N' || c >= 'P' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'n' || c >= 'p' && c <= 'z':
@@ -946,7 +946,7 @@ yystate79:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'B' || c == 'b':
 		goto yystate80
 	case c >= '0' && c <= '9' || c == 'A' || c >= 'C' && c <= 'Z' || c == '_' || c == 'a' || c >= 'c' && c <= 'z':
@@ -957,7 +957,7 @@ yystate80:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule68
+		goto yyrule69
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
 		goto yystate49
 	}
@@ -966,7 +966,7 @@ yystate81:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'O' || c == 'o':
 		goto yystate82
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'N' || c >= 'P' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'n' || c >= 'p' && c <= 'z':
@@ -977,7 +977,7 @@ yystate82:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'L' || c == 'l':
 		goto yystate83
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'K' || c >= 'M' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'k' || c >= 'm' && c <= 'z':
@@ -988,7 +988,7 @@ yystate83:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule69
+		goto yyrule70
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
 		goto yystate49
 	}
@@ -1008,7 +1008,7 @@ yystate85:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'E' || c == 'e':
 		goto yystate86
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'D' || c >= 'F' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'd' || c >= 'f' && c <= 'z':
@@ -1019,7 +1019,7 @@ yystate86:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule70
+		goto yyrule71
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
 		goto yystate49
 	}
@@ -1028,7 +1028,7 @@ yystate87:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'O' || c == 'o':
 		goto yystate88
 	case c == 'R' || c == 'r':
@@ -1041,7 +1041,7 @@ yystate88:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'L' || c == 'l':
 		goto yystate89
 	case c == 'M' || c == 'm':
@@ -1054,7 +1054,7 @@ yystate89:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'U' || c == 'u':
 		goto yystate90
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'T' || c >= 'V' && c <= 'Z' || c == '_' || c >= 'a' && c <= 't' || c >= 'v' && c <= 'z':
@@ -1065,7 +1065,7 @@ yystate90:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'M' || c == 'm':
 		goto yystate91
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'L' || c >= 'N' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'l' || c >= 'n' && c <= 'z':
@@ -1076,7 +1076,7 @@ yystate91:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'N' || c == 'n':
 		goto yystate92
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'M' || c >= 'O' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'm' || c >= 'o' && c <= 'z':
@@ -1096,7 +1096,7 @@ yystate93:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'M' || c == 'm':
 		goto yystate94
 	case c == 'P' || c == 'p':
@@ -1109,7 +1109,7 @@ yystate94:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'I' || c == 'i':
 		goto yystate95
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'H' || c >= 'J' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'h' || c >= 'j' && c <= 'z':
@@ -1120,7 +1120,7 @@ yystate95:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'T' || c == 't':
 		goto yystate96
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'S' || c >= 'U' && c <= 'Z' || c == '_' || c >= 'a' && c <= 's' || c >= 'u' && c <= 'z':
@@ -1140,7 +1140,7 @@ yystate97:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'L' || c == 'l':
 		goto yystate98
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'K' || c >= 'M' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'k' || c >= 'm' && c <= 'z':
@@ -1151,7 +1151,7 @@ yystate98:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'E' || c == 'e':
 		goto yystate99
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'D' || c >= 'F' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'd' || c >= 'f' && c <= 'z':
@@ -1162,7 +1162,7 @@ yystate99:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'X' || c == 'x':
 		goto yystate100
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'W' || c == 'Y' || c == 'Z' || c == '_' || c >= 'a' && c <= 'w' || c == 'y' || c == 'z':
@@ -1173,7 +1173,7 @@ yystate100:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == '0' || c >= '2' && c <= '5' || c >= '7' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
 		goto yystate49
 	case c == '1':
@@ -1186,7 +1186,7 @@ yystate101:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == '0' || c == '1' || c >= '3' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
 		goto yystate49
 	case c == '2':
@@ -1197,7 +1197,7 @@ yystate102:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == '8':
 		goto yystate103
 	case c >= '0' && c <= '7' || c == '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
@@ -1208,7 +1208,7 @@ yystate103:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule71
+		goto yyrule72
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
 		goto yystate49
 	}
@@ -1217,7 +1217,7 @@ yystate104:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == '4':
 		goto yystate105
 	case c >= '0' && c <= '3' || c >= '5' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
@@ -1228,7 +1228,7 @@ yystate105:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule72
+		goto yyrule73
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
 		goto yystate49
 	}
@@ -1237,7 +1237,7 @@ yystate106:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'E' || c == 'e':
 		goto yystate107
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'D' || c >= 'F' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'd' || c >= 'f' && c <= 'z':
@@ -1248,7 +1248,7 @@ yystate107:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'A' || c == 'a':
 		goto yystate108
 	case c >= '0' && c <= '9' || c >= 'B' && c <= 'Z' || c == '_' || c >= 'b' && c <= 'z':
@@ -1259,7 +1259,7 @@ yystate108:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'T' || c == 't':
 		goto yystate109
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'S' || c >= 'U' && c <= 'Z' || c == '_' || c >= 'a' && c <= 's' || c >= 'u' && c <= 'z':
@@ -1270,7 +1270,7 @@ yystate109:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'E' || c == 'e':
 		goto yystate110
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'D' || c >= 'F' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'd' || c >= 'f' && c <= 'z':
@@ -1290,7 +1290,7 @@ yystate111:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'E' || c == 'e':
 		goto yystate112
 	case c == 'I' || c == 'i':
@@ -1307,7 +1307,7 @@ yystate112:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'L' || c == 'l':
 		goto yystate113
 	case c == 'S' || c == 's':
@@ -1320,7 +1320,7 @@ yystate113:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'E' || c == 'e':
 		goto yystate114
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'D' || c >= 'F' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'd' || c >= 'f' && c <= 'z':
@@ -1331,7 +1331,7 @@ yystate114:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'T' || c == 't':
 		goto yystate115
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'S' || c >= 'U' && c <= 'Z' || c == '_' || c >= 'a' && c <= 's' || c >= 'u' && c <= 'z':
@@ -1342,7 +1342,7 @@ yystate115:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'E' || c == 'e':
 		goto yystate116
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'D' || c >= 'F' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'd' || c >= 'f' && c <= 'z':
@@ -1362,7 +1362,7 @@ yystate117:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'C' || c == 'c':
 		goto yystate118
 	case c >= '0' && c <= '9' || c == 'A' || c == 'B' || c >= 'D' && c <= 'Z' || c == '_' || c == 'a' || c == 'b' || c >= 'd' && c <= 'z':
@@ -1382,7 +1382,7 @@ yystate119:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'S' || c == 's':
 		goto yystate120
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'R' || c >= 'T' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'r' || c >= 't' && c <= 'z':
@@ -1393,7 +1393,7 @@ yystate120:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'T' || c == 't':
 		goto yystate121
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'S' || c >= 'U' && c <= 'Z' || c == '_' || c >= 'a' && c <= 's' || c >= 'u' && c <= 'z':
@@ -1404,7 +1404,7 @@ yystate121:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'I' || c == 'i':
 		goto yystate122
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'H' || c >= 'J' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'h' || c >= 'j' && c <= 'z':
@@ -1415,7 +1415,7 @@ yystate122:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'N' || c == 'n':
 		goto yystate123
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'M' || c >= 'O' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'm' || c >= 'o' && c <= 'z':
@@ -1426,7 +1426,7 @@ yystate123:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'C' || c == 'c':
 		goto yystate124
 	case c >= '0' && c <= '9' || c == 'A' || c == 'B' || c >= 'D' && c <= 'Z' || c == '_' || c == 'a' || c == 'b' || c >= 'd' && c <= 'z':
@@ -1437,7 +1437,7 @@ yystate124:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'T' || c == 't':
 		goto yystate125
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'S' || c >= 'U' && c <= 'Z' || c == '_' || c >= 'a' && c <= 's' || c >= 'u' && c <= 'z':
@@ -1457,7 +1457,7 @@ yystate126:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'O' || c == 'o':
 		goto yystate127
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'N' || c >= 'P' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'n' || c >= 'p' && c <= 'z':
@@ -1468,7 +1468,7 @@ yystate127:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'P' || c == 'p':
 		goto yystate128
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'O' || c >= 'Q' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'o' || c >= 'q' && c <= 'z':
@@ -1488,7 +1488,7 @@ yystate129:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'R' || c == 'r':
 		goto yystate130
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Q' || c >= 'S' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'q' || c >= 's' && c <= 'z':
@@ -1499,7 +1499,7 @@ yystate130:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'A' || c == 'a':
 		goto yystate131
 	case c >= '0' && c <= '9' || c >= 'B' && c <= 'Z' || c == '_' || c >= 'b' && c <= 'z':
@@ -1510,7 +1510,7 @@ yystate131:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'T' || c == 't':
 		goto yystate132
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'S' || c >= 'U' && c <= 'Z' || c == '_' || c >= 'a' && c <= 's' || c >= 'u' && c <= 'z':
@@ -1521,7 +1521,7 @@ yystate132:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'I' || c == 'i':
 		goto yystate133
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'H' || c >= 'J' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'h' || c >= 'j' && c <= 'z':
@@ -1532,7 +1532,7 @@ yystate133:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'O' || c == 'o':
 		goto yystate134
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'N' || c >= 'P' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'n' || c >= 'p' && c <= 'z':
@@ -1543,7 +1543,7 @@ yystate134:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'N' || c == 'n':
 		goto yystate135
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'M' || c >= 'O' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'm' || c >= 'o' && c <= 'z':
@@ -1554,7 +1554,7 @@ yystate135:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule73
+		goto yyrule74
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
 		goto yystate49
 	}
@@ -1563,7 +1563,7 @@ yystate136:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'X' || c == 'x':
 		goto yystate137
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'W' || c == 'Y' || c == 'Z' || c == '_' || c >= 'a' && c <= 'w' || c == 'y' || c == 'z':
@@ -1574,7 +1574,7 @@ yystate137:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'I' || c == 'i':
 		goto yystate138
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'H' || c >= 'J' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'h' || c >= 'j' && c <= 'z':
@@ -1585,7 +1585,7 @@ yystate138:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'S' || c == 's':
 		goto yystate139
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'R' || c >= 'T' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'r' || c >= 't' && c <= 'z':
@@ -1596,7 +1596,7 @@ yystate139:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'T' || c == 't':
 		goto yystate140
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'S' || c >= 'U' && c <= 'Z' || c == '_' || c >= 'a' && c <= 's' || c >= 'u' && c <= 'z':
@@ -1607,7 +1607,7 @@ yystate140:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'S' || c == 's':
 		goto yystate141
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'R' || c >= 'T' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'r' || c >= 't' && c <= 'z':
@@ -1627,7 +1627,7 @@ yystate142:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'A' || c == 'a':
 		goto yystate143
 	case c == 'L' || c == 'l':
@@ -1642,7 +1642,7 @@ yystate143:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'L' || c == 'l':
 		goto yystate144
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'K' || c >= 'M' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'k' || c >= 'm' && c <= 'z':
@@ -1653,7 +1653,7 @@ yystate144:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'S' || c == 's':
 		goto yystate145
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'R' || c >= 'T' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'r' || c >= 't' && c <= 'z':
@@ -1664,7 +1664,7 @@ yystate145:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'E' || c == 'e':
 		goto yystate146
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'D' || c >= 'F' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'd' || c >= 'f' && c <= 'z':
@@ -1675,7 +1675,7 @@ yystate146:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule64
+		goto yyrule65
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
 		goto yystate49
 	}
@@ -1684,7 +1684,7 @@ yystate147:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'O' || c == 'o':
 		goto yystate148
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'N' || c >= 'P' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'n' || c >= 'p' && c <= 'z':
@@ -1695,7 +1695,7 @@ yystate148:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'A' || c == 'a':
 		goto yystate149
 	case c >= '0' && c <= '9' || c >= 'B' && c <= 'Z' || c == '_' || c >= 'b' && c <= 'z':
@@ -1706,7 +1706,7 @@ yystate149:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'T' || c == 't':
 		goto yystate150
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'S' || c >= 'U' && c <= 'Z' || c == '_' || c >= 'a' && c <= 's' || c >= 'u' && c <= 'z':
@@ -1717,7 +1717,7 @@ yystate150:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule74
+		goto yyrule75
 	case c == '3':
 		goto yystate151
 	case c == '6':
@@ -1730,7 +1730,7 @@ yystate151:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == '0' || c == '1' || c >= '3' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
 		goto yystate49
 	case c == '2':
@@ -1741,7 +1741,7 @@ yystate152:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule75
+		goto yyrule76
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
 		goto yystate49
 	}
@@ -1750,7 +1750,7 @@ yystate153:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == '4':
 		goto yystate154
 	case c >= '0' && c <= '3' || c >= '5' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
@@ -1761,7 +1761,7 @@ yystate154:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule76
+		goto yyrule77
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
 		goto yystate49
 	}
@@ -1770,7 +1770,7 @@ yystate155:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'O' || c == 'o':
 		goto yystate156
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'N' || c >= 'P' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'n' || c >= 'p' && c <= 'z':
@@ -1781,7 +1781,7 @@ yystate156:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'M' || c == 'm':
 		goto yystate157
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'L' || c >= 'N' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'l' || c >= 'n' && c <= 'z':
@@ -1801,7 +1801,7 @@ yystate158:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'R' || c == 'r':
 		goto yystate159
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Q' || c >= 'S' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'q' || c >= 's' && c <= 'z':
@@ -1812,7 +1812,7 @@ yystate159:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'O' || c == 'o':
 		goto yystate160
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'N' || c >= 'P' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'n' || c >= 'p' && c <= 'z':
@@ -1823,7 +1823,7 @@ yystate160:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'U' || c == 'u':
 		goto yystate161
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'T' || c >= 'V' && c <= 'Z' || c == '_' || c >= 'a' && c <= 't' || c >= 'v' && c <= 'z':
@@ -1834,7 +1834,7 @@ yystate161:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'P' || c == 'p':
 		goto yystate162
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'O' || c >= 'Q' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'o' || c >= 'q' && c <= 'z':
@@ -1854,7 +1854,7 @@ yystate163:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
 		goto yystate49
 	}
@@ -1863,7 +1863,7 @@ yystate164:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'F' || c == 'f':
 		goto yystate165
 	case c == 'N' || c == 'n':
@@ -1902,7 +1902,7 @@ yystate167:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'E' || c == 'e':
 		goto yystate168
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'D' || c >= 'F' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'd' || c >= 'f' && c <= 'z':
@@ -1913,7 +1913,7 @@ yystate168:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'X' || c == 'x':
 		goto yystate169
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'W' || c == 'Y' || c == 'Z' || c == '_' || c >= 'a' && c <= 'w' || c == 'y' || c == 'z':
@@ -1933,7 +1933,7 @@ yystate170:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'E' || c == 'e':
 		goto yystate171
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'D' || c >= 'F' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'd' || c >= 'f' && c <= 'z':
@@ -1944,7 +1944,7 @@ yystate171:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'R' || c == 'r':
 		goto yystate172
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Q' || c >= 'S' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'q' || c >= 's' && c <= 'z':
@@ -1955,7 +1955,7 @@ yystate172:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'T' || c == 't':
 		goto yystate173
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'S' || c >= 'U' && c <= 'Z' || c == '_' || c >= 'a' && c <= 's' || c >= 'u' && c <= 'z':
@@ -1975,7 +1975,7 @@ yystate174:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule77
+		goto yyrule78
 	case c == '0' || c == '2' || c == '4' || c == '5' || c == '7' || c == '9' || c >= 'A' && c <= 'N' || c >= 'P' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'n' || c >= 'p' && c <= 'z':
 		goto yystate49
 	case c == '1':
@@ -1994,7 +1994,7 @@ yystate175:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == '6':
 		goto yystate176
 	case c >= '0' && c <= '5' || c >= '7' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
@@ -2005,7 +2005,7 @@ yystate176:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule78
+		goto yyrule79
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
 		goto yystate49
 	}
@@ -2014,7 +2014,7 @@ yystate177:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == '0' || c == '1' || c >= '3' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
 		goto yystate49
 	case c == '2':
@@ -2025,7 +2025,7 @@ yystate178:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule79
+		goto yyrule80
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
 		goto yystate49
 	}
@@ -2034,7 +2034,7 @@ yystate179:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == '4':
 		goto yystate180
 	case c >= '0' && c <= '3' || c >= '5' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
@@ -2045,7 +2045,7 @@ yystate180:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule80
+		goto yyrule81
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
 		goto yystate49
 	}
@@ -2054,7 +2054,7 @@ yystate181:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule81
+		goto yyrule82
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
 		goto yystate49
 	}
@@ -2081,7 +2081,7 @@ yystate184:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'I' || c == 'i':
 		goto yystate185
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'H' || c >= 'J' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'h' || c >= 'j' && c <= 'z':
@@ -2092,10 +2092,12 @@ yystate185:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
-	case c == 'M' || c == 'm':
+		goto yyrule91
+	case c == 'K' || c == 'k':
 		goto yystate186
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'L' || c >= 'N' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'l' || c >= 'n' && c <= 'z':
+	case c == 'M' || c == 'm':
+		goto yystate188
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'J' || c == 'L' || c >= 'N' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'j' || c == 'l' || c >= 'n' && c <= 'z':
 		goto yystate49
 	}
 
@@ -2103,25 +2105,14 @@ yystate186:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
-	case c == 'I' || c == 'i':
+		goto yyrule91
+	case c == 'E' || c == 'e':
 		goto yystate187
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'H' || c >= 'J' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'h' || c >= 'j' && c <= 'z':
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'D' || c >= 'F' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'd' || c >= 'f' && c <= 'z':
 		goto yystate49
 	}
 
 yystate187:
-	c = l.next()
-	switch {
-	default:
-		goto yyrule90
-	case c == 'T' || c == 't':
-		goto yystate188
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'S' || c >= 'U' && c <= 'Z' || c == '_' || c >= 'a' && c <= 's' || c >= 'u' && c <= 'z':
-		goto yystate49
-	}
-
-yystate188:
 	c = l.next()
 	switch {
 	default:
@@ -2130,31 +2121,29 @@ yystate188:
 		goto yystate49
 	}
 
+yystate188:
+	c = l.next()
+	switch {
+	default:
+		goto yyrule91
+	case c == 'I' || c == 'i':
+		goto yystate189
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'H' || c >= 'J' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'h' || c >= 'j' && c <= 'z':
+		goto yystate49
+	}
+
 yystate189:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
-	case c == 'O' || c == 'o':
-		goto yystate190
-	case c == 'U' || c == 'u':
-		goto yystate192
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'N' || c >= 'P' && c <= 'T' || c >= 'V' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'n' || c >= 'p' && c <= 't' || c >= 'v' && c <= 'z':
-		goto yystate49
-	}
-
-yystate190:
-	c = l.next()
-	switch {
-	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'T' || c == 't':
-		goto yystate191
+		goto yystate190
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'S' || c >= 'U' && c <= 'Z' || c == '_' || c >= 'a' && c <= 's' || c >= 'u' && c <= 'z':
 		goto yystate49
 	}
 
-yystate191:
+yystate190:
 	c = l.next()
 	switch {
 	default:
@@ -2163,97 +2152,31 @@ yystate191:
 		goto yystate49
 	}
 
+yystate191:
+	c = l.next()
+	switch {
+	default:
+		goto yyrule91
+	case c == 'O' || c == 'o':
+		goto yystate192
+	case c == 'U' || c == 'u':
+		goto yystate194
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'N' || c >= 'P' && c <= 'T' || c >= 'V' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'n' || c >= 'p' && c <= 't' || c >= 'v' && c <= 'z':
+		goto yystate49
+	}
+
 yystate192:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
-	case c == 'L' || c == 'l':
-		goto yystate193
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'K' || c >= 'M' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'k' || c >= 'm' && c <= 'z':
-		goto yystate49
-	}
-
-yystate193:
-	c = l.next()
-	switch {
-	default:
-		goto yyrule90
-	case c == 'L' || c == 'l':
-		goto yystate194
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'K' || c >= 'M' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'k' || c >= 'm' && c <= 'z':
-		goto yystate49
-	}
-
-yystate194:
-	c = l.next()
-	switch {
-	default:
-		goto yyrule63
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
-		goto yystate49
-	}
-
-yystate195:
-	c = l.next()
-	switch {
-	default:
-		goto yyrule90
-	case c == 'F' || c == 'f':
-		goto yystate196
-	case c == 'N' || c == 'n':
-		goto yystate201
-	case c == 'R' || c == 'r':
-		goto yystate202
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'E' || c >= 'G' && c <= 'M' || c >= 'O' && c <= 'Q' || c >= 'S' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'e' || c >= 'g' && c <= 'm' || c >= 'o' && c <= 'q' || c >= 's' && c <= 'z':
-		goto yystate49
-	}
-
-yystate196:
-	c = l.next()
-	switch {
-	default:
-		goto yyrule90
-	case c == 'F' || c == 'f':
-		goto yystate197
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'E' || c >= 'G' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'e' || c >= 'g' && c <= 'z':
-		goto yystate49
-	}
-
-yystate197:
-	c = l.next()
-	switch {
-	default:
-		goto yyrule90
-	case c == 'S' || c == 's':
-		goto yystate198
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'R' || c >= 'T' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'r' || c >= 't' && c <= 'z':
-		goto yystate49
-	}
-
-yystate198:
-	c = l.next()
-	switch {
-	default:
-		goto yyrule90
-	case c == 'E' || c == 'e':
-		goto yystate199
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'D' || c >= 'F' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'd' || c >= 'f' && c <= 'z':
-		goto yystate49
-	}
-
-yystate199:
-	c = l.next()
-	switch {
-	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'T' || c == 't':
-		goto yystate200
+		goto yystate193
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'S' || c >= 'U' && c <= 'Z' || c == '_' || c >= 'a' && c <= 's' || c >= 'u' && c <= 'z':
 		goto yystate49
 	}
 
-yystate200:
+yystate193:
 	c = l.next()
 	switch {
 	default:
@@ -2262,7 +2185,97 @@ yystate200:
 		goto yystate49
 	}
 
+yystate194:
+	c = l.next()
+	switch {
+	default:
+		goto yyrule91
+	case c == 'L' || c == 'l':
+		goto yystate195
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'K' || c >= 'M' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'k' || c >= 'm' && c <= 'z':
+		goto yystate49
+	}
+
+yystate195:
+	c = l.next()
+	switch {
+	default:
+		goto yyrule91
+	case c == 'L' || c == 'l':
+		goto yystate196
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'K' || c >= 'M' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'k' || c >= 'm' && c <= 'z':
+		goto yystate49
+	}
+
+yystate196:
+	c = l.next()
+	switch {
+	default:
+		goto yyrule64
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
+		goto yystate49
+	}
+
+yystate197:
+	c = l.next()
+	switch {
+	default:
+		goto yyrule91
+	case c == 'F' || c == 'f':
+		goto yystate198
+	case c == 'N' || c == 'n':
+		goto yystate203
+	case c == 'R' || c == 'r':
+		goto yystate204
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'E' || c >= 'G' && c <= 'M' || c >= 'O' && c <= 'Q' || c >= 'S' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'e' || c >= 'g' && c <= 'm' || c >= 'o' && c <= 'q' || c >= 's' && c <= 'z':
+		goto yystate49
+	}
+
+yystate198:
+	c = l.next()
+	switch {
+	default:
+		goto yyrule91
+	case c == 'F' || c == 'f':
+		goto yystate199
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'E' || c >= 'G' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'e' || c >= 'g' && c <= 'z':
+		goto yystate49
+	}
+
+yystate199:
+	c = l.next()
+	switch {
+	default:
+		goto yyrule91
+	case c == 'S' || c == 's':
+		goto yystate200
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'R' || c >= 'T' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'r' || c >= 't' && c <= 'z':
+		goto yystate49
+	}
+
+yystate200:
+	c = l.next()
+	switch {
+	default:
+		goto yyrule91
+	case c == 'E' || c == 'e':
+		goto yystate201
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'D' || c >= 'F' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'd' || c >= 'f' && c <= 'z':
+		goto yystate49
+	}
+
 yystate201:
+	c = l.next()
+	switch {
+	default:
+		goto yyrule91
+	case c == 'T' || c == 't':
+		goto yystate202
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'S' || c >= 'U' && c <= 'Z' || c == '_' || c >= 'a' && c <= 's' || c >= 'u' && c <= 'z':
+		goto yystate49
+	}
+
+yystate202:
 	c = l.next()
 	switch {
 	default:
@@ -2271,40 +2284,7 @@ yystate201:
 		goto yystate49
 	}
 
-yystate202:
-	c = l.next()
-	switch {
-	default:
-		goto yyrule90
-	case c == 'D' || c == 'd':
-		goto yystate203
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'C' || c >= 'E' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'c' || c >= 'e' && c <= 'z':
-		goto yystate49
-	}
-
 yystate203:
-	c = l.next()
-	switch {
-	default:
-		goto yyrule90
-	case c == 'E' || c == 'e':
-		goto yystate204
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'D' || c >= 'F' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'd' || c >= 'f' && c <= 'z':
-		goto yystate49
-	}
-
-yystate204:
-	c = l.next()
-	switch {
-	default:
-		goto yyrule90
-	case c == 'R' || c == 'r':
-		goto yystate205
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Q' || c >= 'S' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'q' || c >= 's' && c <= 'z':
-		goto yystate49
-	}
-
-yystate205:
 	c = l.next()
 	switch {
 	default:
@@ -2313,86 +2293,40 @@ yystate205:
 		goto yystate49
 	}
 
+yystate204:
+	c = l.next()
+	switch {
+	default:
+		goto yyrule91
+	case c == 'D' || c == 'd':
+		goto yystate205
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'C' || c >= 'E' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'c' || c >= 'e' && c <= 'z':
+		goto yystate49
+	}
+
+yystate205:
+	c = l.next()
+	switch {
+	default:
+		goto yyrule91
+	case c == 'E' || c == 'e':
+		goto yystate206
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'D' || c >= 'F' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'd' || c >= 'f' && c <= 'z':
+		goto yystate49
+	}
+
 yystate206:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
-	case c == 'O' || c == 'o':
+		goto yyrule91
+	case c == 'R' || c == 'r':
 		goto yystate207
-	case c == 'U' || c == 'u':
-		goto yystate214
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'N' || c >= 'P' && c <= 'T' || c >= 'V' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'n' || c >= 'p' && c <= 't' || c >= 'v' && c <= 'z':
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Q' || c >= 'S' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'q' || c >= 's' && c <= 'z':
 		goto yystate49
 	}
 
 yystate207:
-	c = l.next()
-	switch {
-	default:
-		goto yyrule90
-	case c == 'L' || c == 'l':
-		goto yystate208
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'K' || c >= 'M' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'k' || c >= 'm' && c <= 'z':
-		goto yystate49
-	}
-
-yystate208:
-	c = l.next()
-	switch {
-	default:
-		goto yyrule90
-	case c == 'L' || c == 'l':
-		goto yystate209
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'K' || c >= 'M' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'k' || c >= 'm' && c <= 'z':
-		goto yystate49
-	}
-
-yystate209:
-	c = l.next()
-	switch {
-	default:
-		goto yyrule90
-	case c == 'B' || c == 'b':
-		goto yystate210
-	case c >= '0' && c <= '9' || c == 'A' || c >= 'C' && c <= 'Z' || c == '_' || c == 'a' || c >= 'c' && c <= 'z':
-		goto yystate49
-	}
-
-yystate210:
-	c = l.next()
-	switch {
-	default:
-		goto yyrule90
-	case c == 'A' || c == 'a':
-		goto yystate211
-	case c >= '0' && c <= '9' || c >= 'B' && c <= 'Z' || c == '_' || c >= 'b' && c <= 'z':
-		goto yystate49
-	}
-
-yystate211:
-	c = l.next()
-	switch {
-	default:
-		goto yyrule90
-	case c == 'C' || c == 'c':
-		goto yystate212
-	case c >= '0' && c <= '9' || c == 'A' || c == 'B' || c >= 'D' && c <= 'Z' || c == '_' || c == 'a' || c == 'b' || c >= 'd' && c <= 'z':
-		goto yystate49
-	}
-
-yystate212:
-	c = l.next()
-	switch {
-	default:
-		goto yyrule90
-	case c == 'K' || c == 'k':
-		goto yystate213
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'J' || c >= 'L' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'j' || c >= 'l' && c <= 'z':
-		goto yystate49
-	}
-
-yystate213:
 	c = l.next()
 	switch {
 	default:
@@ -2401,97 +2335,86 @@ yystate213:
 		goto yystate49
 	}
 
-yystate214:
+yystate208:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
-	case c == 'N' || c == 'n':
-		goto yystate215
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'M' || c >= 'O' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'm' || c >= 'o' && c <= 'z':
-		goto yystate49
-	}
-
-yystate215:
-	c = l.next()
-	switch {
-	default:
-		goto yyrule90
-	case c == 'E' || c == 'e':
+		goto yyrule91
+	case c == 'O' || c == 'o':
+		goto yystate209
+	case c == 'U' || c == 'u':
 		goto yystate216
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'D' || c >= 'F' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'd' || c >= 'f' && c <= 'z':
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'N' || c >= 'P' && c <= 'T' || c >= 'V' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'n' || c >= 'p' && c <= 't' || c >= 'v' && c <= 'z':
 		goto yystate49
 	}
 
-yystate216:
+yystate209:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule82
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
-		goto yystate49
-	}
-
-yystate217:
-	c = l.next()
-	switch {
-	default:
-		goto yyrule90
-	case c == 'E' || c == 'e':
-		goto yystate218
-	case c == 'T' || c == 't':
-		goto yystate224
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'D' || c >= 'F' && c <= 'S' || c >= 'U' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'd' || c >= 'f' && c <= 's' || c >= 'u' && c <= 'z':
-		goto yystate49
-	}
-
-yystate218:
-	c = l.next()
-	switch {
-	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'L' || c == 'l':
-		goto yystate219
-	case c == 'T' || c == 't':
-		goto yystate223
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'K' || c >= 'M' && c <= 'S' || c >= 'U' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'k' || c >= 'm' && c <= 's' || c >= 'u' && c <= 'z':
+		goto yystate210
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'K' || c >= 'M' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'k' || c >= 'm' && c <= 'z':
 		goto yystate49
 	}
 
-yystate219:
+yystate210:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
-	case c == 'E' || c == 'e':
-		goto yystate220
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'D' || c >= 'F' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'd' || c >= 'f' && c <= 'z':
+		goto yyrule91
+	case c == 'L' || c == 'l':
+		goto yystate211
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'K' || c >= 'M' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'k' || c >= 'm' && c <= 'z':
 		goto yystate49
 	}
 
-yystate220:
+yystate211:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
+	case c == 'B' || c == 'b':
+		goto yystate212
+	case c >= '0' && c <= '9' || c == 'A' || c >= 'C' && c <= 'Z' || c == '_' || c == 'a' || c >= 'c' && c <= 'z':
+		goto yystate49
+	}
+
+yystate212:
+	c = l.next()
+	switch {
+	default:
+		goto yyrule91
+	case c == 'A' || c == 'a':
+		goto yystate213
+	case c >= '0' && c <= '9' || c >= 'B' && c <= 'Z' || c == '_' || c >= 'b' && c <= 'z':
+		goto yystate49
+	}
+
+yystate213:
+	c = l.next()
+	switch {
+	default:
+		goto yyrule91
 	case c == 'C' || c == 'c':
-		goto yystate221
+		goto yystate214
 	case c >= '0' && c <= '9' || c == 'A' || c == 'B' || c >= 'D' && c <= 'Z' || c == '_' || c == 'a' || c == 'b' || c >= 'd' && c <= 'z':
 		goto yystate49
 	}
 
-yystate221:
+yystate214:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
-	case c == 'T' || c == 't':
-		goto yystate222
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'S' || c >= 'U' && c <= 'Z' || c == '_' || c >= 'a' && c <= 's' || c >= 'u' && c <= 'z':
+		goto yyrule91
+	case c == 'K' || c == 'k':
+		goto yystate215
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'J' || c >= 'L' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'j' || c >= 'l' && c <= 'z':
 		goto yystate49
 	}
 
-yystate222:
+yystate215:
 	c = l.next()
 	switch {
 	default:
@@ -2500,60 +2423,29 @@ yystate222:
 		goto yystate49
 	}
 
-yystate223:
+yystate216:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule55
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
-		goto yystate49
-	}
-
-yystate224:
-	c = l.next()
-	switch {
-	default:
-		goto yyrule90
-	case c == 'R' || c == 'r':
-		goto yystate225
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Q' || c >= 'S' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'q' || c >= 's' && c <= 'z':
-		goto yystate49
-	}
-
-yystate225:
-	c = l.next()
-	switch {
-	default:
-		goto yyrule90
-	case c == 'I' || c == 'i':
-		goto yystate226
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'H' || c >= 'J' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'h' || c >= 'j' && c <= 'z':
-		goto yystate49
-	}
-
-yystate226:
-	c = l.next()
-	switch {
-	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'N' || c == 'n':
-		goto yystate227
+		goto yystate217
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'M' || c >= 'O' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'm' || c >= 'o' && c <= 'z':
 		goto yystate49
 	}
 
-yystate227:
+yystate217:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
-	case c == 'G' || c == 'g':
-		goto yystate228
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'F' || c >= 'H' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'f' || c >= 'h' && c <= 'z':
+		goto yyrule91
+	case c == 'E' || c == 'e':
+		goto yystate218
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'D' || c >= 'F' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'd' || c >= 'f' && c <= 'z':
 		goto yystate49
 	}
 
-yystate228:
+yystate218:
 	c = l.next()
 	switch {
 	default:
@@ -2562,55 +2454,75 @@ yystate228:
 		goto yystate49
 	}
 
-yystate229:
+yystate219:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
-	case c == 'A' || c == 'a':
-		goto yystate230
-	case c == 'I' || c == 'i':
-		goto yystate234
-	case c == 'R' || c == 'r':
-		goto yystate237
-	case c >= '0' && c <= '9' || c >= 'B' && c <= 'H' || c >= 'J' && c <= 'Q' || c >= 'S' && c <= 'Z' || c == '_' || c >= 'b' && c <= 'h' || c >= 'j' && c <= 'q' || c >= 's' && c <= 'z':
-		goto yystate49
-	}
-
-yystate230:
-	c = l.next()
-	switch {
-	default:
-		goto yyrule90
-	case c == 'B' || c == 'b':
-		goto yystate231
-	case c >= '0' && c <= '9' || c == 'A' || c >= 'C' && c <= 'Z' || c == '_' || c == 'a' || c >= 'c' && c <= 'z':
-		goto yystate49
-	}
-
-yystate231:
-	c = l.next()
-	switch {
-	default:
-		goto yyrule90
-	case c == 'L' || c == 'l':
-		goto yystate232
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'K' || c >= 'M' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'k' || c >= 'm' && c <= 'z':
-		goto yystate49
-	}
-
-yystate232:
-	c = l.next()
-	switch {
-	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'E' || c == 'e':
-		goto yystate233
+		goto yystate220
+	case c == 'T' || c == 't':
+		goto yystate226
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'D' || c >= 'F' && c <= 'S' || c >= 'U' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'd' || c >= 'f' && c <= 's' || c >= 'u' && c <= 'z':
+		goto yystate49
+	}
+
+yystate220:
+	c = l.next()
+	switch {
+	default:
+		goto yyrule91
+	case c == 'L' || c == 'l':
+		goto yystate221
+	case c == 'T' || c == 't':
+		goto yystate225
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'K' || c >= 'M' && c <= 'S' || c >= 'U' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'k' || c >= 'm' && c <= 's' || c >= 'u' && c <= 'z':
+		goto yystate49
+	}
+
+yystate221:
+	c = l.next()
+	switch {
+	default:
+		goto yyrule91
+	case c == 'E' || c == 'e':
+		goto yystate222
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'D' || c >= 'F' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'd' || c >= 'f' && c <= 'z':
 		goto yystate49
 	}
 
-yystate233:
+yystate222:
+	c = l.next()
+	switch {
+	default:
+		goto yyrule91
+	case c == 'C' || c == 'c':
+		goto yystate223
+	case c >= '0' && c <= '9' || c == 'A' || c == 'B' || c >= 'D' && c <= 'Z' || c == '_' || c == 'a' || c == 'b' || c >= 'd' && c <= 'z':
+		goto yystate49
+	}
+
+yystate223:
+	c = l.next()
+	switch {
+	default:
+		goto yyrule91
+	case c == 'T' || c == 't':
+		goto yystate224
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'S' || c >= 'U' && c <= 'Z' || c == '_' || c >= 'a' && c <= 's' || c >= 'u' && c <= 'z':
+		goto yystate49
+	}
+
+yystate224:
+	c = l.next()
+	switch {
+	default:
+		goto yyrule55
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
+		goto yystate49
+	}
+
+yystate225:
 	c = l.next()
 	switch {
 	default:
@@ -2619,29 +2531,51 @@ yystate233:
 		goto yystate49
 	}
 
-yystate234:
+yystate226:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
-	case c == 'M' || c == 'm':
-		goto yystate235
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'L' || c >= 'N' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'l' || c >= 'n' && c <= 'z':
+		goto yyrule91
+	case c == 'R' || c == 'r':
+		goto yystate227
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Q' || c >= 'S' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'q' || c >= 's' && c <= 'z':
 		goto yystate49
 	}
 
-yystate235:
+yystate227:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
-	case c == 'E' || c == 'e':
-		goto yystate236
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'D' || c >= 'F' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'd' || c >= 'f' && c <= 'z':
+		goto yyrule91
+	case c == 'I' || c == 'i':
+		goto yystate228
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'H' || c >= 'J' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'h' || c >= 'j' && c <= 'z':
 		goto yystate49
 	}
 
-yystate236:
+yystate228:
+	c = l.next()
+	switch {
+	default:
+		goto yyrule91
+	case c == 'N' || c == 'n':
+		goto yystate229
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'M' || c >= 'O' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'm' || c >= 'o' && c <= 'z':
+		goto yystate49
+	}
+
+yystate229:
+	c = l.next()
+	switch {
+	default:
+		goto yyrule91
+	case c == 'G' || c == 'g':
+		goto yystate230
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'F' || c >= 'H' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'f' || c >= 'h' && c <= 'z':
+		goto yystate49
+	}
+
+yystate230:
 	c = l.next()
 	switch {
 	default:
@@ -2650,108 +2584,55 @@ yystate236:
 		goto yystate49
 	}
 
-yystate237:
+yystate231:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'A' || c == 'a':
-		goto yystate238
-	case c == 'U' || c == 'u':
-		goto yystate247
-	case c >= '0' && c <= '9' || c >= 'B' && c <= 'T' || c >= 'V' && c <= 'Z' || c == '_' || c >= 'b' && c <= 't' || c >= 'v' && c <= 'z':
-		goto yystate49
-	}
-
-yystate238:
-	c = l.next()
-	switch {
-	default:
-		goto yyrule90
-	case c == 'N' || c == 'n':
-		goto yystate239
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'M' || c >= 'O' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'm' || c >= 'o' && c <= 'z':
-		goto yystate49
-	}
-
-yystate239:
-	c = l.next()
-	switch {
-	default:
-		goto yyrule90
-	case c == 'S' || c == 's':
-		goto yystate240
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'R' || c >= 'T' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'r' || c >= 't' && c <= 'z':
-		goto yystate49
-	}
-
-yystate240:
-	c = l.next()
-	switch {
-	default:
-		goto yyrule90
-	case c == 'A' || c == 'a':
-		goto yystate241
-	case c >= '0' && c <= '9' || c >= 'B' && c <= 'Z' || c == '_' || c >= 'b' && c <= 'z':
-		goto yystate49
-	}
-
-yystate241:
-	c = l.next()
-	switch {
-	default:
-		goto yyrule90
-	case c == 'C' || c == 'c':
-		goto yystate242
-	case c >= '0' && c <= '9' || c == 'A' || c == 'B' || c >= 'D' && c <= 'Z' || c == '_' || c == 'a' || c == 'b' || c >= 'd' && c <= 'z':
-		goto yystate49
-	}
-
-yystate242:
-	c = l.next()
-	switch {
-	default:
-		goto yyrule90
-	case c == 'T' || c == 't':
-		goto yystate243
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'S' || c >= 'U' && c <= 'Z' || c == '_' || c >= 'a' && c <= 's' || c >= 'u' && c <= 'z':
-		goto yystate49
-	}
-
-yystate243:
-	c = l.next()
-	switch {
-	default:
-		goto yyrule90
+		goto yystate232
 	case c == 'I' || c == 'i':
-		goto yystate244
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'H' || c >= 'J' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'h' || c >= 'j' && c <= 'z':
+		goto yystate236
+	case c == 'R' || c == 'r':
+		goto yystate239
+	case c >= '0' && c <= '9' || c >= 'B' && c <= 'H' || c >= 'J' && c <= 'Q' || c >= 'S' && c <= 'Z' || c == '_' || c >= 'b' && c <= 'h' || c >= 'j' && c <= 'q' || c >= 's' && c <= 'z':
 		goto yystate49
 	}
 
-yystate244:
+yystate232:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
-	case c == 'O' || c == 'o':
-		goto yystate245
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'N' || c >= 'P' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'n' || c >= 'p' && c <= 'z':
+		goto yyrule91
+	case c == 'B' || c == 'b':
+		goto yystate233
+	case c >= '0' && c <= '9' || c == 'A' || c >= 'C' && c <= 'Z' || c == '_' || c == 'a' || c >= 'c' && c <= 'z':
 		goto yystate49
 	}
 
-yystate245:
+yystate233:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
-	case c == 'N' || c == 'n':
-		goto yystate246
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'M' || c >= 'O' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'm' || c >= 'o' && c <= 'z':
+		goto yyrule91
+	case c == 'L' || c == 'l':
+		goto yystate234
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'K' || c >= 'M' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'k' || c >= 'm' && c <= 'z':
 		goto yystate49
 	}
 
-yystate246:
+yystate234:
+	c = l.next()
+	switch {
+	default:
+		goto yyrule91
+	case c == 'E' || c == 'e':
+		goto yystate235
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'D' || c >= 'F' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'd' || c >= 'f' && c <= 'z':
+		goto yystate49
+	}
+
+yystate235:
 	c = l.next()
 	switch {
 	default:
@@ -2760,73 +2641,139 @@ yystate246:
 		goto yystate49
 	}
 
-yystate247:
+yystate236:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
+	case c == 'M' || c == 'm':
+		goto yystate237
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'L' || c >= 'N' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'l' || c >= 'n' && c <= 'z':
+		goto yystate49
+	}
+
+yystate237:
+	c = l.next()
+	switch {
+	default:
+		goto yyrule91
 	case c == 'E' || c == 'e':
-		goto yystate248
-	case c == 'N' || c == 'n':
-		goto yystate249
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'D' || c >= 'F' && c <= 'M' || c >= 'O' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'd' || c >= 'f' && c <= 'm' || c >= 'o' && c <= 'z':
-		goto yystate49
-	}
-
-yystate248:
-	c = l.next()
-	switch {
-	default:
-		goto yyrule65
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
-		goto yystate49
-	}
-
-yystate249:
-	c = l.next()
-	switch {
-	default:
-		goto yyrule90
-	case c == 'C' || c == 'c':
-		goto yystate250
-	case c >= '0' && c <= '9' || c == 'A' || c == 'B' || c >= 'D' && c <= 'Z' || c == '_' || c == 'a' || c == 'b' || c >= 'd' && c <= 'z':
-		goto yystate49
-	}
-
-yystate250:
-	c = l.next()
-	switch {
-	default:
-		goto yyrule90
-	case c == 'A' || c == 'a':
-		goto yystate251
-	case c >= '0' && c <= '9' || c >= 'B' && c <= 'Z' || c == '_' || c >= 'b' && c <= 'z':
-		goto yystate49
-	}
-
-yystate251:
-	c = l.next()
-	switch {
-	default:
-		goto yyrule90
-	case c == 'T' || c == 't':
-		goto yystate252
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'S' || c >= 'U' && c <= 'Z' || c == '_' || c >= 'a' && c <= 's' || c >= 'u' && c <= 'z':
-		goto yystate49
-	}
-
-yystate252:
-	c = l.next()
-	switch {
-	default:
-		goto yyrule90
-	case c == 'E' || c == 'e':
-		goto yystate253
+		goto yystate238
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'D' || c >= 'F' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'd' || c >= 'f' && c <= 'z':
 		goto yystate49
 	}
 
-yystate253:
+yystate238:
+	c = l.next()
+	switch {
+	default:
+		goto yyrule85
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
+		goto yystate49
+	}
+
+yystate239:
+	c = l.next()
+	switch {
+	default:
+		goto yyrule91
+	case c == 'A' || c == 'a':
+		goto yystate240
+	case c == 'U' || c == 'u':
+		goto yystate249
+	case c >= '0' && c <= '9' || c >= 'B' && c <= 'T' || c >= 'V' && c <= 'Z' || c == '_' || c >= 'b' && c <= 't' || c >= 'v' && c <= 'z':
+		goto yystate49
+	}
+
+yystate240:
+	c = l.next()
+	switch {
+	default:
+		goto yyrule91
+	case c == 'N' || c == 'n':
+		goto yystate241
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'M' || c >= 'O' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'm' || c >= 'o' && c <= 'z':
+		goto yystate49
+	}
+
+yystate241:
+	c = l.next()
+	switch {
+	default:
+		goto yyrule91
+	case c == 'S' || c == 's':
+		goto yystate242
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'R' || c >= 'T' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'r' || c >= 't' && c <= 'z':
+		goto yystate49
+	}
+
+yystate242:
+	c = l.next()
+	switch {
+	default:
+		goto yyrule91
+	case c == 'A' || c == 'a':
+		goto yystate243
+	case c >= '0' && c <= '9' || c >= 'B' && c <= 'Z' || c == '_' || c >= 'b' && c <= 'z':
+		goto yystate49
+	}
+
+yystate243:
+	c = l.next()
+	switch {
+	default:
+		goto yyrule91
+	case c == 'C' || c == 'c':
+		goto yystate244
+	case c >= '0' && c <= '9' || c == 'A' || c == 'B' || c >= 'D' && c <= 'Z' || c == '_' || c == 'a' || c == 'b' || c >= 'd' && c <= 'z':
+		goto yystate49
+	}
+
+yystate244:
+	c = l.next()
+	switch {
+	default:
+		goto yyrule91
+	case c == 'T' || c == 't':
+		goto yystate245
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'S' || c >= 'U' && c <= 'Z' || c == '_' || c >= 'a' && c <= 's' || c >= 'u' && c <= 'z':
+		goto yystate49
+	}
+
+yystate245:
+	c = l.next()
+	switch {
+	default:
+		goto yyrule91
+	case c == 'I' || c == 'i':
+		goto yystate246
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'H' || c >= 'J' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'h' || c >= 'j' && c <= 'z':
+		goto yystate49
+	}
+
+yystate246:
+	c = l.next()
+	switch {
+	default:
+		goto yyrule91
+	case c == 'O' || c == 'o':
+		goto yystate247
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'N' || c >= 'P' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'n' || c >= 'p' && c <= 'z':
+		goto yystate49
+	}
+
+yystate247:
+	c = l.next()
+	switch {
+	default:
+		goto yyrule91
+	case c == 'N' || c == 'n':
+		goto yystate248
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'M' || c >= 'O' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'm' || c >= 'o' && c <= 'z':
+		goto yystate49
+	}
+
+yystate248:
 	c = l.next()
 	switch {
 	default:
@@ -2835,18 +2782,69 @@ yystate253:
 		goto yystate49
 	}
 
+yystate249:
+	c = l.next()
+	switch {
+	default:
+		goto yyrule91
+	case c == 'E' || c == 'e':
+		goto yystate250
+	case c == 'N' || c == 'n':
+		goto yystate251
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'D' || c >= 'F' && c <= 'M' || c >= 'O' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'd' || c >= 'f' && c <= 'm' || c >= 'o' && c <= 'z':
+		goto yystate49
+	}
+
+yystate250:
+	c = l.next()
+	switch {
+	default:
+		goto yyrule66
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
+		goto yystate49
+	}
+
+yystate251:
+	c = l.next()
+	switch {
+	default:
+		goto yyrule91
+	case c == 'C' || c == 'c':
+		goto yystate252
+	case c >= '0' && c <= '9' || c == 'A' || c == 'B' || c >= 'D' && c <= 'Z' || c == '_' || c == 'a' || c == 'b' || c >= 'd' && c <= 'z':
+		goto yystate49
+	}
+
+yystate252:
+	c = l.next()
+	switch {
+	default:
+		goto yyrule91
+	case c == 'A' || c == 'a':
+		goto yystate253
+	case c >= '0' && c <= '9' || c >= 'B' && c <= 'Z' || c == '_' || c >= 'b' && c <= 'z':
+		goto yystate49
+	}
+
+yystate253:
+	c = l.next()
+	switch {
+	default:
+		goto yyrule91
+	case c == 'T' || c == 't':
+		goto yystate254
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'S' || c >= 'U' && c <= 'Z' || c == '_' || c >= 'a' && c <= 's' || c >= 'u' && c <= 'z':
+		goto yystate49
+	}
+
 yystate254:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
-	case c == 'I' || c == 'i':
+		goto yyrule91
+	case c == 'E' || c == 'e':
 		goto yystate255
-	case c == 'N' || c == 'n':
-		goto yystate265
-	case c == 'P' || c == 'p':
-		goto yystate270
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'H' || c >= 'J' && c <= 'M' || c == 'O' || c >= 'Q' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'h' || c >= 'j' && c <= 'm' || c == 'o' || c >= 'q' && c <= 'z':
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'D' || c >= 'F' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'd' || c >= 'f' && c <= 'z':
 		goto yystate49
 	}
 
@@ -2854,10 +2852,8 @@ yystate255:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
-	case c == 'N' || c == 'n':
-		goto yystate256
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'M' || c >= 'O' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'm' || c >= 'o' && c <= 'z':
+		goto yyrule59
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
 		goto yystate49
 	}
 
@@ -2865,10 +2861,14 @@ yystate256:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
-	case c == 'T' || c == 't':
+		goto yyrule91
+	case c == 'I' || c == 'i':
 		goto yystate257
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'S' || c >= 'U' && c <= 'Z' || c == '_' || c >= 'a' && c <= 's' || c >= 'u' && c <= 'z':
+	case c == 'N' || c == 'n':
+		goto yystate267
+	case c == 'P' || c == 'p':
+		goto yystate272
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'H' || c >= 'J' && c <= 'M' || c == 'O' || c >= 'Q' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'h' || c >= 'j' && c <= 'm' || c == 'o' || c >= 'q' && c <= 'z':
 		goto yystate49
 	}
 
@@ -2876,27 +2876,21 @@ yystate257:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule85
-	case c == '0' || c == '2' || c == '4' || c == '5' || c == '7' || c == '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
-		goto yystate49
-	case c == '1':
+		goto yyrule91
+	case c == 'N' || c == 'n':
 		goto yystate258
-	case c == '3':
-		goto yystate260
-	case c == '6':
-		goto yystate262
-	case c == '8':
-		goto yystate264
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'M' || c >= 'O' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'm' || c >= 'o' && c <= 'z':
+		goto yystate49
 	}
 
 yystate258:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
-	case c == '6':
+		goto yyrule91
+	case c == 'T' || c == 't':
 		goto yystate259
-	case c >= '0' && c <= '5' || c >= '7' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'S' || c >= 'U' && c <= 'Z' || c == '_' || c >= 'a' && c <= 's' || c >= 'u' && c <= 'z':
 		goto yystate49
 	}
 
@@ -2905,19 +2899,27 @@ yystate259:
 	switch {
 	default:
 		goto yyrule86
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
+	case c == '0' || c == '2' || c == '4' || c == '5' || c == '7' || c == '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
 		goto yystate49
+	case c == '1':
+		goto yystate260
+	case c == '3':
+		goto yystate262
+	case c == '6':
+		goto yystate264
+	case c == '8':
+		goto yystate266
 	}
 
 yystate260:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
-	case c == '0' || c == '1' || c >= '3' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
-		goto yystate49
-	case c == '2':
+		goto yyrule91
+	case c == '6':
 		goto yystate261
+	case c >= '0' && c <= '5' || c >= '7' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
+		goto yystate49
 	}
 
 yystate261:
@@ -2933,11 +2935,11 @@ yystate262:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
-	case c == '4':
-		goto yystate263
-	case c >= '0' && c <= '3' || c >= '5' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
+		goto yyrule91
+	case c == '0' || c == '1' || c >= '3' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
 		goto yystate49
+	case c == '2':
+		goto yystate263
 	}
 
 yystate263:
@@ -2953,8 +2955,10 @@ yystate264:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule89
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
+		goto yyrule91
+	case c == '4':
+		goto yystate265
+	case c >= '0' && c <= '3' || c >= '5' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
 		goto yystate49
 	}
 
@@ -2962,10 +2966,8 @@ yystate265:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
-	case c == 'I' || c == 'i':
-		goto yystate266
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'H' || c >= 'J' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'h' || c >= 'j' && c <= 'z':
+		goto yyrule89
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
 		goto yystate49
 	}
 
@@ -2974,9 +2976,7 @@ yystate266:
 	switch {
 	default:
 		goto yyrule90
-	case c == 'Q' || c == 'q':
-		goto yystate267
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'P' || c >= 'R' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'p' || c >= 'r' && c <= 'z':
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
 		goto yystate49
 	}
 
@@ -2984,10 +2984,10 @@ yystate267:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
-	case c == 'U' || c == 'u':
+		goto yyrule91
+	case c == 'I' || c == 'i':
 		goto yystate268
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'T' || c >= 'V' && c <= 'Z' || c == '_' || c >= 'a' && c <= 't' || c >= 'v' && c <= 'z':
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'H' || c >= 'J' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'h' || c >= 'j' && c <= 'z':
 		goto yystate49
 	}
 
@@ -2995,10 +2995,10 @@ yystate268:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
-	case c == 'E' || c == 'e':
+		goto yyrule91
+	case c == 'Q' || c == 'q':
 		goto yystate269
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'D' || c >= 'F' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'd' || c >= 'f' && c <= 'z':
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'P' || c >= 'R' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'p' || c >= 'r' && c <= 'z':
 		goto yystate49
 	}
 
@@ -3006,8 +3006,10 @@ yystate269:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule60
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
+		goto yyrule91
+	case c == 'U' || c == 'u':
+		goto yystate270
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'T' || c >= 'V' && c <= 'Z' || c == '_' || c >= 'a' && c <= 't' || c >= 'v' && c <= 'z':
 		goto yystate49
 	}
 
@@ -3015,111 +3017,14 @@ yystate270:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
-	case c == 'D' || c == 'd':
+		goto yyrule91
+	case c == 'E' || c == 'e':
 		goto yystate271
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'C' || c >= 'E' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'c' || c >= 'e' && c <= 'z':
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'D' || c >= 'F' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'd' || c >= 'f' && c <= 'z':
 		goto yystate49
 	}
 
 yystate271:
-	c = l.next()
-	switch {
-	default:
-		goto yyrule90
-	case c == 'A' || c == 'a':
-		goto yystate272
-	case c >= '0' && c <= '9' || c >= 'B' && c <= 'Z' || c == '_' || c >= 'b' && c <= 'z':
-		goto yystate49
-	}
-
-yystate272:
-	c = l.next()
-	switch {
-	default:
-		goto yyrule90
-	case c == 'T' || c == 't':
-		goto yystate273
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'S' || c >= 'U' && c <= 'Z' || c == '_' || c >= 'a' && c <= 's' || c >= 'u' && c <= 'z':
-		goto yystate49
-	}
-
-yystate273:
-	c = l.next()
-	switch {
-	default:
-		goto yyrule90
-	case c == 'E' || c == 'e':
-		goto yystate274
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'D' || c >= 'F' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'd' || c >= 'f' && c <= 'z':
-		goto yystate49
-	}
-
-yystate274:
-	c = l.next()
-	switch {
-	default:
-		goto yyrule59
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
-		goto yystate49
-	}
-
-yystate275:
-	c = l.next()
-	switch {
-	default:
-		goto yyrule90
-	case c == 'A' || c == 'a':
-		goto yystate276
-	case c >= '0' && c <= '9' || c >= 'B' && c <= 'Z' || c == '_' || c >= 'b' && c <= 'z':
-		goto yystate49
-	}
-
-yystate276:
-	c = l.next()
-	switch {
-	default:
-		goto yyrule90
-	case c == 'L' || c == 'l':
-		goto yystate277
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'K' || c >= 'M' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'k' || c >= 'm' && c <= 'z':
-		goto yystate49
-	}
-
-yystate277:
-	c = l.next()
-	switch {
-	default:
-		goto yyrule90
-	case c == 'U' || c == 'u':
-		goto yystate278
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'T' || c >= 'V' && c <= 'Z' || c == '_' || c >= 'a' && c <= 't' || c >= 'v' && c <= 'z':
-		goto yystate49
-	}
-
-yystate278:
-	c = l.next()
-	switch {
-	default:
-		goto yyrule90
-	case c == 'E' || c == 'e':
-		goto yystate279
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'D' || c >= 'F' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'd' || c >= 'f' && c <= 'z':
-		goto yystate49
-	}
-
-yystate279:
-	c = l.next()
-	switch {
-	default:
-		goto yyrule90
-	case c == 'S' || c == 's':
-		goto yystate280
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'R' || c >= 'T' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'r' || c >= 't' && c <= 'z':
-		goto yystate49
-	}
-
-yystate280:
 	c = l.next()
 	switch {
 	default:
@@ -3128,14 +3033,111 @@ yystate280:
 		goto yystate49
 	}
 
+yystate272:
+	c = l.next()
+	switch {
+	default:
+		goto yyrule91
+	case c == 'D' || c == 'd':
+		goto yystate273
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'C' || c >= 'E' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'c' || c >= 'e' && c <= 'z':
+		goto yystate49
+	}
+
+yystate273:
+	c = l.next()
+	switch {
+	default:
+		goto yyrule91
+	case c == 'A' || c == 'a':
+		goto yystate274
+	case c >= '0' && c <= '9' || c >= 'B' && c <= 'Z' || c == '_' || c >= 'b' && c <= 'z':
+		goto yystate49
+	}
+
+yystate274:
+	c = l.next()
+	switch {
+	default:
+		goto yyrule91
+	case c == 'T' || c == 't':
+		goto yystate275
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'S' || c >= 'U' && c <= 'Z' || c == '_' || c >= 'a' && c <= 's' || c >= 'u' && c <= 'z':
+		goto yystate49
+	}
+
+yystate275:
+	c = l.next()
+	switch {
+	default:
+		goto yyrule91
+	case c == 'E' || c == 'e':
+		goto yystate276
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'D' || c >= 'F' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'd' || c >= 'f' && c <= 'z':
+		goto yystate49
+	}
+
+yystate276:
+	c = l.next()
+	switch {
+	default:
+		goto yyrule60
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
+		goto yystate49
+	}
+
+yystate277:
+	c = l.next()
+	switch {
+	default:
+		goto yyrule91
+	case c == 'A' || c == 'a':
+		goto yystate278
+	case c >= '0' && c <= '9' || c >= 'B' && c <= 'Z' || c == '_' || c >= 'b' && c <= 'z':
+		goto yystate49
+	}
+
+yystate278:
+	c = l.next()
+	switch {
+	default:
+		goto yyrule91
+	case c == 'L' || c == 'l':
+		goto yystate279
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'K' || c >= 'M' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'k' || c >= 'm' && c <= 'z':
+		goto yystate49
+	}
+
+yystate279:
+	c = l.next()
+	switch {
+	default:
+		goto yyrule91
+	case c == 'U' || c == 'u':
+		goto yystate280
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'T' || c >= 'V' && c <= 'Z' || c == '_' || c >= 'a' && c <= 't' || c >= 'v' && c <= 'z':
+		goto yystate49
+	}
+
+yystate280:
+	c = l.next()
+	switch {
+	default:
+		goto yyrule91
+	case c == 'E' || c == 'e':
+		goto yystate281
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'D' || c >= 'F' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'd' || c >= 'f' && c <= 'z':
+		goto yystate49
+	}
+
 yystate281:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
-	case c == 'H' || c == 'h':
+		goto yyrule91
+	case c == 'S' || c == 's':
 		goto yystate282
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'G' || c >= 'I' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'g' || c >= 'i' && c <= 'z':
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'R' || c >= 'T' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'r' || c >= 't' && c <= 'z':
 		goto yystate49
 	}
 
@@ -3143,10 +3145,8 @@ yystate282:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
-	case c == 'E' || c == 'e':
-		goto yystate283
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'D' || c >= 'F' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'd' || c >= 'f' && c <= 'z':
+		goto yyrule62
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
 		goto yystate49
 	}
 
@@ -3154,10 +3154,10 @@ yystate283:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
-	case c == 'R' || c == 'r':
+		goto yyrule91
+	case c == 'H' || c == 'h':
 		goto yystate284
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Q' || c >= 'S' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'q' || c >= 's' && c <= 'z':
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'G' || c >= 'I' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'g' || c >= 'i' && c <= 'z':
 		goto yystate49
 	}
 
@@ -3165,7 +3165,7 @@ yystate284:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule90
+		goto yyrule91
 	case c == 'E' || c == 'e':
 		goto yystate285
 	case c >= '0' && c <= '9' || c >= 'A' && c <= 'D' || c >= 'F' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'd' || c >= 'f' && c <= 'z':
@@ -3176,59 +3176,64 @@ yystate285:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule62
-	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
+		goto yyrule91
+	case c == 'R' || c == 'r':
+		goto yystate286
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Q' || c >= 'S' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'q' || c >= 's' && c <= 'z':
 		goto yystate49
 	}
 
 yystate286:
 	c = l.next()
-	goto yyrule11
+	switch {
+	default:
+		goto yyrule91
+	case c == 'E' || c == 'e':
+		goto yystate287
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'D' || c >= 'F' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'd' || c >= 'f' && c <= 'z':
+		goto yystate49
+	}
 
 yystate287:
 	c = l.next()
 	switch {
 	default:
-		goto yyrule92
-	case c == '|':
-		goto yystate288
+		goto yyrule63
+	case c >= '0' && c <= '9' || c >= 'A' && c <= 'Z' || c == '_' || c >= 'a' && c <= 'z':
+		goto yystate49
 	}
 
 yystate288:
 	c = l.next()
-	goto yyrule22
+	goto yyrule11
 
-	goto yystate289 // silence unused label error
 yystate289:
 	c = l.next()
-yystart289:
 	switch {
 	default:
-		goto yystate290 // c >= '\x01' && c <= '!' || c >= '#' && c <= '[' || c >= ']' && c <= 'ÿ'
-	case c == '"':
-		goto yystate291
-	case c == '\\':
-		goto yystate292
-	case c == '\x00':
-		goto yystate2
+		goto yyrule93
+	case c == '|':
+		goto yystate290
 	}
 
 yystate290:
 	c = l.next()
-	switch {
-	default:
-		goto yyabort
-	case c == '"':
-		goto yystate291
-	case c == '\\':
-		goto yystate292
-	case c >= '\x01' && c <= '!' || c >= '#' && c <= '[' || c >= ']' && c <= 'ÿ':
-		goto yystate290
-	}
+	goto yyrule22
 
+	goto yystate291 // silence unused label error
 yystate291:
 	c = l.next()
-	goto yyrule13
+yystart291:
+	switch {
+	default:
+		goto yystate292 // c >= '\x01' && c <= '!' || c >= '#' && c <= '[' || c >= ']' && c <= 'ÿ'
+	case c == '"':
+		goto yystate293
+	case c == '\\':
+		goto yystate294
+	case c == '\x00':
+		goto yystate2
+	}
 
 yystate292:
 	c = l.next()
@@ -3238,49 +3243,66 @@ yystate292:
 	case c == '"':
 		goto yystate293
 	case c == '\\':
-		goto yystate292
+		goto yystate294
 	case c >= '\x01' && c <= '!' || c >= '#' && c <= '[' || c >= ']' && c <= 'ÿ':
-		goto yystate290
+		goto yystate292
 	}
 
 yystate293:
 	c = l.next()
-	switch {
-	default:
-		goto yyrule13
-	case c == '"':
-		goto yystate291
-	case c == '\\':
-		goto yystate292
-	case c >= '\x01' && c <= '!' || c >= '#' && c <= '[' || c >= ']' && c <= 'ÿ':
-		goto yystate290
-	}
+	goto yyrule13
 
-	goto yystate294 // silence unused label error
 yystate294:
 	c = l.next()
-yystart294:
 	switch {
 	default:
-		goto yystate295 // c >= '\x01' && c <= '_' || c >= 'a' && c <= 'ÿ'
-	case c == '\x00':
-		goto yystate2
-	case c == '`':
-		goto yystate296
+		goto yyabort
+	case c == '"':
+		goto yystate295
+	case c == '\\':
+		goto yystate294
+	case c >= '\x01' && c <= '!' || c >= '#' && c <= '[' || c >= ']' && c <= 'ÿ':
+		goto yystate292
 	}
 
 yystate295:
 	c = l.next()
 	switch {
 	default:
-		goto yyabort
-	case c == '`':
-		goto yystate296
-	case c >= '\x01' && c <= '_' || c >= 'a' && c <= 'ÿ':
-		goto yystate295
+		goto yyrule13
+	case c == '"':
+		goto yystate293
+	case c == '\\':
+		goto yystate294
+	case c >= '\x01' && c <= '!' || c >= '#' && c <= '[' || c >= ']' && c <= 'ÿ':
+		goto yystate292
 	}
 
+	goto yystate296 // silence unused label error
 yystate296:
+	c = l.next()
+yystart296:
+	switch {
+	default:
+		goto yystate297 // c >= '\x01' && c <= '_' || c >= 'a' && c <= 'ÿ'
+	case c == '\x00':
+		goto yystate2
+	case c == '`':
+		goto yystate298
+	}
+
+yystate297:
+	c = l.next()
+	switch {
+	default:
+		goto yyabort
+	case c == '`':
+		goto yystate298
+	case c >= '\x01' && c <= '_' || c >= 'a' && c <= 'ÿ':
+		goto yystate297
+	}
+
+yystate298:
 	c = l.next()
 	goto yyrule14
 
@@ -3474,213 +3496,217 @@ yyrule47: // {is}
 	{
 		return is
 	}
-yyrule48: // {limit}
+yyrule48: // {like}
+	{
+		return like
+	}
+yyrule49: // {limit}
 	{
 		return limit
 	}
-yyrule49: // {not}
+yyrule50: // {not}
 	{
 		return not
 	}
-yyrule50: // {offset}
+yyrule51: // {offset}
 	{
 		return offset
 	}
-yyrule51: // {on}
+yyrule52: // {on}
 	{
 		return on
 	}
-yyrule52: // {order}
+yyrule53: // {order}
 	{
 		return order
 	}
-yyrule53: // {rollback}
+yyrule54: // {rollback}
 	{
 		return rollback
 	}
-yyrule54: // {select}
+yyrule55: // {select}
 	{
 		l.agg = append(l.agg, false)
 		return selectKwd
 	}
-yyrule55: // {set}
+yyrule56: // {set}
 	{
 		return set
 	}
-yyrule56: // {table}
+yyrule57: // {table}
 	{
 		return tableKwd
 	}
-yyrule57: // {transaction}
+yyrule58: // {transaction}
 	{
 		return transaction
 	}
-yyrule58: // {truncate}
+yyrule59: // {truncate}
 	{
 		return truncate
 	}
-yyrule59: // {update}
+yyrule60: // {update}
 	{
 		return update
 	}
-yyrule60: // {unique}
+yyrule61: // {unique}
 	{
 		return unique
 	}
-yyrule61: // {values}
+yyrule62: // {values}
 	{
 		return values
 	}
-yyrule62: // {where}
+yyrule63: // {where}
 	{
 		return where
 	}
-yyrule63: // {null}
+yyrule64: // {null}
 	{
 		lval.item = nil
 		return null
 	}
-yyrule64: // {false}
+yyrule65: // {false}
 	{
 		lval.item = false
 		return falseKwd
 	}
-yyrule65: // {true}
+yyrule66: // {true}
 	{
 		lval.item = true
 		return trueKwd
 	}
-yyrule66: // {bigint}
+yyrule67: // {bigint}
 	{
 		lval.item = qBigInt
 		return bigIntType
 	}
-yyrule67: // {bigrat}
+yyrule68: // {bigrat}
 	{
 		lval.item = qBigRat
 		return bigRatType
 	}
-yyrule68: // {blob}
+yyrule69: // {blob}
 	{
 		lval.item = qBlob
 		return blobType
 	}
-yyrule69: // {bool}
+yyrule70: // {bool}
 	{
 		lval.item = qBool
 		return boolType
 	}
-yyrule70: // {byte}
+yyrule71: // {byte}
 	{
 		lval.item = qUint8
 		return byteType
 	}
-yyrule71: // {complex}128
+yyrule72: // {complex}128
 	{
 		lval.item = qComplex128
 		return complex128Type
 	}
-yyrule72: // {complex}64
+yyrule73: // {complex}64
 	{
 		lval.item = qComplex64
 		return complex64Type
 	}
-yyrule73: // {duration}
+yyrule74: // {duration}
 	{
 		lval.item = qDuration
 		return durationType
 	}
-yyrule74: // {float}
+yyrule75: // {float}
 	{
 		lval.item = qFloat64
 		return floatType
 	}
-yyrule75: // {float}32
+yyrule76: // {float}32
 	{
 		lval.item = qFloat32
 		return float32Type
 	}
-yyrule76: // {float}64
+yyrule77: // {float}64
 	{
 		lval.item = qFloat64
 		return float64Type
 	}
-yyrule77: // {int}
+yyrule78: // {int}
 	{
 		lval.item = qInt64
 		return intType
 	}
-yyrule78: // {int}16
+yyrule79: // {int}16
 	{
 		lval.item = qInt16
 		return int16Type
 	}
-yyrule79: // {int}32
+yyrule80: // {int}32
 	{
 		lval.item = qInt32
 		return int32Type
 	}
-yyrule80: // {int}64
+yyrule81: // {int}64
 	{
 		lval.item = qInt64
 		return int64Type
 	}
-yyrule81: // {int}8
+yyrule82: // {int}8
 	{
 		lval.item = qInt8
 		return int8Type
 	}
-yyrule82: // {rune}
+yyrule83: // {rune}
 	{
 		lval.item = qInt32
 		return runeType
 	}
-yyrule83: // {string}
+yyrule84: // {string}
 	{
 		lval.item = qString
 		return stringType
 	}
-yyrule84: // {time}
+yyrule85: // {time}
 	{
 		lval.item = qTime
 		return timeType
 	}
-yyrule85: // {uint}
+yyrule86: // {uint}
 	{
 		lval.item = qUint64
 		return uintType
 	}
-yyrule86: // {uint}16
+yyrule87: // {uint}16
 	{
 		lval.item = qUint16
 		return uint16Type
 	}
-yyrule87: // {uint}32
+yyrule88: // {uint}32
 	{
 		lval.item = qUint32
 		return uint32Type
 	}
-yyrule88: // {uint}64
+yyrule89: // {uint}64
 	{
 		lval.item = qUint64
 		return uint64Type
 	}
-yyrule89: // {uint}8
+yyrule90: // {uint}8
 	{
 		lval.item = qUint8
 		return uint8Type
 	}
-yyrule90: // {ident}
+yyrule91: // {ident}
 	{
 		lval.item = string(l.val)
 		return identifier
 	}
-yyrule91: // ($|\?){D}
+yyrule92: // ($|\?){D}
 	{
 		lval.item, _ = strconv.Atoi(string(l.val[1:]))
 		return qlParam
 	}
-yyrule92: // .
+yyrule93: // .
 	{
 		return c0
 	}

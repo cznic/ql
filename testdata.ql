@@ -8903,3 +8903,135 @@ SELECT * FROM department ORDER BY Name;
 [large <nil>]
 [medium <nil>]
 [small 0]
+
+-- 755
+BEGIN TRANSACTION;
+	CREATE TABLE t (s string);
+	INSERT INTO t VALUES
+		("seafood"),
+		("A fool on the hill"),
+		(NULL),
+		("barbaz"),
+		("foobar"),
+	;
+COMMIT;
+SELECT id(), s
+FROM t
+WHERE s LIKE "foo"
+ORDER BY id();
+|l, ss
+[1 seafood]
+[2 A fool on the hill]
+[5 foobar]
+
+-- 756
+BEGIN TRANSACTION;
+	CREATE TABLE t (s string);
+	INSERT INTO t VALUES
+		("seafood"),
+		("A fool on the hill"),
+		(NULL),
+		("barbaz"),
+		("foobar"),
+	;
+COMMIT;
+SELECT id(), s
+FROM t
+WHERE !(s LIKE "foo")
+ORDER BY id();
+|l, ss
+[4 barbaz]
+
+-- 757
+BEGIN TRANSACTION;
+	CREATE TABLE t (s string);
+	INSERT INTO t VALUES
+		("seafood"),
+		("A fool on the hill"),
+		(NULL),
+		("barbaz"),
+		("foobar"),
+	;
+COMMIT;
+SELECT id(), s
+FROM t
+WHERE s LIKE "foo" IS NULL
+ORDER BY id();
+|l, ?s
+[3 <nil>]
+
+-- 758
+BEGIN TRANSACTION;
+	CREATE TABLE t (s string);
+	INSERT INTO t VALUES
+		("seafood"),
+		("A fool on the hill"),
+		(NULL),
+		("barbaz"),
+		("foobar"),
+	;
+COMMIT;
+SELECT id(), s
+FROM t
+WHERE s LIKE "foo" IS NOT NULL
+ORDER BY id();
+|l, ss
+[1 seafood]
+[2 A fool on the hill]
+[4 barbaz]
+[5 foobar]
+
+-- 759
+BEGIN TRANSACTION;
+	CREATE TABLE t (s string);
+	INSERT INTO t VALUES
+		("seafood"),
+		("A fool on the hill"),
+		(NULL),
+		("barbaz"),
+		("foobar"),
+	;
+COMMIT;
+SELECT id(), s
+FROM t
+WHERE s LIKE "bar"
+ORDER BY id();
+|l, ss
+[4 barbaz]
+[5 foobar]
+
+-- 780
+BEGIN TRANSACTION;
+	CREATE TABLE t (s string);
+	INSERT INTO t VALUES
+		("seafood"),
+		("A fool on the hill"),
+		(NULL),
+		("barbaz"),
+		("foobar"),
+	;
+COMMIT;
+SELECT id(), s
+FROM t
+WHERE s LIKE "^bar"
+ORDER BY id();
+|l, ss
+[4 barbaz]
+
+-- 781
+BEGIN TRANSACTION;
+	CREATE TABLE t (s string);
+	INSERT INTO t VALUES
+		("seafood"),
+		("A fool on the hill"),
+		(NULL),
+		("barbaz"),
+		("foobar"),
+	;
+COMMIT;
+SELECT id(), s
+FROM t
+WHERE s LIKE "bar$"
+ORDER BY id();
+|l, ss
+[5 foobar]
