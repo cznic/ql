@@ -445,7 +445,15 @@ func (s *mem) Create(data ...interface{}) (h int64, err error) {
 
 func (s *mem) Read(dst []interface{}, h int64, cols ...*col) (data []interface{}, err error) {
 	if i := int(h); i != 0 && i < len(s.data) {
-		return s.clone(s.data[h]...), nil
+		d := s.clone(s.data[h]...)
+		if cols == nil {
+			return d, nil
+		}
+
+		for n, dn := len(cols)+2, len(d); dn < n; dn++ {
+			d = append(d, nil)
+		}
+		return d, nil
 	}
 
 	return nil, errNoDataForHandle

@@ -833,6 +833,12 @@ func (s *file) Read(dst []interface{}, h int64, cols ...*col) (data []interface{
 		}
 	}
 
+	if cols != nil {
+		for n, dn := len(cols)+2, len(rec); dn < n; dn++ {
+			rec = append(rec, nil)
+		}
+	}
+
 	return rec, nil
 }
 

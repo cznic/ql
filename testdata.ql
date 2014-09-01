@@ -8888,3 +8888,18 @@ COMMIT;
 SELECT min(t) as T FROM t;
 |?T
 [2014-08-08 14:05:11 +0000 UTC]
+
+-- 754 // https://github.com/cznic/ql/issues/68
+BEGIN TRANSACTION;
+	CREATE TABLE department (Name string);
+	INSERT INTO department (Name) VALUES ("small"), ("large"), ("medium");
+	SELECT * FROM department;
+	ALTER TABLE department ADD score float;
+	SELECT * from department;
+	UPDATE department SET score=0 WHERE Name=="small";
+COMMIT;
+SELECT * FROM department ORDER BY Name;
+|sName, ?score
+[large <nil>]
+[medium <nil>]
+[small 0]
