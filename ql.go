@@ -2028,8 +2028,37 @@ func (db *DB) timeout() {
 	case stIdleArmed:
 		db.store.Commit()
 		db.state = stIdle
+	case stIdle:
+		// nop, Flush may have put the DB in this state.
 	default:
 		log.Panic("internal error 057")
+	}
+}
+
+// Flush ends the transaction collecting window, if applicable. IOW, if the DB
+// is dirty, it schedules a 2PC (WAL + DB file) commit on the next outer most
+// DB.Commit or performs it synchronously if there's currently no open
+// transaction.
+//
+// The collecting window is an implementation detail and future versions of
+// Flush may become a no operation while keeping the operation semantics.
+func (db *DB) Flush() (err error) {
+	db.mu.Lock()
+	defer db.mu.Unlock()
+
+	if db.store == nil {
+		return
+	}
+
+	switch db.state {
+	case stCollecting, stCollectingArmed:
+		db.state = stCollectingTriggered
+		return
+	case stIdleArmed:
+		db.state = stIdle
+		return db.store.Commit()
+	default:
+		return
 	}
 }
 
