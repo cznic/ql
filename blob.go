@@ -31,6 +31,7 @@ func init() {
 	); err != nil {
 		log.Panic(err)
 	}
+	newGobCoder()
 }
 
 type gobCoder struct {
