@@ -15,6 +15,8 @@
 //
 // Change list
 //
+// 2014-09-01: Added the DB.Flush() method.
+//
 // 2014-08-08: The built in functions max and min now accept also time values.
 // Thanks opennota! (https://github.com/opennota)
 //
