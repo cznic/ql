@@ -9000,7 +9000,7 @@ ORDER BY id();
 [4 barbaz]
 [5 foobar]
 
--- 780
+-- 760
 BEGIN TRANSACTION;
 	CREATE TABLE t (s string);
 	INSERT INTO t VALUES
@@ -9018,7 +9018,7 @@ ORDER BY id();
 |l, ss
 [4 barbaz]
 
--- 781
+-- 761
 BEGIN TRANSACTION;
 	CREATE TABLE t (s string);
 	INSERT INTO t VALUES
@@ -9035,3 +9035,59 @@ WHERE s LIKE "bar$"
 ORDER BY id();
 |l, ss
 [5 foobar]
+
+-- 762
+BEGIN TRANSACTION;
+	CREATE TABLE t (s string);
+	INSERT INTO t VALUES
+		("seafood"),
+		("A fool on the hill"),
+		(NULL),
+		("barbaz"),
+		("foobar"),
+	;
+COMMIT;
+SELECT id(), s
+FROM t
+WHERE s LIKE "bar"+"$"
+ORDER BY id();
+|l, ss
+[5 foobar]
+
+-- 763
+BEGIN TRANSACTION;
+	CREATE TABLE t (s string);
+	INSERT INTO t VALUES
+		("seafood"),
+		("A fool on the hill"),
+		(NULL),
+		("barbaz"),
+		("foobar"),
+	;
+COMMIT;
+SELECT id(), s
+FROM t
+WHERE s+"qux" LIKE "qux"+"$"
+ORDER BY id();
+|l, ss
+[1 seafood]
+[2 A fool on the hill]
+[4 barbaz]
+[5 foobar]
+
+-- 764
+BEGIN TRANSACTION;
+	CREATE TABLE t (s string);
+	INSERT INTO t VALUES
+		("seafood"),
+		("A fool on the hill"),
+		(NULL),
+		("barbaz"),
+		("foobar"),
+	;
+COMMIT;
+SELECT id(), s
+FROM t
+WHERE s+"quxx" LIKE "qux"+"$"
+ORDER BY id();
+|?, ?s

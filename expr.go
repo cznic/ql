@@ -182,7 +182,7 @@ func (p *pLike) eval(ctx map[interface{}]interface{}, arg []interface{}) (v inte
 
 		sexpr, ok = expr.(string)
 		if !ok {
-			return nil, fmt.Errorf("non-string expression: %v (value of type %T)", expr, expr)
+			return nil, fmt.Errorf("non-string expression in LIKE: %v (value of type %T)", expr, expr)
 		}
 
 		if p.expr.isStatic() {
@@ -204,7 +204,7 @@ func (p *pLike) eval(ctx map[interface{}]interface{}, arg []interface{}) (v inte
 
 		spattern, ok := pattern.(string)
 		if !ok {
-			return nil, fmt.Errorf("non-string expression: %v (value of type %T)", pattern, pattern)
+			return nil, fmt.Errorf("non-string pattern in LIKE: %v (value of type %T)", pattern, pattern)
 		}
 
 		if re, err = regexp.Compile(spattern); err != nil {

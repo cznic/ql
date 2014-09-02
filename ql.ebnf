@@ -92,6 +92,7 @@ Factor = PrimaryFactor {
 			| "<"
 			| neq
 			| eq
+			| "LIKE"
 		  ) PrimaryFactor
 	  } [ Predicate ] .
 Field = Expression [ "AS" identifier ] .
@@ -135,7 +136,6 @@ PrimaryFactor = PrimaryTerm {
 			| "|"
 			| "-"
 			| "+"
-			| "LIKE"
 		  ) PrimaryTerm
 	  } .
 PrimaryTerm = UnaryExpr {

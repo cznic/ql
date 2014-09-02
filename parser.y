@@ -438,6 +438,10 @@ Factor1:
 			return 1
 		}
         }
+|	Factor1 like PrimaryFactor
+	{
+		$$ = &pLike{expr: $1.(expression), pattern: $3.(expression)}
+	}
 
 Field:
 	Expression Field1
@@ -654,10 +658,6 @@ PrimaryFactor:
 			yylex.(*lexer).err("%v", err)
 			return 1
 		}
-	}
-|	PrimaryTerm like PrimaryTerm
-	{
-		$$ = &pLike{expr: $1.(expression), pattern: $3.(expression)}
 	}
 
 PrimaryTerm:

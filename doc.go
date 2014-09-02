@@ -673,8 +673,8 @@
 //  Expression = Term { oror Term } .
 //
 //  ExpressionList = Expression { "," Expression } [ "," ].
-//  Factor =  PrimaryFactor  { ( ge | ">" | le | "<" | neq | eq ) PrimaryFactor } [ Predicate ] .
-//  PrimaryFactor = PrimaryTerm  { ( "^" | "|" | "-" | "+" | "LIKE" ) PrimaryTerm } .
+//  Factor =  PrimaryFactor  { ( ge | ">" | le | "<" | neq | eq | "LIKE" ) PrimaryFactor } [ Predicate ] .
+//  PrimaryFactor = PrimaryTerm  { ( "^" | "|" | "-" | "+" ) PrimaryTerm } .
 //  PrimaryTerm = UnaryExpr { ( andnot | "&" | lsh | rsh | "%" | "/" | "*" ) UnaryExpr } .
 //  Term = Factor { andand Factor } .
 //  UnaryExpr = [ "^" | "!" | "-" | "+" ] PrimaryExpression .
