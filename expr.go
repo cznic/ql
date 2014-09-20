@@ -20,7 +20,6 @@ var (
 	_ expression = (*ident)(nil)
 	_ expression = (*indexOp)(nil)
 	_ expression = (*isNull)(nil)
-	_ expression = (*pBetween)(nil)
 	_ expression = (*pIn)(nil)
 	_ expression = (*pLike)(nil)
 	_ expression = (*parameter)(nil)
@@ -34,6 +33,23 @@ type expression interface {
 	eval(ctx map[interface{}]interface{}, arg []interface{}) (v interface{}, err error)
 	isStatic() bool
 	String() string
+}
+
+func staticExpr(e expression) (expression, error) {
+	if e.isStatic() {
+		v, err := e.eval(nil, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		if v == nil {
+			return value{nil}, nil
+		}
+
+		return value{v}, nil
+	}
+
+	return e, nil
 }
 
 type (
@@ -106,52 +122,61 @@ func (p *pexpr) eval(ctx map[interface{}]interface{}, arg []interface{}) (v inte
 	return p.expr.eval(ctx, arg)
 }
 
-type pBetween struct {
-	expr, l, h expression
-	not        bool
-}
+//DONE newBetween
+//LATER like newBetween, check all others have and use new*
 
-func (b *pBetween) isStatic() bool { return b.expr.isStatic() && b.l.isStatic() && b.h.isStatic() }
-
-func (b *pBetween) String() string {
-	if b.not {
-		return fmt.Sprintf("%s NOT BETWEEN %s AND %s", b.expr, b.l, b.h)
-	}
-
-	return fmt.Sprintf("%s BETWEEN %s AND %s", b.expr, b.l, b.h)
-}
-
-//LATER newBetween and check all others have and use new*
-
-func (b *pBetween) eval(ctx map[interface{}]interface{}, arg []interface{}) (v interface{}, err error) {
-	lhs, err := expand1(b.expr.eval(ctx, arg))
+func newBetween(expr, lo, hi interface{}, not bool) (expression, error) {
+	e, err := staticExpr(expr.(expression))
 	if err != nil {
-		return
+		return nil, err
 	}
 
-	if b.not {
-		// lhs < l || lhs > h
-		if v, err = (&binaryOperation{'<', value{lhs}, b.l}).eval(ctx, arg); err != nil {
-			return
+	l, err := staticExpr(lo.(expression))
+	if err != nil {
+		return nil, err
+	}
+
+	h, err := staticExpr(hi.(expression))
+	if err != nil {
+		return nil, err
+	}
+
+	var a, b expression
+	op := andand
+	switch {
+	case not: // e < l || e > h
+		op = oror
+		if a, err = newBinaryOperation('<', e, l); err != nil {
+			return nil, err
 		}
 
-		if x, ok := v.(bool); !ok || x {
-			return x, nil
+		if b, err = newBinaryOperation('>', e, h); err != nil {
+			return nil, err
+		}
+	default: // e >= l && e <= h
+		if a, err = newBinaryOperation(ge, e, l); err != nil {
+			return nil, err
 		}
 
-		return (&binaryOperation{'>', value{lhs}, b.h}).eval(ctx, arg)
+		if b, err = newBinaryOperation(le, e, h); err != nil {
+			return nil, err
+		}
 	}
 
-	// lhs >= l && lhs <= h
-	if v, err = (&binaryOperation{ge, value{lhs}, b.l}).eval(ctx, arg); err != nil {
-		return
+	if a, err = staticExpr(a); err != nil {
+		return nil, err
 	}
 
-	if x, ok := v.(bool); !ok || !x {
-		return x, nil
+	if b, err = staticExpr(b); err != nil {
+		return nil, err
 	}
 
-	return (&binaryOperation{le, value{lhs}, b.h}).eval(ctx, arg)
+	ret, err := newBinaryOperation(op, a, b)
+	if err != nil {
+		return nil, err
+	}
+
+	return staticExpr(ret)
 }
 
 type pLike struct {

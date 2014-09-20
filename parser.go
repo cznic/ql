@@ -983,12 +983,20 @@ yydefault:
 	case 52:
 
 		{
-			yyVAL.item = &pBetween{expr: yyS[yypt-4].item.(expression), l: yyS[yypt-2].item.(expression), h: yyS[yypt-0].item.(expression)}
+			var err error
+			if yyVAL.item, err = newBetween(yyS[yypt-4].item, yyS[yypt-2].item, yyS[yypt-0].item, false); err != nil {
+				yylex.(*lexer).err("%v", err)
+				return 1
+			}
 		}
 	case 53:
 
 		{
-			yyVAL.item = &pBetween{expr: yyS[yypt-5].item.(expression), not: true, l: yyS[yypt-2].item.(expression), h: yyS[yypt-0].item.(expression)}
+			var err error
+			if yyVAL.item, err = newBetween(yyS[yypt-5].item, yyS[yypt-2].item, yyS[yypt-0].item, true); err != nil {
+				yylex.(*lexer).err("%v", err)
+				return 1
+			}
 		}
 	case 54:
 

@@ -373,11 +373,19 @@ Factor:
         }
 |       Factor1 between PrimaryFactor and PrimaryFactor
         {
-		$$ = &pBetween{expr: $1.(expression), l: $3.(expression), h: $5.(expression)}
+		var err error
+		if $$, err = newBetween($1, $3, $5, false); err != nil {
+			yylex.(*lexer).err("%v", err)
+			return 1
+		}
         }
 |       Factor1 not between PrimaryFactor and PrimaryFactor
         {
-		$$ = &pBetween{expr: $1.(expression), not: true, l: $4.(expression), h: $6.(expression)}
+		var err error
+		if $$, err = newBetween($1, $4, $6, true); err != nil {
+			yylex.(*lexer).err("%v", err)
+			return 1
+		}
         }
 |       Factor1 is null
         {
