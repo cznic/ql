@@ -1260,7 +1260,7 @@ func (r tableRset) doSysTable(ctx *execCtx, onlyNames bool, f func(id interface{
 	}
 
 	rec := make([]interface{}, 2)
-	di, err := ctx.db.Info()
+	di, err := ctx.db.info()
 	if err != nil {
 		return err
 	}
@@ -1294,7 +1294,7 @@ func (r tableRset) doSysColumn(ctx *execCtx, onlyNames bool, f func(id interface
 	}
 
 	rec := make([]interface{}, 4)
-	di, err := ctx.db.Info()
+	di, err := ctx.db.info()
 	if err != nil {
 		return err
 	}
@@ -1330,7 +1330,7 @@ func (r tableRset) doSysIndex(ctx *execCtx, onlyNames bool, f func(id interface{
 	}
 
 	rec := make([]interface{}, 4)
-	di, err := ctx.db.Info()
+	di, err := ctx.db.info()
 	if err != nil {
 		return err
 	}
@@ -2234,12 +2234,7 @@ type DbInfo struct {
 	Indices []IndexInfo // Indices in the DB.
 }
 
-// Info provides meta data describing a DB or an error if any. It locks the DB
-// to obtain the result.
-func (db *DB) Info() (r *DbInfo, err error) {
-	db.mu.Lock()
-	defer db.mu.Unlock()
-
+func (db *DB) info() (r *DbInfo, err error) {
 	r = &DbInfo{Name: db.Name()}
 	for nm, t := range db.root.tables {
 		ti := TableInfo{Name: nm}
@@ -2263,4 +2258,12 @@ func (db *DB) Info() (r *DbInfo, err error) {
 		}
 	}
 	return
+}
+
+// Info provides meta data describing a DB or an error if any. It locks the DB
+// to obtain the result.
+func (db *DB) Info() (r *DbInfo, err error) {
+	db.mu.Lock()
+	defer db.mu.Unlock()
+	return db.info()
 }

@@ -2728,3 +2728,41 @@ func Example_lIKE() {
 	// [4 barbaz]
 	// ----
 }
+
+func TestIssue73(t *testing.T) {
+	RegisterDriver()
+	dir, err := ioutil.TempDir("", "ql-test-")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer os.RemoveAll(dir)
+	pth := filepath.Join(dir, "test.db")
+
+	for i := 0; i < 10; i++ {
+		var db *sql.DB
+		var tx *sql.Tx
+		var err error
+		var row *sql.Row
+		var name string
+
+		if db, err = sql.Open("ql", pth); err != nil {
+			t.Fatal("sql.Open: ", err)
+		}
+
+		t.Log("Call to db.Begin()")
+		if tx, err = db.Begin(); err != nil {
+			t.Fatal("db.Begin: ", err)
+		}
+
+		t.Log("Call to tx.QueryRow()")
+		row = tx.QueryRow(`SELECT Name FROM __Table`)
+		t.Log("Call to tx.Commit()")
+		if err = tx.Commit(); err != nil {
+			t.Fatal("tx.Commit: ", err)
+		}
+
+		row.Scan(&name)
+		t.Log("name: ", name)
+	}
+}
