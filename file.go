@@ -274,6 +274,7 @@ func infer(from []interface{}, to *[]*col) {
 				}
 
 				c.typ = int(i)
+			case map[string]interface{}: // map of ids of a cross join
 			default:
 				log.Panic("internal error 042")
 			}

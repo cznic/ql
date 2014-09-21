@@ -1485,8 +1485,9 @@ func (r *crossJoinRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, 
 	fldsSent := false
 	iq := 0
 	stop := false
-	var g func([]interface{}, []rset) error
-	g = func(prefix []interface{}, rsets []rset) (err error) {
+	ids := map[string]interface{}{}
+	var g func([]interface{}, []rset, int) error
+	g = func(prefix []interface{}, rsets []rset, x int) (err error) {
 		rset := rsets[0]
 		rsets = rsets[1:]
 		ok := false
@@ -1497,11 +1498,12 @@ func (r *crossJoinRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, 
 			}
 
 			if ok {
+				ids[altNames[x]] = id
 				if len(rsets) != 0 {
-					return true, g(append(prefix, in...), rsets)
+					return true, g(append(prefix, in...), rsets, x+1)
 				}
 
-				m, err := f(nil, append(prefix, in...))
+				m, err := f(ids, append(prefix, in...))
 				if !m {
 					stop = true
 				}
@@ -1538,7 +1540,7 @@ func (r *crossJoinRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, 
 			return !stop, nil
 		})
 	}
-	return g(nil, rsets)
+	return g(nil, rsets, 0)
 }
 
 type fld struct {

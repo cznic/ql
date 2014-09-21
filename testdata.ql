@@ -9091,3 +9091,37 @@ FROM t
 WHERE s+"quxx" LIKE "qux"+"$"
 ORDER BY id();
 |?, ?s
+
+-- 765 // https://github.com/cznic/ql/issues/75
+BEGIN TRANSACTION;
+	CREATE TABLE foo (i int);
+	INSERT INTO foo VALUES (10), (20);
+	CREATE TABLE bar (fooID int, s string);
+	INSERT INTO bar SELECT id(), "ten" FROM foo WHERE i == 10;
+	INSERT INTO bar SELECT id(), "twenty" FROM foo WHERE i == 20;
+COMMIT;
+SELECT *
+FROM
+	(SELECT id() AS ID, i FROM foo) AS foo,
+	bar
+WHERE bar.fooID == foo.ID
+ORDER BY foo.ID;
+|lfoo.ID, lfoo.i, lbar.fooID, sbar.s
+[1 10 1 ten]
+[2 20 2 twenty]
+
+-- 766 // https://github.com/cznic/ql/issues/75
+BEGIN TRANSACTION;
+	CREATE TABLE foo (i int);
+	INSERT INTO foo VALUES (10), (20);
+	CREATE TABLE bar (fooID int, s string);
+	INSERT INTO bar SELECT id(), "ten" FROM foo WHERE i == 10;
+	INSERT INTO bar SELECT id(), "twenty" FROM foo WHERE i == 20;
+COMMIT;
+SELECT *
+FROM foo, bar
+WHERE bar.fooID == id(foo)
+ORDER BY id(foo);
+|lfoo.i, lbar.fooID, sbar.s
+[10 1 ten]
+[20 2 twenty]

@@ -3301,10 +3301,20 @@ func (c *call) eval(ctx map[interface{}]interface{}, args []interface{}) (v inte
 		return nil, fmt.Errorf("unknown function %s", c.f)
 	}
 
+	isId := c.f == "id"
 	a := make([]interface{}, len(c.arg))
 	for i, arg := range c.arg {
 		if v, err = expand1(arg.eval(ctx, args)); err != nil {
-			return nil, err
+			if !isId {
+				return nil, err
+			}
+
+			if _, ok := arg.(*ident); !ok {
+				return nil, err
+			}
+
+			a[i] = arg
+			continue
 		}
 
 		a[i] = v

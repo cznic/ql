@@ -413,6 +413,8 @@ func (s *mem) clone(data ...interface{}) []interface{} {
 			r[i] = t
 		case time.Duration:
 			r[i] = x
+		case map[string]interface{}: // map of ids of a cross join
+			r[i] = x
 		default:
 			log.Panic("internal error 050")
 		}

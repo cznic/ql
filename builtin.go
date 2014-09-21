@@ -35,7 +35,7 @@ var builtin = map[string]struct {
 	"hasSuffix":    {builtinHasSuffix, 2, 2, true, false},
 	"hour":         {builtinHour, 1, 1, true, false},
 	"hours":        {builtinHours, 1, 1, true, false},
-	"id":           {builtinID, 0, 0, false, false},
+	"id":           {builtinID, 0, 1, false, false},
 	"imag":         {builtinImag, 1, 1, true, false},
 	"len":          {builtinLen, 1, 1, true, false},
 	"max":          {builtinMax, 1, 1, false, true},
@@ -423,7 +423,28 @@ func builtinHours(arg []interface{}, ctx map[interface{}]interface{}) (v interfa
 }
 
 func builtinID(arg []interface{}, ctx map[interface{}]interface{}) (v interface{}, err error) {
-	return ctx["$id"], nil
+	switch x := ctx["$id"].(type) {
+	case map[string]interface{}:
+		if len(arg) == 0 {
+			return nil, nil
+		}
+
+		tab := arg[0].(*ident)
+		id, ok := x[tab.s]
+		if !ok {
+			return nil, fmt.Errorf("value not available: id(%s)", tab)
+		}
+
+		if _, ok := id.(int64); ok {
+			return id, nil
+		}
+
+		return nil, fmt.Errorf("value not available: id(%s)", tab)
+	case int64:
+		return x, nil
+	default:
+		panic("internal error 072")
+	}
 }
 
 func builtinImag(arg []interface{}, _ map[interface{}]interface{}) (v interface{}, err error) {

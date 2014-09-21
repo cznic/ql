@@ -15,6 +15,8 @@
 //
 // Change list
 //
+// 2014-09-21: id() now optionally accepts a single argument - a table name.
+//
 // 2014-09-01: Added the DB.Flush() method and the LIKE pattern matching
 // predicate.
 //
@@ -1830,20 +1832,20 @@
 //
 // Record id
 //
-// The built-in function id takes no arguments and returns a table-unique
-// automatically assigned numeric identifier of type int. Ids of deleted
-// records are not reused unless the DB becomes completely empty (has no
-// tables).
+// The built-in function id takes zero or one arguments. If no argument is
+// provided, id() returns a table-unique automatically assigned numeric
+// identifier of type int. Ids of deleted records are not reused unless the DB
+// becomes completely empty (has no tables).
 //
 // 	func id() int
 //
 // For example
 //
-//	SELECT id(), LastName
-//	FROM employee;
+// 	SELECT id(), LastName
+// 	FROM employee;
 //
-// If id() is called for a row which is not a table record then the result
-// value is NULL.
+// If id() without arguments is called for a row which is not a table record
+// then the result value is NULL.
 //
 // For example
 //
@@ -1861,6 +1863,14 @@
 //	WHERE e.DepartmentID == d.DepartmentID;
 //	// Will work.
 //
+// If id() has one argument it must be a table name of a table in a cross join.
+//
+// For example
+//
+// 	SELECT *
+// 	FROM foo, bar
+// 	WHERE bar.fooID == id(foo)
+// 	ORDER BY id(foo);
 //
 // Length
 //
