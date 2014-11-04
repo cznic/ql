@@ -694,7 +694,22 @@ func builtinParseTime(arg []interface{}, ctx map[interface{}]interface{}) (v int
 		}
 	}
 
-	return time.Parse(a[0], a[1])
+	t, err := time.Parse(a[0], a[1])
+	if err != nil {
+		return nil, err
+	}
+
+	ls := t.Location().String()
+	if ls == "UTC" {
+		return t, nil
+	}
+
+	l, err := time.LoadLocation(ls)
+	if err != nil {
+		return t, nil
+	}
+
+	return time.ParseInLocation(a[0], a[1], l)
 }
 
 func builtinReal(arg []interface{}, _ map[interface{}]interface{}) (v interface{}, err error) {

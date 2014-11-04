@@ -1796,6 +1796,25 @@
 //
 // If any argument to formatTime is NULL the result is NULL.
 //
+// NOTE: The string value of the time zone, like "CET" or "ACDT", is dependent
+// on the time zone of the machine the function is run on. For example, if the
+// t value is in "CET", but the machine is in "ACDT", instead of "CET" the
+// result is "+0100". This is the same what Go (time.Time).String() returns and
+// in fact formatTime directly calls t.String().
+//
+//	formatTime(date(2006, 1, 2, 15, 4, 5, 999999999, "CET"))
+//
+// returns
+//
+//	2006-01-02 15:04:05.999999999 +0100 CET
+//
+// on a machine in the CET time zone, but may return
+//
+//	2006-01-02 15:04:05.999999999 +0100 +0100
+//
+// on a machine in the ACDT zone. The time value is in both cases the same so
+// its ordering and comparing is correct. Only the display value can differ.
+//
 // HasPrefix
 //
 // The built-in function hasPrefix tests whether the string s begins with prefix.
