@@ -15,7 +15,7 @@ bench: all
 	go test -run NONE -bench .
 
 check: ql.y
-	go tool yacc -v /dev/null -o /dev/null $<
+	goyacc -v /dev/null -o /dev/null $<
 
 clean:
 	go clean
@@ -51,7 +51,7 @@ nuke:
 	go clean -i
 
 parser.go: parser.y
-	go tool yacc -o $@ -v /dev/null $<
+	goyacc -o $@ -v /dev/null $<
 	sed -i -e 's|//line.*||' -e 's/yyEofCode/yyEOFCode/' $@
 
 ql.test: all

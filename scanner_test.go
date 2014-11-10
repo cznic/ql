@@ -17,13 +17,6 @@ func tok2name(i int) string {
 		return "<?>"
 	}
 
-	if i >= yyPrivate+2 {
-		j := i - yyPrivate - 2
-		if j < len(yyToknames) {
-			return yyToknames[j]
-		}
-	}
-
 	if i < 128 {
 		return fmt.Sprintf("tok-'%c'", i)
 	}

@@ -10,7 +10,7 @@
 //  $ ebnf2y -o ql.y -oe ql.ebnf -start StatementList -pkg ql -p _
 //
 // CAUTION: If this file is a Go source file (*.go), it was generated
-// automatically by '$ go tool yacc' from a *.y file - DO NOT EDIT in that case!
+// automatically by '$ goyacc' from a *.y file - DO NOT EDIT in that case!
 // 
 //   [1]: http://github.com/cznic/ebnf2y
 
