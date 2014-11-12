@@ -35,6 +35,7 @@ type yyXError struct {
 }
 
 const (
+	yyDefault      = 57456
 	add            = 57345
 	alter          = 57346
 	and            = 57347
@@ -189,13 +190,13 @@ var (
 		57405: 63,  // qlParam (48x)
 		57412: 64,  // stringLit (48x)
 		57416: 65,  // trueKwd (48x)
-		57432: 66,  // Type (47x)
+		57487: 66,  // Type (47x)
 		42:    67,  // '*' (46x)
-		57450: 68,  // Conversion (46x)
-		57481: 69,  // Literal (46x)
-		57498: 70,  // Operand (46x)
-		57478: 71,  // PrimaryExpression (46x)
-		57464: 72,  // QualifiedIdent (46x)
+		57469: 68,  // Conversion (46x)
+		57428: 69,  // Literal (46x)
+		57488: 70,  // Operand (46x)
+		57449: 71,  // PrimaryExpression (46x)
+		57491: 72,  // QualifiedIdent (46x)
 		57347: 73,  // and (45x)
 		33:    74,  // '!' (44x)
 		37:    75,  // '%' (43x)
@@ -204,104 +205,105 @@ var (
 		57349: 78,  // andnot (43x)
 		57397: 79,  // lsh (43x)
 		57407: 80,  // rsh (43x)
-		57456: 81,  // UnaryExpr (42x)
-		57491: 82,  // PrimaryTerm (35x)
-		57427: 83,  // PrimaryFactor (31x)
+		57478: 81,  // UnaryExpr (42x)
+		57437: 82,  // PrimaryTerm (35x)
+		57475: 83,  // PrimaryFactor (31x)
 		91:    84,  // '[' (30x)
-		57487: 85,  // Factor (20x)
-		57482: 86,  // Factor1 (20x)
-		57469: 87,  // Term (19x)
-		57500: 88,  // Expression (18x)
-		57494: 89,  // ColumnName (10x)
-		57444: 90,  // TableName (9x)
+		57432: 85,  // Factor (20x)
+		57470: 86,  // Factor1 (20x)
+		57451: 87,  // Term (19x)
+		57482: 88,  // Expression (18x)
+		57496: 89,  // ColumnName (10x)
+		57443: 90,  // TableName (9x)
 		57409: 91,  // selectKwd (7x)
 		57501: 92,  // ExpressionList (6x)
-		57485: 93,  // Call (5x)
-		57430: 94,  // Index (5x)
-		57472: 95,  // Slice (5x)
-		57497: 96,  // ColumnDef (4x)
+		57468: 93,  // Call (5x)
+		57464: 94,  // Index (5x)
+		57430: 95,  // Slice (5x)
+		57492: 96,  // ColumnDef (4x)
 		57368: 97,  // drop (4x)
 		57371: 98,  // exists (4x)
 		57381: 99,  // ifKwd (4x)
 		57384: 100, // index (4x)
-		57455: 101, // SelectStmt (4x)
+		57495: 101, // SelectStmt (4x)
 		57413: 102, // tableKwd (4x)
 		57425: 103, // values (4x)
-		57447: 104, // WhereClause (4x)
+		57473: 104, // WhereClause (4x)
 		61:    105, // '=' (2x)
 		57345: 106, // add (2x)
 		57346: 107, // alter (2x)
-		57439: 108, // AlterTableStmt (2x)
-		57457: 109, // Assignment (2x)
+		57438: 108, // AlterTableStmt (2x)
+		57485: 109, // Assignment (2x)
 		57352: 110, // begin (2x)
-		57492: 111, // BeginTransactionStmt (2x)
+		57439: 111, // BeginTransactionStmt (2x)
 		57358: 112, // by (2x)
-		57495: 113, // ColumnNameList (2x)
+		57452: 113, // ColumnNameList (2x)
 		57361: 114, // commit (2x)
-		57473: 115, // CommitStmt (2x)
+		57458: 115, // CommitStmt (2x)
 		57364: 116, // create (2x)
-		57463: 117, // CreateIndexStmt (2x)
-		57451: 118, // CreateTableStmt (2x)
-		57443: 119, // CreateTableStmt1 (2x)
-		57445: 120, // CreateTableStmt2 (2x)
-		57459: 121, // DeleteFromStmt (2x)
+		57486: 117, // CreateIndexStmt (2x)
+		57457: 118, // CreateTableStmt (2x)
+		57453: 119, // CreateTableStmt1 (2x)
+		57444: 120, // CreateTableStmt2 (2x)
+		57454: 121, // DeleteFromStmt (2x)
 		57365: 122, // deleteKwd (2x)
-		57435: 123, // DropIndexStmt (2x)
-		57436: 124, // DropTableStmt (2x)
-		57449: 125, // EmptyStmt (2x)
-		57441: 126, // Field (2x)
-		57480: 127, // GroupByClause (2x)
+		57493: 123, // DropIndexStmt (2x)
+		57431: 124, // DropTableStmt (2x)
+		57466: 125, // EmptyStmt (2x)
+		57489: 126, // Field (2x)
+		57497: 127, // GroupByClause (2x)
 		57385: 128, // insert (2x)
-		57496: 129, // InsertIntoStmt (2x)
-		57489: 130, // OrderBy (2x)
-		57460: 131, // RecordSet (2x)
-		57431: 132, // RecordSet1 (2x)
+		57467: 129, // InsertIntoStmt (2x)
+		57499: 130, // OrderBy (2x)
+		57455: 131, // RecordSet (2x)
+		57450: 132, // RecordSet1 (2x)
 		57406: 133, // rollback (2x)
-		57454: 134, // RollbackStmt (2x)
-		57448: 135, // SelectStmtGroup (2x)
-		57499: 136, // SelectStmtLimit (2x)
-		57462: 137, // SelectStmtOffset (2x)
-		57446: 138, // SelectStmtOrder (2x)
-		57428: 139, // SelectStmtWhere (2x)
+		57502: 134, // RollbackStmt (2x)
+		57500: 135, // SelectStmtGroup (2x)
+		57476: 136, // SelectStmtLimit (2x)
+		57442: 137, // SelectStmtOffset (2x)
+		57471: 138, // SelectStmtOrder (2x)
+		57460: 139, // SelectStmtWhere (2x)
 		57410: 140, // set (2x)
-		57438: 141, // Statement (2x)
+		57461: 141, // Statement (2x)
 		57417: 142, // truncate (2x)
-		57479: 143, // TruncateTableStmt (2x)
+		57490: 143, // TruncateTableStmt (2x)
 		57424: 144, // update (2x)
-		57453: 145, // UpdateStmt (2x)
+		57434: 145, // UpdateStmt (2x)
 		46:    146, // '.' (1x)
-		57458: 147, // AssignmentList (1x)
-		57429: 148, // AssignmentList1 (1x)
-		57434: 149, // AssignmentList2 (1x)
-		57493: 150, // Call1 (1x)
+		57427: 147, // AssignmentList (1x)
+		57477: 148, // AssignmentList1 (1x)
+		57474: 149, // AssignmentList2 (1x)
+		57440: 150, // Call1 (1x)
 		57360: 151, // column (1x)
-		57476: 152, // ColumnNameList1 (1x)
-		57486: 153, // ColumnNameList2 (1x)
-		57502: 154, // CreateIndexIfNotExists (1x)
-		57474: 155, // CreateIndexStmtUnique (1x)
+		57448: 152, // ColumnNameList1 (1x)
+		57446: 153, // ColumnNameList2 (1x)
+		57479: 154, // CreateIndexIfNotExists (1x)
+		57498: 155, // CreateIndexStmtUnique (1x)
 		57367: 156, // distinct (1x)
-		57440: 157, // DropIndexIfExists (1x)
-		57475: 158, // ExpressionList1 (1x)
-		57467: 159, // ExpressionList2 (1x)
-		57452: 160, // Field1 (1x)
-		57442: 161, // FieldList (1x)
-		57477: 162, // InsertIntoStmt1 (1x)
-		57488: 163, // InsertIntoStmt2 (1x)
-		57483: 164, // InsertIntoStmt3 (1x)
+		57463: 157, // DropIndexIfExists (1x)
+		57481: 158, // ExpressionList1 (1x)
+		57483: 159, // ExpressionList2 (1x)
+		57494: 160, // Field1 (1x)
+		57484: 161, // FieldList (1x)
+		57436: 162, // InsertIntoStmt1 (1x)
+		57433: 163, // InsertIntoStmt2 (1x)
+		57429: 164, // InsertIntoStmt3 (1x)
 		57391: 165, // into (1x)
 		57402: 166, // on (1x)
-		57484: 167, // OrderBy1 (1x)
-		57490: 168, // oSet (1x)
-		57465: 169, // RecordSet11 (1x)
-		57437: 170, // RecordSet2 (1x)
-		57461: 171, // RecordSetList (1x)
-		57468: 172, // SelectStmtDistinct (1x)
-		57471: 173, // SelectStmtFieldList (1x)
-		57466: 174, // StatementList (1x)
+		57480: 167, // OrderBy1 (1x)
+		57435: 168, // oSet (1x)
+		57459: 169, // RecordSet11 (1x)
+		57447: 170, // RecordSet2 (1x)
+		57441: 171, // RecordSetList (1x)
+		57465: 172, // SelectStmtDistinct (1x)
+		57445: 173, // SelectStmtFieldList (1x)
+		57462: 174, // StatementList (1x)
 		57415: 175, // transaction (1x)
 		57423: 176, // unique (1x)
-		57433: 177, // UpdateStmt1 (1x)
-		57344: 178, // error (0x)
+		57472: 177, // UpdateStmt1 (1x)
+		57456: 178, // $default (0x)
+		57344: 179, // error (0x)
 	}
 
 	yySymNames = []string{
@@ -483,6 +485,7 @@ var (
 		"transaction",
 		"unique",
 		"UpdateStmt1",
+		"$default",
 		"error",
 	}
 
@@ -1095,14 +1098,14 @@ type yyLexer interface {
 	Error(s string)
 }
 
-const yyEOF = 1
+const yyEOFCode = 1
 
 func yySymName(c int) (s string) {
 	if c >= 0 && c < len(yySymNames) {
 		return yySymNames[c]
 	}
 
-	return __yyfmt__.Sprintf("%q", c)
+	return __yyfmt__.Sprintf("%d", c)
 }
 
 func yylex1(lex yyLexer, lval *yySymType) (n int) {
@@ -1110,216 +1113,234 @@ func yylex1(lex yyLexer, lval *yySymType) (n int) {
 	if n <= 0 {
 		n = -1
 	}
-	n = yyXLAT[n]
+	m := yyXLAT[n]
 	if yyDebug >= 3 {
-		__yyfmt__.Printf("\nlex %s(%d)\n\n", yySymName(n), n)
+		__yyfmt__.Printf("lex %s(%#x->%d), lval %+v\n\n", yySymName(m), n, m, lval)
 	}
-	return n
+	return m
 }
 
 func yyParse(yylex yyLexer) int {
-	const yyError = 178
-	var lval, rval yySymType
-	errState := 0
+	const yyError = 179
+
+	var yyn int
+	var yylval yySymType
+	var yyVAL yySymType
+	yyS := make([]yySymType, 200)
+
+	Nerrs := 0   /* number of errors */
+	Errflag := 0 /* error recovery flag */
 	yyerrok := func() {
 		if yyDebug >= 2 {
 			__yyfmt__.Printf("\tyyerrok()\n\n")
 		}
-		errState = 0
+		Errflag = 0
 	}
 	_ = yyerrok
-	stack := []yySymType{{}}
-	lookahead := -1
-next:
-	sp := len(stack) - 1
-	state := stack[sp].yys
-	if lookahead < 0 {
-		lookahead = yylex1(yylex, &lval)
+	yystate := 0
+	yychar := -1
+	yyp := -1
+	goto yystack
+
+ret0:
+	return 0
+
+ret1:
+	return 1
+
+yystack:
+	/* put a state and value onto the stack */
+	yyp++
+	if yyp >= len(yyS) {
+		nyys := make([]yySymType, len(yyS)*2)
+		copy(nyys, yyS)
+		yyS = nyys
+	}
+	yyS[yyp] = yyVAL
+	yyS[yyp].yys = yystate
+
+yynewstate:
+	if yychar < 0 {
+		yychar = yylex1(yylex, &yylval)
 	}
 	if yyDebug >= 4 {
-		var a []int
-		for _, v := range stack {
-			a = append(a, v.yys)
+		if yyDebug >= 5 {
+			var a []int
+			for _, v := range yyS[:yyp+1] {
+				a = append(a, v.yys)
+			}
+			__yyfmt__.Printf("state %d, lookahead %s, state stack %v\n", yystate, yySymName(yychar), a)
+		} else {
+			__yyfmt__.Printf("state %d, lookahead %s\n", yystate, yySymName(yychar))
 		}
-		__yyfmt__.Printf("state %d, lookahead %v, states stack %v\n", state, yySymName(lookahead), a)
 	}
-	if yyDebug >= 6 {
-		__yyfmt__.Printf("\tlval %+v\n", lval)
-		__yyfmt__.Printf("\trval %+v\n", rval)
-	}
-	if yyDebug >= 7 {
-		__yyfmt__.Printf("\tfull stack %+v\n", stack)
-	}
-	row := yyParseTab[state]
-	arg := 0
-	if lookahead < len(row) {
-		arg = int(row[lookahead])
-		if arg != 0 {
-			arg += yyTabOfs
+	row := yyParseTab[yystate]
+	yyn = 0
+	if yychar < len(row) {
+		if yyn = int(row[yychar]); yyn != 0 {
+			yyn += yyTabOfs
 		}
 	}
 	switch {
-	case arg > 0: // shift
-		lval.yys = arg
-		stack = append(stack, lval)
-		lval = yySymType{}
-		if errState > 0 {
-			errState--
+	case yyn > 0: // shift
+		yychar = -1
+		yyVAL = yylval
+		yystate = yyn
+		if yyDebug >= 2 {
+			__yyfmt__.Printf("\tshift, and goto state %d\n\n", yystate)
 		}
-		lookahead = -1
-		if yyDebug >= 4 {
-			__yyfmt__.Printf("\tshift, and goto state %d\n", arg)
+		if Errflag > 0 {
+			Errflag--
 		}
-		goto next
-	case arg < 0: // reduce
-	case state == 1: // accept
-		return 0
-	default: // error
-		switch errState {
-		case 0:
+		goto yystack
+	case yyn < 0: // reduce
+	case yystate == 1: // accept
+		goto ret0
+	}
+
+	if yyn == 0 {
+		/* error ... attempt to resume parsing */
+		switch Errflag {
+		case 0: /* brand new error */
 			if yyDebug >= 1 {
-				__yyfmt__.Printf("\tstate %d, unexpected lookahead %s\n", state, yySymName(lookahead))
+				__yyfmt__.Printf("\tno action for %s\n", yySymName(yychar))
 			}
-			k := yyXError{state, lookahead}
-			if yyDebug >= 5 {
-				__yyfmt__.Printf("\terror recovery looking for xerror key {state %d, lookahead %s}\n", state, yySymName(lookahead))
-			}
+			k := yyXError{yystate, yychar}
 			msg, ok := yyXErrors[k]
 			if !ok {
 				k.xsym = -1
-				if yyDebug >= 5 {
-					__yyfmt__.Printf("\terror recovery looking for xerror key {state %d, lookahead <nil>}\n", state)
-				}
 				msg, ok = yyXErrors[k]
 			}
 			if !ok {
 				msg = "syntax error"
 			}
 			yylex.Error(msg)
+			Nerrs++
 			fallthrough
-		case 1, 2:
-			errState = 3
-			for sp != 0 {
-				row := yyParseTab[state]
+
+		case 1, 2: /* incompletely recovered error ... try again */
+			Errflag = 3
+
+			/* find a state where "error" is a legal shift action */
+			for yyp >= 0 {
+				row := yyParseTab[yyS[yyp].yys]
 				if yyError < len(row) {
-					arg = int(row[yyError]) + yyTabOfs
-					if arg != 0 { // hit
+					yyn = int(row[yyError]) + yyTabOfs
+					if yyn != 0 { // hit
 						if yyDebug >= 2 {
-							__yyfmt__.Printf("\terror recovery found error shift in state %d\n\n", state)
+							__yyfmt__.Printf("\terror recovery found error shift in state %d\n\n", yyS[yyp].yys)
 						}
-						lval.yys = arg
-						stack = append(stack, lval)
-						lval = yySymType{}
-						goto next
+						yystate = yyn /* simulate a shift of "error" */
+						goto yystack
 					}
 				}
 
-				stack = stack[:sp]
-				sp--
-				state = stack[sp].yys
+				/* the current p has no shift on "error", pop stack */
 				if yyDebug >= 2 {
-					__yyfmt__.Printf("\terror recovery pops state %d\n", state)
+					__yyfmt__.Printf("\terror recovery pops state %d\n", yyS[yyp].yys)
 				}
+				yyp--
 			}
-
+			/* there is no state on the stack with an error shift ... abort */
 			if yyDebug >= 2 {
 				__yyfmt__.Printf("\terror recovery failed\n\n")
 			}
-			return 1
-		case 3:
+			goto ret1
+
+		case 3: /* no shift yet; clobber input char */
 			if yyDebug >= 2 {
-				__yyfmt__.Printf("\terror recovery discards %s\n", yySymName(lookahead))
+				__yyfmt__.Printf("\terror recovery discards %s\n", yySymName(yychar))
 			}
-			if lookahead == yyEOF {
-				return 1
+			if yychar == yyEOFCode {
+				goto ret1
 			}
 
-			lookahead = -1
-			goto next
+			yychar = -1
+			goto yynewstate /* try again in the same state */
 		}
-		return 1
 	}
 
-	r := -arg
+	r := -yyn
 	x0 := yyReductions[r]
 	x, n := x0.xsym, x0.components
-	rval.yys = int(yyParseTab[stack[sp-n].yys][x]) + yyTabOfs
-	if yyDebug >= 4 {
-		__yyfmt__.Printf("\treduce rule %d (%s), and goto state %d\n", r, yySymName(x), rval.yys)
+	yypt := yyp
+	_ = yypt // guard against "declared and not used"
+
+	yyp -= n
+	yyVAL = yyS[yyp+1]
+
+	/* consult goto table to find next state */
+	yystate = int(yyParseTab[yyS[yyp].yys][x]) + yyTabOfs
+	/* reduction by production r */
+	if yyDebug >= 2 {
+		__yyfmt__.Printf("\treduce using rule %v (%s), and goto state %d\n\n", r, yySymName(x), yystate)
 	}
+
 	switch r {
 	case 1:
 		{
-			rval.item = &alterTableAddStmt{tableName: stack[sp-2].item.(string), c: stack[sp-0].item.(*col)}
+			yyVAL.item = &alterTableAddStmt{tableName: yyS[yypt-2].item.(string), c: yyS[yypt-0].item.(*col)}
 		}
 	case 2:
 		{
-			rval.item = &alterTableDropColumnStmt{tableName: stack[sp-3].item.(string), colName: stack[sp-0].item.(string)}
+			yyVAL.item = &alterTableDropColumnStmt{tableName: yyS[yypt-3].item.(string), colName: yyS[yypt-0].item.(string)}
 		}
 	case 3:
 		{
-			rval.item = assignment{colName: stack[sp-2].item.(string), expr: stack[sp-0].item.(expression)}
+			yyVAL.item = assignment{colName: yyS[yypt-2].item.(string), expr: yyS[yypt-0].item.(expression)}
 		}
 	case 4:
 		{
-			rval.item = append([]assignment{stack[sp-2].item.(assignment)}, stack[sp-1].item.([]assignment)...)
+			yyVAL.item = append([]assignment{yyS[yypt-2].item.(assignment)}, yyS[yypt-1].item.([]assignment)...)
 		}
 	case 5:
 		{
-			rval.item = []assignment{}
+			yyVAL.item = []assignment{}
 		}
 	case 6:
 		{
-			rval.item = append(stack[sp-2].item.([]assignment), stack[sp-0].item.(assignment))
+			yyVAL.item = append(yyS[yypt-2].item.([]assignment), yyS[yypt-0].item.(assignment))
 		}
 	case 9:
 		{
-			rval.item = beginTransactionStmt{}
+			yyVAL.item = beginTransactionStmt{}
 		}
 	case 10:
 		{
-			rval.item = stack[sp-1].item
+			yyVAL.item = yyS[yypt-1].item
 		}
 	case 11:
 		{
-			rval.item = []expression{}
-		}
-	case 12:
-		{
-			rval.item = stack[sp].item
+			yyVAL.item = []expression{}
 		}
 	case 13:
 		{
-			rval.item = &col{name: stack[sp-1].item.(string), typ: stack[sp-0].item.(int)}
-		}
-	case 14:
-		{
-			rval.item = stack[sp].item
+			yyVAL.item = &col{name: yyS[yypt-1].item.(string), typ: yyS[yypt-0].item.(int)}
 		}
 	case 15:
 		{
-			rval.item = append([]string{stack[sp-2].item.(string)}, stack[sp-1].item.([]string)...)
+			yyVAL.item = append([]string{yyS[yypt-2].item.(string)}, yyS[yypt-1].item.([]string)...)
 		}
 	case 16:
 		{
-			rval.item = []string{}
+			yyVAL.item = []string{}
 		}
 	case 17:
 		{
-			rval.item = append(stack[sp-2].item.([]string), stack[sp-0].item.(string))
+			yyVAL.item = append(yyS[yypt-2].item.([]string), yyS[yypt-0].item.(string))
 		}
 	case 20:
 		{
-			rval.item = commitStmt{}
+			yyVAL.item = commitStmt{}
 		}
 	case 21:
 		{
-			rval.item = &conversion{typ: stack[sp-3].item.(int), val: stack[sp-1].item.(expression)}
+			yyVAL.item = &conversion{typ: yyS[yypt-3].item.(int), val: yyS[yypt-1].item.(expression)}
 		}
 	case 22:
 		{
-			indexName, tableName, columnName := stack[sp-5].item.(string), stack[sp-3].item.(string), stack[sp-1].item.(string)
-			rval.item = &createIndexStmt{unique: stack[sp-8].item.(bool), ifNotExists: stack[sp-6].item.(bool), indexName: indexName, tableName: tableName, colName: columnName}
+			indexName, tableName, columnName := yyS[yypt-5].item.(string), yyS[yypt-3].item.(string), yyS[yypt-1].item.(string)
+			yyVAL.item = &createIndexStmt{unique: yyS[yypt-8].item.(bool), ifNotExists: yyS[yypt-6].item.(bool), indexName: indexName, tableName: tableName, colName: columnName}
 			if indexName == tableName || indexName == columnName {
 				yylex.(*lexer).err("index name collision: %s", indexName)
 				return 1
@@ -1332,9 +1353,9 @@ next:
 		}
 	case 23:
 		{
-			indexName, tableName, columnName := stack[sp-7].item.(string), stack[sp-5].item.(string), stack[sp-3].item.(string)
-			rval.item = &createIndexStmt{unique: stack[sp-10].item.(bool), ifNotExists: stack[sp-8].item.(bool), indexName: indexName, tableName: tableName, colName: "id()"}
-			if stack[sp-3].item.(string) != "id" {
+			indexName, tableName, columnName := yyS[yypt-7].item.(string), yyS[yypt-5].item.(string), yyS[yypt-3].item.(string)
+			yyVAL.item = &createIndexStmt{unique: yyS[yypt-10].item.(bool), ifNotExists: yyS[yypt-8].item.(bool), indexName: indexName, tableName: tableName, colName: "id()"}
+			if yyS[yypt-3].item.(string) != "id" {
 				yylex.(*lexer).err("only the built-in function id() can be used in index: %s()", columnName)
 				return 1
 			}
@@ -1351,24 +1372,24 @@ next:
 		}
 	case 24:
 		{
-			rval.item = false
+			yyVAL.item = false
 		}
 	case 25:
 		{
-			rval.item = true
+			yyVAL.item = true
 		}
 	case 26:
 		{
-			rval.item = false
+			yyVAL.item = false
 		}
 	case 27:
 		{
-			rval.item = true
+			yyVAL.item = true
 		}
 	case 28:
 		{
-			nm := stack[sp-5].item.(string)
-			rval.item = &createTableStmt{tableName: nm, cols: append([]*col{stack[sp-3].item.(*col)}, stack[sp-2].item.([]*col)...)}
+			nm := yyS[yypt-5].item.(string)
+			yyVAL.item = &createTableStmt{tableName: nm, cols: append([]*col{yyS[yypt-3].item.(*col)}, yyS[yypt-2].item.([]*col)...)}
 			if isSystemName[nm] {
 				yylex.(*lexer).err("name is used for system tables: %s", nm)
 				return 1
@@ -1376,8 +1397,8 @@ next:
 		}
 	case 29:
 		{
-			nm := stack[sp-5].item.(string)
-			rval.item = &createTableStmt{ifNotExists: true, tableName: nm, cols: append([]*col{stack[sp-3].item.(*col)}, stack[sp-2].item.([]*col)...)}
+			nm := yyS[yypt-5].item.(string)
+			yyVAL.item = &createTableStmt{ifNotExists: true, tableName: nm, cols: append([]*col{yyS[yypt-3].item.(*col)}, yyS[yypt-2].item.([]*col)...)}
 			if isSystemName[nm] {
 				yylex.(*lexer).err("name is used for system tables: %s", nm)
 				return 1
@@ -1385,36 +1406,36 @@ next:
 		}
 	case 30:
 		{
-			rval.item = []*col{}
+			yyVAL.item = []*col{}
 		}
 	case 31:
 		{
-			rval.item = append(stack[sp-2].item.([]*col), stack[sp-0].item.(*col))
+			yyVAL.item = append(yyS[yypt-2].item.([]*col), yyS[yypt-0].item.(*col))
 		}
 	case 34:
 		{
-			rval.item = &truncateTableStmt{stack[sp-0].item.(string)}
+			yyVAL.item = &truncateTableStmt{yyS[yypt-0].item.(string)}
 		}
 	case 35:
 		{
-			rval.item = &deleteStmt{tableName: stack[sp-1].item.(string), where: stack[sp-0].item.(*whereRset).expr}
+			yyVAL.item = &deleteStmt{tableName: yyS[yypt-1].item.(string), where: yyS[yypt-0].item.(*whereRset).expr}
 		}
 	case 36:
 		{
-			rval.item = &dropIndexStmt{ifExists: stack[sp-1].item.(bool), indexName: stack[sp-0].item.(string)}
+			yyVAL.item = &dropIndexStmt{ifExists: yyS[yypt-1].item.(bool), indexName: yyS[yypt-0].item.(string)}
 		}
 	case 37:
 		{
-			rval.item = false
+			yyVAL.item = false
 		}
 	case 38:
 		{
-			rval.item = true
+			yyVAL.item = true
 		}
 	case 39:
 		{
-			nm := stack[sp-0].item.(string)
-			rval.item = &dropTableStmt{tableName: nm}
+			nm := yyS[yypt-0].item.(string)
+			yyVAL.item = &dropTableStmt{tableName: nm}
 			if isSystemName[nm] {
 				yylex.(*lexer).err("name is used for system tables: %s", nm)
 				return 1
@@ -1422,8 +1443,8 @@ next:
 		}
 	case 40:
 		{
-			nm := stack[sp-0].item.(string)
-			rval.item = &dropTableStmt{ifExists: true, tableName: nm}
+			nm := yyS[yypt-0].item.(string)
+			yyVAL.item = &dropTableStmt{ifExists: true, tableName: nm}
 			if isSystemName[nm] {
 				yylex.(*lexer).err("name is used for system tables: %s", nm)
 				return 1
@@ -1431,48 +1452,40 @@ next:
 		}
 	case 41:
 		{
-			rval.item = nil
-		}
-	case 42:
-		{
-			rval.item = stack[sp].item
+			yyVAL.item = nil
 		}
 	case 43:
 		{
 			var err error
-			if rval.item, err = newBinaryOperation(oror, stack[sp-2].item, stack[sp-0].item); err != nil {
+			if yyVAL.item, err = newBinaryOperation(oror, yyS[yypt-2].item, yyS[yypt-0].item); err != nil {
 				yylex.(*lexer).err("%v", err)
 				return 1
 			}
 		}
 	case 44:
 		{
-			rval.item = append([]expression{stack[sp-2].item.(expression)}, stack[sp-1].item.([]expression)...)
+			yyVAL.item = append([]expression{yyS[yypt-2].item.(expression)}, yyS[yypt-1].item.([]expression)...)
 		}
 	case 45:
 		{
-			rval.item = []expression(nil)
+			yyVAL.item = []expression(nil)
 		}
 	case 46:
 		{
-			rval.item = append(stack[sp-2].item.([]expression), stack[sp-0].item.(expression))
-		}
-	case 49:
-		{
-			rval.item = stack[sp].item
+			yyVAL.item = append(yyS[yypt-2].item.([]expression), yyS[yypt-0].item.(expression))
 		}
 	case 50:
 		{
-			rval.item = &pIn{expr: stack[sp-4].item.(expression), list: stack[sp-1].item.([]expression)}
+			yyVAL.item = &pIn{expr: yyS[yypt-4].item.(expression), list: yyS[yypt-1].item.([]expression)}
 		}
 	case 51:
 		{
-			rval.item = &pIn{expr: stack[sp-5].item.(expression), not: true, list: stack[sp-1].item.([]expression)}
+			yyVAL.item = &pIn{expr: yyS[yypt-5].item.(expression), not: true, list: yyS[yypt-1].item.([]expression)}
 		}
 	case 52:
 		{
 			var err error
-			if rval.item, err = newBetween(stack[sp-4].item, stack[sp-2].item, stack[sp-0].item, false); err != nil {
+			if yyVAL.item, err = newBetween(yyS[yypt-4].item, yyS[yypt-2].item, yyS[yypt-0].item, false); err != nil {
 				yylex.(*lexer).err("%v", err)
 				return 1
 			}
@@ -1480,27 +1493,23 @@ next:
 	case 53:
 		{
 			var err error
-			if rval.item, err = newBetween(stack[sp-5].item, stack[sp-2].item, stack[sp-0].item, true); err != nil {
+			if yyVAL.item, err = newBetween(yyS[yypt-5].item, yyS[yypt-2].item, yyS[yypt-0].item, true); err != nil {
 				yylex.(*lexer).err("%v", err)
 				return 1
 			}
 		}
 	case 54:
 		{
-			rval.item = &isNull{expr: stack[sp-2].item.(expression)}
+			yyVAL.item = &isNull{expr: yyS[yypt-2].item.(expression)}
 		}
 	case 55:
 		{
-			rval.item = &isNull{expr: stack[sp-3].item.(expression), not: true}
-		}
-	case 56:
-		{
-			rval.item = stack[sp].item
+			yyVAL.item = &isNull{expr: yyS[yypt-3].item.(expression), not: true}
 		}
 	case 57:
 		{
 			var err error
-			if rval.item, err = newBinaryOperation(ge, stack[sp-2].item, stack[sp-0].item); err != nil {
+			if yyVAL.item, err = newBinaryOperation(ge, yyS[yypt-2].item, yyS[yypt-0].item); err != nil {
 				yylex.(*lexer).err("%v", err)
 				return 1
 			}
@@ -1508,7 +1517,7 @@ next:
 	case 58:
 		{
 			var err error
-			if rval.item, err = newBinaryOperation('>', stack[sp-2].item, stack[sp-0].item); err != nil {
+			if yyVAL.item, err = newBinaryOperation('>', yyS[yypt-2].item, yyS[yypt-0].item); err != nil {
 				yylex.(*lexer).err("%v", err)
 				return 1
 			}
@@ -1516,7 +1525,7 @@ next:
 	case 59:
 		{
 			var err error
-			if rval.item, err = newBinaryOperation(le, stack[sp-2].item, stack[sp-0].item); err != nil {
+			if yyVAL.item, err = newBinaryOperation(le, yyS[yypt-2].item, yyS[yypt-0].item); err != nil {
 				yylex.(*lexer).err("%v", err)
 				return 1
 			}
@@ -1524,7 +1533,7 @@ next:
 	case 60:
 		{
 			var err error
-			if rval.item, err = newBinaryOperation('<', stack[sp-2].item, stack[sp-0].item); err != nil {
+			if yyVAL.item, err = newBinaryOperation('<', yyS[yypt-2].item, yyS[yypt-0].item); err != nil {
 				yylex.(*lexer).err("%v", err)
 				return 1
 			}
@@ -1532,7 +1541,7 @@ next:
 	case 61:
 		{
 			var err error
-			if rval.item, err = newBinaryOperation(neq, stack[sp-2].item, stack[sp-0].item); err != nil {
+			if yyVAL.item, err = newBinaryOperation(neq, yyS[yypt-2].item, yyS[yypt-0].item); err != nil {
 				yylex.(*lexer).err("%v", err)
 				return 1
 			}
@@ -1540,41 +1549,41 @@ next:
 	case 62:
 		{
 			var err error
-			if rval.item, err = newBinaryOperation(eq, stack[sp-2].item, stack[sp-0].item); err != nil {
+			if yyVAL.item, err = newBinaryOperation(eq, yyS[yypt-2].item, yyS[yypt-0].item); err != nil {
 				yylex.(*lexer).err("%v", err)
 				return 1
 			}
 		}
 	case 63:
 		{
-			rval.item = &pLike{expr: stack[sp-2].item.(expression), pattern: stack[sp-0].item.(expression)}
+			yyVAL.item = &pLike{expr: yyS[yypt-2].item.(expression), pattern: yyS[yypt-0].item.(expression)}
 		}
 	case 64:
 		{
-			expr, name := stack[sp-1].item.(expression), stack[sp-0].item.(string)
+			expr, name := yyS[yypt-1].item.(expression), yyS[yypt-0].item.(string)
 			if name == "" {
 				s, ok := expr.(*ident)
 				if ok {
 					name = s.s
 				}
 			}
-			rval.item = &fld{expr: expr, name: name}
+			yyVAL.item = &fld{expr: expr, name: name}
 		}
 	case 65:
 		{
-			rval.item = ""
+			yyVAL.item = ""
 		}
 	case 66:
 		{
-			rval.item = stack[sp-0].item
+			yyVAL.item = yyS[yypt-0].item
 		}
 	case 67:
 		{
-			rval.item = []*fld{stack[sp-0].item.(*fld)}
+			yyVAL.item = []*fld{yyS[yypt-0].item.(*fld)}
 		}
 	case 68:
 		{
-			l, f := stack[sp-2].item.([]*fld), stack[sp-0].item.(*fld)
+			l, f := yyS[yypt-2].item.([]*fld), yyS[yypt-0].item.(*fld)
 			if f.name != "" {
 				if f := findFld(l, f.name); f != nil {
 					yylex.(*lexer).err("duplicate field name %q", f.name)
@@ -1582,76 +1591,48 @@ next:
 				}
 			}
 
-			rval.item = append(stack[sp-2].item.([]*fld), stack[sp-0].item.(*fld))
+			yyVAL.item = append(yyS[yypt-2].item.([]*fld), yyS[yypt-0].item.(*fld))
 		}
 	case 69:
 		{
-			rval.item = &groupByRset{colNames: stack[sp-0].item.([]string)}
+			yyVAL.item = &groupByRset{colNames: yyS[yypt-0].item.([]string)}
 		}
 	case 70:
 		{
-			rval.item = stack[sp-1].item
+			yyVAL.item = yyS[yypt-1].item
 		}
 	case 71:
 		{
-			rval.item = &insertIntoStmt{tableName: stack[sp-7].item.(string), colNames: stack[sp-6].item.([]string), lists: append([][]expression{stack[sp-3].item.([]expression)}, stack[sp-1].item.([][]expression)...)}
+			yyVAL.item = &insertIntoStmt{tableName: yyS[yypt-7].item.(string), colNames: yyS[yypt-6].item.([]string), lists: append([][]expression{yyS[yypt-3].item.([]expression)}, yyS[yypt-1].item.([][]expression)...)}
 		}
 	case 72:
 		{
-			rval.item = &insertIntoStmt{tableName: stack[sp-2].item.(string), colNames: stack[sp-1].item.([]string), sel: stack[sp-0].item.(*selectStmt)}
+			yyVAL.item = &insertIntoStmt{tableName: yyS[yypt-2].item.(string), colNames: yyS[yypt-1].item.([]string), sel: yyS[yypt-0].item.(*selectStmt)}
 		}
 	case 73:
 		{
-			rval.item = []string{}
+			yyVAL.item = []string{}
 		}
 	case 74:
 		{
-			rval.item = stack[sp-1].item
+			yyVAL.item = yyS[yypt-1].item
 		}
 	case 75:
 		{
-			rval.item = [][]expression{}
+			yyVAL.item = [][]expression{}
 		}
 	case 76:
 		{
-			rval.item = append(stack[sp-4].item.([][]expression), stack[sp-1].item.([]expression))
-		}
-	case 79:
-		{
-			rval.item = stack[sp].item
-		}
-	case 80:
-		{
-			rval.item = stack[sp].item
-		}
-	case 81:
-		{
-			rval.item = stack[sp].item
-		}
-	case 82:
-		{
-			rval.item = stack[sp].item
-		}
-	case 83:
-		{
-			rval.item = stack[sp].item
-		}
-	case 84:
-		{
-			rval.item = stack[sp].item
-		}
-	case 85:
-		{
-			rval.item = stack[sp].item
+			yyVAL.item = append(yyS[yypt-4].item.([][]expression), yyS[yypt-1].item.([]expression))
 		}
 	case 86:
 		{
-			rval.item = value{stack[sp-0].item}
+			yyVAL.item = value{yyS[yypt-0].item}
 		}
 	case 87:
 		{
-			n := stack[sp-0].item.(int)
-			rval.item = parameter{n}
+			n := yyS[yypt-0].item.(int)
+			yyVAL.item = parameter{n}
 			l := yylex.(*lexer)
 			l.params = mathutil.Max(l.params, n)
 			if n == 0 {
@@ -1661,40 +1642,32 @@ next:
 		}
 	case 88:
 		{
-			rval.item = &ident{stack[sp-0].item.(string)}
+			yyVAL.item = &ident{yyS[yypt-0].item.(string)}
 		}
 	case 89:
 		{
-			rval.item = &pexpr{expr: stack[sp-1].item.(expression)}
+			yyVAL.item = &pexpr{expr: yyS[yypt-1].item.(expression)}
 		}
 	case 90:
 		{
-			rval.item = &orderByRset{by: stack[sp-1].item.([]expression), asc: stack[sp-0].item.(bool)}
+			yyVAL.item = &orderByRset{by: yyS[yypt-1].item.([]expression), asc: yyS[yypt-0].item.(bool)}
 		}
 	case 91:
 		{
-			rval.item = true // ASC by default
+			yyVAL.item = true // ASC by default
 		}
 	case 92:
 		{
-			rval.item = true
+			yyVAL.item = true
 		}
 	case 93:
 		{
-			rval.item = false
-		}
-	case 94:
-		{
-			rval.item = stack[sp].item
-		}
-	case 95:
-		{
-			rval.item = stack[sp].item
+			yyVAL.item = false
 		}
 	case 96:
 		{
 			var err error
-			if rval.item, err = newIndex(stack[sp-1].item.(expression), stack[sp-0].item.(expression)); err != nil {
+			if yyVAL.item, err = newIndex(yyS[yypt-1].item.(expression), yyS[yypt-0].item.(expression)); err != nil {
 				yylex.(*lexer).err("%v", err)
 				return 1
 			}
@@ -1702,8 +1675,8 @@ next:
 	case 97:
 		{
 			var err error
-			s := stack[sp-0].item.([2]*expression)
-			if rval.item, err = newSlice(stack[sp-1].item.(expression), s[0], s[1]); err != nil {
+			s := yyS[yypt-0].item.([2]*expression)
+			if yyVAL.item, err = newSlice(yyS[yypt-1].item.(expression), s[0], s[1]); err != nil {
 				yylex.(*lexer).err("%v", err)
 				return 1
 			}
@@ -1711,7 +1684,7 @@ next:
 	case 98:
 		{
 			x := yylex.(*lexer)
-			f, ok := stack[sp-1].item.(*ident)
+			f, ok := yyS[yypt-1].item.(*ident)
 			if !ok {
 				x.err("expected identifier or qualified identifier")
 				return 1
@@ -1719,7 +1692,7 @@ next:
 
 			var err error
 			var agg bool
-			if rval.item, agg, err = newCall(f.s, stack[sp-0].item.([]expression)); err != nil {
+			if yyVAL.item, agg, err = newCall(f.s, yyS[yypt-0].item.([]expression)); err != nil {
 				x.err("%v", err)
 				return 1
 			}
@@ -1727,14 +1700,10 @@ next:
 				x.agg[n-1] = x.agg[n-1] || agg
 			}
 		}
-	case 99:
-		{
-			rval.item = stack[sp].item
-		}
 	case 100:
 		{
 			var err error
-			if rval.item, err = newBinaryOperation('^', stack[sp-2].item, stack[sp-0].item); err != nil {
+			if yyVAL.item, err = newBinaryOperation('^', yyS[yypt-2].item, yyS[yypt-0].item); err != nil {
 				yylex.(*lexer).err("%v", err)
 				return 1
 			}
@@ -1742,7 +1711,7 @@ next:
 	case 101:
 		{
 			var err error
-			if rval.item, err = newBinaryOperation('|', stack[sp-2].item, stack[sp-0].item); err != nil {
+			if yyVAL.item, err = newBinaryOperation('|', yyS[yypt-2].item, yyS[yypt-0].item); err != nil {
 				yylex.(*lexer).err("%v", err)
 				return 1
 			}
@@ -1750,7 +1719,7 @@ next:
 	case 102:
 		{
 			var err error
-			if rval.item, err = newBinaryOperation('-', stack[sp-2].item, stack[sp-0].item); err != nil {
+			if yyVAL.item, err = newBinaryOperation('-', yyS[yypt-2].item, yyS[yypt-0].item); err != nil {
 				yylex.(*lexer).err("%v", err)
 				return 1
 			}
@@ -1758,20 +1727,16 @@ next:
 	case 103:
 		{
 			var err error
-			rval.item, err = newBinaryOperation('+', stack[sp-2].item, stack[sp-0].item)
+			yyVAL.item, err = newBinaryOperation('+', yyS[yypt-2].item, yyS[yypt-0].item)
 			if err != nil {
 				yylex.(*lexer).err("%v", err)
 				return 1
 			}
 		}
-	case 104:
-		{
-			rval.item = stack[sp].item
-		}
 	case 105:
 		{
 			var err error
-			rval.item, err = newBinaryOperation(andnot, stack[sp-2].item, stack[sp-0].item)
+			yyVAL.item, err = newBinaryOperation(andnot, yyS[yypt-2].item, yyS[yypt-0].item)
 			if err != nil {
 				yylex.(*lexer).err("%v", err)
 				return 1
@@ -1780,7 +1745,7 @@ next:
 	case 106:
 		{
 			var err error
-			rval.item, err = newBinaryOperation('&', stack[sp-2].item, stack[sp-0].item)
+			yyVAL.item, err = newBinaryOperation('&', yyS[yypt-2].item, yyS[yypt-0].item)
 			if err != nil {
 				yylex.(*lexer).err("%v", err)
 				return 1
@@ -1789,7 +1754,7 @@ next:
 	case 107:
 		{
 			var err error
-			rval.item, err = newBinaryOperation(lsh, stack[sp-2].item, stack[sp-0].item)
+			yyVAL.item, err = newBinaryOperation(lsh, yyS[yypt-2].item, yyS[yypt-0].item)
 			if err != nil {
 				yylex.(*lexer).err("%v", err)
 				return 1
@@ -1798,7 +1763,7 @@ next:
 	case 108:
 		{
 			var err error
-			rval.item, err = newBinaryOperation(rsh, stack[sp-2].item, stack[sp-0].item)
+			yyVAL.item, err = newBinaryOperation(rsh, yyS[yypt-2].item, yyS[yypt-0].item)
 			if err != nil {
 				yylex.(*lexer).err("%v", err)
 				return 1
@@ -1807,7 +1772,7 @@ next:
 	case 109:
 		{
 			var err error
-			rval.item, err = newBinaryOperation('%', stack[sp-2].item, stack[sp-0].item)
+			yyVAL.item, err = newBinaryOperation('%', yyS[yypt-2].item, yyS[yypt-0].item)
 			if err != nil {
 				yylex.(*lexer).err("%v", err)
 				return 1
@@ -1816,7 +1781,7 @@ next:
 	case 110:
 		{
 			var err error
-			rval.item, err = newBinaryOperation('/', stack[sp-2].item, stack[sp-0].item)
+			yyVAL.item, err = newBinaryOperation('/', yyS[yypt-2].item, yyS[yypt-0].item)
 			if err != nil {
 				yylex.(*lexer).err("%v", err)
 				return 1
@@ -1825,66 +1790,58 @@ next:
 	case 111:
 		{
 			var err error
-			rval.item, err = newBinaryOperation('*', stack[sp-2].item, stack[sp-0].item)
+			yyVAL.item, err = newBinaryOperation('*', yyS[yypt-2].item, yyS[yypt-0].item)
 			if err != nil {
 				yylex.(*lexer).err("%v", err)
 				return 1
 			}
 		}
-	case 112:
-		{
-			rval.item = stack[sp].item
-		}
 	case 113:
 		{
-			rval.item = fmt.Sprintf("%s.%s", stack[sp-2].item.(string), stack[sp-0].item.(string))
+			yyVAL.item = fmt.Sprintf("%s.%s", yyS[yypt-2].item.(string), yyS[yypt-0].item.(string))
 		}
 	case 114:
 		{
-			rval.item = []interface{}{stack[sp-1].item, stack[sp-0].item}
-		}
-	case 115:
-		{
-			rval.item = stack[sp].item
+			yyVAL.item = []interface{}{yyS[yypt-1].item, yyS[yypt-0].item}
 		}
 	case 116:
 		{
-			rval.item = stack[sp-2].item
+			yyVAL.item = yyS[yypt-2].item
 		}
 	case 119:
 		{
-			rval.item = ""
+			yyVAL.item = ""
 		}
 	case 120:
 		{
-			rval.item = stack[sp-0].item
+			yyVAL.item = yyS[yypt-0].item
 		}
 	case 121:
 		{
-			rval.list = []interface{}{stack[sp-0].item}
+			yyVAL.list = []interface{}{yyS[yypt-0].item}
 		}
 	case 122:
 		{
-			rval.list = append(stack[sp-2].list, stack[sp-0].item)
+			yyVAL.list = append(yyS[yypt-2].list, yyS[yypt-0].item)
 		}
 	case 123:
 		{
-			rval.item = rollbackStmt{}
+			yyVAL.item = rollbackStmt{}
 		}
 	case 124:
 		{
 			x := yylex.(*lexer)
 			n := len(x.agg)
-			rval.item = &selectStmt{
-				distinct:      stack[sp-8].item.(bool),
-				flds:          stack[sp-7].item.([]*fld),
-				from:          &crossJoinRset{sources: stack[sp-5].list},
+			yyVAL.item = &selectStmt{
+				distinct:      yyS[yypt-8].item.(bool),
+				flds:          yyS[yypt-7].item.([]*fld),
+				from:          &crossJoinRset{sources: yyS[yypt-5].list},
 				hasAggregates: x.agg[n-1],
-				where:         stack[sp-4].item.(*whereRset),
-				group:         stack[sp-3].item.(*groupByRset),
-				order:         stack[sp-2].item.(*orderByRset),
-				limit:         stack[sp-1].item.(*limitRset),
-				offset:        stack[sp-0].item.(*offsetRset),
+				where:         yyS[yypt-4].item.(*whereRset),
+				group:         yyS[yypt-3].item.(*groupByRset),
+				order:         yyS[yypt-2].item.(*orderByRset),
+				limit:         yyS[yypt-1].item.(*limitRset),
+				offset:        yyS[yypt-0].item.(*offsetRset),
 			}
 			x.agg = x.agg[:n-1]
 		}
@@ -1892,303 +1849,123 @@ next:
 		{
 			x := yylex.(*lexer)
 			n := len(x.agg)
-			rval.item = &selectStmt{
-				distinct:      stack[sp-9].item.(bool),
-				flds:          stack[sp-8].item.([]*fld),
-				from:          &crossJoinRset{sources: stack[sp-6].list},
+			yyVAL.item = &selectStmt{
+				distinct:      yyS[yypt-9].item.(bool),
+				flds:          yyS[yypt-8].item.([]*fld),
+				from:          &crossJoinRset{sources: yyS[yypt-6].list},
 				hasAggregates: x.agg[n-1],
-				where:         stack[sp-4].item.(*whereRset),
-				group:         stack[sp-3].item.(*groupByRset),
-				order:         stack[sp-2].item.(*orderByRset),
-				limit:         stack[sp-1].item.(*limitRset),
-				offset:        stack[sp-0].item.(*offsetRset),
+				where:         yyS[yypt-4].item.(*whereRset),
+				group:         yyS[yypt-3].item.(*groupByRset),
+				order:         yyS[yypt-2].item.(*orderByRset),
+				limit:         yyS[yypt-1].item.(*limitRset),
+				offset:        yyS[yypt-0].item.(*offsetRset),
 			}
 			x.agg = x.agg[:n-1]
 		}
 	case 126:
 		{
-			rval.item = (*limitRset)(nil)
+			yyVAL.item = (*limitRset)(nil)
 		}
 	case 127:
 		{
-			rval.item = &limitRset{expr: stack[sp-0].item.(expression)}
+			yyVAL.item = &limitRset{expr: yyS[yypt-0].item.(expression)}
 		}
 	case 128:
 		{
-			rval.item = (*offsetRset)(nil)
+			yyVAL.item = (*offsetRset)(nil)
 		}
 	case 129:
 		{
-			rval.item = &offsetRset{expr: stack[sp-0].item.(expression)}
+			yyVAL.item = &offsetRset{expr: yyS[yypt-0].item.(expression)}
 		}
 	case 130:
 		{
-			rval.item = false
+			yyVAL.item = false
 		}
 	case 131:
 		{
-			rval.item = true
+			yyVAL.item = true
 		}
 	case 132:
 		{
-			rval.item = []*fld{}
+			yyVAL.item = []*fld{}
 		}
 	case 133:
 		{
-			rval.item = stack[sp-0].item
+			yyVAL.item = yyS[yypt-0].item
 		}
 	case 134:
 		{
-			rval.item = stack[sp-1].item
+			yyVAL.item = yyS[yypt-1].item
 		}
 	case 135:
 		{
-			rval.item = (*whereRset)(nil)
-		}
-	case 136:
-		{
-			rval.item = stack[sp].item
+			yyVAL.item = (*whereRset)(nil)
 		}
 	case 137:
 		{
-			rval.item = (*groupByRset)(nil)
-		}
-	case 138:
-		{
-			rval.item = stack[sp].item
+			yyVAL.item = (*groupByRset)(nil)
 		}
 	case 139:
 		{
-			rval.item = (*orderByRset)(nil)
-		}
-	case 140:
-		{
-			rval.item = stack[sp].item
+			yyVAL.item = (*orderByRset)(nil)
 		}
 	case 141:
 		{
-			rval.item = [2]*expression{nil, nil}
+			yyVAL.item = [2]*expression{nil, nil}
 		}
 	case 142:
 		{
-			hi := stack[sp-1].item.(expression)
-			rval.item = [2]*expression{nil, &hi}
+			hi := yyS[yypt-1].item.(expression)
+			yyVAL.item = [2]*expression{nil, &hi}
 		}
 	case 143:
 		{
-			lo := stack[sp-2].item.(expression)
-			rval.item = [2]*expression{&lo, nil}
+			lo := yyS[yypt-2].item.(expression)
+			yyVAL.item = [2]*expression{&lo, nil}
 		}
 	case 144:
 		{
-			lo := stack[sp-3].item.(expression)
-			hi := stack[sp-1].item.(expression)
-			rval.item = [2]*expression{&lo, &hi}
-		}
-	case 145:
-		{
-			rval.item = stack[sp].item
-		}
-	case 146:
-		{
-			rval.item = stack[sp].item
-		}
-	case 147:
-		{
-			rval.item = stack[sp].item
-		}
-	case 148:
-		{
-			rval.item = stack[sp].item
-		}
-	case 149:
-		{
-			rval.item = stack[sp].item
-		}
-	case 150:
-		{
-			rval.item = stack[sp].item
-		}
-	case 151:
-		{
-			rval.item = stack[sp].item
-		}
-	case 152:
-		{
-			rval.item = stack[sp].item
-		}
-	case 153:
-		{
-			rval.item = stack[sp].item
-		}
-	case 154:
-		{
-			rval.item = stack[sp].item
-		}
-	case 155:
-		{
-			rval.item = stack[sp].item
-		}
-	case 156:
-		{
-			rval.item = stack[sp].item
-		}
-	case 157:
-		{
-			rval.item = stack[sp].item
-		}
-	case 158:
-		{
-			rval.item = stack[sp].item
+			lo := yyS[yypt-3].item.(expression)
+			hi := yyS[yypt-1].item.(expression)
+			yyVAL.item = [2]*expression{&lo, &hi}
 		}
 	case 159:
 		{
-			if stack[sp-0].item != nil {
-				yylex.(*lexer).list = []stmt{stack[sp-0].item.(stmt)}
+			if yyS[yypt-0].item != nil {
+				yylex.(*lexer).list = []stmt{yyS[yypt-0].item.(stmt)}
 			}
 		}
 	case 160:
 		{
-			if stack[sp-0].item != nil {
-				yylex.(*lexer).list = append(yylex.(*lexer).list, stack[sp-0].item.(stmt))
+			if yyS[yypt-0].item != nil {
+				yylex.(*lexer).list = append(yylex.(*lexer).list, yyS[yypt-0].item.(stmt))
 			}
-		}
-	case 161:
-		{
-			rval.item = stack[sp].item
-		}
-	case 162:
-		{
-			rval.item = stack[sp].item
 		}
 	case 163:
 		{
 			var err error
-			if rval.item, err = newBinaryOperation(andand, stack[sp-2].item, stack[sp-0].item); err != nil {
+			if yyVAL.item, err = newBinaryOperation(andand, yyS[yypt-2].item, yyS[yypt-0].item); err != nil {
 				yylex.(*lexer).err("%v", err)
 				return 1
 			}
 		}
 	case 164:
 		{
-			rval.item = &truncateTableStmt{tableName: stack[sp-0].item.(string)}
-		}
-	case 165:
-		{
-			rval.item = stack[sp].item
-		}
-	case 166:
-		{
-			rval.item = stack[sp].item
-		}
-	case 167:
-		{
-			rval.item = stack[sp].item
-		}
-	case 168:
-		{
-			rval.item = stack[sp].item
-		}
-	case 169:
-		{
-			rval.item = stack[sp].item
-		}
-	case 170:
-		{
-			rval.item = stack[sp].item
-		}
-	case 171:
-		{
-			rval.item = stack[sp].item
-		}
-	case 172:
-		{
-			rval.item = stack[sp].item
-		}
-	case 173:
-		{
-			rval.item = stack[sp].item
-		}
-	case 174:
-		{
-			rval.item = stack[sp].item
-		}
-	case 175:
-		{
-			rval.item = stack[sp].item
-		}
-	case 176:
-		{
-			rval.item = stack[sp].item
-		}
-	case 177:
-		{
-			rval.item = stack[sp].item
-		}
-	case 178:
-		{
-			rval.item = stack[sp].item
-		}
-	case 179:
-		{
-			rval.item = stack[sp].item
-		}
-	case 180:
-		{
-			rval.item = stack[sp].item
-		}
-	case 181:
-		{
-			rval.item = stack[sp].item
-		}
-	case 182:
-		{
-			rval.item = stack[sp].item
-		}
-	case 183:
-		{
-			rval.item = stack[sp].item
-		}
-	case 184:
-		{
-			rval.item = stack[sp].item
-		}
-	case 185:
-		{
-			rval.item = stack[sp].item
-		}
-	case 186:
-		{
-			rval.item = stack[sp].item
-		}
-	case 187:
-		{
-			rval.item = stack[sp].item
-		}
-	case 188:
-		{
-			rval.item = stack[sp].item
+			yyVAL.item = &truncateTableStmt{tableName: yyS[yypt-0].item.(string)}
 		}
 	case 189:
 		{
-			rval.item = &updateStmt{tableName: stack[sp-3].item.(string), list: stack[sp-1].item.([]assignment), where: stack[sp-0].item.(*whereRset).expr}
+			yyVAL.item = &updateStmt{tableName: yyS[yypt-3].item.(string), list: yyS[yypt-1].item.([]assignment), where: yyS[yypt-0].item.(*whereRset).expr}
 		}
 	case 190:
 		{
-			rval.item = nowhere
-		}
-	case 191:
-		{
-			rval.item = stack[sp].item
-		}
-	case 192:
-		{
-			rval.item = stack[sp].item
+			yyVAL.item = nowhere
 		}
 	case 193:
 		{
 			var err error
-			rval.item, err = newUnaryOperation('^', stack[sp-0].item)
+			yyVAL.item, err = newUnaryOperation('^', yyS[yypt-0].item)
 			if err != nil {
 				yylex.(*lexer).err("%v", err)
 				return 1
@@ -2197,7 +1974,7 @@ next:
 	case 194:
 		{
 			var err error
-			rval.item, err = newUnaryOperation('!', stack[sp-0].item)
+			yyVAL.item, err = newUnaryOperation('!', yyS[yypt-0].item)
 			if err != nil {
 				yylex.(*lexer).err("%v", err)
 				return 1
@@ -2206,7 +1983,7 @@ next:
 	case 195:
 		{
 			var err error
-			rval.item, err = newUnaryOperation('-', stack[sp-0].item)
+			yyVAL.item, err = newUnaryOperation('-', yyS[yypt-0].item)
 			if err != nil {
 				yylex.(*lexer).err("%v", err)
 				return 1
@@ -2215,7 +1992,7 @@ next:
 	case 196:
 		{
 			var err error
-			rval.item, err = newUnaryOperation('+', stack[sp-0].item)
+			yyVAL.item, err = newUnaryOperation('+', yyS[yypt-0].item)
 			if err != nil {
 				yylex.(*lexer).err("%v", err)
 				return 1
@@ -2223,11 +2000,10 @@ next:
 		}
 	case 197:
 		{
-			rval.item = &whereRset{expr: stack[sp-0].item.(expression)}
+			yyVAL.item = &whereRset{expr: yyS[yypt-0].item.(expression)}
 		}
 
 	}
 
-	stack = append(stack[:sp-n+1], rval)
-	goto next
+	goto yystack /* stack new state and value */
 }
