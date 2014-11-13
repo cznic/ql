@@ -35,7 +35,8 @@ type yyXError struct {
 }
 
 const (
-	yyDefault      = 57456
+	yyDefault      = 57453
+	yyEOFCode      = -1
 	add            = 57345
 	alter          = 57346
 	and            = 57347
@@ -62,6 +63,7 @@ const (
 	drop           = 57368
 	durationType   = 57369
 	eq             = 57370
+	yyErrCode      = 57344
 	exists         = 57371
 	falseKwd       = 57372
 	float32Type    = 57374
@@ -119,7 +121,8 @@ const (
 	values         = 57425
 	where          = 57426
 
-	yyTabOfs = -200
+	yyMaxDepth = 200
+	yyTabOfs   = -200
 )
 
 var (
@@ -192,7 +195,7 @@ var (
 		57416: 65,  // trueKwd (48x)
 		57487: 66,  // Type (47x)
 		42:    67,  // '*' (46x)
-		57469: 68,  // Conversion (46x)
+		57470: 68,  // Conversion (46x)
 		57428: 69,  // Literal (46x)
 		57488: 70,  // Operand (46x)
 		57449: 71,  // PrimaryExpression (46x)
@@ -206,20 +209,20 @@ var (
 		57397: 79,  // lsh (43x)
 		57407: 80,  // rsh (43x)
 		57478: 81,  // UnaryExpr (42x)
-		57437: 82,  // PrimaryTerm (35x)
+		57438: 82,  // PrimaryTerm (35x)
 		57475: 83,  // PrimaryFactor (31x)
 		91:    84,  // '[' (30x)
 		57432: 85,  // Factor (20x)
-		57470: 86,  // Factor1 (20x)
+		57471: 86,  // Factor1 (20x)
 		57451: 87,  // Term (19x)
 		57482: 88,  // Expression (18x)
 		57496: 89,  // ColumnName (10x)
 		57443: 90,  // TableName (9x)
 		57409: 91,  // selectKwd (7x)
 		57501: 92,  // ExpressionList (6x)
-		57468: 93,  // Call (5x)
-		57464: 94,  // Index (5x)
-		57430: 95,  // Slice (5x)
+		57469: 93,  // Call (5x)
+		57465: 94,  // Index (5x)
+		57429: 95,  // Slice (5x)
 		57492: 96,  // ColumnDef (4x)
 		57368: 97,  // drop (4x)
 		57371: 98,  // exists (4x)
@@ -228,24 +231,24 @@ var (
 		57495: 101, // SelectStmt (4x)
 		57413: 102, // tableKwd (4x)
 		57425: 103, // values (4x)
-		57473: 104, // WhereClause (4x)
+		57468: 104, // WhereClause (4x)
 		61:    105, // '=' (2x)
 		57345: 106, // add (2x)
 		57346: 107, // alter (2x)
-		57438: 108, // AlterTableStmt (2x)
+		57436: 108, // AlterTableStmt (2x)
 		57485: 109, // Assignment (2x)
 		57352: 110, // begin (2x)
 		57439: 111, // BeginTransactionStmt (2x)
 		57358: 112, // by (2x)
-		57452: 113, // ColumnNameList (2x)
+		57454: 113, // ColumnNameList (2x)
 		57361: 114, // commit (2x)
 		57458: 115, // CommitStmt (2x)
 		57364: 116, // create (2x)
 		57486: 117, // CreateIndexStmt (2x)
 		57457: 118, // CreateTableStmt (2x)
-		57453: 119, // CreateTableStmt1 (2x)
+		57455: 119, // CreateTableStmt1 (2x)
 		57444: 120, // CreateTableStmt2 (2x)
-		57454: 121, // DeleteFromStmt (2x)
+		57456: 121, // DeleteFromStmt (2x)
 		57365: 122, // deleteKwd (2x)
 		57493: 123, // DropIndexStmt (2x)
 		57431: 124, // DropTableStmt (2x)
@@ -254,15 +257,15 @@ var (
 		57497: 127, // GroupByClause (2x)
 		57385: 128, // insert (2x)
 		57467: 129, // InsertIntoStmt (2x)
-		57499: 130, // OrderBy (2x)
-		57455: 131, // RecordSet (2x)
+		57500: 130, // OrderBy (2x)
+		57452: 131, // RecordSet (2x)
 		57450: 132, // RecordSet1 (2x)
 		57406: 133, // rollback (2x)
 		57502: 134, // RollbackStmt (2x)
-		57500: 135, // SelectStmtGroup (2x)
+		57498: 135, // SelectStmtGroup (2x)
 		57476: 136, // SelectStmtLimit (2x)
 		57442: 137, // SelectStmtOffset (2x)
-		57471: 138, // SelectStmtOrder (2x)
+		57472: 138, // SelectStmtOrder (2x)
 		57460: 139, // SelectStmtWhere (2x)
 		57410: 140, // set (2x)
 		57461: 141, // Statement (2x)
@@ -279,16 +282,16 @@ var (
 		57448: 152, // ColumnNameList1 (1x)
 		57446: 153, // ColumnNameList2 (1x)
 		57479: 154, // CreateIndexIfNotExists (1x)
-		57498: 155, // CreateIndexStmtUnique (1x)
+		57499: 155, // CreateIndexStmtUnique (1x)
 		57367: 156, // distinct (1x)
-		57463: 157, // DropIndexIfExists (1x)
+		57464: 157, // DropIndexIfExists (1x)
 		57481: 158, // ExpressionList1 (1x)
 		57483: 159, // ExpressionList2 (1x)
 		57494: 160, // Field1 (1x)
 		57484: 161, // FieldList (1x)
-		57436: 162, // InsertIntoStmt1 (1x)
+		57437: 162, // InsertIntoStmt1 (1x)
 		57433: 163, // InsertIntoStmt2 (1x)
-		57429: 164, // InsertIntoStmt3 (1x)
+		57430: 164, // InsertIntoStmt3 (1x)
 		57391: 165, // into (1x)
 		57402: 166, // on (1x)
 		57480: 167, // OrderBy1 (1x)
@@ -296,13 +299,13 @@ var (
 		57459: 169, // RecordSet11 (1x)
 		57447: 170, // RecordSet2 (1x)
 		57441: 171, // RecordSetList (1x)
-		57465: 172, // SelectStmtDistinct (1x)
+		57463: 172, // SelectStmtDistinct (1x)
 		57445: 173, // SelectStmtFieldList (1x)
 		57462: 174, // StatementList (1x)
 		57415: 175, // transaction (1x)
 		57423: 176, // unique (1x)
-		57472: 177, // UpdateStmt1 (1x)
-		57456: 178, // $default (0x)
+		57473: 177, // UpdateStmt1 (1x)
+		57453: 178, // $default (0x)
 		57344: 179, // error (0x)
 	}
 
@@ -1098,8 +1101,6 @@ type yyLexer interface {
 	Error(s string)
 }
 
-const yyEOFCode = 1
-
 func yySymName(c int) (s string) {
 	if c >= 0 && c < len(yySymNames) {
 		return yySymNames[c]
@@ -1122,6 +1123,7 @@ func yylex1(lex yyLexer, lval *yySymType) (n int) {
 
 func yyParse(yylex yyLexer) int {
 	const yyError = 179
+	const yyEOFCode = 1
 
 	var yyn int
 	var yylval yySymType
@@ -1267,6 +1269,11 @@ yynewstate:
 	_ = yypt // guard against "declared and not used"
 
 	yyp -= n
+	if yyp+1 >= len(yyS) {
+		nyys := make([]yySymType, len(yyS)*2)
+		copy(nyys, yyS)
+		yyS = nyys
+	}
 	yyVAL = yyS[yyp+1]
 
 	/* consult goto table to find next state */
