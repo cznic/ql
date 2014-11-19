@@ -107,6 +107,7 @@ yystate0:
 		goto yystart296
 	}
 
+	goto yystate0 // silence unused label error
 	goto yystate1 // silence unused label error
 yystate1:
 	c = l.next()

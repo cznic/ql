@@ -19,7 +19,7 @@ check: ql.y
 
 clean:
 	go clean
-	rm -f *~ y.output y.go y.tab.c *.out ql.test
+	rm -f *~ y.go y.tab.c *.out ql.test
 
 coerce.go: helper.go
 	if [ -f coerce.go ] ; then rm coerce.go ; fi
@@ -51,7 +51,7 @@ nuke:
 	go clean -i
 
 parser.go: parser.y
-	goyacc -o $@ -v /dev/null $<
+	goyacc -o $@ $<
 	sed -i -e 's|//line.*||' -e 's/yyEofCode/yyEOFCode/' $@
 
 ql.test: all
