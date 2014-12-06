@@ -1101,30 +1101,35 @@ type yyLexer interface {
 	Error(s string)
 }
 
+type yyLexerEx interface {
+	yyLexer
+	Reduced(rule, state int, lval *yySymType) bool
+}
+
 func yySymName(c int) (s string) {
-	if c >= 0 && c < len(yySymNames) {
-		return yySymNames[c]
+	x, ok := yyXLAT[c]
+	if ok {
+		return yySymNames[x]
 	}
 
 	return __yyfmt__.Sprintf("%d", c)
 }
 
-func yylex1(lex yyLexer, lval *yySymType) (n int) {
-	n = lex.Lex(lval)
+func yylex1(yylex yyLexer, lval *yySymType) (n int) {
+	n = yylex.Lex(lval)
 	if n <= 0 {
 		n = -1
 	}
-	m := yyXLAT[n]
 	if yyDebug >= 3 {
-		__yyfmt__.Printf("lex %s(%#x->%d), lval %+v\n\n", yySymName(m), n, m, lval)
+		__yyfmt__.Printf("\nlex %s(%#x %d), lval: %+v\n", yySymName(n), n, n, lval)
 	}
-	return m
+	return n
 }
 
 func yyParse(yylex yyLexer) int {
 	const yyError = 179
-	const yyEOFCode = 1
 
+	yyEx, _ := yylex.(yyLexerEx)
 	var yyn int
 	var yylval yySymType
 	var yyVAL yySymType
@@ -1134,13 +1139,14 @@ func yyParse(yylex yyLexer) int {
 	Errflag := 0 /* error recovery flag */
 	yyerrok := func() {
 		if yyDebug >= 2 {
-			__yyfmt__.Printf("\tyyerrok()\n\n")
+			__yyfmt__.Printf("yyerrok()\n")
 		}
 		Errflag = 0
 	}
 	_ = yyerrok
 	yystate := 0
 	yychar := -1
+	var yyxchar int
 	yyp := -1
 	goto yystack
 
@@ -1164,22 +1170,22 @@ yystack:
 yynewstate:
 	if yychar < 0 {
 		yychar = yylex1(yylex, &yylval)
+		var ok bool
+		if yyxchar, ok = yyXLAT[yychar]; !ok {
+			yyxchar = len(yySymNames) // > tab width
+		}
 	}
 	if yyDebug >= 4 {
-		if yyDebug >= 5 {
-			var a []int
-			for _, v := range yyS[:yyp+1] {
-				a = append(a, v.yys)
-			}
-			__yyfmt__.Printf("state %d, lookahead %s, state stack %v\n", yystate, yySymName(yychar), a)
-		} else {
-			__yyfmt__.Printf("state %d, lookahead %s\n", yystate, yySymName(yychar))
+		var a []int
+		for _, v := range yyS[:yyp+1] {
+			a = append(a, v.yys)
 		}
+		__yyfmt__.Printf("state stack %v\n", a)
 	}
 	row := yyParseTab[yystate]
 	yyn = 0
-	if yychar < len(row) {
-		if yyn = int(row[yychar]); yyn != 0 {
+	if yyxchar < len(row) {
+		if yyn = int(row[yyxchar]); yyn != 0 {
 			yyn += yyTabOfs
 		}
 	}
@@ -1189,7 +1195,7 @@ yynewstate:
 		yyVAL = yylval
 		yystate = yyn
 		if yyDebug >= 2 {
-			__yyfmt__.Printf("\tshift, and goto state %d\n\n", yystate)
+			__yyfmt__.Printf("shift, and goto state %d\n", yystate)
 		}
 		if Errflag > 0 {
 			Errflag--
@@ -1197,6 +1203,9 @@ yynewstate:
 		goto yystack
 	case yyn < 0: // reduce
 	case yystate == 1: // accept
+		if yyDebug >= 2 {
+			__yyfmt__.Println("accept")
+		}
 		goto ret0
 	}
 
@@ -1205,9 +1214,9 @@ yynewstate:
 		switch Errflag {
 		case 0: /* brand new error */
 			if yyDebug >= 1 {
-				__yyfmt__.Printf("\tno action for %s\n", yySymName(yychar))
+				__yyfmt__.Printf("no action for %s in state %d\n", yySymName(yychar), yystate)
 			}
-			k := yyXError{yystate, yychar}
+			k := yyXError{yystate, yyxchar}
 			msg, ok := yyXErrors[k]
 			if !ok {
 				k.xsym = -1
@@ -1216,7 +1225,9 @@ yynewstate:
 			if !ok {
 				msg = "syntax error"
 			}
-			yylex.Error(msg)
+			if msg != "" {
+				yylex.Error(msg)
+			}
 			Nerrs++
 			fallthrough
 
@@ -1228,9 +1239,9 @@ yynewstate:
 				row := yyParseTab[yyS[yyp].yys]
 				if yyError < len(row) {
 					yyn = int(row[yyError]) + yyTabOfs
-					if yyn != 0 { // hit
+					if yyn > 0 { // hit
 						if yyDebug >= 2 {
-							__yyfmt__.Printf("\terror recovery found error shift in state %d\n\n", yyS[yyp].yys)
+							__yyfmt__.Printf("error recovery found error shift in state %d\n", yyS[yyp].yys)
 						}
 						yystate = yyn /* simulate a shift of "error" */
 						goto yystack
@@ -1239,19 +1250,19 @@ yynewstate:
 
 				/* the current p has no shift on "error", pop stack */
 				if yyDebug >= 2 {
-					__yyfmt__.Printf("\terror recovery pops state %d\n", yyS[yyp].yys)
+					__yyfmt__.Printf("error recovery pops state %d\n", yyS[yyp].yys)
 				}
 				yyp--
 			}
 			/* there is no state on the stack with an error shift ... abort */
 			if yyDebug >= 2 {
-				__yyfmt__.Printf("\terror recovery failed\n\n")
+				__yyfmt__.Printf("error recovery failed\n")
 			}
 			goto ret1
 
 		case 3: /* no shift yet; clobber input char */
 			if yyDebug >= 2 {
-				__yyfmt__.Printf("\terror recovery discards %s\n", yySymName(yychar))
+				__yyfmt__.Printf("error recovery discards %s\n", yySymName(yychar))
 			}
 			if yychar == yyEOFCode {
 				goto ret1
@@ -1277,10 +1288,11 @@ yynewstate:
 	yyVAL = yyS[yyp+1]
 
 	/* consult goto table to find next state */
+	exState := yystate
 	yystate = int(yyParseTab[yyS[yyp].yys][x]) + yyTabOfs
 	/* reduction by production r */
 	if yyDebug >= 2 {
-		__yyfmt__.Printf("\treduce using rule %v (%s), and goto state %d\n\n", r, yySymName(x), yystate)
+		__yyfmt__.Printf("reduce using rule %v (%s), and goto state %d\n", r, yySymNames[x], yystate)
 	}
 
 	switch r {
@@ -2012,5 +2024,8 @@ yynewstate:
 
 	}
 
+	if yyEx != nil && yyEx.Reduced(exState, r, &yyVAL) {
+		return -1
+	}
 	goto yystack /* stack new state and value */
 }
