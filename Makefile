@@ -8,7 +8,7 @@ all: editor scanner.go parser.go
 	go build
 	go vet || true
 	golint
-	go install
+	go install ./...
 	make todo
 
 bench: all
