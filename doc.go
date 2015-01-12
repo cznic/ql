@@ -15,6 +15,23 @@
 //
 // Change list
 //
+// 2015-01-12: ACID guarantees were tightened at the cost of performance in
+// some cases. The write collecting window mechanism, a formerly used
+// implementation detail, was removed. Inserting rows one by one in a
+// transaction is now slow. I mean very slow. Try to avoid inserting single
+// rows in a transaction. Instead, whenever possible, perform batch updates of
+// tens to, say thousands of rows in a single transaction. See also:
+// http://www.sqlite.org/faq.html#q19, the discussed synchronization principles
+// involved are the same as for QL, modulo minor details.
+//
+// Note: A side effect is that closing a DB before exiting an application, both
+// for the Go API and through database/sql driver, is no more required,
+// strictly speaking. Beware that exiting an application while there is an open
+// (uncommited) transaction in progress means losing the transaction data.
+// However, the DB will not become corrupted because of not closing it. Nor
+// that was the case before, but formerly failing to close a DB could have
+// resulted in losing the data of the last transaction.
+//
 // 2014-09-21: id() now optionally accepts a single argument - a table name.
 //
 // 2014-09-01: Added the DB.Flush() method and the LIKE pattern matching

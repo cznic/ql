@@ -17,7 +17,6 @@ import (
 	"io"
 	"log"
 	"math/big"
-	"runtime"
 	"strconv"
 	"strings"
 	"sync"
@@ -42,17 +41,6 @@ var (
 	_ rset = (*whereRset)(nil)
 
 	isTesting bool // enables test hook: select from an index
-)
-
-const gracePeriod = time.Second
-
-const (
-	stDisabled = iota
-	stIdle
-	stCollecting
-	stIdleArmed
-	stCollectingArmed
-	stCollectingTriggered
 )
 
 const (
@@ -1645,32 +1633,21 @@ type DB struct {
 	cc    *TCtx // Current transaction context
 	isMem bool
 	mu    sync.Mutex
-	nest  int // ACID FSM
 	root  *root
 	rw    bool // DB FSM
 	rwmu  sync.RWMutex
-	state int
 	store storage
-	timer *time.Timer
 	tnl   int // Transaction nesting level
 }
 
 func newDB(store storage) (db *DB, err error) {
 	db0 := &DB{
-		state: stDisabled,
 		store: store,
 	}
 	if db0.root, err = newRoot(store); err != nil {
 		return
 	}
 
-	if store.Acid() {
-		// Ensure GOMAXPROCS > 1, required for ACID FSM
-		if n := runtime.GOMAXPROCS(0); n < 2 {
-			runtime.GOMAXPROCS(2)
-		}
-		db0.state = stIdle
-	}
 	return db0, nil
 }
 
@@ -1965,75 +1942,12 @@ func (db *DB) run1(pc *TCtx, tnl0 *int, s stmt, arg ...interface{}) (rs Recordse
 				return s.exec(&execCtx{db, arg})
 			}
 
-			if err = db.enter(); err != nil {
-				return
-			}
-
 			if rs, err = s.exec(&execCtx{db, arg}); err != nil {
-				db.leave()
 				return
 			}
 
-			return rs, db.leave()
+			return rs, nil
 		}
-	}
-}
-
-func (db *DB) enter() (err error) {
-	switch db.state {
-	case stDisabled: // nop
-	case stIdle:
-		db.nest = 1
-		db.state = stCollecting
-		db.timer = time.AfterFunc(gracePeriod, db.timeout)
-		return db.store.BeginTransaction()
-	case stCollecting, stCollectingArmed, stCollectingTriggered:
-		db.nest++
-	case stIdleArmed:
-		db.nest = 1
-		db.state = stCollectingArmed
-	}
-	return
-}
-
-func (db *DB) leave() (err error) {
-	switch db.state {
-	case stDisabled: // nop
-	case stCollecting, stCollectingArmed:
-		db.nest--
-		if db.nest == 0 {
-			db.state = stIdleArmed
-		}
-	case stCollectingTriggered:
-		db.nest--
-		if db.nest == 0 {
-			db.state = stIdle
-			return db.store.Commit()
-		}
-	default:
-		log.Panic("internal error 056")
-	}
-	return
-}
-
-func (db *DB) timeout() {
-	db.mu.Lock()
-	defer db.mu.Unlock()
-
-	if db.store == nil {
-		return
-	}
-
-	switch db.state {
-	case stCollecting, stCollectingArmed:
-		db.state = stCollectingTriggered
-	case stIdleArmed:
-		db.store.Commit()
-		db.state = stIdle
-	case stIdle:
-		// nop, Flush may have put the DB in this state.
-	default:
-		log.Panic("internal error 057")
 	}
 }
 
@@ -2045,47 +1959,24 @@ func (db *DB) timeout() {
 // The collecting window is an implementation detail and future versions of
 // Flush may become a no operation while keeping the operation semantics.
 func (db *DB) Flush() (err error) {
-	db.mu.Lock()
-	defer db.mu.Unlock()
-
-	if db.store == nil {
-		return
-	}
-
-	switch db.state {
-	case stCollecting, stCollectingArmed:
-		db.state = stCollectingTriggered
-		return
-	case stIdleArmed:
-		db.state = stIdle
-		return db.store.Commit()
-	default:
-		return
-	}
+	return nil
 }
 
 // Close will close the DB. Successful Close is idempotent.
-func (db *DB) Close() (err error) {
+func (db *DB) Close() error {
 	db.mu.Lock()
 	defer db.mu.Unlock()
 	if db.store == nil {
-		return
+		return nil
 	}
 
-	switch db.state {
-	case stDisabled, stIdle: // nop
-	case stIdleArmed:
-		errSet(&err, db.store.Commit())
-	default:
-		return fmt.Errorf("close: open transaction")
+	if db.tnl != 0 {
+		return fmt.Errorf("cannot close DB while open transaction exist")
 	}
 
-	if db.timer != nil {
-		db.timer.Stop()
-	}
-	errSet(&err, db.store.Close())
+	err := db.store.Close()
 	db.root, db.store = nil, nil
-	return
+	return err
 }
 
 func (db *DB) do(r recordset, names int, f func(data []interface{}) (more bool, err error)) (err error) {

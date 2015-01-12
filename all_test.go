@@ -97,24 +97,6 @@ func fldsString(f []*fld) string {
 	return strings.Join(a, " ")
 }
 
-func stStr(st int) string {
-	switch st {
-	case stDisabled:
-		return "stDisabled"
-	case stIdle:
-		return "stIdle"
-	case stCollecting:
-		return "stCollecting"
-	case stIdleArmed:
-		return "stIdleArmed"
-	case stCollectingArmed:
-		return "stCollectingArmed"
-	case stCollectingTriggered:
-		return "stCollectingTriggered"
-	}
-	return fmt.Sprintf("state(%d)", st)
-}
-
 type testDB interface {
 	setup() (db *DB, err error)
 	mark() (err error)
@@ -521,29 +503,7 @@ func BenchmarkInsertFile1kBn1e0t1e2(b *testing.B) {
 	benchmarkInsert(b, 1e0, 1e2, &fileTestDB{})
 }
 
-func BenchmarkInsertMem1kBn1e0t1e3(b *testing.B) {
-	benchmarkInsert(b, 1e0, 1e3, &memTestDB{})
-}
-
-func BenchmarkInsertFile1kBn1e0t1e3(b *testing.B) {
-	benchmarkInsert(b, 1e0, 1e3, &fileTestDB{})
-}
-
-func BenchmarkInsertMem1kBn1e0t1e4(b *testing.B) {
-	benchmarkInsert(b, 1e0, 1e4, &memTestDB{})
-}
-
-func BenchmarkInsertFile1kBn1e0t1e4(b *testing.B) {
-	benchmarkInsert(b, 1e0, 1e4, &fileTestDB{})
-}
-
-func BenchmarkInsertMem1kBn1e0t1e5(b *testing.B) {
-	benchmarkInsert(b, 1e0, 1e5, &memTestDB{})
-}
-
-func BenchmarkInsertFile1kBn1e0t1e5(b *testing.B) {
-	benchmarkInsert(b, 1e0, 1e5, &fileTestDB{})
-}
+//=============================================================================
 
 func BenchmarkInsertMem1kBn1e1t1e2(b *testing.B) {
 	benchmarkInsert(b, 1e1, 1e2, &memTestDB{})
@@ -561,21 +521,7 @@ func BenchmarkInsertFile1kBn1e1t1e3(b *testing.B) {
 	benchmarkInsert(b, 1e1, 1e3, &fileTestDB{})
 }
 
-func BenchmarkInsertMem1kBn1e1t1e4(b *testing.B) {
-	benchmarkInsert(b, 1e1, 1e4, &memTestDB{})
-}
-
-func BenchmarkInsertFile1kBn1e1t1e4(b *testing.B) {
-	benchmarkInsert(b, 1e1, 1e4, &fileTestDB{})
-}
-
-func BenchmarkInsertMem1kBn1e1t1e5(b *testing.B) {
-	benchmarkInsert(b, 1e1, 1e5, &memTestDB{})
-}
-
-func BenchmarkInsertFile1kBn1e1t1e5(b *testing.B) {
-	benchmarkInsert(b, 1e1, 1e5, &fileTestDB{})
-}
+//=============================================================================
 
 func BenchmarkInsertMem1kBn1e2t1e2(b *testing.B) {
 	benchmarkInsert(b, 1e2, 1e2, &memTestDB{})
@@ -601,13 +547,7 @@ func BenchmarkInsertFile1kBn1e2t1e4(b *testing.B) {
 	benchmarkInsert(b, 1e2, 1e4, &fileTestDB{})
 }
 
-func BenchmarkInsertMem1kBn1e2t1e5(b *testing.B) {
-	benchmarkInsert(b, 1e2, 1e5, &memTestDB{})
-}
-
-func BenchmarkInsertFile1kBn1e2t1e5(b *testing.B) {
-	benchmarkInsert(b, 1e2, 1e5, &fileTestDB{})
-}
+//=============================================================================
 
 func BenchmarkInsertMem1kBn1e3t1e3(b *testing.B) {
 	benchmarkInsert(b, 1e3, 1e3, &memTestDB{})
@@ -1419,14 +1359,6 @@ func BenchmarkInsertBoolFileX1e3(b *testing.B) {
 	benchmarkInsertBoolFile(b, 1e3, 0.5, true)
 }
 
-func BenchmarkInsertBoolFileNoX1e4(b *testing.B) {
-	benchmarkInsertBoolFile(b, 1e4, 0.5, false)
-}
-
-func BenchmarkInsertBoolFileX1e4(b *testing.B) {
-	benchmarkInsertBoolFile(b, 1e4, 0.5, true)
-}
-
 var benchmarkSelectBoolOnce = map[string]sync.Once{}
 
 func benchmarkSelectBool(b *testing.B, db *DB, size int, selectivity float64, index bool, teardown func()) {
@@ -1662,14 +1594,6 @@ func BenchmarkSelectBoolFileX1e4Perc50(b *testing.B) {
 	benchmarkSelectBoolFile(b, 1e4, 0.5, true)
 }
 
-func BenchmarkSelectBoolFileNoX1e5Perc50(b *testing.B) {
-	benchmarkSelectBoolFile(b, 1e5, 0.5, false)
-}
-
-func BenchmarkSelectBoolFileX1e5Perc50(b *testing.B) {
-	benchmarkSelectBoolFile(b, 1e5, 0.5, true)
-}
-
 // ----
 
 func BenchmarkSelectBoolFileNoX1e1Perc5(b *testing.B) {
@@ -1702,14 +1626,6 @@ func BenchmarkSelectBoolFileNoX1e4Perc5(b *testing.B) {
 
 func BenchmarkSelectBoolFileX1e4Perc5(b *testing.B) {
 	benchmarkSelectBoolFile(b, 1e4, 0.05, true)
-}
-
-func BenchmarkSelectBoolFileNoX1e5Perc5(b *testing.B) {
-	benchmarkSelectBoolFile(b, 1e5, 0.05, false)
-}
-
-func BenchmarkSelectBoolFileX1e5Perc5(b *testing.B) {
-	benchmarkSelectBoolFile(b, 1e5, 0.05, true)
 }
 
 func TestIndex(t *testing.T) {
@@ -1831,6 +1747,10 @@ func benchmarkCrossJoin(b *testing.B, db *DB, create, sel List, size1, size2 int
 		}
 	}
 
+	if _, _, err := db.Run(ctx, "COMMIT"); err != nil {
+		b.Fatal(err)
+	}
+
 	rs, _, err := db.Execute(nil, sel)
 	if err != nil {
 		b.Fatal(err)
@@ -1855,17 +1775,11 @@ func benchmarkCrossJoin(b *testing.B, db *DB, create, sel List, size1, size2 int
 var (
 	xjoinCreate = MustCompile(`BEGIN TRANSACTION;
 	CREATE TABLE t (f float);
-	CREATE TABLE u (f float);
-COMMIT;`)
+	CREATE TABLE u (f float);`)
 	xjoinSel = MustCompile(`SELECT *  FROM (SELECT f FROM t WHERE f < 0.1), (SELECT f FROM u where f < 0.1);`)
-	xjoinT   = MustCompile("BEGIN TRANSACTION; INSERT INTO t VALUES($1); COMMIT;")
-	xjoinU   = MustCompile("BEGIN TRANSACTION; INSERT INTO u VALUES($1); COMMIT;")
-	xjoinX   = MustCompile(`
-	BEGIN TRANSACTION;
-		CREATE INDEX x ON t (f);
-		CREATE INDEX y ON u (f);
-	COMMIT;
-	`)
+	xjoinT   = MustCompile("INSERT INTO t VALUES($1);")
+	xjoinU   = MustCompile("INSERT INTO u VALUES($1);")
+	xjoinX   = MustCompile(`CREATE INDEX x ON t (f); CREATE INDEX y ON u (f);`)
 )
 
 func benchmarkCrossJoinMem(b *testing.B, size1, size2 int, index bool) {
