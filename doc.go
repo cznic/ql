@@ -27,7 +27,7 @@
 // Note: A side effect is that closing a DB before exiting an application, both
 // for the Go API and through database/sql driver, is no more required,
 // strictly speaking. Beware that exiting an application while there is an open
-// (uncommited) transaction in progress means losing the transaction data.
+// (uncommitted) transaction in progress means losing the transaction data.
 // However, the DB will not become corrupted because of not closing it. Nor
 // that was the case before, but formerly failing to close a DB could have
 // resulted in losing the data of the last transaction.
