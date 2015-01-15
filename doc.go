@@ -834,13 +834,13 @@
 //
 //	now() + duration("1h")	// time after 1 hour from now
 //	duration("1h") + now()	// time after 1 hour from now
-//	now() - duration("1h")	// time before 1 from now
+//	now() - duration("1h")	// time before 1 hour from now
 //	duration("1h") - now()	// illegal, negative times do not exist
 //
 // Times can subtracted from each other producing a value of type duration.
 //
 //	now() - t0	// elapsed time since t0
-//	now + now()	// illegal, operator + not defined for times
+//	now() + now()	// illegal, operator + not defined for times
 //
 // For two integer values x and y, the integer quotient q = x / y and remainder
 // r = x % y satisfy the following relationships
@@ -1297,13 +1297,11 @@
 // For example
 //
 //	BEGIN TRANSACTION;
-// 		CREATE TABLE department
-// 		(
+// 		CREATE TABLE department (
 // 			DepartmentID   int,
 // 			DepartmentName string,
 // 		);
-// 		CREATE TABLE employee
-// 		(
+// 		CREATE TABLE employee (
 // 			LastName	string,
 // 			DepartmentID	int,
 // 		);
