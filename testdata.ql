@@ -9125,3 +9125,79 @@ ORDER BY id(foo);
 |lfoo.i, lbar.fooID, sbar.s
 [10 1 ten]
 [20 2 twenty]
+
+-- 767 // https://github.com/cznic/ql/issues/81
+BEGIN TRANSACTION;
+	CREATE TABLE t (name string, mail string);
+	INSERT INTO t VALUES
+		("a", "foo@example.com"),
+		("b", "bar@example.com"),
+		("c", "baz@example.com"),
+		("d", "foo@example.com"),
+		("e", "bar@example.com"),
+		("f", "baz@example.com"),
+	;
+COMMIT;
+SELECT *
+FROM t
+WHERE name == "b" AND mail == "bar@example.com";
+|sname, smail
+[b bar@example.com]
+
+-- 768 // https://github.com/cznic/ql/issues/81
+BEGIN TRANSACTION;
+	CREATE TABLE t (name string, mail string);
+	INSERT INTO t VALUES
+		("a", "foo@example.com"),
+		("b", "bar@example.com"),
+		("c", "baz@example.com"),
+		("d", "foo@example.com"),
+		("e", "bar@example.com"),
+		("f", "baz@example.com"),
+	;
+COMMIT;
+SELECT *
+FROM t
+WHERE name == "b" and mail == "bar@example.com";
+|sname, smail
+[b bar@example.com]
+
+-- 769 // https://github.com/cznic/ql/issues/81
+BEGIN TRANSACTION;
+	CREATE TABLE t (name string, mail string);
+	INSERT INTO t VALUES
+		("a", "foo@example.com"),
+		("b", "bar@example.com"),
+		("c", "baz@example.com"),
+		("d", "foo@example.com"),
+		("e", "bar@example.com"),
+		("f", "baz@example.com"),
+	;
+COMMIT;
+SELECT *
+FROM t
+WHERE name == "b" OR mail == "bar@example.com"
+ORDER BY name;
+|sname, smail
+[b bar@example.com]
+[e bar@example.com]
+
+-- 770 // https://github.com/cznic/ql/issues/81
+BEGIN TRANSACTION;
+	CREATE TABLE t (name string, mail string);
+	INSERT INTO t VALUES
+		("a", "foo@example.com"),
+		("b", "bar@example.com"),
+		("c", "baz@example.com"),
+		("d", "foo@example.com"),
+		("e", "bar@example.com"),
+		("f", "baz@example.com"),
+	;
+COMMIT;
+SELECT *
+FROM t
+WHERE name == "b" or mail == "bar@example.com"
+ORDER BY name;
+|sname, smail
+[b bar@example.com]
+[e bar@example.com]

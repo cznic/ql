@@ -15,6 +15,13 @@
 //
 // Change list
 //
+// 2015-01-17: Logical operators || and && have now alternative spellings: OR
+// and AND (case insensitive).  AND was a keyword before, but OR is a new one.
+// This can possibly break existing queries. For the record, it's a good idea
+// to not use any name appearing in, for example, [7] in your queries as the
+// list of QL's keywords may expand for gaining better compatibility with
+// existing SQL "standards".
+//
 // 2015-01-12: ACID guarantees were tightened at the cost of performance in
 // some cases. The write collecting window mechanism, a formerly used
 // implementation detail, was removed. Inserting rows one by one in a
@@ -195,7 +202,7 @@
 //	bigrat   DESC        GROUP     INTO    TABLE   UPDATE
 //	blob     DISTINCT    IF        LIMIT   time    VALUES
 //	bool     DROP        IN        LIKE    true    WHERE
-//	                               NOT
+//	                               NOT     OR
 //
 // Keywords are not case sensitive.
 //
@@ -689,13 +696,13 @@
 //
 // Operators combine operands into expressions.
 //
-//  Expression = Term { oror Term } .
+//  Expression = Term { ( oror | "OR" ) Term } .
 //
 //  ExpressionList = Expression { "," Expression } [ "," ].
 //  Factor =  PrimaryFactor  { ( ge | ">" | le | "<" | neq | eq | "LIKE" ) PrimaryFactor } [ Predicate ] .
 //  PrimaryFactor = PrimaryTerm  { ( "^" | "|" | "-" | "+" ) PrimaryTerm } .
 //  PrimaryTerm = UnaryExpr { ( andnot | "&" | lsh | rsh | "%" | "/" | "*" ) UnaryExpr } .
-//  Term = Factor { andand Factor } .
+//  Term = Factor { ( andand | "AND" ) Factor } .
 //  UnaryExpr = [ "^" | "!" | "-" | "+" ] PrimaryExpression .
 //
 // Comparisons are discussed elsewhere. For other binary operators, the operand
@@ -2170,6 +2177,7 @@
 //	[4]: http://creativecommons.org/licenses/by/3.0/
 //	[5]: http://golang.org/LICENSE
 //	[6]: http://golang.org/pkg/regexp/#Regexp.MatchString
+//	[7]: http://developer.mimer.com/validator/sql-reserved-words.tml
 //
 // Implementation details
 //

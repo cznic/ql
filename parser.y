@@ -42,7 +42,7 @@ import (
 	int32Type int64Type int8Type into intLit is
 	le like limit lsh 
 	neq not null
-	offset on order oror
+	offset on or order oror
 	qlParam
 	rollback rsh runeType
 	selectKwd set stringType stringLit
@@ -332,7 +332,7 @@ EmptyStmt:
 
 Expression:
 	Term
-|	Expression oror Term
+|	Expression logOr Term
 	{
 		var err error
 		if $$, err = newBinaryOperation(oror, $1, $3); err != nil {
@@ -340,6 +340,10 @@ Expression:
 			return 1
 		}
 	}
+
+logOr:
+	oror
+|	or
 
 ExpressionList:
 	Expression ExpressionList1 ExpressionList2
@@ -942,7 +946,7 @@ TableName:
 
 Term:
 	Factor
-|	Term andand Factor
+|	Term logAnd Factor
 	{
 		var err error
 		if $$, err = newBinaryOperation(andand, $1, $3); err != nil {
@@ -950,6 +954,10 @@ Term:
 			return 1
 		}
 	}
+
+logAnd:
+	andand
+|	and
 
 TruncateTableStmt:
 	truncate tableKwd TableName

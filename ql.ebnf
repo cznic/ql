@@ -82,7 +82,9 @@ DeleteFromStmt = "DELETE" "FROM" TableName [ WhereClause ] .
 DropIndexStmt = "DROP" "INDEX" [ "IF" "EXISTS" ] IndexName .
 DropTableStmt = "DROP" "TABLE" [ "IF" "EXISTS" ] TableName .
 EmptyStmt = .
-Expression = Term { oror Term } .
+Expression = Term {
+		 ( oror | "OR" ) Term
+	  } .
 ExpressionList = Expression { "," Expression } [ "," ] .
 Factor = PrimaryFactor {
 		 (
@@ -174,7 +176,9 @@ Statement = EmptyStmt
 	| UpdateStmt .
 StatementList = Statement { ";" Statement } .
 TableName = identifier .
-Term = Factor { andand Factor } .
+Term = Factor {
+		 ( andand | "AND" ) Factor
+	  } .
 TruncateTableStmt = "TRUNCATE" "TABLE" TableName .
 Type = "bigint"
 	| "bigrat"

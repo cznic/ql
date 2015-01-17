@@ -162,6 +162,7 @@ limit           {l}{i}{m}{i}{t}
 not             {n}{o}{t}
 offset          {o}{f}{f}{s}{e}{t}
 on              {o}{n}
+or              {o}{r}
 order           {o}{r}{d}{e}{r}
 rollback        {r}{o}{l}{l}{b}{a}{c}{k}
 select          {s}{e}{l}{e}{c}{t}
@@ -269,6 +270,7 @@ ident           {idchar0}{idchars}*
 {not}                   return not
 {offset}                return offset
 {on}                    return on
+{or}                    return or
 {order}                 return order
 {rollback}              return rollback
 
