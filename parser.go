@@ -35,92 +35,92 @@ type yyXError struct {
 }
 
 const (
-	yyDefault      = 57428
-	yyEOFCode      = -1
-	add            = 57345
-	alter          = 57346
-	and            = 57347
-	andand         = 57348
-	andnot         = 57349
-	as             = 57350
-	asc            = 57351
-	begin          = 57352
-	between        = 57353
-	bigIntType     = 57354
-	bigRatType     = 57355
-	blobType       = 57356
-	boolType       = 57357
-	by             = 57358
-	byteType       = 57359
-	column         = 57360
-	commit         = 57361
-	complex128Type = 57362
-	complex64Type  = 57363
-	create         = 57364
-	deleteKwd      = 57365
-	desc           = 57366
-	distinct       = 57367
-	drop           = 57368
-	durationType   = 57369
-	eq             = 57370
-	yyErrCode      = 57344
-	exists         = 57371
-	falseKwd       = 57372
-	float32Type    = 57374
-	float64Type    = 57375
-	floatLit       = 57376
-	floatType      = 57373
-	from           = 57377
-	ge             = 57378
-	group          = 57379
-	identifier     = 57380
-	ifKwd          = 57381
-	imaginaryLit   = 57382
-	in             = 57383
-	index          = 57384
-	insert         = 57385
-	int16Type      = 57387
-	int32Type      = 57388
-	int64Type      = 57389
-	int8Type       = 57390
-	intLit         = 57392
-	intType        = 57386
-	into           = 57391
-	is             = 57393
-	le             = 57394
-	like           = 57395
-	limit          = 57396
-	lsh            = 57397
-	neq            = 57398
-	not            = 57399
-	null           = 57400
-	offset         = 57401
-	on             = 57402
-	or             = 57403
-	order          = 57404
-	oror           = 57405
-	qlParam        = 57406
-	rollback       = 57407
-	rsh            = 57408
-	runeType       = 57409
-	selectKwd      = 57410
-	set            = 57411
-	stringLit      = 57413
-	stringType     = 57412
-	tableKwd       = 57414
-	timeType       = 57415
-	transaction    = 57416
-	trueKwd        = 57417
-	truncate       = 57418
-	uint16Type     = 57420
-	uint32Type     = 57421
-	uint64Type     = 57422
-	uint8Type      = 57423
-	uintType       = 57419
-	unique         = 57424
-	update         = 57425
-	values         = 57426
-	where          = 57427
+	yyDefault      = 57429
+	yyEOFCode      = 57344
+	add            = 57346
+	alter          = 57347
+	and            = 57348
+	andand         = 57349
+	andnot         = 57350
+	as             = 57351
+	asc            = 57352
+	begin          = 57353
+	between        = 57354
+	bigIntType     = 57355
+	bigRatType     = 57356
+	blobType       = 57357
+	boolType       = 57358
+	by             = 57359
+	byteType       = 57360
+	column         = 57361
+	commit         = 57362
+	complex128Type = 57363
+	complex64Type  = 57364
+	create         = 57365
+	deleteKwd      = 57366
+	desc           = 57367
+	distinct       = 57368
+	drop           = 57369
+	durationType   = 57370
+	eq             = 57371
+	yyErrCode      = 57345
+	exists         = 57372
+	falseKwd       = 57373
+	float32Type    = 57375
+	float64Type    = 57376
+	floatLit       = 57377
+	floatType      = 57374
+	from           = 57378
+	ge             = 57379
+	group          = 57380
+	identifier     = 57381
+	ifKwd          = 57382
+	imaginaryLit   = 57383
+	in             = 57384
+	index          = 57385
+	insert         = 57386
+	int16Type      = 57388
+	int32Type      = 57389
+	int64Type      = 57390
+	int8Type       = 57391
+	intLit         = 57393
+	intType        = 57387
+	into           = 57392
+	is             = 57394
+	le             = 57395
+	like           = 57396
+	limit          = 57397
+	lsh            = 57398
+	neq            = 57399
+	not            = 57400
+	null           = 57401
+	offset         = 57402
+	on             = 57403
+	or             = 57404
+	order          = 57405
+	oror           = 57406
+	qlParam        = 57407
+	rollback       = 57408
+	rsh            = 57409
+	runeType       = 57410
+	selectKwd      = 57411
+	set            = 57412
+	stringLit      = 57414
+	stringType     = 57413
+	tableKwd       = 57415
+	timeType       = 57416
+	transaction    = 57417
+	trueKwd        = 57418
+	truncate       = 57419
+	uint16Type     = 57421
+	uint32Type     = 57422
+	uint64Type     = 57423
+	uint8Type      = 57424
+	uintType       = 57420
+	unique         = 57425
+	update         = 57426
+	values         = 57427
+	where          = 57428
 
 	yyMaxDepth = 200
 	yyTabOfs   = -204
@@ -129,188 +129,188 @@ const (
 var (
 	yyXLAT = map[int]int{
 		59:    0,   // ';' (179x)
-		-1:    1,   // $end (178x)
+		57344: 1,   // $end (178x)
 		41:    2,   // ')' (152x)
 		44:    3,   // ',' (120x)
 		40:    4,   // '(' (119x)
 		43:    5,   // '+' (103x)
 		45:    6,   // '-' (103x)
 		94:    7,   // '^' (103x)
-		57401: 8,   // offset (100x)
-		57396: 9,   // limit (97x)
-		57380: 10,  // identifier (87x)
-		57404: 11,  // order (85x)
-		57427: 12,  // where (80x)
-		57379: 13,  // group (75x)
-		57403: 14,  // or (74x)
-		57405: 15,  // oror (74x)
-		57377: 16,  // from (72x)
-		57351: 17,  // asc (68x)
-		57366: 18,  // desc (68x)
+		57402: 8,   // offset (100x)
+		57397: 9,   // limit (97x)
+		57381: 10,  // identifier (87x)
+		57405: 11,  // order (85x)
+		57428: 12,  // where (80x)
+		57380: 13,  // group (75x)
+		57404: 14,  // or (74x)
+		57406: 15,  // oror (74x)
+		57378: 16,  // from (72x)
+		57352: 17,  // asc (68x)
+		57367: 18,  // desc (68x)
 		93:    19,  // ']' (67x)
-		57350: 20,  // as (66x)
+		57351: 20,  // as (66x)
 		58:    21,  // ':' (64x)
-		57347: 22,  // and (64x)
-		57348: 23,  // andand (62x)
+		57348: 22,  // and (64x)
+		57349: 23,  // andand (62x)
 		124:   24,  // '|' (55x)
-		57399: 25,  // not (55x)
-		57354: 26,  // bigIntType (54x)
-		57355: 27,  // bigRatType (54x)
-		57356: 28,  // blobType (54x)
-		57357: 29,  // boolType (54x)
-		57359: 30,  // byteType (54x)
-		57362: 31,  // complex128Type (54x)
-		57363: 32,  // complex64Type (54x)
-		57369: 33,  // durationType (54x)
-		57374: 34,  // float32Type (54x)
-		57375: 35,  // float64Type (54x)
-		57373: 36,  // floatType (54x)
-		57387: 37,  // int16Type (54x)
-		57388: 38,  // int32Type (54x)
-		57389: 39,  // int64Type (54x)
-		57390: 40,  // int8Type (54x)
-		57386: 41,  // intType (54x)
-		57400: 42,  // null (54x)
-		57409: 43,  // runeType (54x)
-		57412: 44,  // stringType (54x)
-		57415: 45,  // timeType (54x)
-		57420: 46,  // uint16Type (54x)
-		57421: 47,  // uint32Type (54x)
-		57422: 48,  // uint64Type (54x)
-		57423: 49,  // uint8Type (54x)
-		57419: 50,  // uintType (54x)
-		57353: 51,  // between (53x)
-		57383: 52,  // in (53x)
+		57400: 25,  // not (55x)
+		57355: 26,  // bigIntType (54x)
+		57356: 27,  // bigRatType (54x)
+		57357: 28,  // blobType (54x)
+		57358: 29,  // boolType (54x)
+		57360: 30,  // byteType (54x)
+		57363: 31,  // complex128Type (54x)
+		57364: 32,  // complex64Type (54x)
+		57370: 33,  // durationType (54x)
+		57375: 34,  // float32Type (54x)
+		57376: 35,  // float64Type (54x)
+		57374: 36,  // floatType (54x)
+		57388: 37,  // int16Type (54x)
+		57389: 38,  // int32Type (54x)
+		57390: 39,  // int64Type (54x)
+		57391: 40,  // int8Type (54x)
+		57387: 41,  // intType (54x)
+		57401: 42,  // null (54x)
+		57410: 43,  // runeType (54x)
+		57413: 44,  // stringType (54x)
+		57416: 45,  // timeType (54x)
+		57421: 46,  // uint16Type (54x)
+		57422: 47,  // uint32Type (54x)
+		57423: 48,  // uint64Type (54x)
+		57424: 49,  // uint8Type (54x)
+		57420: 50,  // uintType (54x)
+		57354: 51,  // between (53x)
+		57384: 52,  // in (53x)
 		60:    53,  // '<' (52x)
 		62:    54,  // '>' (52x)
-		57370: 55,  // eq (52x)
-		57372: 56,  // falseKwd (52x)
-		57376: 57,  // floatLit (52x)
-		57378: 58,  // ge (52x)
-		57382: 59,  // imaginaryLit (52x)
-		57392: 60,  // intLit (52x)
-		57393: 61,  // is (52x)
-		57394: 62,  // le (52x)
-		57395: 63,  // like (52x)
-		57398: 64,  // neq (52x)
-		57406: 65,  // qlParam (52x)
-		57413: 66,  // stringLit (52x)
-		57417: 67,  // trueKwd (52x)
+		57371: 55,  // eq (52x)
+		57373: 56,  // falseKwd (52x)
+		57377: 57,  // floatLit (52x)
+		57379: 58,  // ge (52x)
+		57383: 59,  // imaginaryLit (52x)
+		57393: 60,  // intLit (52x)
+		57394: 61,  // is (52x)
+		57395: 62,  // le (52x)
+		57396: 63,  // like (52x)
+		57399: 64,  // neq (52x)
+		57407: 65,  // qlParam (52x)
+		57414: 66,  // stringLit (52x)
+		57418: 67,  // trueKwd (52x)
 		33:    68,  // '!' (48x)
-		57498: 69,  // Type (47x)
+		57499: 69,  // Type (47x)
 		42:    70,  // '*' (46x)
-		57443: 71,  // Conversion (46x)
-		57470: 72,  // Literal (46x)
-		57471: 73,  // Operand (46x)
-		57474: 74,  // PrimaryExpression (46x)
-		57477: 75,  // QualifiedIdent (46x)
+		57444: 71,  // Conversion (46x)
+		57471: 72,  // Literal (46x)
+		57472: 73,  // Operand (46x)
+		57475: 74,  // PrimaryExpression (46x)
+		57478: 75,  // QualifiedIdent (46x)
 		37:    76,  // '%' (43x)
 		38:    77,  // '&' (43x)
 		47:    78,  // '/' (43x)
-		57349: 79,  // andnot (43x)
-		57397: 80,  // lsh (43x)
-		57408: 81,  // rsh (43x)
-		57499: 82,  // UnaryExpr (42x)
-		57476: 83,  // PrimaryTerm (35x)
-		57475: 84,  // PrimaryFactor (31x)
+		57350: 79,  // andnot (43x)
+		57398: 80,  // lsh (43x)
+		57409: 81,  // rsh (43x)
+		57500: 82,  // UnaryExpr (42x)
+		57477: 83,  // PrimaryTerm (35x)
+		57476: 84,  // PrimaryFactor (31x)
 		91:    85,  // '[' (30x)
-		57459: 86,  // Factor (20x)
-		57460: 87,  // Factor1 (20x)
-		57496: 88,  // Term (19x)
-		57455: 89,  // Expression (18x)
-		57504: 90,  // logOr (12x)
-		57438: 91,  // ColumnName (10x)
-		57495: 92,  // TableName (9x)
-		57410: 93,  // selectKwd (7x)
-		57456: 94,  // ExpressionList (6x)
-		57435: 95,  // Call (5x)
-		57465: 96,  // Index (5x)
-		57492: 97,  // Slice (5x)
-		57437: 98,  // ColumnDef (4x)
-		57368: 99,  // drop (4x)
-		57371: 100, // exists (4x)
-		57381: 101, // ifKwd (4x)
-		57384: 102, // index (4x)
-		57484: 103, // SelectStmt (4x)
-		57414: 104, // tableKwd (4x)
-		57426: 105, // values (4x)
-		57502: 106, // WhereClause (4x)
+		57460: 86,  // Factor (20x)
+		57461: 87,  // Factor1 (20x)
+		57497: 88,  // Term (19x)
+		57456: 89,  // Expression (18x)
+		57505: 90,  // logOr (12x)
+		57439: 91,  // ColumnName (10x)
+		57496: 92,  // TableName (9x)
+		57411: 93,  // selectKwd (7x)
+		57457: 94,  // ExpressionList (6x)
+		57436: 95,  // Call (5x)
+		57466: 96,  // Index (5x)
+		57493: 97,  // Slice (5x)
+		57438: 98,  // ColumnDef (4x)
+		57369: 99,  // drop (4x)
+		57372: 100, // exists (4x)
+		57382: 101, // ifKwd (4x)
+		57385: 102, // index (4x)
+		57485: 103, // SelectStmt (4x)
+		57415: 104, // tableKwd (4x)
+		57427: 105, // values (4x)
+		57503: 106, // WhereClause (4x)
 		61:    107, // '=' (2x)
-		57345: 108, // add (2x)
-		57346: 109, // alter (2x)
-		57429: 110, // AlterTableStmt (2x)
-		57430: 111, // Assignment (2x)
-		57352: 112, // begin (2x)
-		57434: 113, // BeginTransactionStmt (2x)
-		57358: 114, // by (2x)
-		57439: 115, // ColumnNameList (2x)
-		57361: 116, // commit (2x)
-		57442: 117, // CommitStmt (2x)
-		57364: 118, // create (2x)
-		57445: 119, // CreateIndexStmt (2x)
-		57447: 120, // CreateTableStmt (2x)
-		57448: 121, // CreateTableStmt1 (2x)
-		57449: 122, // CreateTableStmt2 (2x)
-		57450: 123, // DeleteFromStmt (2x)
-		57365: 124, // deleteKwd (2x)
-		57452: 125, // DropIndexStmt (2x)
-		57453: 126, // DropTableStmt (2x)
-		57454: 127, // EmptyStmt (2x)
-		57461: 128, // Field (2x)
-		57464: 129, // GroupByClause (2x)
-		57385: 130, // insert (2x)
-		57466: 131, // InsertIntoStmt (2x)
-		57503: 132, // logAnd (2x)
-		57472: 133, // OrderBy (2x)
-		57478: 134, // RecordSet (2x)
-		57479: 135, // RecordSet1 (2x)
-		57407: 136, // rollback (2x)
-		57483: 137, // RollbackStmt (2x)
-		57487: 138, // SelectStmtGroup (2x)
-		57488: 139, // SelectStmtLimit (2x)
-		57489: 140, // SelectStmtOffset (2x)
-		57490: 141, // SelectStmtOrder (2x)
-		57491: 142, // SelectStmtWhere (2x)
-		57411: 143, // set (2x)
-		57493: 144, // Statement (2x)
-		57418: 145, // truncate (2x)
-		57497: 146, // TruncateTableStmt (2x)
-		57425: 147, // update (2x)
-		57500: 148, // UpdateStmt (2x)
+		57346: 108, // add (2x)
+		57347: 109, // alter (2x)
+		57430: 110, // AlterTableStmt (2x)
+		57431: 111, // Assignment (2x)
+		57353: 112, // begin (2x)
+		57435: 113, // BeginTransactionStmt (2x)
+		57359: 114, // by (2x)
+		57440: 115, // ColumnNameList (2x)
+		57362: 116, // commit (2x)
+		57443: 117, // CommitStmt (2x)
+		57365: 118, // create (2x)
+		57446: 119, // CreateIndexStmt (2x)
+		57448: 120, // CreateTableStmt (2x)
+		57449: 121, // CreateTableStmt1 (2x)
+		57450: 122, // CreateTableStmt2 (2x)
+		57451: 123, // DeleteFromStmt (2x)
+		57366: 124, // deleteKwd (2x)
+		57453: 125, // DropIndexStmt (2x)
+		57454: 126, // DropTableStmt (2x)
+		57455: 127, // EmptyStmt (2x)
+		57462: 128, // Field (2x)
+		57465: 129, // GroupByClause (2x)
+		57386: 130, // insert (2x)
+		57467: 131, // InsertIntoStmt (2x)
+		57504: 132, // logAnd (2x)
+		57473: 133, // OrderBy (2x)
+		57479: 134, // RecordSet (2x)
+		57480: 135, // RecordSet1 (2x)
+		57408: 136, // rollback (2x)
+		57484: 137, // RollbackStmt (2x)
+		57488: 138, // SelectStmtGroup (2x)
+		57489: 139, // SelectStmtLimit (2x)
+		57490: 140, // SelectStmtOffset (2x)
+		57491: 141, // SelectStmtOrder (2x)
+		57492: 142, // SelectStmtWhere (2x)
+		57412: 143, // set (2x)
+		57494: 144, // Statement (2x)
+		57419: 145, // truncate (2x)
+		57498: 146, // TruncateTableStmt (2x)
+		57426: 147, // update (2x)
+		57501: 148, // UpdateStmt (2x)
 		46:    149, // '.' (1x)
-		57431: 150, // AssignmentList (1x)
-		57432: 151, // AssignmentList1 (1x)
-		57433: 152, // AssignmentList2 (1x)
-		57436: 153, // Call1 (1x)
-		57360: 154, // column (1x)
-		57440: 155, // ColumnNameList1 (1x)
-		57441: 156, // ColumnNameList2 (1x)
-		57444: 157, // CreateIndexIfNotExists (1x)
-		57446: 158, // CreateIndexStmtUnique (1x)
-		57367: 159, // distinct (1x)
-		57451: 160, // DropIndexIfExists (1x)
-		57457: 161, // ExpressionList1 (1x)
-		57458: 162, // ExpressionList2 (1x)
-		57462: 163, // Field1 (1x)
-		57463: 164, // FieldList (1x)
-		57467: 165, // InsertIntoStmt1 (1x)
-		57468: 166, // InsertIntoStmt2 (1x)
-		57469: 167, // InsertIntoStmt3 (1x)
-		57391: 168, // into (1x)
-		57402: 169, // on (1x)
-		57473: 170, // OrderBy1 (1x)
-		57505: 171, // oSet (1x)
-		57480: 172, // RecordSet11 (1x)
-		57481: 173, // RecordSet2 (1x)
-		57482: 174, // RecordSetList (1x)
-		57485: 175, // SelectStmtDistinct (1x)
-		57486: 176, // SelectStmtFieldList (1x)
-		57494: 177, // StatementList (1x)
-		57416: 178, // transaction (1x)
-		57424: 179, // unique (1x)
-		57501: 180, // UpdateStmt1 (1x)
-		57428: 181, // $default (0x)
-		57344: 182, // error (0x)
+		57432: 150, // AssignmentList (1x)
+		57433: 151, // AssignmentList1 (1x)
+		57434: 152, // AssignmentList2 (1x)
+		57437: 153, // Call1 (1x)
+		57361: 154, // column (1x)
+		57441: 155, // ColumnNameList1 (1x)
+		57442: 156, // ColumnNameList2 (1x)
+		57445: 157, // CreateIndexIfNotExists (1x)
+		57447: 158, // CreateIndexStmtUnique (1x)
+		57368: 159, // distinct (1x)
+		57452: 160, // DropIndexIfExists (1x)
+		57458: 161, // ExpressionList1 (1x)
+		57459: 162, // ExpressionList2 (1x)
+		57463: 163, // Field1 (1x)
+		57464: 164, // FieldList (1x)
+		57468: 165, // InsertIntoStmt1 (1x)
+		57469: 166, // InsertIntoStmt2 (1x)
+		57470: 167, // InsertIntoStmt3 (1x)
+		57392: 168, // into (1x)
+		57403: 169, // on (1x)
+		57474: 170, // OrderBy1 (1x)
+		57506: 171, // oSet (1x)
+		57481: 172, // RecordSet11 (1x)
+		57482: 173, // RecordSet2 (1x)
+		57483: 174, // RecordSetList (1x)
+		57486: 175, // SelectStmtDistinct (1x)
+		57487: 176, // SelectStmtFieldList (1x)
+		57495: 177, // StatementList (1x)
+		57417: 178, // transaction (1x)
+		57425: 179, // unique (1x)
+		57502: 180, // UpdateStmt1 (1x)
+		57429: 181, // $default (0x)
+		57345: 182, // error (0x)
 	}
 
 	yySymNames = []string{
@@ -1134,7 +1134,7 @@ func yySymName(c int) (s string) {
 func yylex1(yylex yyLexer, lval *yySymType) (n int) {
 	n = yylex.Lex(lval)
 	if n <= 0 {
-		n = -1
+		n = yyEOFCode
 	}
 	if yyDebug >= 3 {
 		__yyfmt__.Printf("\nlex %s(%#x %d), lval: %+v\n", yySymName(n), n, n, lval)
