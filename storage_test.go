@@ -237,7 +237,7 @@ func test(t *testing.T, s testDB) (panicked error) {
 	}
 
 	max := len(testdata)
-	if n := *oM; n != 0 {
+	if n := *oM; n != 0 && n < max {
 		max = n
 	}
 	for itest, test := range testdata[*oN:max] {
