@@ -9201,3 +9201,262 @@ ORDER BY name;
 |sname, smail
 [b bar@example.com]
 [e bar@example.com]
+
+-- 771 // https://github.com/cznic/ql/issues/72
+BEGIN TRANSACTION;
+	CREATE TABLE tableA (i int);
+	INSERT INTO tableA VALUES
+		(11),
+		(12),
+		(13),
+		(14),
+		(15),
+		(16),
+	;
+	CREATE TABLE tableB (idA int);
+	INSERT INTO tableB
+		SELECT id() FROM tableA WHERE i&1 == 0;
+COMMIT;
+SELECT id(), i FROM tableA WHERE id() IN (SELECT idA FROM tableB) ORDER BY id();
+|l, li
+[2 12]
+[4 14]
+[6 16]
+
+-- 772 // https://github.com/cznic/ql/issues/72
+BEGIN TRANSACTION;
+	CREATE TABLE tableA (i int);
+	INSERT INTO tableA VALUES
+		(11),
+		(12),
+		(13),
+		(14),
+		(15),
+		(16),
+	;
+	CREATE TABLE tableB (idA int);
+	INSERT INTO tableB
+		SELECT id() FROM tableA WHERE i&1 == 0;
+COMMIT;
+SELECT id(), i FROM tableA WHERE id() NOT IN (SELECT idA FROM tableB) ORDER BY id();
+|l, li
+[1 11]
+[3 13]
+[5 15]
+
+-- 773 // https://github.com/cznic/ql/issues/72
+BEGIN TRANSACTION;
+	CREATE TABLE tableA (i int);
+	INSERT INTO tableA VALUES
+		(11),
+		(12),
+		(13),
+		(14),
+		(15),
+		(16),
+	;
+	CREATE TABLE tableB (idA int);
+	INSERT INTO tableB
+		SELECT id() FROM tableA WHERE i&1 == 0;
+	DELETE FROM tableA WHERE id() IN (SELECT idA FROM tableB);
+COMMIT;
+SELECT id(), i FROM tableA ORDER BY id();
+|l, li
+[1 11]
+[3 13]
+[5 15]
+
+-- 774 // https://github.com/cznic/ql/issues/72
+BEGIN TRANSACTION;
+	CREATE TABLE tableA (i int);
+	INSERT INTO tableA VALUES
+		(11),
+		(12),
+		(13),
+		(14),
+		(15),
+		(16),
+	;
+	CREATE TABLE tableB (idA int);
+	INSERT INTO tableB
+		SELECT id() FROM tableA WHERE i&1 == 0;
+	DELETE FROM tableA WHERE id() NOT IN (SELECT idA FROM tableB);
+COMMIT;
+SELECT id(), i FROM tableA ORDER BY id();
+|l, li
+[2 12]
+[4 14]
+[6 16]
+
+-- 775 // https://github.com/cznic/ql/issues/72, coerce
+BEGIN TRANSACTION;
+	CREATE TABLE tableA (i int);
+	INSERT INTO tableA VALUES
+		(11),
+		(12),
+		(13),
+		(14),
+		(15),
+		(16),
+	;
+	CREATE TABLE tableB (idA int);
+	INSERT INTO tableB
+		SELECT id() FROM tableA WHERE i&1 == 0;
+	DELETE FROM tableA WHERE 2 IN (SELECT idA FROM tableB);
+COMMIT;
+SELECT id(), i FROM tableA ORDER BY id();
+|?, ?i
+
+-- 776 // https://github.com/cznic/ql/issues/72, coerce
+BEGIN TRANSACTION;
+	CREATE TABLE tableA (i int);
+	INSERT INTO tableA VALUES
+		(11),
+		(12),
+		(13),
+		(14),
+		(15),
+		(16),
+	;
+	CREATE TABLE tableB (idA int);
+	INSERT INTO tableB
+		SELECT id() FROM tableA WHERE i&1 == 0;
+	DELETE FROM tableA WHERE 2 NOT IN (SELECT idA FROM tableB);
+COMMIT;
+SELECT id(), i FROM tableA ORDER BY id();
+|l, li
+[1 11]
+[2 12]
+[3 13]
+[4 14]
+[5 15]
+[6 16]
+
+-- 777 // https://github.com/cznic/ql/issues/72, different types have zero set intersetion.
+BEGIN TRANSACTION;
+	CREATE TABLE tableA (i int);
+	INSERT INTO tableA VALUES
+		(11),
+		(12),
+		(13),
+		(14),
+		(15),
+		(16),
+	;
+	CREATE TABLE tableB (idA int);
+	INSERT INTO tableB
+		SELECT id() FROM tableA WHERE i&1 == 0;
+	DELETE FROM tableA WHERE 3.14 IN (SELECT idA FROM tableB);
+COMMIT;
+SELECT id(), i FROM tableA ORDER BY id();
+|l, li
+[1 11]
+[2 12]
+[3 13]
+[4 14]
+[5 15]
+[6 16]
+
+-- 778 // https://github.com/cznic/ql/issues/72, different have zero set intersection but NOT makes the result true.
+BEGIN TRANSACTION;
+	CREATE TABLE tableA (i int);
+	INSERT INTO tableA VALUES
+		(11),
+		(12),
+		(13),
+		(14),
+		(15),
+		(16),
+	;
+	CREATE TABLE tableB (idA int);
+	INSERT INTO tableB
+		SELECT id() FROM tableA WHERE i&1 == 0;
+	DELETE FROM tableA WHERE 3.14 NOT IN (SELECT idA FROM tableB);
+COMMIT;
+SELECT id(), i FROM tableA ORDER BY id();
+|?, ?i
+
+-- 779 // https://github.com/cznic/ql/issues/72, invalid field type
+BEGIN TRANSACTION;
+	CREATE TABLE tableA (i int);
+	INSERT INTO tableA VALUES
+		(11),
+		(12),
+		(13),
+		(14),
+		(15),
+		(16),
+	;
+	CREATE TABLE tableB (idA time);
+	INSERT INTO tableB
+		SELECT now() FROM tableA WHERE i&1 == 0;
+	DELETE FROM tableA WHERE 3.14 NOT IN (SELECT idA FROM tableB);
+COMMIT;
+SELECT id(), i FROM tableA ORDER BY id();
+||invalid field type
+
+-- 780 // https://github.com/cznic/ql/issues/72, too many fields
+BEGIN TRANSACTION;
+	CREATE TABLE tableA (i int);
+	INSERT INTO tableA VALUES
+		(11),
+		(12),
+		(13),
+		(14),
+		(15),
+		(16),
+	;
+	CREATE TABLE tableB (idA int, name string);
+	INSERT INTO tableB
+		SELECT id(), "foo" FROM tableA WHERE i&1 == 0;
+	DELETE FROM tableA WHERE id() NOT IN (SELECT * FROM tableB);
+COMMIT;
+SELECT id(), i FROM tableA ORDER BY id();
+||mismatched field count
+
+-- 781 // https://github.com/cznic/ql/issues/72, some NULL
+BEGIN TRANSACTION;
+	DROP TABLE IF EXISTS tableA;
+	DROP TABLE IF EXISTS tableB;
+COMMIT;
+BEGIN TRANSACTION;
+	CREATE TABLE tableA (i int);
+	INSERT INTO tableA VALUES
+		(11),
+		(12),
+		(13),
+		(14),
+		(15),
+		(16),
+	;
+	CREATE TABLE tableB (idA int);
+	INSERT INTO tableB VALUES(NULL);
+	INSERT INTO tableB
+		SELECT id() FROM tableA WHERE i&1 == 0;
+COMMIT;
+SELECT i FROM tableA WHERE id() IN (SELECT idA from tableB) ORDER BY id();
+|li
+[12]
+[14]
+[16]
+
+-- 782 // https://github.com/cznic/ql/issues/72, all NULL
+BEGIN TRANSACTION;
+	DROP TABLE IF EXISTS tableA;
+	DROP TABLE IF EXISTS tableB;
+COMMIT;
+BEGIN TRANSACTION;
+	CREATE TABLE tableA (i int);
+	INSERT INTO tableA VALUES
+		(11),
+		(12),
+		(13),
+		(14),
+		(15),
+		(16),
+	;
+	CREATE TABLE tableB (idA int);
+	INSERT INTO tableB VALUES(NULL);
+COMMIT;
+SELECT i FROM tableA WHERE id() IN (SELECT idA from tableB) ORDER BY id();
+|?i

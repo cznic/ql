@@ -110,7 +110,7 @@ func (s *updateStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 		}
 		m["$id"] = data[1]
 		if expr != nil {
-			val, err := s.where.eval(m, ctx.arg)
+			val, err := s.where.eval(ctx, m, ctx.arg)
 			if err != nil {
 				return nil, err
 			}
@@ -131,7 +131,7 @@ func (s *updateStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 
 		// hit
 		for i, asgn := range s.list {
-			val, err := asgn.expr.eval(m, ctx.arg)
+			val, err := asgn.expr.eval(ctx, m, ctx.arg)
 			if err != nil {
 				return nil, err
 			}
@@ -230,7 +230,7 @@ func (s *deleteStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 			m[col.name] = data[2+col.index]
 		}
 		m["$id"] = data[1]
-		val, err := s.where.eval(m, ctx.arg)
+		val, err := s.where.eval(ctx, m, ctx.arg)
 		if err != nil {
 			return nil, err
 		}
@@ -726,7 +726,7 @@ func (s *insertIntoStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 	r := make([]interface{}, len(t.cols0))
 	for _, list := range s.lists {
 		for i, expr := range list {
-			val, err := expr.eval(nil, arg)
+			val, err := expr.eval(ctx, nil, arg)
 			if err != nil {
 				return nil, err
 			}

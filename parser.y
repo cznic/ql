@@ -375,6 +375,14 @@ Factor:
         {
 		$$ = &pIn{expr: $1.(expression), not: true, list: $5.([]expression)}
         }
+|       Factor1 in '(' SelectStmt ')'
+        {
+		$$ = &pIn{expr: $1.(expression), sel: $4.(*selectStmt)}
+        }
+|       Factor1 not in '(' SelectStmt ')'
+        {
+		$$ = &pIn{expr: $1.(expression), not: true, sel: $5.(*selectStmt)}
+        }
 |       Factor1 between PrimaryFactor and PrimaryFactor
         {
 		var err error

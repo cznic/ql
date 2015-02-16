@@ -123,6 +123,7 @@ OrderBy = "ORDER" "BY" ExpressionList [ "ASC" | "DESC" ] .
 Predicate = (
 		  [ "NOT" ] (
 			  "IN" "(" ExpressionList ")"
+			| "IN" "(" SelectStmt ")"
 			| "BETWEEN" PrimaryFactor "AND" PrimaryFactor
 		  )
 		| "IS" [ "NOT" ] "NULL"

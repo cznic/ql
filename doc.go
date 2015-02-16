@@ -15,6 +15,9 @@
 //
 // Change list
 //
+// 2015-02-16: IN predicate now accepts a SELECT statement. See the updated
+// "Predicates" section.
+//
 // 2015-01-17: Logical operators || and && have now alternative spellings: OR
 // and AND (case insensitive).  AND was a keyword before, but OR is a new one.
 // This can possibly break existing queries. For the record, it's a good idea
@@ -749,6 +752,40 @@
 // The types of involved expressions must be comparable as defined in
 // "Comparison operators".
 //
+// Another form of the IN predicate creates the expression list from a result
+// of a SelectStmt.
+//
+//	DELETE FROM t WHERE id() IN (SELECT id_t FROM u WHERE inactive_days > 365)
+//
+// The SelectStmt must select only one column. The produced expression list is
+// resource limited by the memory available to the process. NULL values
+// produced by the SelectStmt are ignored, but if all records of the SelectStmt
+// are NULL the predicate yields NULL. The select statement is evaluated only
+// once. If the type of expr is not the same as the type of the field returned
+// by the SelectStmt then the set operation yields false. The type of the
+// column returned by the SelectStmt must be one of the simple (non blob-like)
+// types:
+//
+//	bool
+//	byte         // alias uint8
+//	complex128
+//	complex64
+//	float        // alias float64
+//	float32
+//	float64
+//	int          // alias int64
+//	int16
+//	int32
+//	int64
+//	int8
+//	rune         // alias int32
+//	string
+//	uint         // alias uint64
+//	uint16
+//	uint32
+//	uint64
+//	uint8
+//
 // Expressions of the form
 //
 //	expr BETWEEN low AND high	// case A
@@ -767,6 +804,7 @@
 //  Predicate = (
 //  			[ "NOT" ] (
 //  			  "IN" "(" ExpressionList ")"
+//  			| "IN" "(" SelectStmt ")"
 //  			| "BETWEEN" PrimaryFactor "AND" PrimaryFactor
 //  			)
 //              |       "IS" [ "NOT" ] "NULL"

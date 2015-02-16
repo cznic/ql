@@ -434,7 +434,7 @@ func (r *orderByRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, da
 			}
 			m["$id"] = rid
 			for i, expr := range r.by {
-				val, err := expr.eval(m, ctx.arg)
+				val, err := expr.eval(ctx, m, ctx.arg)
 				if err != nil {
 					return false, err
 				}
@@ -528,7 +528,7 @@ func (r *whereRset) doIndexedBool(t *table, en indexIterator, v bool, f func(id 
 	}
 }
 
-func (r *whereRset) tryBinOp(t *table, id *ident, v value, op int, f func(id interface{}, data []interface{}) (more bool, err error)) (bool, error) {
+func (r *whereRset) tryBinOp(execCtx *execCtx, t *table, id *ident, v value, op int, f func(id interface{}, data []interface{}) (more bool, err error)) (bool, error) {
 	c := findCol(t.cols0, id.s)
 	if c == nil {
 		return false, fmt.Errorf("undefined column: %s", id.s)
@@ -574,7 +574,7 @@ func (r *whereRset) tryBinOp(t *table, id *ident, v value, op int, f func(id int
 			}
 
 			ex.l = value{k}
-			eval, err := ex.eval(nil, nil)
+			eval, err := ex.eval(execCtx, nil, nil)
 			if err != nil {
 				return true, err
 			}
@@ -609,7 +609,7 @@ func (r *whereRset) tryBinOp(t *table, id *ident, v value, op int, f func(id int
 			}
 
 			ex.l = value{k}
-			eval, err := ex.eval(nil, nil)
+			eval, err := ex.eval(execCtx, nil, nil)
 			if err != nil {
 				return true, err
 			}
@@ -627,7 +627,7 @@ func (r *whereRset) tryBinOp(t *table, id *ident, v value, op int, f func(id int
 	}
 }
 
-func (r *whereRset) tryBinOpID(t *table, v value, op int, f func(id interface{}, data []interface{}) (more bool, err error)) (bool, error) {
+func (r *whereRset) tryBinOpID(execCtx *execCtx, t *table, v value, op int, f func(id interface{}, data []interface{}) (more bool, err error)) (bool, error) {
 	xCol := t.indices[0]
 	if xCol == nil { // no index for id()
 		return false, nil
@@ -666,7 +666,7 @@ func (r *whereRset) tryBinOpID(t *table, v value, op int, f func(id interface{},
 			}
 
 			ex.l = value{k}
-			eval, err := ex.eval(nil, nil)
+			eval, err := ex.eval(execCtx, nil, nil)
 			if err != nil {
 				return true, err
 			}
@@ -701,7 +701,7 @@ func (r *whereRset) tryBinOpID(t *table, v value, op int, f func(id interface{},
 			}
 
 			ex.l = value{k}
-			eval, err := ex.eval(nil, nil)
+			eval, err := ex.eval(execCtx, nil, nil)
 			if err != nil {
 				return true, err
 			}
@@ -820,28 +820,28 @@ func (r *whereRset) tryUseIndex(ctx *execCtx, f func(id interface{}, data []inte
 
 			switch rhs := ex.r.(type) {
 			case parameter:
-				v, err := rhs.eval(nil, ctx.arg)
+				v, err := rhs.eval(ctx, nil, ctx.arg)
 				if err != nil {
 					return false, err
 				}
 
-				return r.tryBinOpID(t, value{v}, ex.op, f)
+				return r.tryBinOpID(ctx, t, value{v}, ex.op, f)
 			case value:
-				return r.tryBinOpID(t, rhs, ex.op, f)
+				return r.tryBinOpID(ctx, t, rhs, ex.op, f)
 			default:
 				return false, nil
 			}
 		case *ident:
 			switch rhs := ex.r.(type) {
 			case parameter:
-				v, err := rhs.eval(nil, ctx.arg)
+				v, err := rhs.eval(ctx, nil, ctx.arg)
 				if err != nil {
 					return false, err
 				}
 
-				return r.tryBinOp(t, lhs, value{v}, ex.op, f)
+				return r.tryBinOp(ctx, t, lhs, value{v}, ex.op, f)
 			case value:
-				return r.tryBinOp(t, lhs, rhs, ex.op, f)
+				return r.tryBinOp(ctx, t, lhs, rhs, ex.op, f)
 			default:
 				return false, nil
 			}
@@ -852,19 +852,19 @@ func (r *whereRset) tryUseIndex(ctx *execCtx, f func(id interface{}, data []inte
 					return false, nil
 				}
 
-				v, err := lhs.eval(nil, ctx.arg)
+				v, err := lhs.eval(ctx, nil, ctx.arg)
 				if err != nil {
 					return false, err
 				}
 
-				return r.tryBinOpID(t, value{v}, invOp, f)
+				return r.tryBinOpID(ctx, t, value{v}, invOp, f)
 			case *ident:
-				v, err := lhs.eval(nil, ctx.arg)
+				v, err := lhs.eval(ctx, nil, ctx.arg)
 				if err != nil {
 					return false, err
 				}
 
-				return r.tryBinOp(t, rhs, value{v}, invOp, f)
+				return r.tryBinOp(ctx, t, rhs, value{v}, invOp, f)
 			default:
 				return false, nil
 			}
@@ -875,9 +875,9 @@ func (r *whereRset) tryUseIndex(ctx *execCtx, f func(id interface{}, data []inte
 					return false, nil
 				}
 
-				return r.tryBinOpID(t, lhs, invOp, f)
+				return r.tryBinOpID(ctx, t, lhs, invOp, f)
 			case *ident:
-				return r.tryBinOp(t, rhs, lhs, invOp, f)
+				return r.tryBinOp(ctx, t, rhs, lhs, invOp, f)
 			default:
 				return false, nil
 			}
@@ -910,7 +910,7 @@ func (r *whereRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, data
 				}
 			}
 			m["$id"] = rid
-			val, err := r.expr.eval(m, ctx.arg)
+			val, err := r.expr.eval(ctx, m, ctx.arg)
 			if err != nil {
 				return false, err
 			}
@@ -957,7 +957,7 @@ func (r *offsetRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, dat
 					}
 				}
 				m["$id"] = rid
-				val, err := r.expr.eval(m, ctx.arg)
+				val, err := r.expr.eval(ctx, m, ctx.arg)
 				if err != nil {
 					return false, err
 				}
@@ -1006,7 +1006,7 @@ func (r *limitRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, data
 					}
 				}
 				m["$id"] = rid
-				val, err := r.expr.eval(m, ctx.arg)
+				val, err := r.expr.eval(ctx, m, ctx.arg)
 				if err != nil {
 					return false, err
 				}
@@ -1075,7 +1075,7 @@ func (r *selectRset) doGroup(grp *groupByRset, ctx *execCtx, onlyNames bool, f f
 				}
 				m["$id"] = rid
 				for _, fld := range r.flds {
-					if _, err = fld.expr.eval(m, ctx.arg); err != nil {
+					if _, err = fld.expr.eval(ctx, m, ctx.arg); err != nil {
 						return false, err
 					}
 				}
@@ -1084,7 +1084,7 @@ func (r *selectRset) doGroup(grp *groupByRset, ctx *execCtx, onlyNames bool, f f
 			}
 			m["$agg"] = true
 			for i, fld := range r.flds {
-				if out[i], err = fld.expr.eval(m, ctx.arg); err != nil {
+				if out[i], err = fld.expr.eval(ctx, m, ctx.arg); err != nil {
 					return false, err
 				}
 			}
@@ -1120,7 +1120,7 @@ func (r *selectRset) doGroup(grp *groupByRset, ctx *execCtx, onlyNames bool, f f
 	case 1:
 		m := map[interface{}]interface{}{"$agg0": true} // aggregate empty record set
 		for i, fld := range r.flds {
-			if out[i], err = fld.expr.eval(m, ctx.arg); err != nil {
+			if out[i], err = fld.expr.eval(ctx, m, ctx.arg); err != nil {
 				return
 			}
 		}
@@ -1156,7 +1156,7 @@ func (r *selectRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, dat
 			m["$id"] = rid
 			out := make([]interface{}, len(r.flds))
 			for i, fld := range r.flds {
-				if out[i], err = fld.expr.eval(m, ctx.arg); err != nil {
+				if out[i], err = fld.expr.eval(ctx, m, ctx.arg); err != nil {
 					return false, err
 				}
 			}
