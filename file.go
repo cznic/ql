@@ -988,8 +988,10 @@ func (s *file) UpdateRow(h int64, blobCols []*col, data ...interface{}) (err err
 	}
 
 	for _, c := range blobCols {
-		if err = s.freeChunks(data0[c.index+2].(chunk).b); err != nil {
-			return
+		if x := data0[c.index+2]; x != nil {
+			if err = s.freeChunks(x.(chunk).b); err != nil {
+				return
+			}
 		}
 	}
 
