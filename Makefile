@@ -50,8 +50,8 @@ mem: ql.test
 nuke:
 	go clean -i
 
-parser.go: parser.y
-	goyacc -o $@ $<
+parser.go: parser.y xerrors
+	goyacc -o $@ -xe xerrors $<
 	sed -i -e 's|//line.*||' -e 's/yyEofCode/yyEOFCode/' $@
 
 ql.test: all

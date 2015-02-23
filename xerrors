@@ -1,0 +1,1000 @@
+// state set: [0 1 11 25]
+ error
+"syntax error: expected StatementList or one of [$end ';' alter begin commit create deleteKwd drop insert rollback selectKwd truncate update]"
+
+// state set: [333 334]
+';' error
+"syntax error: expected Statement or one of [$end ';' alter begin commit create deleteKwd drop insert rollback selectKwd truncate update]"
+
+// state set: [2]
+alter error
+"syntax error: expected tableKwd"
+
+// state set: [326]
+alter tableKwd error
+"syntax error: expected TableName or identifier"
+
+// state set: [327]
+alter tableKwd identifier error
+"syntax error: expected one of [add drop]"
+
+// state set: [328]
+alter tableKwd identifier add error
+"syntax error: expected ColumnDef or identifier"
+
+// state set: [298]
+alter tableKwd identifier add identifier error
+"syntax error: expected Type or one of [bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType float32Type float64Type floatType int16Type int32Type int64Type int8Type intType runeType stringType timeType uint16Type uint32Type uint64Type uint8Type uintType]"
+
+// state set: [12 305 332]
+alter tableKwd identifier add identifier bigIntType error
+"syntax error: expected one of [$end ')' ',' ';']"
+
+// state set: [329]
+alter tableKwd identifier drop error
+"syntax error: expected column"
+
+// state set: [330]
+alter tableKwd identifier drop column error
+"syntax error: expected ColumnName or identifier"
+
+// state set: [331]
+alter tableKwd identifier drop column identifier error
+"syntax error: expected one of [$end ';']"
+
+// state set: [3]
+begin error
+"syntax error: expected transaction"
+
+// state set: [13 325]
+begin transaction error
+"syntax error: expected one of [$end ';']"
+
+// state set: [4 14]
+commit error
+"syntax error: expected one of [$end ';']"
+
+// state set: [5 289]
+create error
+"syntax error: expected CreateIndexStmtUnique or one of [index tableKwd unique]"
+
+// state set: [311 312]
+create index error
+"syntax error: expected CreateIndexIfNotExists or one of [identifier ifKwd]"
+
+// state set: [316]
+create index identifier error
+"syntax error: expected on"
+
+// state set: [317]
+create index identifier on error
+"syntax error: expected identifier"
+
+// state set: [318]
+create index identifier on identifier error
+"syntax error: expected '('"
+
+// state set: [319]
+create index identifier on identifier '(' error
+"syntax error: expected identifier"
+
+// state set: [320]
+create index identifier on identifier '(' identifier error
+"syntax error: expected one of ['(' ')']"
+
+// state set: [322]
+create index identifier on identifier '(' identifier '(' error
+"syntax error: expected ')'"
+
+// state set: [323]
+create index identifier on identifier '(' identifier '(' ')' error
+"syntax error: expected ')'"
+
+// state set: [324]
+create index identifier on identifier '(' identifier '(' ')' ')' error
+"syntax error: expected one of [$end ';']"
+
+// state set: [15 321]
+create index identifier on identifier '(' identifier ')' error
+"syntax error: expected one of [$end ';']"
+
+// state set: [313]
+create index ifKwd error
+"syntax error: expected not"
+
+// state set: [314]
+create index ifKwd not error
+"syntax error: expected exists"
+
+// state set: [315]
+create index ifKwd not exists error
+"syntax error: expected identifier"
+
+// state set: [291]
+create tableKwd error
+"syntax error: expected TableName or one of [identifier ifKwd]"
+
+// state set: [292]
+create tableKwd identifier error
+"syntax error: expected '('"
+
+// state set: [306]
+create tableKwd identifier '(' error
+"syntax error: expected ColumnDef or identifier"
+
+// state set: [307 308 309]
+create tableKwd identifier '(' identifier bigIntType error
+"syntax error: expected CreateTableStmt1 or CreateTableStmt2 or one of [')' ',']"
+
+// state set: [16 310]
+create tableKwd identifier '(' identifier bigIntType ')' error
+"syntax error: expected one of [$end ';']"
+
+// state set: [302]
+create tableKwd identifier '(' identifier bigIntType ',' error
+"syntax error: expected ColumnDef or one of [')' identifier]"
+
+// state set: [303]
+create tableKwd identifier '(' identifier bigIntType ',' identifier bigIntType error
+"syntax error: expected one of [')' ',']"
+
+// state set: [293]
+create tableKwd ifKwd error
+"syntax error: expected not"
+
+// state set: [294]
+create tableKwd ifKwd not error
+"syntax error: expected exists"
+
+// state set: [295]
+create tableKwd ifKwd not exists error
+"syntax error: expected TableName or identifier"
+
+// state set: [296]
+create tableKwd ifKwd not exists identifier error
+"syntax error: expected '('"
+
+// state set: [297]
+create tableKwd ifKwd not exists identifier '(' error
+"syntax error: expected ColumnDef or identifier"
+
+// state set: [299 300 301]
+create tableKwd ifKwd not exists identifier '(' identifier bigIntType error
+"syntax error: expected CreateTableStmt1 or CreateTableStmt2 or one of [')' ',']"
+
+// state set: [304]
+create tableKwd ifKwd not exists identifier '(' identifier bigIntType ')' error
+"syntax error: expected one of [$end ';']"
+
+// state set: [290]
+create unique error
+"syntax error: expected index"
+
+// state set: [6]
+deleteKwd error
+"syntax error: expected from"
+
+// state set: [286]
+deleteKwd from error
+"syntax error: expected TableName or identifier"
+
+// state set: [17 287]
+deleteKwd from identifier error
+"syntax error: expected WhereClause or one of [$end ';' where]"
+
+// state set: [38]
+deleteKwd from identifier where error
+"syntax error: expected Expression or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]"
+
+// state set: [41 288]
+deleteKwd from identifier where falseKwd error
+"syntax error: expected logOr or one of [$end ')' ';' group limit offset or order oror]"
+
+// state set: [7]
+drop error
+"syntax error: expected one of [index tableKwd]"
+
+// state set: [276 282]
+drop index error
+"syntax error: expected DropIndexIfExists or one of [identifier ifKwd]"
+
+// state set: [18 285]
+drop index identifier error
+"syntax error: expected one of [$end ';']"
+
+// state set: [283]
+drop index ifKwd error
+"syntax error: expected exists"
+
+// state set: [284]
+drop index ifKwd exists error
+"syntax error: expected identifier"
+
+// state set: [277]
+drop tableKwd error
+"syntax error: expected TableName or one of [identifier ifKwd]"
+
+// state set: [19 278]
+drop tableKwd identifier error
+"syntax error: expected one of [$end ';']"
+
+// state set: [279]
+drop tableKwd ifKwd error
+"syntax error: expected exists"
+
+// state set: [280]
+drop tableKwd ifKwd exists error
+"syntax error: expected TableName or identifier"
+
+// state set: [281]
+drop tableKwd ifKwd exists identifier error
+"syntax error: expected one of [$end ';']"
+
+// state set: [8]
+insert error
+"syntax error: expected into"
+
+// state set: [259]
+insert into error
+"syntax error: expected TableName or identifier"
+
+// state set: [260 261]
+insert into identifier error
+"syntax error: expected InsertIntoStmt1 or SelectStmt or one of ['(' selectKwd values]"
+
+// state set: [262]
+insert into identifier '(' error
+"syntax error: expected ColumnNameList or identifier"
+
+// state set: [235 237 238 263]
+insert into identifier '(' identifier error
+"syntax error: expected ColumnNameList1 or ColumnNameList2 or one of [$end ')' ',' ';' limit offset order]"
+
+// state set: [264]
+insert into identifier '(' identifier ')' error
+"syntax error: expected one of [selectKwd values]"
+
+// state set: [239]
+insert into identifier '(' identifier ',' error
+"syntax error: expected ColumnName or one of [$end ')' ';' identifier limit offset order]"
+
+// state set: [240]
+insert into identifier '(' identifier ',' identifier error
+"syntax error: expected one of [$end ')' ',' ';' limit offset order]"
+
+// state set: [20 266]
+insert into identifier selectKwd '*' from identifier error
+"syntax error: expected one of [$end ';']"
+
+// state set: [265]
+insert into identifier values error
+"syntax error: expected '('"
+
+// state set: [267]
+insert into identifier values '(' error
+"syntax error: expected ExpressionList or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]"
+
+// state set: [268]
+insert into identifier values '(' falseKwd error
+"syntax error: expected ')'"
+
+// state set: [269 270 271]
+insert into identifier values '(' falseKwd ')' error
+"syntax error: expected InsertIntoStmt2 or InsertIntoStmt3 or one of [$end ',' ';']"
+
+// state set: [272]
+insert into identifier values '(' falseKwd ')' ',' error
+"syntax error: expected one of [$end '(' ';']"
+
+// state set: [273]
+insert into identifier values '(' falseKwd ')' ',' '(' error
+"syntax error: expected ExpressionList or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]"
+
+// state set: [274]
+insert into identifier values '(' falseKwd ')' ',' '(' falseKwd error
+"syntax error: expected ')'"
+
+// state set: [275]
+insert into identifier values '(' falseKwd ')' ',' '(' falseKwd ')' error
+"syntax error: expected one of [$end ',' ';']"
+
+// state set: [9 21]
+rollback error
+"syntax error: expected one of [$end ';']"
+
+// state set: [10 201]
+selectKwd error
+"syntax error: expected SelectStmtDistinct or SelectStmtFieldList or one of ['!' '(' '*' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type distinct durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]"
+
+// state set: [87]
+selectKwd '!' error
+"syntax error: expected PrimaryExpression or one of ['(' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]"
+
+// state set: [123]
+selectKwd '!' falseKwd error
+"syntax error: expected Call or Index or Slice or one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]"
+
+// state set: [54]
+selectKwd '(' error
+"syntax error: expected Expression or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]"
+
+// state set: [141]
+selectKwd '(' falseKwd error
+"syntax error: expected logOr or one of [')' or oror]"
+
+// state set: [142]
+selectKwd '(' falseKwd ')' error
+"syntax error: expected one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]"
+
+// state set: [206 207]
+selectKwd '*' error
+"syntax error: expected from"
+
+// state set: [208]
+selectKwd '*' from error
+"syntax error: expected RecordSetList or one of ['(' identifier]"
+
+// state set: [211]
+selectKwd '*' from '(' error
+"syntax error: expected SelectStmt or selectKwd"
+
+// state set: [247 248]
+selectKwd '*' from '(' selectKwd '*' from identifier error
+"syntax error: expected RecordSet11 or one of [')' ';']"
+
+// state set: [250]
+selectKwd '*' from '(' selectKwd '*' from identifier ')' error
+"syntax error: expected one of [$end ')' ',' ';' as group limit offset order where]"
+
+// state set: [249]
+selectKwd '*' from '(' selectKwd '*' from identifier ';' error
+"syntax error: expected ')'"
+
+// state set: [22 209 210 212 213 215 218 221 223 226 251]
+selectKwd '*' from identifier error
+"syntax error: expected RecordSet2 or SelectStmtGroup or SelectStmtLimit or SelectStmtOffset or SelectStmtOrder or SelectStmtWhere or one of [$end ')' ',' ';' as group limit offset order where]"
+
+// state set: [214 242 243 244 245 246]
+selectKwd '*' from identifier ',' error
+"syntax error: expected RecordSet or SelectStmtGroup or SelectStmtLimit or SelectStmtOffset or SelectStmtOrder or SelectStmtWhere or one of [$end '(' ')' ';' group identifier limit offset order where]"
+
+// state set: [241]
+selectKwd '*' from identifier ',' identifier error
+"syntax error: expected one of [$end ')' ',' ';' group limit offset order where]"
+
+// state set: [252]
+selectKwd '*' from identifier as error
+"syntax error: expected identifier"
+
+// state set: [253]
+selectKwd '*' from identifier as identifier error
+"syntax error: expected one of [$end ')' ',' ';' group limit offset order where]"
+
+// state set: [217]
+selectKwd '*' from identifier group error
+"syntax error: expected by"
+
+// state set: [234]
+selectKwd '*' from identifier group by error
+"syntax error: expected ColumnNameList or identifier"
+
+// state set: [219 236]
+selectKwd '*' from identifier group by identifier error
+"syntax error: expected one of [$end ')' ';' limit offset order]"
+
+// state set: [224]
+selectKwd '*' from identifier limit error
+"syntax error: expected Expression or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]"
+
+// state set: [225]
+selectKwd '*' from identifier limit falseKwd error
+"syntax error: expected logOr or one of [$end ')' ';' offset or oror]"
+
+// state set: [227]
+selectKwd '*' from identifier offset error
+"syntax error: expected Expression or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]"
+
+// state set: [228]
+selectKwd '*' from identifier offset falseKwd error
+"syntax error: expected logOr or one of [$end ')' ';' or oror]"
+
+// state set: [220]
+selectKwd '*' from identifier order error
+"syntax error: expected by"
+
+// state set: [229]
+selectKwd '*' from identifier order by error
+"syntax error: expected ExpressionList or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]"
+
+// state set: [222 230 231]
+selectKwd '*' from identifier order by falseKwd error
+"syntax error: expected OrderBy1 or one of [$end ')' ';' asc desc limit offset]"
+
+// state set: [232]
+selectKwd '*' from identifier order by falseKwd asc error
+"syntax error: expected one of [$end ')' ';' limit offset]"
+
+// state set: [233]
+selectKwd '*' from identifier order by falseKwd desc error
+"syntax error: expected one of [$end ')' ';' limit offset]"
+
+// state set: [216]
+selectKwd '*' from identifier where falseKwd error
+"syntax error: expected one of [$end ')' ';' group limit offset order]"
+
+// state set: [89]
+selectKwd '+' error
+"syntax error: expected PrimaryExpression or one of ['(' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]"
+
+// state set: [90]
+selectKwd '+' falseKwd error
+"syntax error: expected Call or Index or Slice or one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]"
+
+// state set: [88]
+selectKwd '-' error
+"syntax error: expected PrimaryExpression or one of ['(' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]"
+
+// state set: [122]
+selectKwd '-' falseKwd error
+"syntax error: expected Call or Index or Slice or one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]"
+
+// state set: [86]
+selectKwd '^' error
+"syntax error: expected PrimaryExpression or one of ['(' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]"
+
+// state set: [124]
+selectKwd '^' falseKwd error
+"syntax error: expected Call or Index or Slice or one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]"
+
+// state set: [39 62]
+selectKwd bigIntType error
+"syntax error: expected one of [$end '(' ')' ',' ';']"
+
+// state set: [190]
+selectKwd bigIntType '(' error
+"syntax error: expected Expression or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]"
+
+// state set: [191]
+selectKwd bigIntType '(' falseKwd error
+"syntax error: expected logOr or one of [')' or oror]"
+
+// state set: [56 192]
+selectKwd bigIntType '(' falseKwd ')' error
+"syntax error: expected one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]"
+
+// state set: [63]
+selectKwd bigRatType error
+"syntax error: expected one of [$end '(' ')' ',' ';']"
+
+// state set: [64]
+selectKwd blobType error
+"syntax error: expected one of [$end '(' ')' ',' ';']"
+
+// state set: [65]
+selectKwd boolType error
+"syntax error: expected one of [$end '(' ')' ',' ';']"
+
+// state set: [66]
+selectKwd byteType error
+"syntax error: expected one of [$end '(' ')' ',' ';']"
+
+// state set: [67]
+selectKwd complex128Type error
+"syntax error: expected one of [$end '(' ')' ',' ';']"
+
+// state set: [68]
+selectKwd complex64Type error
+"syntax error: expected one of [$end '(' ')' ',' ';']"
+
+// state set: [202]
+selectKwd distinct error
+"syntax error: expected one of ['!' '(' '*' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]"
+
+// state set: [69]
+selectKwd durationType error
+"syntax error: expected one of [$end '(' ')' ',' ';']"
+
+// state set: [40 42 43 44 51 55 57 58 59 61 203 204 205 256]
+selectKwd falseKwd error
+"syntax error: expected Call or Field1 or Index or Slice or logAnd or logOr or one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]"
+
+// state set: [131]
+selectKwd falseKwd '%' error
+"syntax error: expected UnaryExpr or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]"
+
+// state set: [136]
+selectKwd falseKwd '%' falseKwd error
+"syntax error: expected one of [$end '%' '&' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' ']' '^' '|' and andand andnot as asc between desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]"
+
+// state set: [128]
+selectKwd falseKwd '&' error
+"syntax error: expected UnaryExpr or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]"
+
+// state set: [139]
+selectKwd falseKwd '&' falseKwd error
+"syntax error: expected one of [$end '%' '&' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' ']' '^' '|' and andand andnot as asc between desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]"
+
+// state set: [91 114]
+selectKwd falseKwd '(' error
+"syntax error: expected Call1 or one of ['!' '(' ')' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]"
+
+// state set: [95 121]
+selectKwd falseKwd '(' ')' error
+"syntax error: expected one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]"
+
+// state set: [115 116 117 118]
+selectKwd falseKwd '(' falseKwd error
+"syntax error: expected ExpressionList1 or ExpressionList2 or logOr or one of [$end ')' ',' ';' asc desc limit offset or oror]"
+
+// state set: [119]
+selectKwd falseKwd '(' falseKwd ',' error
+"syntax error: expected Expression or one of [$end '!' '(' ')' '+' '-' ';' '^' asc bigIntType bigRatType blobType boolType byteType complex128Type complex64Type desc durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType limit null offset qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]"
+
+// state set: [120]
+selectKwd falseKwd '(' falseKwd ',' falseKwd error
+"syntax error: expected logOr or one of [$end ')' ',' ';' asc desc limit offset or oror]"
+
+// state set: [133]
+selectKwd falseKwd '*' error
+"syntax error: expected UnaryExpr or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]"
+
+// state set: [134]
+selectKwd falseKwd '*' falseKwd error
+"syntax error: expected one of [$end '%' '&' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' ']' '^' '|' and andand andnot as asc between desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]"
+
+// state set: [146]
+selectKwd falseKwd '+' error
+"syntax error: expected PrimaryTerm or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]"
+
+// state set: [147]
+selectKwd falseKwd '+' falseKwd error
+"syntax error: expected one of [$end '%' '&' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' ']' '^' '|' and andand andnot as asc between desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]"
+
+// state set: [254]
+selectKwd falseKwd ',' error
+"syntax error: expected Field or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType from identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]"
+
+// state set: [255]
+selectKwd falseKwd ',' falseKwd error
+"syntax error: expected one of [',' from]"
+
+// state set: [145]
+selectKwd falseKwd '-' error
+"syntax error: expected PrimaryTerm or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]"
+
+// state set: [148]
+selectKwd falseKwd '-' falseKwd error
+"syntax error: expected one of [$end '%' '&' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' ']' '^' '|' and andand andnot as asc between desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]"
+
+// state set: [132]
+selectKwd falseKwd '/' error
+"syntax error: expected UnaryExpr or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]"
+
+// state set: [135]
+selectKwd falseKwd '/' falseKwd error
+"syntax error: expected one of [$end '%' '&' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' ']' '^' '|' and andand andnot as asc between desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]"
+
+// state set: [158]
+selectKwd falseKwd '<' error
+"syntax error: expected PrimaryFactor or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]"
+
+// state set: [165]
+selectKwd falseKwd '<' falseKwd error
+"syntax error: expected one of [$end ')' '+' ',' '-' ':' ';' '<' '>' ']' '^' '|' and andand as asc between desc eq from ge group in is le like limit neq not offset or order oror where]"
+
+// state set: [156]
+selectKwd falseKwd '>' error
+"syntax error: expected PrimaryFactor or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]"
+
+// state set: [167]
+selectKwd falseKwd '>' falseKwd error
+"syntax error: expected one of [$end ')' '+' ',' '-' ':' ';' '<' '>' ']' '^' '|' and andand as asc between desc eq from ge group in is le like limit neq not offset or order oror where]"
+
+// state set: [92]
+selectKwd falseKwd '[' error
+"syntax error: expected Expression or one of ['!' '(' '+' '-' ':' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]"
+
+// state set: [97]
+selectKwd falseKwd '[' ':' error
+"syntax error: expected Expression or one of ['!' '(' '+' '-' ']' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]"
+
+// state set: [94 99]
+selectKwd falseKwd '[' ':' ']' error
+"syntax error: expected one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]"
+
+// state set: [98]
+selectKwd falseKwd '[' ':' falseKwd error
+"syntax error: expected logOr or one of [']' or oror]"
+
+// state set: [103]
+selectKwd falseKwd '[' ':' falseKwd ']' error
+"syntax error: expected one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]"
+
+// state set: [96]
+selectKwd falseKwd '[' falseKwd error
+"syntax error: expected logOr or one of [':' ']' or oror]"
+
+// state set: [110]
+selectKwd falseKwd '[' falseKwd ':' error
+"syntax error: expected Expression or one of ['!' '(' '+' '-' ']' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]"
+
+// state set: [112]
+selectKwd falseKwd '[' falseKwd ':' ']' error
+"syntax error: expected one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]"
+
+// state set: [111]
+selectKwd falseKwd '[' falseKwd ':' falseKwd error
+"syntax error: expected logOr or one of [']' or oror]"
+
+// state set: [113]
+selectKwd falseKwd '[' falseKwd ':' falseKwd ']' error
+"syntax error: expected one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]"
+
+// state set: [93 109]
+selectKwd falseKwd '[' falseKwd ']' error
+"syntax error: expected one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]"
+
+// state set: [143]
+selectKwd falseKwd '^' error
+"syntax error: expected PrimaryTerm or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]"
+
+// state set: [150]
+selectKwd falseKwd '^' falseKwd error
+"syntax error: expected one of [$end '%' '&' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' ']' '^' '|' and andand andnot as asc between desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]"
+
+// state set: [144]
+selectKwd falseKwd '|' error
+"syntax error: expected PrimaryTerm or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]"
+
+// state set: [149]
+selectKwd falseKwd '|' falseKwd error
+"syntax error: expected one of [$end '%' '&' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' ']' '^' '|' and andand andnot as asc between desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]"
+
+// state set: [105 107]
+selectKwd falseKwd and error
+"syntax error: expected Factor or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]"
+
+// state set: [108]
+selectKwd falseKwd and falseKwd error
+"syntax error: expected one of [$end ')' ',' ':' ';' ']' and andand as asc desc from group limit offset or order oror where]"
+
+// state set: [106]
+selectKwd falseKwd andand error
+"syntax error: expected one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]"
+
+// state set: [127]
+selectKwd falseKwd andnot error
+"syntax error: expected UnaryExpr or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]"
+
+// state set: [140]
+selectKwd falseKwd andnot falseKwd error
+"syntax error: expected one of [$end '%' '&' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' ']' '^' '|' and andand andnot as asc between desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]"
+
+// state set: [257]
+selectKwd falseKwd as error
+"syntax error: expected identifier"
+
+// state set: [258]
+selectKwd falseKwd as identifier error
+"syntax error: expected one of [',' from]"
+
+// state set: [153]
+selectKwd falseKwd between error
+"syntax error: expected PrimaryFactor or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]"
+
+// state set: [172]
+selectKwd falseKwd between falseKwd error
+"syntax error: expected one of ['+' '-' '^' '|' and]"
+
+// state set: [173]
+selectKwd falseKwd between falseKwd and error
+"syntax error: expected PrimaryFactor or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]"
+
+// state set: [174]
+selectKwd falseKwd between falseKwd and falseKwd error
+"syntax error: expected one of [$end ')' '+' ',' '-' ':' ';' ']' '^' '|' and andand as asc desc from group limit offset or order oror where]"
+
+// state set: [160]
+selectKwd falseKwd eq error
+"syntax error: expected PrimaryFactor or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]"
+
+// state set: [163]
+selectKwd falseKwd eq falseKwd error
+"syntax error: expected one of [$end ')' '+' ',' '-' ':' ';' '<' '>' ']' '^' '|' and andand as asc between desc eq from ge group in is le like limit neq not offset or order oror where]"
+
+// state set: [155]
+selectKwd falseKwd ge error
+"syntax error: expected PrimaryFactor or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]"
+
+// state set: [168]
+selectKwd falseKwd ge falseKwd error
+"syntax error: expected one of [$end ')' '+' ',' '-' ':' ';' '<' '>' ']' '^' '|' and andand as asc between desc eq from ge group in is le like limit neq not offset or order oror where]"
+
+// state set: [151]
+selectKwd falseKwd in error
+"syntax error: expected '('"
+
+// state set: [185]
+selectKwd falseKwd in '(' error
+"syntax error: expected ExpressionList or SelectStmt or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType selectKwd stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]"
+
+// state set: [186]
+selectKwd falseKwd in '(' falseKwd error
+"syntax error: expected ')'"
+
+// state set: [189]
+selectKwd falseKwd in '(' falseKwd ')' error
+"syntax error: expected one of [$end ')' ',' ':' ';' ']' and andand as asc desc from group limit offset or order oror where]"
+
+// state set: [187]
+selectKwd falseKwd in '(' selectKwd '*' from identifier error
+"syntax error: expected ')'"
+
+// state set: [188]
+selectKwd falseKwd in '(' selectKwd '*' from identifier ')' error
+"syntax error: expected one of [$end ')' ',' ':' ';' ']' and andand as asc desc from group limit offset or order oror where]"
+
+// state set: [154]
+selectKwd falseKwd is error
+"syntax error: expected one of [not null]"
+
+// state set: [170]
+selectKwd falseKwd is not error
+"syntax error: expected null"
+
+// state set: [171]
+selectKwd falseKwd is not null error
+"syntax error: expected one of [$end ')' ',' ':' ';' ']' and andand as asc desc from group limit offset or order oror where]"
+
+// state set: [169]
+selectKwd falseKwd is null error
+"syntax error: expected one of [$end ')' ',' ':' ';' ']' and andand as asc desc from group limit offset or order oror where]"
+
+// state set: [157]
+selectKwd falseKwd le error
+"syntax error: expected PrimaryFactor or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]"
+
+// state set: [166]
+selectKwd falseKwd le falseKwd error
+"syntax error: expected one of [$end ')' '+' ',' '-' ':' ';' '<' '>' ']' '^' '|' and andand as asc between desc eq from ge group in is le like limit neq not offset or order oror where]"
+
+// state set: [161]
+selectKwd falseKwd like error
+"syntax error: expected PrimaryFactor or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]"
+
+// state set: [162]
+selectKwd falseKwd like falseKwd error
+"syntax error: expected one of [$end ')' '+' ',' '-' ':' ';' '<' '>' ']' '^' '|' and andand as asc between desc eq from ge group in is le like limit neq not offset or order oror where]"
+
+// state set: [129]
+selectKwd falseKwd lsh error
+"syntax error: expected UnaryExpr or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]"
+
+// state set: [138]
+selectKwd falseKwd lsh falseKwd error
+"syntax error: expected one of [$end '%' '&' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' ']' '^' '|' and andand andnot as asc between desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]"
+
+// state set: [159]
+selectKwd falseKwd neq error
+"syntax error: expected PrimaryFactor or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]"
+
+// state set: [164]
+selectKwd falseKwd neq falseKwd error
+"syntax error: expected one of [$end ')' '+' ',' '-' ':' ';' '<' '>' ']' '^' '|' and andand as asc between desc eq from ge group in is le like limit neq not offset or order oror where]"
+
+// state set: [152]
+selectKwd falseKwd not error
+"syntax error: expected one of [between in]"
+
+// state set: [176]
+selectKwd falseKwd not between error
+"syntax error: expected PrimaryFactor or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]"
+
+// state set: [177]
+selectKwd falseKwd not between falseKwd error
+"syntax error: expected one of ['+' '-' '^' '|' and]"
+
+// state set: [178]
+selectKwd falseKwd not between falseKwd and error
+"syntax error: expected PrimaryFactor or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]"
+
+// state set: [179]
+selectKwd falseKwd not between falseKwd and falseKwd error
+"syntax error: expected one of [$end ')' '+' ',' '-' ':' ';' ']' '^' '|' and andand as asc desc from group limit offset or order oror where]"
+
+// state set: [175]
+selectKwd falseKwd not in error
+"syntax error: expected '('"
+
+// state set: [180]
+selectKwd falseKwd not in '(' error
+"syntax error: expected ExpressionList or SelectStmt or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType selectKwd stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]"
+
+// state set: [181]
+selectKwd falseKwd not in '(' falseKwd error
+"syntax error: expected ')'"
+
+// state set: [184]
+selectKwd falseKwd not in '(' falseKwd ')' error
+"syntax error: expected one of [$end ')' ',' ':' ';' ']' and andand as asc desc from group limit offset or order oror where]"
+
+// state set: [182]
+selectKwd falseKwd not in '(' selectKwd '*' from identifier error
+"syntax error: expected ')'"
+
+// state set: [183]
+selectKwd falseKwd not in '(' selectKwd '*' from identifier ')' error
+"syntax error: expected one of [$end ')' ',' ':' ';' ']' and andand as asc desc from group limit offset or order oror where]"
+
+// state set: [100 102]
+selectKwd falseKwd or error
+"syntax error: expected Term or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]"
+
+// state set: [104]
+selectKwd falseKwd or falseKwd error
+"syntax error: expected logAnd or one of [$end ')' ',' ':' ';' ']' and andand as asc desc from group limit offset or order oror where]"
+
+// state set: [101]
+selectKwd falseKwd oror error
+"syntax error: expected one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]"
+
+// state set: [130]
+selectKwd falseKwd rsh error
+"syntax error: expected UnaryExpr or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]"
+
+// state set: [137]
+selectKwd falseKwd rsh falseKwd error
+"syntax error: expected one of [$end '%' '&' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' ']' '^' '|' and andand andnot as asc between desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]"
+
+// state set: [71]
+selectKwd float32Type error
+"syntax error: expected one of [$end '(' ')' ',' ';']"
+
+// state set: [72]
+selectKwd float64Type error
+"syntax error: expected one of [$end '(' ')' ',' ';']"
+
+// state set: [47]
+selectKwd floatLit error
+"syntax error: expected one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]"
+
+// state set: [70]
+selectKwd floatType error
+"syntax error: expected one of [$end '(' ')' ',' ';']"
+
+// state set: [53 60]
+selectKwd identifier error
+"syntax error: expected one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '.' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]"
+
+// state set: [125]
+selectKwd identifier '.' error
+"syntax error: expected identifier"
+
+// state set: [126]
+selectKwd identifier '.' identifier error
+"syntax error: expected one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]"
+
+// state set: [48]
+selectKwd imaginaryLit error
+"syntax error: expected one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]"
+
+// state set: [74]
+selectKwd int16Type error
+"syntax error: expected one of [$end '(' ')' ',' ';']"
+
+// state set: [75]
+selectKwd int32Type error
+"syntax error: expected one of [$end '(' ')' ',' ';']"
+
+// state set: [76]
+selectKwd int64Type error
+"syntax error: expected one of [$end '(' ')' ',' ';']"
+
+// state set: [77]
+selectKwd int8Type error
+"syntax error: expected one of [$end '(' ')' ',' ';']"
+
+// state set: [49]
+selectKwd intLit error
+"syntax error: expected one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]"
+
+// state set: [73]
+selectKwd intType error
+"syntax error: expected one of [$end '(' ')' ',' ';']"
+
+// state set: [45]
+selectKwd null error
+"syntax error: expected one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]"
+
+// state set: [52]
+selectKwd qlParam error
+"syntax error: expected one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]"
+
+// state set: [78]
+selectKwd runeType error
+"syntax error: expected one of [$end '(' ')' ',' ';']"
+
+// state set: [50]
+selectKwd stringLit error
+"syntax error: expected one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]"
+
+// state set: [79]
+selectKwd stringType error
+"syntax error: expected one of [$end '(' ')' ',' ';']"
+
+// state set: [80]
+selectKwd timeType error
+"syntax error: expected one of [$end '(' ')' ',' ';']"
+
+// state set: [46]
+selectKwd trueKwd error
+"syntax error: expected one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]"
+
+// state set: [82]
+selectKwd uint16Type error
+"syntax error: expected one of [$end '(' ')' ',' ';']"
+
+// state set: [83]
+selectKwd uint32Type error
+"syntax error: expected one of [$end '(' ')' ',' ';']"
+
+// state set: [84]
+selectKwd uint64Type error
+"syntax error: expected one of [$end '(' ')' ',' ';']"
+
+// state set: [85]
+selectKwd uint8Type error
+"syntax error: expected one of [$end '(' ')' ',' ';']"
+
+// state set: [81]
+selectKwd uintType error
+"syntax error: expected one of [$end '(' ')' ',' ';']"
+
+// state set: [26]
+truncate error
+"syntax error: expected tableKwd"
+
+// state set: [199]
+truncate tableKwd error
+"syntax error: expected TableName or identifier"
+
+// state set: [23 200]
+truncate tableKwd identifier error
+"syntax error: expected one of [$end ';']"
+
+// state set: [27]
+update error
+"syntax error: expected TableName or identifier"
+
+// state set: [28 29 30]
+update identifier error
+"syntax error: expected AssignmentList or oSet or one of [$end '(' ';' add drop identifier selectKwd set values where]"
+
+// state set: [32 34]
+update identifier identifier error
+"syntax error: expected one of [$end ')' ',' ';' '=' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType float32Type float64Type floatType int16Type int32Type int64Type int8Type intType limit offset order runeType stringType timeType uint16Type uint32Type uint64Type uint8Type uintType]"
+
+// state set: [197]
+update identifier identifier '=' error
+"syntax error: expected Expression or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]"
+
+// state set: [24 33 35 36 193 194 198]
+update identifier identifier '=' falseKwd error
+"syntax error: expected AssignmentList1 or AssignmentList2 or UpdateStmt1 or logOr or one of [$end ',' ';' or oror where]"
+
+// state set: [195]
+update identifier identifier '=' falseKwd ',' error
+"syntax error: expected Assignment or one of [$end ';' identifier where]"
+
+// state set: [196]
+update identifier identifier '=' falseKwd ',' identifier '=' falseKwd error
+"syntax error: expected one of [$end ',' ';' where]"
+
+// state set: [37]
+update identifier identifier '=' falseKwd where falseKwd error
+"syntax error: expected one of [$end ';']"
+
+// state set: [31]
+update identifier set error
+"syntax error: expected identifier"
+
