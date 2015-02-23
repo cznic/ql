@@ -724,9 +724,10 @@ func (s *insertIntoStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 	root := ctx.db.root
 	cc := ctx.db.cc
 	r := make([]interface{}, len(t.cols0))
+	m := map[interface{}]interface{}{}
 	for _, list := range s.lists {
 		for i, expr := range list {
-			val, err := expr.eval(ctx, nil, arg)
+			val, err := expr.eval(ctx, m, arg)
 			if err != nil {
 				return nil, err
 			}

@@ -2721,14 +2721,12 @@ func Example_id() {
 
 func eqRows(a, b [][]interface{}) bool {
 	if len(a) != len(b) {
-		dbg("")
 		return false
 	}
 
 	for i, rowa := range a {
 		rowb := b[i]
 		if len(rowa) != len(rowb) {
-			dbg("")
 			return false
 		}
 
@@ -2738,7 +2736,6 @@ func eqRows(a, b [][]interface{}) bool {
 			}
 		}
 	}
-	dbg("")
 	return true
 }
 
@@ -2774,10 +2771,6 @@ func TestInPredicateBug(t *testing.T) {
 		t.Fatalf("\n%v\n%v", g, e)
 	}
 
-	if g, e := len(rows), 5; g != e {
-		t.Fatal(g, e)
-	}
-
 	if _, _, err := db.Run(NewRWCtx(), `
 	BEGIN TRANSACTION;
 		TRUNCATE TABLE even;
@@ -2797,9 +2790,5 @@ func TestInPredicateBug(t *testing.T) {
 
 	if g, e := rows, [][]interface{}{{int64(1)}, {int64(3)}, {int64(5)}}; !eqRows(g, e) {
 		t.Fatalf("\n%v\n%v", g, e)
-	}
-
-	if g, e := len(rows), 2; g != e {
-		t.Fatal(g, e)
 	}
 }
