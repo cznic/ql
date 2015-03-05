@@ -9,6 +9,7 @@ import (
 	"log"
 	"math/rand"
 	"reflect"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -31,6 +32,9 @@ var builtin = map[string]struct {
 	"date":         {builtinDate, 8, 8, true, false},
 	"day":          {builtinDay, 1, 1, true, false},
 	"formatTime":   {builtinFormatTime, 2, 2, true, false},
+	"formatFloat":  {builtinFormatFloat, 1, 4, true, false},
+	"formatInt":    {builtinFormatInt, 1, 2, true, false},
+	"formatUint":   {builtinFormatUint, 1, 2, true, false},
 	"hasPrefix":    {builtinHasPrefix, 2, 2, true, false},
 	"hasSuffix":    {builtinHasSuffix, 2, 2, true, false},
 	"hour":         {builtinHour, 1, 1, true, false},
@@ -362,6 +366,125 @@ func builtinFormatTime(arg []interface{}, ctx map[interface{}]interface{}) (v in
 	default:
 		return nil, invArg(x, "formatTime")
 	}
+}
+
+func builtinFormatFloat(arg []interface{}, ctx map[interface{}]interface{}) (v interface{}, err error) {
+	var val float64
+	var fmt byte = 'g'
+
+	prec := -1
+	bitSize := 64
+
+	switch x := arg[0].(type) {
+	case nil:
+		return nil, nil
+	case float32:
+		val = float64(x)
+	case float64:
+		val = x
+	default:
+		return nil, invArg(x, "formatFloat")
+	}
+
+	switch len(arg) {
+	case 4:
+		switch y := arg[3].(type) {
+		case nil:
+			return nil, nil
+		case int:
+			bitSize = y
+		default:
+			return nil, invArg(y, "formatFloat")
+		}
+		fallthrough
+	case 3:
+		switch y := arg[3].(type) {
+		case nil:
+			return nil, nil
+		case int:
+			prec = y
+		default:
+			return nil, invArg(y, "formatFloat")
+		}
+		fallthrough
+	case 2:
+		switch y := arg[3].(type) {
+		case nil:
+			return nil, nil
+		case byte:
+			fmt = y
+		default:
+			return nil, invArg(y, "formatFloat")
+		}
+	}
+
+	return strconv.FormatFloat(val, fmt, prec, bitSize), nil
+}
+
+func builtinFormatInt(arg []interface{}, ctx map[interface{}]interface{}) (v interface{}, err error) {
+	var val int64
+
+	base := 10
+
+	switch x := arg[0].(type) {
+	case nil:
+		return nil, nil
+	case int32:
+		val = int64(x)
+	case int:
+		val = int64(x)
+	case int64:
+		val = x
+	default:
+		return nil, invArg(x, "formatInt")
+	}
+
+	switch len(arg) {
+	case 2:
+		switch y := arg[1].(type) {
+		case nil:
+			return nil, nil
+		case int:
+			base = y
+		default:
+			return nil, invArg(y, "formatInt")
+		}
+	}
+
+	return strconv.FormatInt(val, base), nil
+}
+
+func builtinFormatUint(arg []interface{}, ctx map[interface{}]interface{}) (v interface{}, err error) {
+	var val uint64
+
+	base := 10
+
+	switch x := arg[0].(type) {
+	case nil:
+		return nil, nil
+	case uint32:
+		val = uint64(x)
+	case uint:
+		val = uint64(x)
+	case uint64:
+		val = x
+	default:
+		return nil, invArg(x, "formatUint")
+	}
+
+	switch len(arg) {
+	case 2:
+		switch y := arg[1].(type) {
+		case nil:
+			return nil, nil
+		case int:
+			base = y
+		default:
+			return nil, invArg(y, "formatUint")
+		}
+	}
+
+	return strconv.FormatUint(val, base), nil
 }
 
 func builtinHasPrefix(arg []interface{}, _ map[interface{}]interface{}) (v interface{}, err error) {
