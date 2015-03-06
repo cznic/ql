@@ -15,6 +15,9 @@
 //
 // Change list
 //
+// 2015-03-06: New built-in functions formatFloat and formatInt. Thanks
+// urandom! (https://github.com/urandom)
+//
 // 2015-02-16: IN predicate now accepts a SELECT statement. See the updated
 // "Predicates" section.
 //
