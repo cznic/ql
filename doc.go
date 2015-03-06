@@ -565,13 +565,13 @@
 //
 // The following functions are implicitly declared
 //
-//	avg          complex     contains   count      date
-//	day          formatTime  hasPrefix  hasSuffix  hour
-//	hours        id          imag       len        max
-//	min          minute      minutes    month      nanosecond
-//	nanoseconds  now         parseTime  real       second
-//	seconds      since       sum        timeIn     weekday
-//	year         yearDay
+//	avg          complex     contains    count       date
+//	day          formatTime  formatFloat formatInt
+//	hasPrefix    hasSuffix   hour        hours       id
+//	imag         len         max         min         minute
+//	minutes      month       nanosecond  nanoseconds now
+//	parseTime    real        second      seconds     since
+//	sum          timeIn      weekday     year        yearDay
 //
 // Expressions
 //
@@ -1874,6 +1874,35 @@
 //
 // on a machine in the ACDT zone. The time value is in both cases the same so
 // its ordering and comparing is correct. Only the display value can differ.
+//
+// Format numbers
+//
+// The built-in functions formatFloat and formatInt format numbers
+// to strings using go's number format functions in the `strconv` package. For
+// all three functions, only the first argument is mandatory. The default values
+// of the rest are shown in the examples. If the first argument is NULL, the
+// result is NULL.
+//
+//	formatFloat(43.2[, 'g', -1, 64]) string
+//
+// returns
+//
+//	"43.2"
+//
+//	formatInt(-42[, 10]) string
+//
+// returns
+//
+//	"-42"
+//
+//	formatInt(uint32(42)[, 10]) string
+//
+// returns
+//
+//	"42"
+//
+// Unlike the `strconv` equivalent, the formatInt function handles all integer
+// types, both signed and unsigned.
 //
 // HasPrefix
 //
