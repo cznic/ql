@@ -379,6 +379,7 @@ func builtinFormatFloat(arg []interface{}, ctx map[interface{}]interface{}) (v i
 		return nil, nil
 	case float32:
 		val = float64(x)
+		bitSize = 32
 	case float64:
 		val = x
 	default:
