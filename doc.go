@@ -566,7 +566,7 @@
 // The following functions are implicitly declared
 //
 //	avg          complex     contains    count       date
-//	day          formatTime  formatFloat formatInt   formatUint
+//	day          formatTime  formatFloat formatInt
 //	hasPrefix    hasSuffix   hour        hours       id
 //	imag         len         max         min         minute
 //	minutes      month       nanosecond  nanoseconds now
@@ -1877,7 +1877,7 @@
 //
 // Format numbers
 //
-// The built-in functions formatFloat, formatInt and formatUint format numbers
+// The built-in functions formatFloat and formatInt format numbers
 // to strings using go's number format functions in the `strconv` package. For
 // all three functions, only the first argument is mandatory. The default values
 // of the rest are shown in the examples. If the first argument is NULL, the
@@ -1895,11 +1895,14 @@
 //
 //	"-42"
 //
-//	formatUint(42[, 10]) string
+//	formatInt(uint32(42)[, 10]) string
 //
 // returns
 //
 //	"42"
+//
+// Unlike the `strconv` equivalent, the formatInt function handles all integer
+// types, both signed and unsigned.
 //
 // HasPrefix
 //

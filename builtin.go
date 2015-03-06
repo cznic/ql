@@ -34,7 +34,6 @@ var builtin = map[string]struct {
 	"formatTime":   {builtinFormatTime, 2, 2, true, false},
 	"formatFloat":  {builtinFormatFloat, 1, 4, true, false},
 	"formatInt":    {builtinFormatInt, 1, 2, true, false},
-	"formatUint":   {builtinFormatUint, 1, 2, true, false},
 	"hasPrefix":    {builtinHasPrefix, 2, 2, true, false},
 	"hasSuffix":    {builtinHasSuffix, 2, 2, true, false},
 	"hour":         {builtinHour, 1, 1, true, false},
@@ -422,19 +421,40 @@ func builtinFormatFloat(arg []interface{}, ctx map[interface{}]interface{}) (v i
 }
 
 func builtinFormatInt(arg []interface{}, ctx map[interface{}]interface{}) (v interface{}, err error) {
-	var val int64
+	var intVal int64
+	var uintVal uint64
 
+	uintType := false
 	base := 10
 
 	switch x := arg[0].(type) {
 	case nil:
 		return nil, nil
-	case int32:
-		val = int64(x)
 	case int:
-		val = int64(x)
+		intVal = int64(x)
+	case int8:
+		intVal = int64(x)
+	case int16:
+		intVal = int64(x)
+	case int32:
+		intVal = int64(x)
 	case int64:
-		val = x
+		intVal = x
+	case uint:
+		uintType = true
+		uintVal = uint64(x)
+	case uint8:
+		uintType = true
+		uintVal = uint64(x)
+	case uint16:
+		uintType = true
+		uintVal = uint64(x)
+	case uint32:
+		uintType = true
+		uintVal = uint64(x)
+	case uint64:
+		uintType = true
+		uintVal = x
 	default:
 		return nil, invArg(x, "formatInt")
 	}
@@ -451,40 +471,11 @@ func builtinFormatInt(arg []interface{}, ctx map[interface{}]interface{}) (v int
 		}
 	}
 
-	return strconv.FormatInt(val, base), nil
-}
-
-func builtinFormatUint(arg []interface{}, ctx map[interface{}]interface{}) (v interface{}, err error) {
-	var val uint64
-
-	base := 10
-
-	switch x := arg[0].(type) {
-	case nil:
-		return nil, nil
-	case uint32:
-		val = uint64(x)
-	case uint:
-		val = uint64(x)
-	case uint64:
-		val = x
-	default:
-		return nil, invArg(x, "formatUint")
+	if uintType {
+		return strconv.FormatUint(uintVal, base), nil
+	} else {
+		return strconv.FormatInt(intVal, base), nil
 	}
-
-	switch len(arg) {
-	case 2:
-		switch y := arg[1].(type) {
-		case nil:
-			return nil, nil
-		case int:
-			base = y
-		default:
-			return nil, invArg(y, "formatUint")
-		}
-	}
-
-	return strconv.FormatUint(val, base), nil
 }
 
 func builtinHasPrefix(arg []interface{}, _ map[interface{}]interface{}) (v interface{}, err error) {
