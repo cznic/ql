@@ -388,27 +388,30 @@ func builtinFormatFloat(arg []interface{}, ctx map[interface{}]interface{}) (v i
 
 	switch len(arg) {
 	case 4:
-		switch y := arg[3].(type) {
+		arg3 := coerce1(arg[3], int64(0))
+		switch y := arg3.(type) {
 		case nil:
 			return nil, nil
-		case int:
-			bitSize = y
+		case int64:
+			bitSize = int(y)
 		default:
 			return nil, invArg(y, "formatFloat")
 		}
 		fallthrough
 	case 3:
-		switch y := arg[3].(type) {
+		arg2 := coerce1(arg[2], int64(0))
+		switch y := arg2.(type) {
 		case nil:
 			return nil, nil
-		case int:
-			prec = y
+		case int64:
+			prec = int(y)
 		default:
 			return nil, invArg(y, "formatFloat")
 		}
 		fallthrough
 	case 2:
-		switch y := arg[3].(type) {
+		arg1 := coerce1(arg[1], byte(0))
+		switch y := arg1.(type) {
 		case nil:
 			return nil, nil
 		case byte:
@@ -431,8 +434,6 @@ func builtinFormatInt(arg []interface{}, ctx map[interface{}]interface{}) (v int
 	switch x := arg[0].(type) {
 	case nil:
 		return nil, nil
-	case int:
-		intVal = int64(x)
 	case int8:
 		intVal = int64(x)
 	case int16:
@@ -441,9 +442,6 @@ func builtinFormatInt(arg []interface{}, ctx map[interface{}]interface{}) (v int
 		intVal = int64(x)
 	case int64:
 		intVal = x
-	case uint:
-		uintType = true
-		uintVal = uint64(x)
 	case uint8:
 		uintType = true
 		uintVal = uint64(x)
@@ -462,11 +460,12 @@ func builtinFormatInt(arg []interface{}, ctx map[interface{}]interface{}) (v int
 
 	switch len(arg) {
 	case 2:
-		switch y := arg[1].(type) {
+		arg1 := coerce1(arg[1], int64(0))
+		switch y := arg1.(type) {
 		case nil:
 			return nil, nil
-		case int:
-			base = y
+		case int64:
+			base = int(y)
 		default:
 			return nil, invArg(y, "formatInt")
 		}
