@@ -17,8 +17,9 @@ import (
 )
 
 var (
-	oN = flag.Int("N", 0, "")
-	oM = flag.Int("M", 0, "")
+	oN        = flag.Int("N", 0, "")
+	oM        = flag.Int("M", 0, "")
+	oFastFail = flag.Bool("fastFail", false, "")
 )
 
 var testdata []string
@@ -322,7 +323,7 @@ func test(t *testing.T, s testDB) (panicked error) {
 			}
 
 			return true
-		}() {
+		}() && *oFastFail {
 			return
 		}
 	}
