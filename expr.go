@@ -3379,11 +3379,11 @@ func (c *call) eval(execCtx *execCtx, ctx map[interface{}]interface{}, args []in
 		return nil, fmt.Errorf("unknown function %s", c.f)
 	}
 
-	isId := c.f == "id"
+	isID := c.f == "id"
 	a := make([]interface{}, len(c.arg))
 	for i, arg := range c.arg {
 		if v, err = expand1(arg.eval(execCtx, ctx, args)); err != nil {
-			if !isId {
+			if !isID {
 				return nil, err
 			}
 

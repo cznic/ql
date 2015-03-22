@@ -636,7 +636,7 @@ ORDER BY name, id, department, id2;
 
 -- S 58
 SELECT * FROM;
-||syntax
+||expected .*RecordSetList
 
 -- S 59
 SELECT * FROM employee
@@ -665,7 +665,7 @@ SELECT none FROM (
 	SELECT * FROM employee;
 	SELECT * FROM department;
 );
-||syntax
+||expected .*'\)'
 
 -- S 62
 SELECT none FROM (
@@ -6381,7 +6381,7 @@ BEGIN TRANSACTION;
 	CREATE TABLE t (i int);
 COMMIT;
 SELECT * FROM q.t;
-||syntax error
+||expected .*where
 
 -- 574
 BEGIN TRANSACTION;
@@ -8317,7 +8317,7 @@ SELECT * FROM t ORDER BY i;
 
 -- 710 // https://github.com/cznic/ql/issues/43
 SELECT Name, Unique FROM __Index;
-||syntax error
+||expected .*Field
 
 -- 711
 BEGIN TRANSACTION;

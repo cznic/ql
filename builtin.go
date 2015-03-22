@@ -473,9 +473,9 @@ func builtinFormatInt(arg []interface{}, ctx map[interface{}]interface{}) (v int
 
 	if uintType {
 		return strconv.FormatUint(uintVal, base), nil
-	} else {
-		return strconv.FormatInt(intVal, base), nil
 	}
+
+	return strconv.FormatInt(intVal, base), nil
 }
 
 func builtinHasPrefix(arg []interface{}, _ map[interface{}]interface{}) (v interface{}, err error) {

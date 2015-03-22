@@ -260,7 +260,7 @@ func test(t *testing.T, s testDB) (panicked error) {
 		q = strings.Replace(q, "&oror;", "||", -1)
 		list, err := Compile(q)
 		if err != nil {
-			if !chk(itest, err, expErr, re) {
+			if !chk(itest, err, expErr, re) && *oFastFail {
 				return
 			}
 
