@@ -734,7 +734,8 @@ var (
 		yyXError{32, -1}:  "expected '='",
 		yyXError{195, -1}: "expected Assignment or one of [$end ';' identifier where]",
 		yyXError{30, -1}:  "expected AssignmentList or identifier",
-		yyXError{33, -1}:  "expected AssignmentList1 or one of [$end ',' ';' where]",
+		yyXError{29, -1}:  "expected AssignmentList or oSet or one of [identifier set]",
+		yyXError{33, -1}:  "expected AssignmentList1 or AssignmentList2 or one of [$end ',' ';' where]",
 		yyXError{193, -1}: "expected AssignmentList2 or one of [$end ',' ';' where]",
 		yyXError{57, -1}:  "expected Call or Index or Slice or one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]",
 		yyXError{90, -1}:  "expected Call or Index or Slice or one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]",
@@ -750,12 +751,12 @@ var (
 		yyXError{239, -1}: "expected ColumnName or one of [$end ')' ';' identifier limit offset order]",
 		yyXError{234, -1}: "expected ColumnNameList or identifier",
 		yyXError{262, -1}: "expected ColumnNameList or identifier",
-		yyXError{235, -1}: "expected ColumnNameList1 or one of [$end ')' ',' ';' limit offset order]",
+		yyXError{235, -1}: "expected ColumnNameList1 or ColumnNameList2 or one of [$end ')' ',' ';' limit offset order]",
 		yyXError{237, -1}: "expected ColumnNameList2 or one of [$end ')' ',' ';' limit offset order]",
 		yyXError{311, -1}: "expected CreateIndexIfNotExists or one of [identifier ifKwd]",
 		yyXError{5, -1}:   "expected CreateIndexStmtUnique or one of [index tableKwd unique]",
-		yyXError{299, -1}: "expected CreateTableStmt1 or one of [')' ',']",
-		yyXError{307, -1}: "expected CreateTableStmt1 or one of [')' ',']",
+		yyXError{299, -1}: "expected CreateTableStmt1 or CreateTableStmt2 or one of [')' ',']",
+		yyXError{307, -1}: "expected CreateTableStmt1 or CreateTableStmt2 or one of [')' ',']",
 		yyXError{300, -1}: "expected CreateTableStmt2 or one of [')' ',']",
 		yyXError{308, -1}: "expected CreateTableStmt2 or one of [')' ',']",
 		yyXError{276, -1}: "expected DropIndexIfExists or one of [identifier ifKwd]",
@@ -774,13 +775,13 @@ var (
 		yyXError{229, -1}: "expected ExpressionList or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
 		yyXError{267, -1}: "expected ExpressionList or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
 		yyXError{273, -1}: "expected ExpressionList or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{116, -1}: "expected ExpressionList1 or logOr or one of [$end ')' ',' ';' asc desc limit offset or oror]",
+		yyXError{116, -1}: "expected ExpressionList1 or ExpressionList2 or logOr or one of [$end ')' ',' ';' asc desc limit offset or oror]",
 		yyXError{117, -1}: "expected ExpressionList2 or one of [$end ')' ',' ';' asc desc limit offset]",
 		yyXError{105, -1}: "expected Factor or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
 		yyXError{254, -1}: "expected Field or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType from identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
 		yyXError{203, -1}: "expected Field1 or logOr or one of [',' as from or oror]",
-		yyXError{260, -1}: "expected InsertIntoStmt1 or one of ['(' selectKwd values]",
-		yyXError{269, -1}: "expected InsertIntoStmt2 or one of [$end ',' ';']",
+		yyXError{260, -1}: "expected InsertIntoStmt1 or SelectStmt or one of ['(' selectKwd values]",
+		yyXError{269, -1}: "expected InsertIntoStmt2 or InsertIntoStmt3 or one of [$end ',' ';']",
 		yyXError{270, -1}: "expected InsertIntoStmt3 or one of [$end ',' ';']",
 		yyXError{230, -1}: "expected OrderBy1 or one of [$end ')' ';' asc desc limit offset]",
 		yyXError{86, -1}:  "expected PrimaryExpression or one of ['(' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
@@ -802,23 +803,23 @@ var (
 		yyXError{144, -1}: "expected PrimaryTerm or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
 		yyXError{145, -1}: "expected PrimaryTerm or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
 		yyXError{146, -1}: "expected PrimaryTerm or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{214, -1}: "expected RecordSet or SelectStmtWhere or one of [$end '(' ')' ';' group identifier limit offset order where]",
+		yyXError{214, -1}: "expected RecordSet or SelectStmtGroup or SelectStmtLimit or SelectStmtOffset or SelectStmtOrder or SelectStmtWhere or one of [$end '(' ')' ';' group identifier limit offset order where]",
 		yyXError{247, -1}: "expected RecordSet11 or one of [')' ';']",
 		yyXError{209, -1}: "expected RecordSet2 or one of [$end ')' ',' ';' as group limit offset order where]",
 		yyXError{208, -1}: "expected RecordSetList or one of ['(' identifier]",
 		yyXError{261, -1}: "expected SelectStmt or one of [selectKwd values]",
 		yyXError{211, -1}: "expected SelectStmt or selectKwd",
-		yyXError{10, -1}:  "expected SelectStmtDistinct or one of ['!' '(' '*' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type distinct durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
+		yyXError{10, -1}:  "expected SelectStmtDistinct or SelectStmtFieldList or one of ['!' '(' '*' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type distinct durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
 		yyXError{201, -1}: "expected SelectStmtFieldList or one of ['!' '(' '*' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{215, -1}: "expected SelectStmtGroup or one of [$end ')' ';' group limit offset order]",
-		yyXError{242, -1}: "expected SelectStmtGroup or one of [$end ')' ';' group limit offset order]",
-		yyXError{221, -1}: "expected SelectStmtLimit or one of [$end ')' ';' limit offset]",
-		yyXError{244, -1}: "expected SelectStmtLimit or one of [$end ')' ';' limit offset]",
+		yyXError{213, -1}: "expected SelectStmtGroup or SelectStmtLimit or SelectStmtOffset or SelectStmtOrder or SelectStmtWhere or one of [$end ')' ',' ';' group limit offset order where]",
+		yyXError{215, -1}: "expected SelectStmtGroup or SelectStmtLimit or SelectStmtOffset or SelectStmtOrder or one of [$end ')' ';' group limit offset order]",
+		yyXError{242, -1}: "expected SelectStmtGroup or SelectStmtLimit or SelectStmtOffset or SelectStmtOrder or one of [$end ')' ';' group limit offset order]",
+		yyXError{218, -1}: "expected SelectStmtLimit or SelectStmtOffset or SelectStmtOrder or one of [$end ')' ';' limit offset order]",
+		yyXError{243, -1}: "expected SelectStmtLimit or SelectStmtOffset or SelectStmtOrder or one of [$end ')' ';' limit offset order]",
+		yyXError{221, -1}: "expected SelectStmtLimit or SelectStmtOffset or one of [$end ')' ';' limit offset]",
+		yyXError{244, -1}: "expected SelectStmtLimit or SelectStmtOffset or one of [$end ')' ';' limit offset]",
 		yyXError{223, -1}: "expected SelectStmtOffset or one of [$end ')' ';' offset]",
 		yyXError{245, -1}: "expected SelectStmtOffset or one of [$end ')' ';' offset]",
-		yyXError{218, -1}: "expected SelectStmtOrder or one of [$end ')' ';' limit offset order]",
-		yyXError{243, -1}: "expected SelectStmtOrder or one of [$end ')' ';' limit offset order]",
-		yyXError{213, -1}: "expected SelectStmtWhere or one of [$end ')' ',' ';' group limit offset order where]",
 		yyXError{333, -1}: "expected Statement or one of [$end ';' alter begin commit create deleteKwd drop insert rollback selectKwd truncate update]",
 		yyXError{0, -1}:   "expected StatementList or one of [$end ';' alter begin commit create deleteKwd drop insert rollback selectKwd truncate update]",
 		yyXError{27, -1}:  "expected TableName or identifier",
@@ -879,7 +880,6 @@ var (
 		yyXError{293, -1}: "expected not",
 		yyXError{313, -1}: "expected not",
 		yyXError{170, -1}: "expected null",
-		yyXError{29, -1}:  "expected oSet or one of [identifier set]",
 		yyXError{316, -1}: "expected on",
 		yyXError{60, -1}:  "expected one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '.' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]",
 		yyXError{44, -1}:  "expected one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]",
@@ -1505,6 +1505,7 @@ func yyParse(yylex yyLexer) int {
 	yystate := 0
 	yychar := -1
 	var yyxchar int
+	var yyshift int
 	yyp := -1
 	goto yystack
 
@@ -1552,6 +1553,7 @@ yynewstate:
 		yychar = -1
 		yyVAL = yylval
 		yystate = yyn
+		yyshift = yyn
 		if yyDebug >= 2 {
 			__yyfmt__.Printf("shift, and goto state %d\n", yystate)
 		}
@@ -1574,11 +1576,15 @@ yynewstate:
 			if yyDebug >= 1 {
 				__yyfmt__.Printf("no action for %s in state %d\n", yySymName(yychar), yystate)
 			}
-			k := yyXError{yystate, yyxchar}
-			msg, ok := yyXErrors[k]
+			msg, ok := yyXErrors[yyXError{yystate, yyxchar}]
 			if !ok {
-				k.xsym = -1
-				msg, ok = yyXErrors[k]
+				msg, ok = yyXErrors[yyXError{yystate, -1}]
+			}
+			if !ok && yyshift != 0 {
+				msg, ok = yyXErrors[yyXError{yyshift, yyxchar}]
+			}
+			if !ok {
+				msg, ok = yyXErrors[yyXError{yyshift, -1}]
 			}
 			if !ok {
 				msg = "syntax error"
