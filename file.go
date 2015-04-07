@@ -767,6 +767,9 @@ func (s *file) free(h int64, blobCols []*col) (err error) {
 		if col.index >= len(rec) {
 			return fmt.Errorf("(file-004) file.free: corrupted DB (record len)")
 		}
+		if !(len(rec) > col.index+2) {
+			break
+		}
 
 		switch x := rec[col.index+2].(type) {
 		case nil:
@@ -796,6 +799,9 @@ func (s *file) Read(dst []interface{}, h int64, cols ...*col) (data []interface{
 
 	for _, col := range cols {
 		i := col.index + 2
+		if !(len(rec) > i) {
+			break
+		}
 		switch col.typ {
 		case 0:
 		case qBool:
