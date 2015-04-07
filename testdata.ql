@@ -9723,3 +9723,13 @@ COMMIT;
 SELECT formatInt(c, 18) FROM t;
 |s
 [26]
+-- 809
+BEGIN TRANSACTION;
+        CREATE TABLE t (i int);
+        INSERT INTO t VALUES(42);
+        ALTER TABLE t ADD b blob;
+        UPDATE t b = blob("a");
+COMMIT;
+SELECT * FROM t;
+|li, ?b
+[42 [97]]
