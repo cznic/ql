@@ -76,6 +76,24 @@
 //
 // 2014-04-07: Introduction of indices.
 //
+// Building non CGO QL
+//
+// QL imports zappy[8], a block-based compressor, which speeds up its
+// performance by using a C version of the compression/decompression
+// algorithms.  If a CGO-free (pure Go) version of QL, or an app using QL, is
+// required, please include 'purego' in the -tags option of go
+// {build,get,install}. For example:
+//
+//	$ go get -tags purego github.com/cznic/ql
+//
+// If zappy was installed before installing QL, it might be necessary to
+// rebuild zappy first (or rebuild QL with all its dependencies using the -a
+// option):
+//
+//	$ touch "$GOPATH"/src/github.com/cznic/zappy/*.go
+//	$ go install -tags purego github.com/cznic/zappy
+//	$ go install github.com/cznic/ql
+//
 // Notation
 //
 // The syntax is specified using Extended Backus-Naur Form (EBNF)
@@ -2248,6 +2266,7 @@
 //	[5]: http://golang.org/LICENSE
 //	[6]: http://golang.org/pkg/regexp/#Regexp.MatchString
 //	[7]: http://developer.mimer.com/validator/sql-reserved-words.tml
+//	[8]: http://godoc.org/github.com/cznic/zappy
 //
 // Implementation details
 //
