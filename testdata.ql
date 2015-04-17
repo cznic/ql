@@ -9773,14 +9773,14 @@ COMMIT;
 BEGIN TRANSACTION;
 	CREATE TABLE t (i int);
 COMMIT;
-SELECT * FROM __Column2
+SELECT * FROM __Column2;
 ||does not exist
 
 -- 816 // https://github.com/cznic/ql/issues/85
 BEGIN TRANSACTION;
 	CREATE TABLE t (i int DEFAULT 42);
 COMMIT;
-SELECT * FROM __Column2
+SELECT * FROM __Column2;
 |sTableName, sName, bNotNull, sConstraintExpr, sDefaultExpr
 [t i false  42]
 
@@ -9788,7 +9788,7 @@ SELECT * FROM __Column2
 BEGIN TRANSACTION;
 	CREATE TABLE t (i int NOT NULL);
 COMMIT;
-SELECT * FROM __Column2
+SELECT * FROM __Column2;
 |sTableName, sName, bNotNull, sConstraintExpr, sDefaultExpr
 [t i true  ]
 
@@ -9796,7 +9796,7 @@ SELECT * FROM __Column2
 BEGIN TRANSACTION;
 	CREATE TABLE t (i int NOT NULL DEFAULT 43);
 COMMIT;
-SELECT * FROM __Column2
+SELECT * FROM __Column2;
 |sTableName, sName, bNotNull, sConstraintExpr, sDefaultExpr
 [t i true  43]
 
@@ -9804,7 +9804,7 @@ SELECT * FROM __Column2
 BEGIN TRANSACTION;
 	CREATE TABLE t (i int i > 44);
 COMMIT;
-SELECT * FROM __Column2
+SELECT * FROM __Column2;
 |sTableName, sName, bNotNull, sConstraintExpr, sDefaultExpr
 [t i false i>44 ]
 
@@ -9812,7 +9812,7 @@ SELECT * FROM __Column2
 BEGIN TRANSACTION;
 	CREATE TABLE t (i int i > 45 DEFAULT 46);
 COMMIT;
-SELECT * FROM __Column2
+SELECT * FROM __Column2;
 |sTableName, sName, bNotNull, sConstraintExpr, sDefaultExpr
 [t i false i>45 46]
 
@@ -9821,7 +9821,7 @@ BEGIN TRANSACTION;
 	CREATE TABLE t (i int);
 	ALTER TABLE t ADD s string;
 COMMIT;
-SELECT * FROM __Column2
+SELECT * FROM __Column2;
 ||does not exist
 
 -- 822 // https://github.com/cznic/ql/issues/85
@@ -9831,7 +9831,7 @@ COMMIT;
 BEGIN TRANSACTION;
 	ALTER TABLE t ADD s string;
 COMMIT;
-SELECT * FROM __Column2
+SELECT * FROM __Column2;
 ||does not exist
 
 -- 823 // https://github.com/cznic/ql/issues/85
@@ -9839,7 +9839,7 @@ BEGIN TRANSACTION;
 	CREATE TABLE t (i int);
 	ALTER TABLE t ADD s string DEFAULT "foo";
 COMMIT;
-SELECT * FROM __Column2
+SELECT * FROM __Column2;
 |sTableName, sName, bNotNull, sConstraintExpr, sDefaultExpr
 [t s false  "foo"]
 
@@ -9850,7 +9850,7 @@ COMMIT;
 BEGIN TRANSACTION;
 	ALTER TABLE t ADD s string DEFAULT "foo";
 COMMIT;
-SELECT * FROM __Column2
+SELECT * FROM __Column2;
 |sTableName, sName, bNotNull, sConstraintExpr, sDefaultExpr
 [t s false  "foo"]
 
@@ -9859,7 +9859,7 @@ BEGIN TRANSACTION;
 	CREATE TABLE t (i int);
 	ALTER TABLE t ADD s string NOT NULL;
 COMMIT;
-SELECT * FROM __Column2
+SELECT * FROM __Column2;
 |sTableName, sName, bNotNull, sConstraintExpr, sDefaultExpr
 [t s true  ]
 
@@ -9870,7 +9870,7 @@ COMMIT;
 BEGIN TRANSACTION;
 	ALTER TABLE t ADD s string NOT NULL;
 COMMIT;
-SELECT * FROM __Column2
+SELECT * FROM __Column2;
 |sTableName, sName, bNotNull, sConstraintExpr, sDefaultExpr
 [t s true  ]
 
@@ -9880,7 +9880,7 @@ BEGIN TRANSACTION;
 	INSERT INTO t VALUES(42);
 	ALTER TABLE t ADD s string NOT NULL;
 COMMIT;
-SELECT * FROM __Column2
+SELECT * FROM __Column2;
 ||existing data
 
 -- 828 // https://github.com/cznic/ql/issues/85
@@ -9891,7 +9891,7 @@ COMMIT;
 BEGIN TRANSACTION;
 	ALTER TABLE t ADD s string NOT NULL;
 COMMIT;
-SELECT * FROM __Column2
+SELECT * FROM __Column2;
 ||existing data
 
 -- 829 // https://github.com/cznic/ql/issues/85
@@ -9900,7 +9900,7 @@ BEGIN TRANSACTION;
 	INSERT INTO t VALUES(42);
 	ALTER TABLE t ADD s string s > "";
 COMMIT;
-SELECT * FROM __Column2
+SELECT * FROM __Column2;
 ||existing data
 
 -- 830 // https://github.com/cznic/ql/issues/85
@@ -9912,5 +9912,63 @@ COMMIT;
 BEGIN TRANSACTION;
 	ALTER TABLE t ADD s string s > "";
 COMMIT;
-SELECT * FROM __Column2
+SELECT * FROM __Column2;
 ||existing data
+
+-- 831 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int DEFAULT 42, s string DEFAULT 43);
+COMMIT;
+SELECT * FROM __Column2 ORDER BY Name;
+|sTableName, sName, bNotNull, sConstraintExpr, sDefaultExpr
+[t i false  42]
+[t s false  43]
+
+-- 832 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int DEFAULT 42, s string DEFAULT 43);
+	ALTER TABLE t DROP COLUMN s;
+COMMIT;
+SELECT * FROM __Column2 ORDER BY Name;
+|sTableName, sName, bNotNull, sConstraintExpr, sDefaultExpr
+[t i false  42]
+
+-- 833 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int DEFAULT 42, s string DEFAULT 43);
+COMMIT;
+BEGIN TRANSACTION;
+	ALTER TABLE t DROP COLUMN s;
+COMMIT;
+SELECT * FROM __Column2 ORDER BY Name;
+|sTableName, sName, bNotNull, sConstraintExpr, sDefaultExpr
+[t i false  42]
+
+-- 834 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int DEFAULT 42, s string DEFAULT 43);
+	ALTER TABLE t DROP COLUMN i;
+COMMIT;
+SELECT * FROM __Column2 ORDER BY Name;
+|sTableName, sName, bNotNull, sConstraintExpr, sDefaultExpr
+[t s false  43]
+
+-- 835 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int DEFAULT 42, s string DEFAULT 43);
+COMMIT;
+BEGIN TRANSACTION;
+	ALTER TABLE t DROP COLUMN i;
+COMMIT;
+SELECT * FROM __Column2 ORDER BY Name;
+|sTableName, sName, bNotNull, sConstraintExpr, sDefaultExpr
+[t s false  43]
+
+-- 836 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int NOT NULL);
+	INSERT INTO t VALUES(42);
+COMMIT;
+SELECT * FROM __Column2 ORDER BY Name;
+|sTableName, sName, bNotNull, sConstraintExpr, sDefaultExpr
+[t i true  ]

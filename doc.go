@@ -1396,24 +1396,13 @@
 // This form prevents the data in column DepartmentName to be NULL.
 //
 // The second form allows an arbitrary boolean expression to be used to
-// validate the column data. If the value of the expression if true then the
+// validate the column. If the value of the expression if true then the
 // validation succeeded.
 //
 //	BEGIN TRANSACTION;
 // 		CREATE TABLE department (
 // 			DepartmentID   int,
 // 			DepartmentName string DepartmentName IN ("HQ", "R/D", "Lab", "HR"),
-// 		);
-//	COMMIT;
-//
-// The constraint expression can refer to other fields of the record.
-//
-//	BEGIN TRANSACTION;
-// 		CREATE TABLE department (
-//			foo int,
-//			bar int
-//				bar >= foo && bar < 42 * baz,
-//			baz int,
 // 		);
 //	COMMIT;
 //

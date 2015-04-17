@@ -72,6 +72,7 @@ func (s *updateStmt) String() string {
 }
 
 func (s *updateStmt) exec(ctx *execCtx) (_ Recordset, err error) {
+	//TODO constraints and defaults
 	t, ok := ctx.db.root.tables[s.tableName]
 	if !ok {
 		return nil, fmt.Errorf("UPDATE: table %s does not exist", s.tableName)
@@ -379,6 +380,13 @@ func (s *alterTableDropColumnStmt) String() string {
 	return fmt.Sprintf("ALTER TABLE %s DROP COLUMN %s;", s.tableName, s.colName)
 }
 
+var (
+	deleteColumn2 = mustCompile(`
+		delete from __Column2
+		where TableName == $1 && Name == $2
+	`)
+)
+
 func (s *alterTableDropColumnStmt) exec(ctx *execCtx) (Recordset, error) {
 	t, ok := ctx.db.root.tables[s.tableName]
 	if !ok {
@@ -390,6 +398,12 @@ func (s *alterTableDropColumnStmt) exec(ctx *execCtx) (Recordset, error) {
 		if c.name == s.colName {
 			if len(cols) == 1 {
 				return nil, fmt.Errorf("ALTER TABLE %s DROP COLUMN: cannot drop the only column: %s", s.tableName, s.colName)
+			}
+
+			if _, ok := ctx.db.root.tables["__Column2"]; ok {
+				if _, err := deleteColumn2.l[0].exec(&execCtx{db: ctx.db, arg: []interface{}{s.tableName, c.name}}); err != nil {
+					return nil, err
+				}
 			}
 
 			c.name = ""
@@ -665,7 +679,8 @@ func (s *insertIntoStmt) String() string {
 	}
 }
 
-func (s *insertIntoStmt) execSelect(t *table, cols []*col, ctx *execCtx) (_ Recordset, err error) {
+func (s *insertIntoStmt) execSelect(t *table, cols []*col, ctx *execCtx, constraints []*constraint, defaults []expression) (_ Recordset, err error) {
+	//TODO constraints and defaults
 	r := s.sel.exec0()
 	ok := false
 	h := t.head
@@ -728,6 +743,82 @@ func (s *insertIntoStmt) execSelect(t *table, cols []*col, ctx *execCtx) (_ Reco
 	return
 }
 
+var (
+	selectColumn2 = MustCompile(`
+		select Name, NotNull, ConstraintExpr, DefaultExpr
+		from __Column2
+		where TableName == $1
+	`)
+)
+
+func constraintsAndDefaults(ctx *execCtx, table string, cols []*col) (constraints []*constraint, defaults []expression, _ error) {
+	if table == "__Column2" {
+		return nil, nil, nil
+	}
+	_, ok := ctx.db.root.tables["__Column2"]
+	if !ok {
+		return nil, nil, nil
+	}
+
+	constraints = make([]*constraint, len(cols))
+	defaults = make([]expression, len(cols))
+	arg := []interface{}{table}
+	rs, err := selectColumn2.l[0].exec(&execCtx{db: ctx.db, arg: arg})
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var rows [][]interface{}
+	ok = false
+	if err := rs.(recordset).do(
+		&execCtx{db: ctx.db, arg: arg},
+		false,
+		func(id interface{}, data []interface{}) (more bool, err error) {
+			if ok {
+				rows = append(rows, data)
+				return true, nil
+			}
+
+			ok = true
+			return true, nil
+		},
+	); err != nil {
+		return nil, nil, err
+	}
+
+	for _, row := range rows {
+		nm := row[0].(string)
+		nonNull := row[1].(bool)
+		cexpr := row[2].(string)
+		dexpr := row[3].(string)
+		for i, c := range cols {
+			if c.name == nm {
+				co := &constraint{}
+				if !nonNull {
+					src := "select " + cexpr + " from t"
+					l, err := Compile(src)
+					if err != nil {
+						return nil, nil, fmt.Errorf("constraint %q: %v", cexpr, err)
+					}
+
+					co.expr = l.l[0].(*selectStmt).flds[0].expr
+				}
+				constraints[i] = co
+				if dexpr != "" {
+					src := "select " + dexpr + " from t"
+					l, err := Compile(src)
+					if err != nil {
+						return nil, nil, fmt.Errorf("default %q: %v", cexpr, err)
+					}
+
+					defaults[i] = l.l[0].(*selectStmt).flds[0].expr
+				}
+			}
+		}
+	}
+	return constraints, defaults, nil
+}
+
 func (s *insertIntoStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 	t, ok := ctx.db.root.tables[s.tableName]
 	if !ok {
@@ -749,8 +840,13 @@ func (s *insertIntoStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 		}
 	}
 
+	constraints, defaults, err := constraintsAndDefaults(ctx, s.tableName, cols)
+	if err != nil {
+		return nil, err
+	}
+
 	if s.sel != nil {
-		return s.execSelect(t, cols, ctx)
+		return s.execSelect(t, cols, ctx, constraints, defaults)
 	}
 
 	for _, list := range s.lists {
@@ -769,6 +865,19 @@ func (s *insertIntoStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 			val, err := expr.eval(ctx, m, arg)
 			if err != nil {
 				return nil, err
+			}
+
+			//TODO constraints and defaults
+			if len(constraints) != 0 { // => len(defaults) != 0 as well
+				//		V	C	D	?
+				//	#1	null	-	-	use V
+				//	#2	null	-	D	use D
+				//	#3	null	C	-	check V
+				//	#4	null	C	D	check D, set if ok
+				//	#5	V	-	-	use V
+				//	#6	V	-	D	use V
+				//	#7	V	C	-	check V
+				//	#8	V	C	D	check V
 			}
 
 			r[cols[i].index] = val
