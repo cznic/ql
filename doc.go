@@ -15,9 +15,6 @@
 //
 // Change list
 //
-// 2015-04-17: Added support for column constraints. DEFAULT (case insensitive)
-// is now a keyword, as it is used by other SQL dialects[9].
-//
 // 2015-03-06: New built-in functions formatFloat and formatInt. Thanks
 // urandom! (https://github.com/urandom)
 //
