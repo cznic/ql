@@ -9744,3 +9744,173 @@ COMMIT;
 SELECT * FROM t;
 |li, ?b
 [42 [97]]
+
+-- 810 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+        DROP TABLE __Column2;
+COMMIT;
+||system table
+
+-- 812 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+        CREATE TABLE __Column2 (i int);
+COMMIT;
+||system table
+
+-- 813 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+        UPDATE __Column2 SET i = 42;
+COMMIT;
+||system table
+
+-- 814 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+        CREATE INDEX __Column2Default ON __Column2(DefaultExpr);
+COMMIT;
+||system table
+
+-- 815 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+COMMIT;
+SELECT * FROM __Column2
+||does not exist
+
+-- 816 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int DEFAULT 42);
+COMMIT;
+SELECT * FROM __Column2
+|sTableName, sName, bNotNull, sConstraintExpr, sDefaultExpr
+[t i false  42]
+
+-- 817 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int NOT NULL);
+COMMIT;
+SELECT * FROM __Column2
+|sTableName, sName, bNotNull, sConstraintExpr, sDefaultExpr
+[t i true  ]
+
+-- 818 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int NOT NULL DEFAULT 43);
+COMMIT;
+SELECT * FROM __Column2
+|sTableName, sName, bNotNull, sConstraintExpr, sDefaultExpr
+[t i true  43]
+
+-- 819 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int i > 44);
+COMMIT;
+SELECT * FROM __Column2
+|sTableName, sName, bNotNull, sConstraintExpr, sDefaultExpr
+[t i false i>44 ]
+
+-- 820 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int i > 45 DEFAULT 46);
+COMMIT;
+SELECT * FROM __Column2
+|sTableName, sName, bNotNull, sConstraintExpr, sDefaultExpr
+[t i false i>45 46]
+
+-- 821 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	ALTER TABLE t ADD s string;
+COMMIT;
+SELECT * FROM __Column2
+||does not exist
+
+-- 822 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+COMMIT;
+BEGIN TRANSACTION;
+	ALTER TABLE t ADD s string;
+COMMIT;
+SELECT * FROM __Column2
+||does not exist
+
+-- 823 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	ALTER TABLE t ADD s string DEFAULT "foo";
+COMMIT;
+SELECT * FROM __Column2
+|sTableName, sName, bNotNull, sConstraintExpr, sDefaultExpr
+[t s false  "foo"]
+
+-- 824 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+COMMIT;
+BEGIN TRANSACTION;
+	ALTER TABLE t ADD s string DEFAULT "foo";
+COMMIT;
+SELECT * FROM __Column2
+|sTableName, sName, bNotNull, sConstraintExpr, sDefaultExpr
+[t s false  "foo"]
+
+-- 825 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	ALTER TABLE t ADD s string NOT NULL;
+COMMIT;
+SELECT * FROM __Column2
+|sTableName, sName, bNotNull, sConstraintExpr, sDefaultExpr
+[t s true  ]
+
+-- 826 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+COMMIT;
+BEGIN TRANSACTION;
+	ALTER TABLE t ADD s string NOT NULL;
+COMMIT;
+SELECT * FROM __Column2
+|sTableName, sName, bNotNull, sConstraintExpr, sDefaultExpr
+[t s true  ]
+
+-- 827 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(42);
+	ALTER TABLE t ADD s string NOT NULL;
+COMMIT;
+SELECT * FROM __Column2
+||existing data
+
+-- 828 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(42);
+COMMIT;
+BEGIN TRANSACTION;
+	ALTER TABLE t ADD s string NOT NULL;
+COMMIT;
+SELECT * FROM __Column2
+||existing data
+
+-- 829 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(42);
+	ALTER TABLE t ADD s string s > "";
+COMMIT;
+SELECT * FROM __Column2
+||existing data
+
+-- 830 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES(42);
+	ALTER TABLE t ADD s string s > "";
+COMMIT;
+BEGIN TRANSACTION;
+	ALTER TABLE t ADD s string s > "";
+COMMIT;
+SELECT * FROM __Column2
+||existing data

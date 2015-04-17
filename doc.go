@@ -15,6 +15,9 @@
 //
 // Change list
 //
+// 2015-04-17: Added support for column constraints. DEFAULT (case insensitive)
+// is now a keyword, as it is used by other SQL dialects[9].
+//
 // 2015-03-06: New built-in functions formatFloat and formatInt. Thanks
 // urandom! (https://github.com/urandom)
 //
@@ -209,6 +212,7 @@
 // avoid using any identifiers starting with two underscores. For example
 //
 //	__Column
+//	__Column2
 //	__Index
 //	__Table
 //
@@ -222,11 +226,11 @@
 //	AS       complex128  float     int16   ORDER   uint32
 //	ASC      complex64   float32   int32   SELECT  uint64
 //	BETWEEN  CREATE      float64   int64   SET     uint8
-//	bigint   DELETE      FROM      int8    string  UNIQUE
-//	bigrat   DESC        GROUP     INTO    TABLE   UPDATE
-//	blob     DISTINCT    IF        LIMIT   time    VALUES
-//	bool     DROP        IN        LIKE    true    WHERE
-//	                               NOT     OR
+//	bigint   DEFAULT     FROM      int8    string  UNIQUE
+//	bigrat   DELETE      GROUP     INTO    TABLE   UPDATE
+//	blob     DESC        IF        LIMIT   time    VALUES
+//	bool     DISTINCT    IN        LIKE    true    WHERE
+//	         DROP                  NOT     OR
 //
 // Keywords are not case sensitive.
 //
@@ -1257,6 +1261,10 @@
 // 		ALTER TABLE Income DROP COLUMN Taxes;
 //	COMMIT;
 //
+// When adding a column to a table with existing data, the constraint clause of
+// the ColumnDef cannot be used. Adding a constrained column to an empty table
+// is fine.
+//
 // BEGIN TRANSACTION
 //
 // Begin transactions statements introduce a new transaction level. Every
@@ -1356,7 +1364,9 @@
 //  CreateTableStmt = "CREATE" "TABLE" [ "IF" "NOT" "EXISTS" ] TableName
 //  	"(" ColumnDef { "," ColumnDef } [ "," ] ")" .
 //
-//  ColumnDef = ColumnName Type .
+//  ColumnDef = ColumnName Type
+//  	[ "NOT" "NULL" | Expression ]
+//  	[ "DEFAULT" Expression ] .
 //  ColumnName = identifier .
 //  TableName = identifier .
 //
@@ -1375,6 +1385,40 @@
 //
 // The optional IF NOT EXISTS clause makes the statement a no operation if the
 // table already exists.
+//
+// The optional constraint clause has two forms. The first one is found in many
+// SQL dialects.
+//
+//	BEGIN TRANSACTION;
+// 		CREATE TABLE department (
+// 			DepartmentID   int,
+// 			DepartmentName string NOT NULL,
+// 		);
+//	COMMIT;
+//
+// This form prevents the data in column DepartmentName to be NULL.
+//
+// The second form allows an arbitrary boolean expression to be used to
+// validate the column data. If the value of the expression if true then the
+// validation succeeded.
+//
+//	BEGIN TRANSACTION;
+// 		CREATE TABLE department (
+// 			DepartmentID   int,
+// 			DepartmentName string DepartmentName IN ("HQ", "R/D", "Lab", "HR"),
+// 		);
+//	COMMIT;
+//
+// The constraint expression can refer to other fields of the record.
+//
+//	BEGIN TRANSACTION;
+// 		CREATE TABLE department (
+//			foo int,
+//			bar int
+//				bar >= foo && bar < 42 * baz,
+//			baz int,
+// 		);
+//	COMMIT;
 //
 // DELETE FROM
 //
@@ -2267,6 +2311,7 @@
 //	[6]: http://golang.org/pkg/regexp/#Regexp.MatchString
 //	[7]: http://developer.mimer.com/validator/sql-reserved-words.tml
 //	[8]: http://godoc.org/github.com/cznic/zappy
+//	[9]: http://www.w3schools.com/sql/sql_default.asp
 //
 // Implementation details
 //

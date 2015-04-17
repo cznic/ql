@@ -64,7 +64,10 @@ Assignment = ColumnName "=" Expression .
 AssignmentList = Assignment { "," Assignment } [ "," ] .
 BeginTransactionStmt = "BEGIN" "TRANSACTION" .
 Call = "(" [ ExpressionList ] ")" .
-ColumnDef = ColumnName Type .
+ColumnDef = ColumnName Type [
+		  "NOT" "NULL"
+		| Expression
+	  ] [ "DEFAULT" Expression ] .
 ColumnName = identifier .
 ColumnNameList = ColumnName { "," ColumnName } [ "," ] .
 CommitStmt = "COMMIT" .

@@ -34,7 +34,7 @@ import (
 %token	add alter and andand andnot as asc
 	begin between bigIntType bigRatType blobType boolType by byteType
 	column commit complex128Type complex64Type create
-	deleteKwd desc distinct drop durationType
+	defaultKwd deleteKwd desc distinct drop durationType
 	eq exists
 	falseKwd floatType float32Type float64Type floatLit from 
 	ge group
@@ -71,9 +71,11 @@ import (
 	AlterTableStmt Assignment AssignmentList AssignmentList1
 	BeginTransactionStmt
 	Call Call1 ColumnDef ColumnName ColumnNameList ColumnNameList1
-	CommitStmt Conversion CreateIndexStmt CreateIndexIfNotExists
-	CreateIndexStmtUnique CreateTableStmt CreateTableStmt1
-	DeleteFromStmt DropIndexStmt DropIndexIfExists DropTableStmt
+	CommitStmt Constraint ConstraintOpt Conversion CreateIndexStmt
+	CreateIndexIfNotExists CreateIndexStmtUnique CreateTableStmt
+	CreateTableStmt1
+	Default DefaultOpt DeleteFromStmt DropIndexStmt DropIndexIfExists
+	DropTableStmt
 	EmptyStmt Expression ExpressionList ExpressionList1
 	Factor Factor1 Field Field1 FieldList
 	GroupByClause
@@ -152,9 +154,13 @@ Call1:
 |	ExpressionList
 
 ColumnDef:
-	ColumnName Type
+	ColumnName Type ConstraintOpt DefaultOpt
 	{
-		$$ = &col{name: $1.(string), typ: $2.(int)}
+		x := &col{name: $1.(string), typ: $2.(int), constraint: $3.(*constraint)}
+		if $4 != nil {
+			x.dflt = $4.(expression)
+		}
+		$$ = x
 	}
 
 ColumnName:
@@ -186,6 +192,22 @@ CommitStmt:
 		$$ = commitStmt{}
 	}
 
+Constraint:
+	not null
+	{
+		$$ = &constraint{}
+	}
+|	Expression
+	{
+		$$ = &constraint{$1.(expression)}
+	}
+
+ConstraintOpt:
+	{
+		$$ = (*constraint)(nil)
+	}
+|	Constraint
+
 Conversion:
 	Type '(' Expression ')'
 	{
@@ -200,6 +222,10 @@ CreateIndexStmt:
 		if indexName == tableName || indexName == columnName {
 			yylex.(*lexer).err("index name collision: %s", indexName)
 			return 1
+		}
+
+		if yylex.(*lexer).root {
+			break
 		}
 
 		if isSystemName[indexName] || isSystemName[tableName] {
@@ -219,6 +245,10 @@ CreateIndexStmt:
 		if indexName == tableName {
 			yylex.(*lexer).err("index name collision: %s", indexName)
 			return 1
+		}
+
+		if yylex.(*lexer).root {
+			break
 		}
 
 		if isSystemName[indexName] || isSystemName[tableName] {
@@ -250,6 +280,11 @@ CreateTableStmt:
 	{
 		nm := $3.(string)
 		$$ = &createTableStmt{tableName: nm, cols: append([]*col{$5.(*col)}, $6.([]*col)...)}
+
+		if yylex.(*lexer).root {
+			break
+		}
+
 		if isSystemName[nm] {
 			yylex.(*lexer).err("name is used for system tables: %s", nm)
 			return 1
@@ -259,6 +294,11 @@ CreateTableStmt:
 	{
 		nm := $6.(string)
 		$$ = &createTableStmt{ifNotExists: true, tableName: nm, cols: append([]*col{$8.(*col)}, $9.([]*col)...)}
+
+		if yylex.(*lexer).root {
+			break
+		}
+
 		if isSystemName[nm] {
 			yylex.(*lexer).err("name is used for system tables: %s", nm)
 			return 1
@@ -279,14 +319,44 @@ CreateTableStmt2:
 	/* EMPTY */
 |	','
 
+Default:
+	defaultKwd Expression
+	{
+		$$ = $2
+	}
+
+DefaultOpt:
+	{
+		$$ = nil
+	}
+|	Default
+
 DeleteFromStmt:
 	deleteKwd from TableName
 	{
 		$$ = &truncateTableStmt{$3.(string)}
+
+		if yylex.(*lexer).root {
+			break
+		}
+
+		if isSystemName[$3.(string)] {
+			yylex.(*lexer).err("name is used for system tables: %s", $3.(string))
+			return 1
+		}
 	}
 |	deleteKwd from TableName WhereClause
 	{
 		$$ = &deleteStmt{tableName: $3.(string), where: $4.(*whereRset).expr}
+
+		if yylex.(*lexer).root {
+			break
+		}
+
+		if isSystemName[$3.(string)] {
+			yylex.(*lexer).err("name is used for system tables: %s", $3.(string))
+			return 1
+		}
 	}
 
 DropIndexStmt:
@@ -309,6 +379,11 @@ DropTableStmt:
 	{
 		nm := $3.(string)
 		$$ = &dropTableStmt{tableName: nm}
+
+		if yylex.(*lexer).root {
+			break
+		}
+
 		if isSystemName[nm] {
 			yylex.(*lexer).err("name is used for system tables: %s", nm)
 			return 1
@@ -318,6 +393,11 @@ DropTableStmt:
 	{
 		nm := $5.(string)
 		$$ = &dropTableStmt{ifExists: true, tableName: nm}
+
+		if yylex.(*lexer).root {
+			break
+		}
+
 		if isSystemName[nm] {
 			yylex.(*lexer).err("name is used for system tables: %s", nm)
 			return 1
@@ -520,6 +600,15 @@ InsertIntoStmt:
 	insert into TableName InsertIntoStmt1 values '(' ExpressionList ')' InsertIntoStmt2 InsertIntoStmt3
 	{
 		$$ = &insertIntoStmt{tableName: $3.(string), colNames: $4.([]string), lists: append([][]expression{$7.([]expression)}, $9.([][]expression)...)}
+
+		if yylex.(*lexer).root {
+			break
+		}
+
+		if isSystemName[$3.(string)] {
+			yylex.(*lexer).err("name is used for system tables: %s", $3.(string))
+			return 1
+		}
 	}
 |	insert into TableName InsertIntoStmt1 SelectStmt
 	{
@@ -1003,6 +1092,15 @@ UpdateStmt:
 	update TableName oSet AssignmentList UpdateStmt1
 	{
 		$$ = &updateStmt{tableName: $2.(string), list: $4.([]assignment), where: $5.(*whereRset).expr}
+
+		if yylex.(*lexer).root {
+			break
+		}
+
+		if isSystemName[$2.(string)] {
+			yylex.(*lexer).err("name is used for system tables: %s", $2.(string))
+			return 1
+		}
 	}
 
 UpdateStmt1:

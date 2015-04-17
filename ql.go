@@ -1557,9 +1557,11 @@ func findFld(fields []*fld, name string) (f *fld) {
 }
 
 type col struct {
-	index int
-	name  string
-	typ   int
+	index      int
+	name       string
+	typ        int
+	constraint *constraint
+	dflt       expression
 }
 
 func findCol(cols []*col, name string) (c *col) {
@@ -1669,12 +1671,31 @@ func (db *DB) Run(ctx *TCtx, ql string, arg ...interface{}) (rs []Recordset, ind
 	return db.Execute(ctx, l, arg...)
 }
 
+func (db *DB) run(ctx *TCtx, ql string, arg ...interface{}) (rs []Recordset, index int, err error) {
+	l, err := compile(ql)
+	if err != nil {
+		return nil, -1, err
+	}
+
+	return db.Execute(ctx, l, arg...)
+}
+
 // Compile parses the ql statements from src and returns a compiled list for
 // DB.Execute or an error if any.
 //
 // Compile is safe for concurrent use by multiple goroutines.
 func Compile(src string) (List, error) {
 	l := newLexer(src)
+	if yyParse(l) != 0 {
+		return List{}, l.errs[0]
+	}
+
+	return List{l.list, l.params}, nil
+}
+
+func compile(src string) (List, error) {
+	l := newLexer(src)
+	l.root = true
 	if yyParse(l) != 0 {
 		return List{}, l.errs[0]
 	}
@@ -1691,6 +1712,15 @@ func MustCompile(src string) List {
 	list, err := Compile(src)
 	if err != nil {
 		panic("ql: Compile(" + strconv.Quote(src) + "): " + err.Error()) // panic ok here
+	}
+
+	return list
+}
+
+func mustCompile(src string) List {
+	list, err := compile(src)
+	if err != nil {
+		panic("ql: compile(" + strconv.Quote(src) + "): " + err.Error()) // panic ok here
 	}
 
 	return list
@@ -2159,4 +2189,8 @@ func (db *DB) Info() (r *DbInfo, err error) {
 	db.mu.Lock()
 	defer db.mu.Unlock()
 	return db.info()
+}
+
+type constraint struct {
+	expr expression // If expr == nil: contraint is 'NOT NULL'
 }

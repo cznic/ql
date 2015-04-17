@@ -35,6 +35,7 @@ type lexer struct {
         sc     int
         src    string
         val    []byte
+	root   bool
 }
 
 func newLexer(src string) (l *lexer) {
@@ -144,6 +145,7 @@ by              {b}{y}
 column          {c}{o}{l}{u}{m}{n}
 commit          {c}{o}{m}{m}{i}{t}
 create          {c}{r}{e}{a}{t}{e}
+default         {d}{e}{f}{a}{u}{l}{t}
 delete          {d}{e}{l}{e}{t}{e}
 desc            {d}{e}{s}{c}
 distinct        {d}{i}{s}{t}{i}{n}{c}{t}
@@ -252,6 +254,7 @@ ident           {idchar0}{idchars}*
 {column}                return column
 {commit}                return commit
 {create}                return create
+{default}               return defaultKwd
 {delete}                return deleteKwd
 {desc}                  return desc
 {distinct}              return distinct

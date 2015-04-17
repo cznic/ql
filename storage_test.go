@@ -276,7 +276,7 @@ func test(t *testing.T, s testDB) (panicked error) {
 				}
 
 				for _, tab := range nfo.Tables {
-					if _, _, err = db.Run(NewRWCtx(), fmt.Sprintf(`
+					if _, _, err = db.run(NewRWCtx(), fmt.Sprintf(`
 						BEGIN TRANSACTION;
 							DROP table %s;
 						COMMIT;

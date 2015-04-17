@@ -62,6 +62,7 @@ ql.test: all
 ql.y: doc.go
 	sed -n '1,/^package/ s/^\/\/  //p' < $< \
 		| ebnf2y -o $@ -oe $*.ebnf -start StatementList -pkg $* -p _
+	goyacc -o /dev/null $@
 
 scanner.go: scanner.l parser.go
 	golex -o $@ $<

@@ -416,7 +416,20 @@ type alterTableAddStmt struct {
 }
 
 func (s *alterTableAddStmt) String() string {
-	return fmt.Sprintf("ALTER TABLE %s ADD COLUMN %s;", s.tableName, s.c.name)
+	r := fmt.Sprintf("ALTER TABLE %s ADD %s;", s.tableName, s.c.name, typeStr(s.c.typ))
+	c := s.c
+	if x := c.constraint; x != nil { //TODO add (*col).String()
+		switch e := x.expr; {
+		case e != nil:
+			r += " " + e.String()
+		default:
+			r += " NOT NULL"
+		}
+	}
+	if x := c.dflt; x != nil {
+		r += " DEFAULT " + x.String()
+	}
+	return r
 }
 
 func (s *alterTableAddStmt) exec(ctx *execCtx) (Recordset, error) {
@@ -425,11 +438,17 @@ func (s *alterTableAddStmt) exec(ctx *execCtx) (Recordset, error) {
 		return nil, fmt.Errorf("ALTER TABLE: table %s does not exist", s.tableName)
 	}
 
+	hasRecords := t.head != 0
+	c := s.c
+	if c.constraint != nil && hasRecords {
+		return nil, fmt.Errorf("ALTER TABLE %s ADD %s: cannot add constrained column to table with existing data", s.tableName, c.name)
+	}
+
 	cols := t.cols
 	for _, c := range cols {
 		nm := c.name
 		if nm == s.c.name {
-			return nil, fmt.Errorf("ALTER TABLE %s ADD COLUMN %s: column exists", s.tableName, nm)
+			return nil, fmt.Errorf("ALTER TABLE %s ADD: column %s exists", s.tableName, nm)
 		}
 	}
 
@@ -437,6 +456,26 @@ func (s *alterTableAddStmt) exec(ctx *execCtx) (Recordset, error) {
 		t.indices = append(t.indices, nil)
 		t.xroots = append(t.xroots, 0)
 		if err := t.store.Update(t.hxroots, t.xroots...); err != nil {
+			return nil, err
+		}
+	}
+
+	if c.constraint != nil || c.dflt != nil {
+		for _, s := range createColumn2.l {
+			_, err := s.exec(&execCtx{db: ctx.db})
+			if err != nil {
+				return nil, err
+			}
+		}
+		notNull := c.constraint != nil && c.constraint.expr == nil
+		var co, d string
+		if c.constraint != nil && c.constraint.expr != nil {
+			co = c.constraint.expr.String()
+		}
+		if e := c.dflt; e != nil {
+			d = e.String()
+		}
+		if _, err := insertColumn2.l[0].exec(&execCtx{db: ctx.db, arg: []interface{}{s.tableName, c.name, notNull, co, d}}); err != nil {
 			return nil, err
 		}
 	}
@@ -861,7 +900,19 @@ type createTableStmt struct {
 func (s *createTableStmt) String() string {
 	a := make([]string, len(s.cols))
 	for i, v := range s.cols {
-		a[i] = fmt.Sprintf("%s %s", v.name, typeStr(v.typ))
+		var c, d string
+		if x := v.constraint; x != nil {
+			switch e := x.expr; {
+			case e != nil:
+				c = " " + e.String()
+			default:
+				c = " NOT NULL"
+			}
+		}
+		if x := v.dflt; x != nil {
+			d = " DEFAULT " + x.String()
+		}
+		a[i] = fmt.Sprintf("%s %s%s%s", v.name, typeStr(v.typ), c, d)
 	}
 	e := ""
 	if s.ifNotExists {
@@ -869,6 +920,20 @@ func (s *createTableStmt) String() string {
 	}
 	return fmt.Sprintf("CREATE TABLE %s%s (%s);", e, s.tableName, strings.Join(a, ", "))
 }
+
+var (
+	createColumn2 = mustCompile(`
+		create table if not exists __Column2 (
+			TableName string,
+			Name string,
+			NotNull bool,
+			ConstraintExpr string,
+			DefaultExpr string,
+		);
+		create index if not exists __Column2TableName on __Column2(TableName);
+	`)
+	insertColumn2 = mustCompile(`insert into __Column2 values($1, $2, $3, $4, $5)`)
+)
 
 func (s *createTableStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 	root := ctx.db.root
@@ -885,6 +950,7 @@ func (s *createTableStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 	}
 
 	m := map[string]bool{}
+	mustCreateColumn2 := true
 	for i, c := range s.cols {
 		nm := c.name
 		if m[nm] {
@@ -893,6 +959,29 @@ func (s *createTableStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 
 		m[nm] = true
 		c.index = i
+		if c.constraint != nil || c.dflt != nil {
+			if mustCreateColumn2 {
+				for _, s := range createColumn2.l {
+					_, err := s.exec(&execCtx{db: ctx.db})
+					if err != nil {
+						return nil, err
+					}
+				}
+			}
+
+			mustCreateColumn2 = false
+			notNull := c.constraint != nil && c.constraint.expr == nil
+			var co, d string
+			if c.constraint != nil && c.constraint.expr != nil {
+				co = c.constraint.expr.String()
+			}
+			if e := c.dflt; e != nil {
+				d = e.String()
+			}
+			if _, err := insertColumn2.l[0].exec(&execCtx{db: ctx.db, arg: []interface{}{s.tableName, c.name, notNull, co, d}}); err != nil {
+				return nil, err
+			}
+		}
 	}
 	_, err = root.createTable(s.tableName, s.cols)
 	return
