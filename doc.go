@@ -14,6 +14,10 @@
 //
 // Change list
 //
+// 2015-04-18: Column definitions can now have constraints and defaults.
+// Details are discussed in the "Constraints and defaults chapter" below the
+// CREATE TABLE statement documentation.
+//
 // 2015-03-06: New built-in functions formatFloat and formatInt. Thanks
 // urandom! (https://github.com/urandom)
 //
