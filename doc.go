@@ -15,7 +15,7 @@
 // Change list
 //
 // 2015-04-18: Column definitions can now have constraints and defaults.
-// Details are discussed in the "Constraints and defaults chapter" below the
+// Details are discussed in the "Constraints and defaults" chapter below the
 // CREATE TABLE statement documentation.
 //
 // 2015-03-06: New built-in functions formatFloat and formatInt. Thanks
@@ -1556,7 +1556,7 @@
 // If any of the columns of the table were defined using the optional
 // constraints clause or the optional defaults clause then those are processed
 // on a per row basis. The details are discussed in the "Constraints and
-// defaults chapter" below the CREATE TABLE statement documentation.
+// defaults" chapter below the CREATE TABLE statement documentation.
 //
 // ROLLBACK
 //
@@ -1839,7 +1839,7 @@
 // If any of the columns of the table were defined using the optional
 // constraints clause or the optional defaults clause then those are processed
 // on a per row basis. The details are discussed in the "Constraints and
-// defaults chapter" below the CREATE TABLE statement documentation.
+// defaults" chapter below the CREATE TABLE statement documentation.
 //
 // System Tables
 //
