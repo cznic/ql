@@ -1440,7 +1440,7 @@
 //	COMMIT;
 //
 //
-// Constraints and defaults evaluation order
+// Constraints and defaults
 //
 // When a table row is inserted by the INSERT INTO statement or when a table
 // row is updated by the UPDATE statement, the order of operations is as
