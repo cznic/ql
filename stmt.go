@@ -30,6 +30,9 @@ var (
 	_ stmt = beginTransactionStmt{}
 	_ stmt = commitStmt{}
 	_ stmt = rollbackStmt{}
+
+	exprCache   = map[string]expression{}
+	exprCacheMu sync.Mutex
 )
 
 type stmt interface {
@@ -56,6 +59,27 @@ type updateStmt struct {
 	tableName string
 	list      []assignment
 	where     expression
+}
+
+func str2expr(expr string) (expression, error) {
+	exprCacheMu.Lock()
+	e := exprCache[expr]
+	exprCacheMu.Unlock()
+	if e != nil {
+		return e, nil
+	}
+
+	src := "select " + expr + " from t"
+	l, err := Compile(src)
+	if err != nil {
+		return nil, err
+	}
+
+	e = l.l[0].(*selectStmt).flds[0].expr
+	exprCacheMu.Lock()
+	exprCache[expr] = e
+	exprCacheMu.Unlock()
+	return e, nil
 }
 
 func (s *updateStmt) String() string {
@@ -430,7 +454,7 @@ type alterTableAddStmt struct {
 }
 
 func (s *alterTableAddStmt) String() string {
-	r := fmt.Sprintf("ALTER TABLE %s ADD %s;", s.tableName, s.c.name, typeStr(s.c.typ))
+	r := fmt.Sprintf("ALTER TABLE %s ADD %s %s;", s.tableName, s.c.name, typeStr(s.c.typ))
 	c := s.c
 	if x := c.constraint; x != nil { //TODO add (*col).String()
 		switch e := x.expr; {
@@ -751,19 +775,26 @@ var (
 	`)
 )
 
-func constraintsAndDefaults(ctx *execCtx, table string, cols []*col) (constraints []*constraint, defaults []expression, _ error) {
-	if table == "__Column2" {
+func constraintsAndDefaults(ctx *execCtx, table string) (constraints []*constraint, defaults []expression, _ error) {
+	if isSystemName[table] {
 		return nil, nil, nil
 	}
+
 	_, ok := ctx.db.root.tables["__Column2"]
 	if !ok {
 		return nil, nil, nil
 	}
 
+	t, ok := ctx.db.root.tables[table]
+	if !ok {
+		return nil, nil, fmt.Errorf("table %q does not exist", table)
+	}
+
+	cols := t.cols
 	constraints = make([]*constraint, len(cols))
 	defaults = make([]expression, len(cols))
 	arg := []interface{}{table}
-	rs, err := selectColumn2.l[0].exec(&execCtx{db: ctx.db, arg: arg})
+	rs, err := selectColumn2.l[0].exec(&execCtx{db: ctx.db})
 	if err != nil {
 		return nil, nil, err
 	}
@@ -793,30 +824,102 @@ func constraintsAndDefaults(ctx *execCtx, table string, cols []*col) (constraint
 		dexpr := row[3].(string)
 		for i, c := range cols {
 			if c.name == nm {
-				co := &constraint{}
-				if !nonNull {
-					src := "select " + cexpr + " from t"
-					l, err := Compile(src)
-					if err != nil {
-						return nil, nil, fmt.Errorf("constraint %q: %v", cexpr, err)
+				var co *constraint
+				if nonNull || cexpr != "" {
+					co = &constraint{}
+					if cexpr != "" {
+						if co.expr, err = str2expr(cexpr); err != nil {
+							return nil, nil, fmt.Errorf("constraint %q: %v", cexpr, err)
+						}
 					}
-
-					co.expr = l.l[0].(*selectStmt).flds[0].expr
 				}
 				constraints[i] = co
 				if dexpr != "" {
-					src := "select " + dexpr + " from t"
-					l, err := Compile(src)
-					if err != nil {
-						return nil, nil, fmt.Errorf("default %q: %v", cexpr, err)
+					if defaults[i], err = str2expr(dexpr); err != nil {
+						return nil, nil, fmt.Errorf("constraint %q: %v", dexpr, err)
 					}
-
-					defaults[i] = l.l[0].(*selectStmt).flds[0].expr
 				}
 			}
 		}
 	}
 	return constraints, defaults, nil
+}
+
+func checkConstraintsAndDefaults(
+	ctx *execCtx,
+	row []interface{},
+	cols []*col,
+	m map[interface{}]interface{},
+	constraints []*constraint,
+	defaults []expression) error {
+
+	// 1.
+	for _, c := range cols {
+		m[c.name] = row[c.index]
+	}
+
+	// 2.
+	for i, c := range cols {
+		val := row[c.index]
+		expr := defaults[i]
+		if val != nil || expr == nil {
+			continue
+		}
+
+		dval, err := expr.eval(ctx, m, ctx.arg)
+		if err != nil {
+			return err
+		}
+
+		row[c.index] = dval
+		if err = typeCheck(row, []*col{c}); err != nil {
+			return err
+		}
+	}
+
+	// 3.
+	for _, c := range cols {
+		m[c.name] = row[c.index]
+	}
+
+	// 4.
+	for i, c := range cols {
+		constraint := constraints[i]
+		if constraint == nil {
+			continue
+		}
+
+		val := row[c.index]
+		expr := constraint.expr
+		if expr == nil { // Constraint: NOT NULL
+			if val == nil {
+				return fmt.Errorf("column %s: constraint violation: NOT NULL", c.name)
+			}
+
+			continue
+		}
+
+		// Constraint is an expression
+		cval, err := expr.eval(ctx, m, ctx.arg)
+		if err != nil {
+			return err
+		}
+
+		if cval == nil {
+			return fmt.Errorf("column %s: constraint violation: %s", c.name, expr)
+		}
+
+		bval, ok := cval.(bool)
+		if !ok {
+			return fmt.Errorf("column %s: non bool constraint expression: %s", c.name, expr)
+		}
+
+		if !bval {
+			return fmt.Errorf("column %s: constraint violation: %s", c.name, expr)
+		}
+	}
+
+	return nil
 }
 
 func (s *insertIntoStmt) exec(ctx *execCtx) (_ Recordset, err error) {
@@ -840,7 +943,7 @@ func (s *insertIntoStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 		}
 	}
 
-	constraints, defaults, err := constraintsAndDefaults(ctx, s.tableName, cols)
+	constraints, defaults, err := constraintsAndDefaults(ctx, s.tableName)
 	if err != nil {
 		return nil, err
 	}
@@ -867,23 +970,16 @@ func (s *insertIntoStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 				return nil, err
 			}
 
-			//TODO constraints and defaults
-			if len(constraints) != 0 { // => len(defaults) != 0 as well
-				//		V	C	D	?
-				//	#1	null	-	-	use V
-				//	#2	null	-	D	use D
-				//	#3	null	C	-	check V
-				//	#4	null	C	D	check D, set if ok
-				//	#5	V	-	-	use V
-				//	#6	V	-	D	use V
-				//	#7	V	C	-	check V
-				//	#8	V	C	D	check V
-			}
-
 			r[cols[i].index] = val
 		}
 		if err = typeCheck(r, cols); err != nil {
 			return
+		}
+
+		if len(constraints) != 0 { // => len(defaults) != 0 as well
+			if err = checkConstraintsAndDefaults(ctx, r, t.cols, m, constraints, defaults); err != nil {
+				return nil, err
+			}
 		}
 
 		id, err := t.addRecord(r)

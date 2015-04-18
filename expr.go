@@ -187,7 +187,7 @@ type pLike struct {
 }
 
 func (p *pLike) isStatic() bool { return p.expr.isStatic() && p.pattern.isStatic() }
-func (p *pLike) String() string { return fmt.Sprintf("%q LIKE %q", p.expr, p.pattern) }
+func (p *pLike) String() string { return fmt.Sprintf("%s LIKE %s", p.expr, p.pattern) }
 
 func (p *pLike) eval(execCtx *execCtx, ctx map[interface{}]interface{}, arg []interface{}) (v interface{}, err error) {
 	var sexpr string
@@ -3039,6 +3039,10 @@ func (l value) String() string {
 		return "NULL"
 	case string:
 		return fmt.Sprintf("%q", x)
+	case time.Duration:
+		return fmt.Sprintf("duration(%q)", l.val)
+	case time.Time:
+		return fmt.Sprintf("time(%q)", l.val)
 	default:
 		return fmt.Sprintf("%v", l.val)
 	}

@@ -9751,32 +9751,32 @@ BEGIN TRANSACTION;
 COMMIT;
 ||system table
 
--- 812 // https://github.com/cznic/ql/issues/85
+-- 811 // https://github.com/cznic/ql/issues/85
 BEGIN TRANSACTION;
         CREATE TABLE __Column2 (i int);
 COMMIT;
 ||system table
 
--- 813 // https://github.com/cznic/ql/issues/85
+-- 812 // https://github.com/cznic/ql/issues/85
 BEGIN TRANSACTION;
         UPDATE __Column2 SET i = 42;
 COMMIT;
 ||system table
 
--- 814 // https://github.com/cznic/ql/issues/85
+-- 813 // https://github.com/cznic/ql/issues/85
 BEGIN TRANSACTION;
         CREATE INDEX __Column2Default ON __Column2(DefaultExpr);
 COMMIT;
 ||system table
 
--- 815 // https://github.com/cznic/ql/issues/85
+-- 814 // https://github.com/cznic/ql/issues/85
 BEGIN TRANSACTION;
 	CREATE TABLE t (i int);
 COMMIT;
 SELECT * FROM __Column2;
 ||does not exist
 
--- 816 // https://github.com/cznic/ql/issues/85
+-- 815 // https://github.com/cznic/ql/issues/85
 BEGIN TRANSACTION;
 	CREATE TABLE t (i int DEFAULT 42);
 COMMIT;
@@ -9784,7 +9784,7 @@ SELECT * FROM __Column2;
 |sTableName, sName, bNotNull, sConstraintExpr, sDefaultExpr
 [t i false  42]
 
--- 817 // https://github.com/cznic/ql/issues/85
+-- 816 // https://github.com/cznic/ql/issues/85
 BEGIN TRANSACTION;
 	CREATE TABLE t (i int NOT NULL);
 COMMIT;
@@ -9792,7 +9792,7 @@ SELECT * FROM __Column2;
 |sTableName, sName, bNotNull, sConstraintExpr, sDefaultExpr
 [t i true  ]
 
--- 818 // https://github.com/cznic/ql/issues/85
+-- 817 // https://github.com/cznic/ql/issues/85
 BEGIN TRANSACTION;
 	CREATE TABLE t (i int NOT NULL DEFAULT 43);
 COMMIT;
@@ -9800,7 +9800,7 @@ SELECT * FROM __Column2;
 |sTableName, sName, bNotNull, sConstraintExpr, sDefaultExpr
 [t i true  43]
 
--- 819 // https://github.com/cznic/ql/issues/85
+-- 818 // https://github.com/cznic/ql/issues/85
 BEGIN TRANSACTION;
 	CREATE TABLE t (i int i > 44);
 COMMIT;
@@ -9808,7 +9808,7 @@ SELECT * FROM __Column2;
 |sTableName, sName, bNotNull, sConstraintExpr, sDefaultExpr
 [t i false i>44 ]
 
--- 820 // https://github.com/cznic/ql/issues/85
+-- 819 // https://github.com/cznic/ql/issues/85
 BEGIN TRANSACTION;
 	CREATE TABLE t (i int i > 45 DEFAULT 46);
 COMMIT;
@@ -9816,9 +9816,19 @@ SELECT * FROM __Column2;
 |sTableName, sName, bNotNull, sConstraintExpr, sDefaultExpr
 [t i false i>45 46]
 
+-- 820 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	ALTER TABLE t ADD s string;
+COMMIT;
+SELECT * FROM __Column2;
+||does not exist
+
 -- 821 // https://github.com/cznic/ql/issues/85
 BEGIN TRANSACTION;
 	CREATE TABLE t (i int);
+COMMIT;
+BEGIN TRANSACTION;
 	ALTER TABLE t ADD s string;
 COMMIT;
 SELECT * FROM __Column2;
@@ -9827,16 +9837,17 @@ SELECT * FROM __Column2;
 -- 822 // https://github.com/cznic/ql/issues/85
 BEGIN TRANSACTION;
 	CREATE TABLE t (i int);
-COMMIT;
-BEGIN TRANSACTION;
-	ALTER TABLE t ADD s string;
+	ALTER TABLE t ADD s string DEFAULT "foo";
 COMMIT;
 SELECT * FROM __Column2;
-||does not exist
+|sTableName, sName, bNotNull, sConstraintExpr, sDefaultExpr
+[t s false  "foo"]
 
 -- 823 // https://github.com/cznic/ql/issues/85
 BEGIN TRANSACTION;
 	CREATE TABLE t (i int);
+COMMIT;
+BEGIN TRANSACTION;
 	ALTER TABLE t ADD s string DEFAULT "foo";
 COMMIT;
 SELECT * FROM __Column2;
@@ -9846,17 +9857,17 @@ SELECT * FROM __Column2;
 -- 824 // https://github.com/cznic/ql/issues/85
 BEGIN TRANSACTION;
 	CREATE TABLE t (i int);
-COMMIT;
-BEGIN TRANSACTION;
-	ALTER TABLE t ADD s string DEFAULT "foo";
+	ALTER TABLE t ADD s string NOT NULL;
 COMMIT;
 SELECT * FROM __Column2;
 |sTableName, sName, bNotNull, sConstraintExpr, sDefaultExpr
-[t s false  "foo"]
+[t s true  ]
 
 -- 825 // https://github.com/cznic/ql/issues/85
 BEGIN TRANSACTION;
 	CREATE TABLE t (i int);
+COMMIT;
+BEGIN TRANSACTION;
 	ALTER TABLE t ADD s string NOT NULL;
 COMMIT;
 SELECT * FROM __Column2;
@@ -9866,18 +9877,18 @@ SELECT * FROM __Column2;
 -- 826 // https://github.com/cznic/ql/issues/85
 BEGIN TRANSACTION;
 	CREATE TABLE t (i int);
-COMMIT;
-BEGIN TRANSACTION;
+	INSERT INTO t VALUES(42);
 	ALTER TABLE t ADD s string NOT NULL;
 COMMIT;
 SELECT * FROM __Column2;
-|sTableName, sName, bNotNull, sConstraintExpr, sDefaultExpr
-[t s true  ]
+||existing data
 
 -- 827 // https://github.com/cznic/ql/issues/85
 BEGIN TRANSACTION;
 	CREATE TABLE t (i int);
 	INSERT INTO t VALUES(42);
+COMMIT;
+BEGIN TRANSACTION;
 	ALTER TABLE t ADD s string NOT NULL;
 COMMIT;
 SELECT * FROM __Column2;
@@ -9887,9 +9898,7 @@ SELECT * FROM __Column2;
 BEGIN TRANSACTION;
 	CREATE TABLE t (i int);
 	INSERT INTO t VALUES(42);
-COMMIT;
-BEGIN TRANSACTION;
-	ALTER TABLE t ADD s string NOT NULL;
+	ALTER TABLE t ADD s string s > "";
 COMMIT;
 SELECT * FROM __Column2;
 ||existing data
@@ -9900,22 +9909,13 @@ BEGIN TRANSACTION;
 	INSERT INTO t VALUES(42);
 	ALTER TABLE t ADD s string s > "";
 COMMIT;
+BEGIN TRANSACTION;
+	ALTER TABLE t ADD s string s > "";
+COMMIT;
 SELECT * FROM __Column2;
 ||existing data
 
 -- 830 // https://github.com/cznic/ql/issues/85
-BEGIN TRANSACTION;
-	CREATE TABLE t (i int);
-	INSERT INTO t VALUES(42);
-	ALTER TABLE t ADD s string s > "";
-COMMIT;
-BEGIN TRANSACTION;
-	ALTER TABLE t ADD s string s > "";
-COMMIT;
-SELECT * FROM __Column2;
-||existing data
-
--- 831 // https://github.com/cznic/ql/issues/85
 BEGIN TRANSACTION;
 	CREATE TABLE t (i int DEFAULT 42, s string DEFAULT 43);
 COMMIT;
@@ -9924,9 +9924,20 @@ SELECT * FROM __Column2 ORDER BY Name;
 [t i false  42]
 [t s false  43]
 
+-- 831 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int DEFAULT 42, s string DEFAULT 43);
+	ALTER TABLE t DROP COLUMN s;
+COMMIT;
+SELECT * FROM __Column2 ORDER BY Name;
+|sTableName, sName, bNotNull, sConstraintExpr, sDefaultExpr
+[t i false  42]
+
 -- 832 // https://github.com/cznic/ql/issues/85
 BEGIN TRANSACTION;
 	CREATE TABLE t (i int DEFAULT 42, s string DEFAULT 43);
+COMMIT;
+BEGIN TRANSACTION;
 	ALTER TABLE t DROP COLUMN s;
 COMMIT;
 SELECT * FROM __Column2 ORDER BY Name;
@@ -9936,17 +9947,17 @@ SELECT * FROM __Column2 ORDER BY Name;
 -- 833 // https://github.com/cznic/ql/issues/85
 BEGIN TRANSACTION;
 	CREATE TABLE t (i int DEFAULT 42, s string DEFAULT 43);
-COMMIT;
-BEGIN TRANSACTION;
-	ALTER TABLE t DROP COLUMN s;
+	ALTER TABLE t DROP COLUMN i;
 COMMIT;
 SELECT * FROM __Column2 ORDER BY Name;
 |sTableName, sName, bNotNull, sConstraintExpr, sDefaultExpr
-[t i false  42]
+[t s false  43]
 
 -- 834 // https://github.com/cznic/ql/issues/85
 BEGIN TRANSACTION;
 	CREATE TABLE t (i int DEFAULT 42, s string DEFAULT 43);
+COMMIT;
+BEGIN TRANSACTION;
 	ALTER TABLE t DROP COLUMN i;
 COMMIT;
 SELECT * FROM __Column2 ORDER BY Name;
@@ -9955,20 +9966,285 @@ SELECT * FROM __Column2 ORDER BY Name;
 
 -- 835 // https://github.com/cznic/ql/issues/85
 BEGIN TRANSACTION;
-	CREATE TABLE t (i int DEFAULT 42, s string DEFAULT 43);
-COMMIT;
-BEGIN TRANSACTION;
-	ALTER TABLE t DROP COLUMN i;
-COMMIT;
-SELECT * FROM __Column2 ORDER BY Name;
-|sTableName, sName, bNotNull, sConstraintExpr, sDefaultExpr
-[t s false  43]
-
--- 836 // https://github.com/cznic/ql/issues/85
-BEGIN TRANSACTION;
 	CREATE TABLE t (i int NOT NULL);
 	INSERT INTO t VALUES(42);
 COMMIT;
 SELECT * FROM __Column2 ORDER BY Name;
 |sTableName, sName, bNotNull, sConstraintExpr, sDefaultExpr
 [t i true  ]
+
+-- 836 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (a int, b int, c int);
+	INSERT INTO t VALUES(NULL, NULL, NULL);
+COMMIT;
+SELECT * FROM t;
+|?a, ?b, ?c
+[<nil> <nil> <nil>]
+
+-- 837 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (a int, b int NOT NULL, c int);
+	INSERT INTO t VALUES(NULL, 42, NULL);
+COMMIT;
+SELECT * FROM t;
+|?a, lb, ?c
+[<nil> 42 <nil>]
+
+-- 838 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (a int, b int NOT NULL, c int);
+	INSERT INTO t VALUES(NULL, NULL, NULL);
+COMMIT;
+SELECT * FROM t;
+||NOT NULL
+
+-- 839 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (a int, b int DEFAULT 42, c int);
+	INSERT INTO t VALUES(NULL, NULL, NULL);
+COMMIT;
+SELECT * FROM t;
+|?a, lb, ?c
+[<nil> 42 <nil>]
+
+-- 840 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (a int, b int b > 42, c int);
+	INSERT INTO t VALUES(NULL, NULL, NULL);
+COMMIT;
+SELECT * FROM t;
+||constraint violation
+
+-- 841 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (a int, b int b > 42, c int);
+	INSERT INTO t VALUES(NULL, 42, NULL);
+COMMIT;
+SELECT * FROM t;
+||constraint violation
+
+-- 842 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (a int, b int b > 42, c int);
+	INSERT INTO t VALUES(NULL, 43, NULL);
+COMMIT;
+SELECT * FROM t;
+|?a, lb, ?c
+[<nil> 43 <nil>]
+
+-- 843 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (a int, b int b > 42 DEFAULT 42, c int);
+	INSERT INTO t VALUES(NULL, NULL, NULL);
+COMMIT;
+SELECT * FROM t;
+||constraint violation
+
+-- 844 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (a int, b int b > 42 DEFAULT 43, c int);
+	INSERT INTO t VALUES(NULL, NULL, NULL);
+COMMIT;
+SELECT * FROM t;
+|?a, lb, ?c
+[<nil> 43 <nil>]
+
+-- 845 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (a int, b int b > 42 DEFAULT 43, c int);
+	INSERT INTO t VALUES(NULL, 42, NULL);
+COMMIT;
+SELECT * FROM t;
+||constraint violation
+
+-- 846 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (a int, b int b > 42 DEFAULT 430, c int);
+	INSERT INTO t VALUES(NULL, 43, NULL);
+COMMIT;
+SELECT * FROM t;
+|?a, lb, ?c
+[<nil> 43 <nil>]
+
+-- 847 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (a int, b int b > a && b < c, c int);
+	INSERT INTO t VALUES(1, 2, 3);
+COMMIT;
+SELECT * FROM t;
+|la, lb, lc
+[1 2 3]
+
+-- 848 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (a int, b int b > a && b < c, c int);
+	INSERT INTO t VALUES(1, 1, 3);
+COMMIT;
+SELECT * FROM t;
+||constraint violation
+
+-- 849 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (a int, b int b > a && b < c, c int);
+	INSERT INTO t VALUES(1, 3, 3);
+COMMIT;
+SELECT * FROM t;
+||constraint violation
+
+-- 850 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (a int, b int b > a && b < c DEFAULT (a+c)/2, c int);
+	INSERT INTO t VALUES(1, NULL, 3);
+COMMIT;
+SELECT * FROM t;
+|la, lb, lc
+[1 2 3]
+
+-- 851 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (a int, b int b > a && b < c DEFAULT (a+c)/2, c int);
+	INSERT INTO t VALUES(1, 1, 3);
+COMMIT;
+SELECT * FROM t;
+||constraint violation
+
+-- 852 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (a int, b int b > a && b < c DEFAULT (a+c)/2, c int);
+	INSERT INTO t VALUES(1, 3, 3);
+COMMIT;
+SELECT * FROM t;
+||constraint violation
+
+-- 853 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE department (
+		DepartmentName string DepartmentName IN ("HQ", "R/D", "Lab", "HR")
+			DEFAULT "HQ",
+	);
+	INSERT INTO department VALUES ("foo");
+COMMIT;
+SELECT * FROM department;
+||constraint violation
+
+-- 854 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE department (
+		DepartmentName string DepartmentName IN ("HQ", "R/D", "Lab", "HR")
+			DEFAULT "HQ",
+	);
+	INSERT INTO department VALUES ("HQ");
+COMMIT;
+SELECT * FROM department;
+|sDepartmentName
+[HQ]
+
+-- 855 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE department (
+		DepartmentName string DepartmentName IN ("HQ", "R/D", "Lab", "HR")
+			DEFAULT "HQ",
+	);
+	INSERT INTO department VALUES (NULL);
+COMMIT;
+SELECT * FROM department;
+|sDepartmentName
+[HQ]
+
+-- 856 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE department (
+		DepartmentName string DepartmentName IN ("HQ", "R/D", "Lab", "HR")
+			DEFAULT "HQ",
+	);
+	INSERT INTO department VALUES ("R&D");
+COMMIT;
+SELECT * FROM department;
+||constraint violation
+
+-- 857 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE department (
+		DepartmentName string DepartmentName IN ("HQ", "R/D", "Lab", "HR")
+			DEFAULT "HQ",
+	);
+	INSERT INTO department VALUES ("R/D");
+COMMIT;
+SELECT * FROM department;
+|sDepartmentName
+[R/D]
+
+-- 858 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (
+		TimeStamp time TimeStamp <= now() && since(TimeStamp) < duration("10s") DEFAULT now(),
+	);
+	INSERT INTO t VALUES(NULL);
+COMMIT;
+SELECT TimeStamp IS NOT NULL FROM t;
+|b
+[true]
+
+-- 859 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (
+		TimeStamp time TimeStamp <= now() && since(TimeStamp) < duration("10s") DEFAULT now(),
+	);
+	INSERT INTO t VALUES(now()-duration("11s"));
+COMMIT;
+SELECT TimeStamp IS NOT NULL FROM t;
+||constraint violation
+
+-- 860 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (
+		TimeStamp time TimeStamp <= now() && since(TimeStamp) < duration("10s") DEFAULT now(),
+	);
+	INSERT INTO t VALUES(now()+duration("1s"));
+COMMIT;
+SELECT TimeStamp IS NOT NULL FROM t;
+||constraint violation
+
+-- 861 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (
+		TimeStamp time TimeStamp <= now() && since(TimeStamp) < duration("10s") DEFAULT now(),
+	);
+	INSERT INTO t VALUES(now()-duration("1s"));
+COMMIT;
+SELECT TimeStamp IS NOT NULL FROM t;
+|b
+[true]
+
+-- 862 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (
+		TimeStamp time TimeStamp <= now() && since(TimeStamp) < duration("10s") DEFAULT now(),
+	);
+	INSERT INTO t VALUES(now());
+COMMIT;
+SELECT TimeStamp IS NOT NULL FROM t;
+|b
+[true]
+
+-- 863 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (
+		Event string Event != "" && Event like "[0-9]+:[ \t]+.*",
+	);
+	INSERT INTO t VALUES("123 foo");
+COMMIT;
+SELECT Event FROM t;
+||constraint violation
+
+-- 864 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (
+		Event string Event != "" && Event like "[0-9]+:[ \t]+.*",
+	);
+	INSERT INTO t VALUES("123: foo");
+COMMIT;
+SELECT Event FROM t;
+|sEvent
+[123: foo]

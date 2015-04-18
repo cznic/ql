@@ -1397,7 +1397,9 @@
 //
 // The second form allows an arbitrary boolean expression to be used to
 // validate the column. If the value of the expression if true then the
-// validation succeeded.
+// validation succeeded. If the value of the expression if false or NULL then
+// the validation fails. If the value of the expression is not of type bool an
+// error occurs.
 //
 //	BEGIN TRANSACTION;
 // 		CREATE TABLE department (
@@ -1405,6 +1407,46 @@
 // 			DepartmentName string DepartmentName IN ("HQ", "R/D", "Lab", "HR"),
 // 		);
 //	COMMIT;
+//
+//	BEGIN TRANSACTION;
+// 		CREATE TABLE t (
+//			TimeStamp time TimeStamp < now() && since(TimeStamp) < duration("10s"),
+//			Event string Event != "" && Event like "[0-9]+:[ \t]+.*",
+//		);
+//	COMMIT;
+//
+// The optional DEFAULT clause is an expression which, if present, is
+// substituted instead of a NULL value when the colum is assigned a value.
+//
+//	BEGIN TRANSACTION;
+// 		CREATE TABLE department (
+// 			DepartmentID   int,
+// 			DepartmentName string DepartmentName IN ("HQ", "R/D", "Lab", "HR")
+//				DEFAULT "HQ",
+// 		);
+//	COMMIT;
+//
+//
+// Constraints and defaults evaluation order
+//
+// When a table row is inserted by the INSERT INTO statement or when a table
+// row is updated by the UPDATE statement, the order of operations is as
+// follows:
+//
+// 1. The new values of the affected columns are set and the values of all the
+// row columns become the named values which can be referred to in default
+// expressions evaluated in step 2.
+//
+// 2. If any row column value is NULL and the DEFAULT clause is present in the
+// column's definition, the default expression is evaluated and its value is
+// set as the respective column value.
+//
+// 3. The values, potentially updated, of row columns become the named values
+// which can be referred to in constraint expressions evaluated during step 4.
+//
+// 4. All row columns which definition has the constraint clause present will
+// have that constraint checked. If any constraint violation is detected, the
+// overall operation fails and no changes to the table are made.
 //
 // DELETE FROM
 //
@@ -1497,6 +1539,11 @@
 //		SELECT DepartmentName+"/headquarters", DepartmentID+1000
 //		FROM department;
 //	COMMIT;
+//
+// If any of the columns of the table were defined using the optional
+// constraints clause or the optional defaults clause then those are processed
+// on a per row basis. The details are discussed in the "Constraints and
+// defaults chapter" below the CREATE TABLE statement documentation.
 //
 // ROLLBACK
 //
@@ -1775,6 +1822,11 @@
 //	COMMIT;
 //
 // Note: The SET clause is optional.
+//
+// If any of the columns of the table were defined using the optional
+// constraints clause or the optional defaults clause then those are processed
+// on a per row basis. The details are discussed in the "Constraints and
+// defaults chapter" below the CREATE TABLE statement documentation.
 //
 // System Tables
 //
