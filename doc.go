@@ -1399,7 +1399,7 @@
 // This form prevents the data in column DepartmentName to be NULL.
 //
 // The second form allows an arbitrary boolean expression to be used to
-// validate the column. If the value of the expression if true then the
+// validate the column. If the value of the expression is true then the
 // validation succeeded. If the value of the expression is false or NULL then
 // the validation fails. If the value of the expression is not of type bool an
 // error occurs.
