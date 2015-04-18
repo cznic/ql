@@ -710,6 +710,7 @@ func (s *insertIntoStmt) execSelect(t *table, cols []*col, ctx *execCtx, constra
 	h := t.head
 	data0 := make([]interface{}, len(t.cols0)+2)
 	cc := ctx.db.cc
+	m := map[interface{}]interface{}{}
 	if err = r.do(ctx, false, func(id interface{}, data []interface{}) (more bool, err error) {
 		if ok {
 			for i, d := range data {
@@ -717,6 +718,12 @@ func (s *insertIntoStmt) execSelect(t *table, cols []*col, ctx *execCtx, constra
 			}
 			if err = typeCheck(data0[2:], cols); err != nil {
 				return
+			}
+
+			if len(constraints) != 0 { // => len(defaults) != 0 as well
+				if err = checkConstraintsAndDefaults(ctx, data0[2:], t.cols, m, constraints, defaults); err != nil {
+					return false, err
+				}
 			}
 
 			id, err := t.store.ID()

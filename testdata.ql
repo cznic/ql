@@ -10248,3 +10248,42 @@ COMMIT;
 SELECT Event FROM t;
 |sEvent
 [123: foo]
+
+-- 865 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (a int, b int, c int);
+	CREATE TABLE s (i int);
+	INSERT INTO s VALUES (1), (2), (NULL), (3), (4);
+	INSERT INTO t(b) SELECT * FROM s;
+COMMIT;
+SELECT b FROM t ORDER BY b DESC;
+|lb
+[4]
+[3]
+[2]
+[1]
+[<nil>]
+
+-- 866 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (a int, b int NOT NULL, c int);
+	CREATE TABLE s (i int);
+	INSERT INTO s VALUES (1), (2), (NULL), (3), (4);
+	INSERT INTO t(b) SELECT * FROM s WHERE i IS NOT NULL;
+COMMIT;
+SELECT b FROM t ORDER BY b DESC;
+|lb
+[4]
+[3]
+[2]
+[1]
+
+-- 867 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (a int, b int NOT NULL, c int);
+	CREATE TABLE s (i int);
+	INSERT INTO s VALUES (1), (2), (NULL), (3), (4);
+	INSERT INTO t(b) SELECT * FROM s;
+COMMIT;
+SELECT i FROM t ORDER BY b DESC;
+||NOT NULL
