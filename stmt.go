@@ -83,7 +83,7 @@ func str2expr(expr string) (expression, error) {
 }
 
 func (s *updateStmt) String() string {
-	u := fmt.Sprintf("UPDATE TABLE %s", s.tableName)
+	u := fmt.Sprintf("UPDATE %s", s.tableName)
 	a := make([]string, len(s.list))
 	for i, v := range s.list {
 		a[i] = v.String()
@@ -92,7 +92,7 @@ func (s *updateStmt) String() string {
 	if s.where != nil {
 		w = fmt.Sprintf(" WHERE %s", s.where)
 	}
-	return fmt.Sprintf("%s %s%s", u, strings.Join(a, ", "), w)
+	return fmt.Sprintf("%s %s%s;", u, strings.Join(a, ", "), w)
 }
 
 func (s *updateStmt) exec(ctx *execCtx) (_ Recordset, err error) {
@@ -454,7 +454,7 @@ type alterTableAddStmt struct {
 }
 
 func (s *alterTableAddStmt) String() string {
-	r := fmt.Sprintf("ALTER TABLE %s ADD %s %s;", s.tableName, s.c.name, typeStr(s.c.typ))
+	r := fmt.Sprintf("ALTER TABLE %s ADD %s %s", s.tableName, s.c.name, typeStr(s.c.typ))
 	c := s.c
 	if x := c.constraint; x != nil { //TODO add (*col).String()
 		switch e := x.expr; {
@@ -467,7 +467,7 @@ func (s *alterTableAddStmt) String() string {
 	if x := c.dflt; x != nil {
 		r += " DEFAULT " + x.String()
 	}
-	return r
+	return r + ";"
 }
 
 func (s *alterTableAddStmt) exec(ctx *execCtx) (Recordset, error) {
@@ -550,7 +550,7 @@ func (s *selectStmt) String() string {
 		a := make([]string, len(s.flds))
 		for i, v := range s.flds {
 			s := v.expr.String()
-			if v.name != "" {
+			if v.name != "" && v.name != s {
 				s += " AS " + v.name
 			}
 			a[i] = s
@@ -689,7 +689,7 @@ func (s *insertIntoStmt) String() string {
 	}
 	switch {
 	case s.sel != nil:
-		return fmt.Sprintf("INSERT INTO %s%s (%s);", s.tableName, cn, s.sel)
+		return fmt.Sprintf("INSERT INTO %s%s %s;", s.tableName, cn, s.sel)
 	default:
 		a := make([]string, len(s.lists))
 		for i, v := range s.lists {

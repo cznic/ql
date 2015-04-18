@@ -267,6 +267,27 @@ func test(t *testing.T, s testDB) (panicked error) {
 			continue
 		}
 
+		s1 := list.String()
+		list1, err := Compile(s1)
+		if err != nil {
+			t.Errorf("recreated source does not compile: %v\n---- orig\n%s\n---- recreated\n%s", err, q, s1)
+			if *oFastFail {
+				return
+			}
+
+			continue
+		}
+
+		s2 := list1.String()
+		if g, e := s2, s1; g != e {
+			t.Errorf("recreated source is not idempotent\n---- orig\n%s\n---- recreated1\n%s\n---- recreated2\n%s", q, s1, s2)
+			if *oFastFail {
+				return
+			}
+
+			continue
+		}
+
 		tctx := NewRWCtx()
 		if !func() (ok bool) {
 			defer func() {

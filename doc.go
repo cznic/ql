@@ -3,7 +3,6 @@
 // license that can be found in the LICENSE file.
 
 //MAYBE set operations
-//MAYBE IN ( SELECT ... )
 //MAYBE +=, -=, ...
 
 //TODO verify there's a graceful failure for a 2G+ blob on a 32 bit machine.
@@ -826,7 +825,7 @@
 //  Predicate = (
 //  			[ "NOT" ] (
 //  			  "IN" "(" ExpressionList ")"
-//  			| "IN" "(" SelectStmt ")"
+//  			| "IN" "(" SelectStmt [ ";" ] ")"
 //  			| "BETWEEN" PrimaryFactor "AND" PrimaryFactor
 //  			)
 //              |       "IS" [ "NOT" ] "NULL"
@@ -1421,9 +1420,19 @@
 //	BEGIN TRANSACTION;
 // 		CREATE TABLE department (
 // 			DepartmentID   int,
-// 			DepartmentName string DepartmentName IN ("HQ", "R/D", "Lab", "HR")
-//				DEFAULT "HQ",
+// 			DepartmentName string DepartmentName IN ("HQ", "R/D", "Lab", "HR") DEFAULT "HQ",
 // 		);
+//	COMMIT;
+//
+// Note that the constraint and/or default expressions may refer to other
+// columns by name:
+//
+//	BEGIN TRANSACTION;
+//		CREATE TABLE t (
+//			a int,
+//			b int b > a && b < c DEFAULT (a+c)/2,
+//			c int,
+//	);
 //	COMMIT;
 //
 //

@@ -3037,12 +3037,25 @@ func (l value) String() string {
 	switch x := l.val.(type) {
 	case nil:
 		return "NULL"
+	case idealComplex:
+		s := fmt.Sprint(x)
+		return s[1 : len(s)-1]
+	case complex64:
+		s := fmt.Sprint(x)
+		return s[1 : len(s)-1]
+	case complex128:
+		s := fmt.Sprint(x)
+		return s[1 : len(s)-1]
 	case string:
 		return fmt.Sprintf("%q", x)
 	case time.Duration:
 		return fmt.Sprintf("duration(%q)", l.val)
 	case time.Time:
 		return fmt.Sprintf("time(%q)", l.val)
+	case *big.Rat:
+		return fmt.Sprintf("bigrat(%q)", l.val)
+	case *big.Int:
+		return fmt.Sprintf(`bigint("%v")`, l.val)
 	default:
 		return fmt.Sprintf("%v", l.val)
 	}

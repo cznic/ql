@@ -455,11 +455,11 @@ Factor:
         {
 		$$ = &pIn{expr: $1.(expression), not: true, list: $5.([]expression)}
         }
-|       Factor1 in '(' SelectStmt ')'
+|       Factor1 in '(' SelectStmt semiOpt ')'
         {
 		$$ = &pIn{expr: $1.(expression), sel: $4.(*selectStmt)}
         }
-|       Factor1 not in '(' SelectStmt ')'
+|       Factor1 not in '(' SelectStmt semiOpt ')'
         {
 		$$ = &pIn{expr: $1.(expression), not: true, sel: $5.(*selectStmt)}
         }
@@ -850,12 +850,12 @@ RecordSet:
 
 RecordSet1:
 	identifier
-|	'(' SelectStmt RecordSet11 ')'
+|	'(' SelectStmt semiOpt ')'
 	{
 		$$ = $2
 	}
 
-RecordSet11:
+semiOpt:
 	/* EMPTY */
 |	';'
 
