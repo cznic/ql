@@ -96,7 +96,6 @@ func (s *updateStmt) String() string {
 }
 
 func (s *updateStmt) exec(ctx *execCtx) (_ Recordset, err error) {
-	//TODO constraints and defaults
 	t, ok := ctx.db.root.tables[s.tableName]
 	if !ok {
 		return nil, fmt.Errorf("UPDATE: table %s does not exist", s.tableName)
@@ -109,6 +108,11 @@ func (s *updateStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 			return nil, fmt.Errorf("UPDATE: unknown column %s", asgn.colName)
 		}
 		tcols[i] = col
+	}
+
+	constraints, defaults, err := constraintsAndDefaults(ctx, s.tableName)
+	if err != nil {
+		return nil, err
 	}
 
 	m := map[interface{}]interface{}{}
@@ -170,6 +174,12 @@ func (s *updateStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 		}
 		if err = typeCheck(data[2:], t.cols); err != nil {
 			return nil, err
+		}
+
+		if len(constraints) != 0 { // => len(defaults) != 0 as well
+			if err = checkConstraintsAndDefaults(ctx, data[2:], t.cols, m, constraints, defaults); err != nil {
+				return nil, err
+			}
 		}
 
 		for i, v := range t.indices {
@@ -704,7 +714,6 @@ func (s *insertIntoStmt) String() string {
 }
 
 func (s *insertIntoStmt) execSelect(t *table, cols []*col, ctx *execCtx, constraints []*constraint, defaults []expression) (_ Recordset, err error) {
-	//TODO constraints and defaults
 	r := s.sel.exec0()
 	ok := false
 	h := t.head

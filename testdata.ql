@@ -10287,3 +10287,36 @@ BEGIN TRANSACTION;
 COMMIT;
 SELECT i FROM t ORDER BY b DESC;
 ||NOT NULL
+
+-- 868 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (a int, b int, c int);
+	INSERT INTO t(b) VALUES (10), (20), (30);
+	UPDATE t b = NULL WHERE b == 20;
+COMMIT;
+SELECT b FROM t ORDER BY b DESC;
+|lb
+[30]
+[10]
+[<nil>]
+
+-- 869 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (a int, b int NOT NULL, c int);
+	INSERT INTO t(b) VALUES (10), (20), (30);
+	UPDATE t b = NULL WHERE b == 20;
+COMMIT;
+SELECT b FROM t ORDER BY b DESC;
+||NOT NULL
+
+-- 870 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t (a int, b int NOT NULL DEFAULT 42, c int);
+	INSERT INTO t(b) VALUES (10), (20), (30);
+	UPDATE t b = NULL WHERE b == 20;
+COMMIT;
+SELECT b FROM t ORDER BY b DESC;
+|lb
+[42]
+[30]
+[10]
