@@ -152,6 +152,7 @@ distinct        {d}{i}{s}{t}{i}{n}{c}{t}
 drop            {d}{r}{o}{p}
 exists          {e}{x}{i}{s}{t}{s}
 from            {f}{r}{o}{m}
+full            {f}{u}{l}{l}
 group           {g}{r}{o}{u}{p}
 if              {i}{f}
 in              {i}{n}
@@ -159,6 +160,8 @@ index           {i}{n}{d}{e}{x}
 insert          {i}{n}{s}{e}{r}{t}
 into            {i}{n}{t}{o}
 is              {i}{s}
+join            {j}{o}{i}{n}
+left            {l}{e}{f}{t}
 like            {l}{i}{k}{e}
 limit           {l}{i}{m}{i}{t}
 not             {n}{o}{t}
@@ -166,6 +169,8 @@ offset          {o}{f}{f}{s}{e}{t}
 on              {o}{n}
 or              {o}{r}
 order           {o}{r}{d}{e}{r}
+outer           {o}{u}{t}{e}{r}
+right           {r}{i}{g}{h}{t}
 rollback        {r}{o}{l}{l}{b}{a}{c}{k}
 select          {s}{e}{l}{e}{c}{t}
 set             {s}{e}{t}

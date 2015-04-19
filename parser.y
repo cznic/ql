@@ -36,10 +36,11 @@ import (
 	column commit complex128Type complex64Type create
 	defaultKwd deleteKwd desc distinct drop durationType
 	eq exists
-	falseKwd floatType float32Type float64Type floatLit from 
+	falseKwd floatType float32Type float64Type floatLit from
 	ge group
 	identifier ifKwd imaginaryLit in index insert intType int16Type
 	int32Type int64Type int8Type into intLit is
+	join
 	le like limit lsh 
 	neq not null
 	offset on or order oror
@@ -52,7 +53,7 @@ import (
 	where
 
 %token	<item>
-	floatLit imaginaryLit intLit stringLit
+	floatLit imaginaryLit intLit stringLit left right full outer
 
 %token	<item>
 	bigIntType bigRatType blobType boolType byteType
@@ -80,8 +81,9 @@ import (
 	Factor Factor1 Field Field1 FieldList
 	GroupByClause
 	Index InsertIntoStmt InsertIntoStmt1 InsertIntoStmt2
+	JoinClause JoinClauseOpt JoinType
 	Literal
-	Operand OrderBy OrderBy1
+	Operand OrderBy OrderBy1 OuterOpt
 	QualifiedIdent
 	PrimaryExpression PrimaryFactor PrimaryTerm
 	RecordSet RecordSet1 RecordSet2 RollbackStmt
@@ -115,7 +117,7 @@ Assignment:
 	}
 
 AssignmentList:
-	Assignment AssignmentList1 AssignmentList2
+	Assignment AssignmentList1 CommaOpt
 	{
 		$$ = append([]assignment{$1.(assignment)}, $2.([]assignment)...)
 	}
@@ -129,10 +131,6 @@ AssignmentList1:
 	{
 		$$ = append($1.([]assignment), $3.(assignment))
 	}
-
-AssignmentList2:
-	/* EMPTY */
-|	','
 
 BeginTransactionStmt:
 	begin transaction
@@ -167,7 +165,7 @@ ColumnName:
 	identifier
 
 ColumnNameList:
-	ColumnName ColumnNameList1 ColumnNameList2
+	ColumnName ColumnNameList1 CommaOpt
 	{
 		$$ = append([]string{$1.(string)}, $2.([]string)...)
 	}
@@ -181,10 +179,6 @@ ColumnNameList1:
 	{
 		$$ = append($1.([]string), $3.(string))
 	}
-
-ColumnNameList2:
-	/* EMPTY */
-|	','
 
 CommitStmt:
 	commit
@@ -276,7 +270,7 @@ CreateIndexStmtUnique:
 	}
 
 CreateTableStmt:
-	create tableKwd TableName '(' ColumnDef CreateTableStmt1 CreateTableStmt2 ')'
+	create tableKwd TableName '(' ColumnDef CreateTableStmt1 CommaOpt ')'
 	{
 		nm := $3.(string)
 		$$ = &createTableStmt{tableName: nm, cols: append([]*col{$5.(*col)}, $6.([]*col)...)}
@@ -290,7 +284,7 @@ CreateTableStmt:
 			return 1
 		}
 	}
-|	create tableKwd ifKwd not exists TableName '(' ColumnDef CreateTableStmt1 CreateTableStmt2 ')'
+|	create tableKwd ifKwd not exists TableName '(' ColumnDef CreateTableStmt1 CommaOpt ')'
 	{
 		nm := $6.(string)
 		$$ = &createTableStmt{ifNotExists: true, tableName: nm, cols: append([]*col{$8.(*col)}, $9.([]*col)...)}
@@ -314,10 +308,6 @@ CreateTableStmt1:
 	{
 		$$ = append($1.([]*col), $3.(*col))
 	}
-
-CreateTableStmt2:
-	/* EMPTY */
-|	','
 
 Default:
 	defaultKwd Expression
@@ -426,7 +416,7 @@ logOr:
 |	or
 
 ExpressionList:
-	Expression ExpressionList1 ExpressionList2
+	Expression ExpressionList1 CommaOpt
 	{
 		$$ = append([]expression{$1.(expression)}, $2.([]expression)...)
 	}
@@ -440,10 +430,6 @@ ExpressionList1:
 	{
 		$$ = append($1.([]expression), $3.(expression))
 	}
-
-ExpressionList2:
-	/* EMPTY */
-|	','
 
 Factor:
 	Factor1
@@ -597,7 +583,7 @@ Index:
 	}
 
 InsertIntoStmt:
-	insert into TableName InsertIntoStmt1 values '(' ExpressionList ')' InsertIntoStmt2 InsertIntoStmt3
+	insert into TableName InsertIntoStmt1 values '(' ExpressionList ')' InsertIntoStmt2 CommaOpt
 	{
 		$$ = &insertIntoStmt{tableName: $3.(string), colNames: $4.([]string), lists: append([][]expression{$7.([]expression)}, $9.([][]expression)...)}
 
@@ -634,10 +620,6 @@ InsertIntoStmt2:
 	{
 		$$ = append($1.([][]expression), $4.([]expression))
 	}
-
-InsertIntoStmt3:
-|      ','
-
 
 Literal:
 	falseKwd
@@ -885,9 +867,30 @@ RollbackStmt:
 		$$ = rollbackStmt{}
 	}
 
+JoinType:
+	left
+|	right
+|	full
+
+OuterOpt:
+	{
+		$$ = nil
+	}
+|	outer
+
+JoinClause:
+	JoinType OuterOpt on Expression
+
+JoinClauseOpt:
+	{
+		$$ = nil
+	}
+|	JoinClause
+
 SelectStmt:
 	selectKwd SelectStmtDistinct SelectStmtFieldList from RecordSetList
-	SelectStmtWhere SelectStmtGroup SelectStmtOrder SelectStmtLimit SelectStmtOffset
+	CommaOpt JoinClauseOpt SelectStmtWhere SelectStmtGroup SelectStmtOrder
+	SelectStmtLimit SelectStmtOffset
 	{
 		x := yylex.(*lexer)
 		n := len(x.agg)
@@ -896,29 +899,11 @@ SelectStmt:
 			flds:          $3.([]*fld),
 			from:          &crossJoinRset{sources: $5},
 			hasAggregates: x.agg[n-1],
-			where:         $6.(*whereRset),
-			group:         $7.(*groupByRset),
-			order:         $8.(*orderByRset),
-			limit:         $9.(*limitRset),
-			offset:        $10.(*offsetRset),
-		}
-		x.agg = x.agg[:n-1]
-	}
-|	selectKwd SelectStmtDistinct SelectStmtFieldList from RecordSetList ','
-	SelectStmtWhere SelectStmtGroup SelectStmtOrder SelectStmtLimit SelectStmtOffset
-	{
-		x := yylex.(*lexer)
-		n := len(x.agg)
-		$$ = &selectStmt{
-			distinct:      $2.(bool),
-			flds:          $3.([]*fld),
-			from:          &crossJoinRset{sources: $5},
-			hasAggregates: x.agg[n-1],
-			where:         $7.(*whereRset),
-			group:         $8.(*groupByRset),
-			order:         $9.(*orderByRset),
-			limit:         $10.(*limitRset),
-			offset:        $11.(*offsetRset),
+			where:         $8.(*whereRset),
+			group:         $9.(*groupByRset),
+			order:         $10.(*orderByRset),
+			limit:         $11.(*limitRset),
+			offset:        $12.(*offsetRset),
 		}
 		x.agg = x.agg[:n-1]
 	}
@@ -1089,7 +1074,7 @@ Type:
 |	uint8Type
 
 UpdateStmt:
-	update TableName oSet AssignmentList UpdateStmt1
+	update TableName SetOpt AssignmentList UpdateStmt1
 	{
 		$$ = &updateStmt{tableName: $2.(string), list: $4.([]assignment), where: $5.(*whereRset).expr}
 
@@ -1156,5 +1141,8 @@ WhereClause:
 	}
 
 
-oSet:
+SetOpt:
 |	set
+
+CommaOpt:
+|	','

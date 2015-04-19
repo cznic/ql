@@ -220,17 +220,18 @@
 //
 // The following keywords are reserved and may not be used as identifiers.
 //
-//	ADD      BY          duration  INDEX   NULL    TRUNCATE
-//	ALTER    byte        EXISTS    INSERT  OFFSET  uint
-//	AND      COLUMN      false     int     ON      uint16
-//	AS       complex128  float     int16   ORDER   uint32
-//	ASC      complex64   float32   int32   SELECT  uint64
-//	BETWEEN  CREATE      float64   int64   SET     uint8
-//	bigint   DEFAULT     FROM      int8    string  UNIQUE
-//	bigrat   DELETE      GROUP     INTO    TABLE   UPDATE
-//	blob     DESC        IF        LIMIT   time    VALUES
-//	bool     DISTINCT    IN        LIKE    true    WHERE
-//	         DROP                  NOT     OR
+//	ADD      COLUMN      float     int64   OUTER     uint32
+//	ALTER    complex128  float3    int8    RIGHT     uint64
+//	AND      complex64   float6    INTO    SELECT    uint8
+//	AS       CREATE      FROM  2   JOIN    SET       UNIQUE
+//	ASC      DEFAULT     GROUP 4   LEFT    string    UPDATE
+//	BETWEEN  DELETE      IF        LIMIT   TABLE     VALUES
+//	bigint   DESC        IN        LIKE    time      WHERE
+//	bigrat   DISTINCT    INDEX     NOT     true
+//	blob     DROP        INSERT    NULL    OR
+//	bool     duration    int       OFFSET  TRUNCATE
+//	BY       EXISTS      int16     ON      uint
+//	byte     false       int32     ORDER   uint16
 //
 // Keywords are not case sensitive.
 //
@@ -1596,7 +1597,9 @@
 // clause.
 //
 //  SelectStmt = "SELECT" [ "DISTINCT" ] ( "*" | FieldList ) "FROM" RecordSetList
-//  	[ WhereClause ] [ GroupByClause ] [ OrderBy ] [ Limit ] [ Offset ].
+//  	[ JoinClause ] [ WhereClause ] [ GroupByClause ] [ OrderBy ] [ Limit ] [ Offset ].
+//
+//  JoinClause = ( "LEFT" | "RIGHT" | "FULL" ) [ "OUTER" ] "JOIN" RecordSet "ON" Expression .
 //
 //  RecordSet = ( TableName | "(" SelectStmt [ ";" ] ")" ) [ "AS" identifier ] .
 //  RecordSetList = RecordSet { "," RecordSet } [ "," ] .
@@ -1779,26 +1782,30 @@
 // 1. The FROM clause is evaluated, producing a Cartesian product of its source
 // record sets (tables or nested SELECT statements).
 //
-// 2. If present, the WHERE clause is evaluated on the result set of the
+// 2. If present, the JOIN cluase is evaluated on the result set of the
+// previous evaluation and the recordset specified by the JOIN clause. (...
+// JOIN Recordset ON ...)
+//
+// 3. If present, the WHERE clause is evaluated on the result set of the
 // previous evaluation.
 //
-// 3. If present, the GROUP BY clause is evaluated on the result set of the
+// 4. If present, the GROUP BY clause is evaluated on the result set of the
 // previous evaluation(s).
 //
-// 4. The SELECT field expressions are evaluated on the result set of the
+// 5. The SELECT field expressions are evaluated on the result set of the
 // previous evaluation(s).
 //
-// 5. If present, the DISTINCT modifier is evaluated on the result set of the
+// 6. If present, the DISTINCT modifier is evaluated on the result set of the
 // previous evaluation(s).
 //
-// 6. If present, the ORDER BY clause is evaluated on the result set of the
+// 7. If present, the ORDER BY clause is evaluated on the result set of the
 // previous evaluation(s).
 //
-// 7. If present, the OFFSET clause is evaluated on the result set of the
+// 8. If present, the OFFSET clause is evaluated on the result set of the
 // previous evaluation(s). The offset expression is evaluated once for the
 // first record produced by the previous evaluations.
 //
-// 8. If present, the LIMIT clause is evaluated on the result set of the
+// 9. If present, the LIMIT clause is evaluated on the result set of the
 // previous evaluation(s). The limit expression is evaluated once for the first
 // record produced by the previous evaluations.
 //

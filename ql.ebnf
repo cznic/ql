@@ -108,6 +108,11 @@ IndexName = identifier .
 InsertIntoStmt = "INSERT" "INTO" TableName [
 		 "(" ColumnNameList ")"
 	  ] ( Values | SelectStmt ) .
+JoinClause = (
+		  "LEFT"
+		| "RIGHT"
+		| "FULL"
+	  ) [ "OUTER" ] "JOIN" RecordSet "ON" Expression .
 Limit = "Limit" Expression .
 Literal = "FALSE"
 	| "NULL"
@@ -162,7 +167,7 @@ RecordSet = (
 	  ) [ "AS" identifier ] .
 RecordSetList = RecordSet { "," RecordSet } [ "," ] .
 RollbackStmt = "ROLLBACK" .
-SelectStmt = "SELECT" [ "DISTINCT" ] ( "*" | FieldList ) "FROM" RecordSetList [ WhereClause ] [ GroupByClause ] [ OrderBy ] [ Limit ] [ Offset ] .
+SelectStmt = "SELECT" [ "DISTINCT" ] ( "*" | FieldList ) "FROM" RecordSetList [ JoinClause ] [ WhereClause ] [ GroupByClause ] [ OrderBy ] [ Limit ] [ Offset ] .
 Slice = "[" [ Expression ] ":" [ Expression ] "]" .
 Statement = EmptyStmt
 	| AlterTableStmt
