@@ -538,6 +538,7 @@ type selectStmt struct {
 	distinct      bool
 	flds          []*fld
 	from          *crossJoinRset
+	outer         *outerJoinRset
 	group         *groupByRset
 	hasAggregates bool
 	limit         *limitRset
@@ -569,6 +570,25 @@ func (s *selectStmt) String() string {
 	}
 	b.WriteString(" FROM ")
 	b.WriteString(s.from.String())
+	if o := s.outer; o != nil {
+		switch o.typ {
+		case leftJoin:
+			b.WriteString(" LEFT")
+		case rightJoin:
+			b.WriteString(" RIGHT")
+		case fullJoin:
+			b.WriteString(" FULL")
+		}
+		b.WriteString(" OUTER JOIN ")
+		switch x := o.with.(type) {
+		case string:
+			b.WriteString(x)
+		case *selectStmt:
+			b.WriteString("(" + x.String() + ")")
+		}
+		b.WriteString(" ON ")
+		b.WriteString(o.on.String())
+	}
 	if s.where != nil {
 		b.WriteString(" WHERE ")
 		b.WriteString(s.where.expr.String())
@@ -653,6 +673,10 @@ func (s *selectStmt) exec0() (r rset) { //LATER overlapping goroutines/pipelines
 		default:
 			r = &whereRset{expr: w.expr, src: r}
 		}
+	}
+	if o := s.outer; o != nil {
+		o.crossJoin = r.(*crossJoinRset)
+		r = o
 	}
 	switch {
 	case !s.hasAggregates && s.group == nil: // nop

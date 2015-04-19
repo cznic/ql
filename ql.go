@@ -25,6 +25,18 @@ import (
 	"github.com/cznic/strutil"
 )
 
+const (
+	noNames = iota
+	returnNames
+	onlyNames
+)
+
+const (
+	leftJoin = iota
+	rightJoin
+	fullJoin
+)
+
 // NOTE: all rset implementations must be safe for concurrent use by multiple
 // goroutines.  If the do method requires any execution domain local data, they
 // must be held out of the implementing instance.
@@ -35,18 +47,13 @@ var (
 	_ rset = (*limitRset)(nil)
 	_ rset = (*offsetRset)(nil)
 	_ rset = (*orderByRset)(nil)
+	_ rset = (*outerJoinRset)(nil)
 	_ rset = (*selectRset)(nil)
 	_ rset = (*selectStmt)(nil)
 	_ rset = (*tableRset)(nil)
 	_ rset = (*whereRset)(nil)
 
 	isTesting bool // enables test hook: select from an index
-)
-
-const (
-	noNames = iota
-	returnNames
-	onlyNames
 )
 
 // List represents a group of compiled statements.
@@ -2193,4 +2200,15 @@ func (db *DB) Info() (r *DbInfo, err error) {
 
 type constraint struct {
 	expr expression // If expr == nil: contraint is 'NOT NULL'
+}
+
+type outerJoinRset struct {
+	typ       int // leftJoin, rightJoin, fullJoin
+	crossJoin *crossJoinRset
+	with      interface{} // table name or *selectStmt
+	on        expression
+}
+
+func (o *outerJoinRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, data []interface{}) (more bool, err error)) error {
+	panic("TODO")
 }

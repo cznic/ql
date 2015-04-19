@@ -14,9 +14,6 @@ all: editor scanner.go parser.go
 bench: all
 	go test -run NONE -bench .
 
-check: ql.y
-	goyacc -v /dev/null -o /dev/null $<
-
 clean:
 	go clean
 	rm -f *~ y.go y.tab.c *.out ql.test
@@ -33,10 +30,10 @@ cpu: ql.test
 	./$< -test.bench . -test.cpuprofile cpu.out
 	go tool pprof --lines $< cpu.out
 
-editor: check scanner.go parser.go coerce.go
+editor: ql.y scanner.go parser.go coerce.go
 	go fmt
 	go test -i
-	go test
+	go test -short
 	go install
 
 internalError:

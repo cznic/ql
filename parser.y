@@ -38,7 +38,7 @@ import (
 	eq exists
 	falseKwd floatType float32Type float64Type floatLit from
 	ge group
-	identifier ifKwd imaginaryLit in index insert intType int16Type
+	ifKwd imaginaryLit in index insert intType int16Type
 	int32Type int64Type int8Type into intLit is
 	join
 	le like limit lsh 
@@ -869,8 +869,17 @@ RollbackStmt:
 
 JoinType:
 	left
+	{
+		$$ = leftJoin
+	}
 |	right
+	{
+		$$ = rightJoin
+	}
 |	full
+	{
+		$$ = fullJoin
+	}
 
 OuterOpt:
 	{
@@ -879,11 +888,18 @@ OuterOpt:
 |	outer
 
 JoinClause:
-	JoinType OuterOpt on Expression
+	JoinType OuterOpt join RecordSet on Expression
+	{
+		$$ = &outerJoinRset{
+			typ: $1.(int),
+			with: $4,
+			on: $6.(expression),
+		}
+	}
 
 JoinClauseOpt:
 	{
-		$$ = nil
+		$$ = (*outerJoinRset)(nil)
 	}
 |	JoinClause
 
@@ -899,6 +915,7 @@ SelectStmt:
 			flds:          $3.([]*fld),
 			from:          &crossJoinRset{sources: $5},
 			hasAggregates: x.agg[n-1],
+			outer:         $7.(*outerJoinRset),
 			where:         $8.(*whereRset),
 			group:         $9.(*groupByRset),
 			order:         $10.(*orderByRset),
