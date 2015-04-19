@@ -583,8 +583,23 @@ func (s *selectStmt) String() string {
 		switch x := o.with.(type) {
 		case string:
 			b.WriteString(x)
-		case *selectStmt:
-			b.WriteString("(" + x.String() + ")")
+		case []interface{}:
+			// 0: *selectStmt, 1: AS clause name
+			if len(x) != 2 {
+				panic("internal error")
+			}
+			b.WriteString("(")
+			b.WriteString(x[0].(*selectStmt).String())
+			b.WriteString(")")
+			if x[1] != nil {
+				s := x[1].(string)
+				if s != "" {
+					b.WriteString(" AS ")
+					b.WriteString(s)
+				}
+			}
+		default:
+			panic("internal error")
 		}
 		b.WriteString(" ON ")
 		b.WriteString(o.on.String())

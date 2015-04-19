@@ -2199,16 +2199,95 @@ func (db *DB) Info() (r *DbInfo, err error) {
 }
 
 type constraint struct {
-	expr expression // If expr == nil: contraint is 'NOT NULL'
+	expr expression // If expr == nil: constraint is 'NOT NULL'
 }
 
 type outerJoinRset struct {
 	typ       int // leftJoin, rightJoin, fullJoin
 	crossJoin *crossJoinRset
-	with      interface{} // table name or *selectStmt
+	with      interface{} // string (table name) or *selectStmt
 	on        expression
 }
 
 func (o *outerJoinRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, data []interface{}) (more bool, err error)) error {
-	panic("TODO")
+	rsets := make([]rset, 2)
+	altNames := make([]string, 2)
+	//dbg(".... %p", r)
+	pair0 := o.with
+	pair := pair0.([]interface{})
+	//dbg("%d: %#v", len(pair), pair)
+	altName := pair[1].(string)
+	switch x := pair[0].(type) {
+	case string: // table name
+		rsets[1] = tableRset(x)
+		if altName == "" {
+			altName = x
+		}
+	case *selectStmt:
+		rsets[1] = x
+	default:
+		log.Panic("internal error")
+	}
+	altNames[1] = altName
+
+	var flds []*fld
+	fldsSent := false
+	iq := 0
+	stop := false
+	ids := map[string]interface{}{}
+	var g func([]interface{}, []rset, int) error
+	g = func(prefix []interface{}, rsets []rset, x int) (err error) {
+		rset := rsets[0]
+		rsets = rsets[1:]
+		ok := false
+		return rset.do(ctx, onlyNames, func(id interface{}, in []interface{}) (more bool, err error) {
+			if onlyNames && fldsSent {
+				stop = true
+				return false, nil
+			}
+
+			if ok {
+				ids[altNames[x]] = id
+				if len(rsets) != 0 {
+					return true, g(append(prefix, in...), rsets, x+1)
+				}
+
+				m, err := f(ids, append(prefix, in...))
+				if !m {
+					stop = true
+				}
+				return m && !stop, err
+			}
+
+			ok = true
+			if !fldsSent {
+				f0 := append([]*fld(nil), in[0].([]*fld)...)
+				q := altNames[iq]
+				for i, elem := range f0 {
+					nf := &fld{}
+					*nf = *elem
+					switch {
+					case q == "":
+						nf.name = ""
+					case nf.name != "":
+						nf.name = fmt.Sprintf("%s.%s", altNames[iq], nf.name)
+					}
+					f0[i] = nf
+				}
+				iq++
+				flds = append(flds, f0...)
+			}
+			if len(rsets) == 0 && !fldsSent {
+				fldsSent = true
+				more, err = f(nil, []interface{}{flds})
+				if !more {
+					stop = true
+				}
+				return more && !stop, err
+			}
+
+			return !stop, nil
+		})
+	}
+	return g(nil, rsets, 0)
 }
