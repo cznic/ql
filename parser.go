@@ -2391,9 +2391,9 @@ yynewstate:
 	case 130:
 		{
 			yyVAL.item = &outerJoinRset{
-				typ:  yyS[yypt-5].item.(int),
-				with: yyS[yypt-2].item,
-				on:   yyS[yypt-0].item.(expression),
+				typ:    yyS[yypt-5].item.(int),
+				source: yyS[yypt-2].item.([]interface{}),
+				on:     yyS[yypt-0].item.(expression),
 			}
 		}
 	case 131:

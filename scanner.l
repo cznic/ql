@@ -266,6 +266,7 @@ ident           {idchar0}{idchars}*
 {drop}                  return drop
 {exists}                return exists
 {from}                  return from
+{full}                  return full
 {group}                 return group
 {if}                    return ifKwd
 {index}                 return index
@@ -273,13 +274,18 @@ ident           {idchar0}{idchars}*
 {into}                  return into
 {in}                    return in
 {is}                    return is
+{join}                  return join
+{left}                  return left
 {like}                  return like
 {limit}                 return limit
 {not}                   return not
 {offset}                return offset
 {on}                    return on
-{or}                    return or
 {order}                 return order
+{or}                    return or
+{outer}                 return outer
+{right}                 return right
+
 {rollback}              return rollback
 
 {select}                l.agg = append(l.agg, false)

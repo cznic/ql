@@ -580,26 +580,18 @@ func (s *selectStmt) String() string {
 			b.WriteString(" FULL")
 		}
 		b.WriteString(" OUTER JOIN ")
-		switch x := o.with.(type) {
+		switch x := o.source[0].(type) {
 		case string:
 			b.WriteString(x)
-		case []interface{}:
-			// 0: *selectStmt, 1: AS clause name
-			if len(x) != 2 {
-				panic("internal error")
-			}
+		case *selectStmt:
 			b.WriteString("(")
-			b.WriteString(x[0].(*selectStmt).String())
+			b.WriteString(x.String())
 			b.WriteString(")")
-			if x[1] != nil {
-				s := x[1].(string)
-				if s != "" {
-					b.WriteString(" AS ")
-					b.WriteString(s)
-				}
-			}
 		default:
 			panic("internal error")
+		}
+		if s := o.source[1].(string); s != "" {
+			b.WriteString(" AS " + s)
 		}
 		b.WriteString(" ON ")
 		b.WriteString(o.on.String())

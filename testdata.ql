@@ -10320,3 +10320,16 @@ SELECT b FROM t ORDER BY b DESC;
 [42]
 [30]
 [10]
+
+-- 871 // https://github.com/cznic/ql/issues/91
+BEGIN TRANSACTION;
+	CREATE TABLE a(i int, s string);
+	INSERT INTO a VALUES (1, "a"), (3, "a"), (NULL, "a");
+	CREATE TABLE b(i int, s string);
+	INSERT INTO b VALUES (2, "b"), (3, "b"), (NULL, "b");
+COMMIT;
+SELECT *
+FROM a
+LEFT JOIN b ON a.i == b.i
+ORDER BY a.i, b.i;
+|TODO

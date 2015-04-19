@@ -892,7 +892,7 @@ JoinClause:
 	{
 		$$ = &outerJoinRset{
 			typ: $1.(int),
-			with: $4,
+			source: $4.([]interface{}),
 			on: $6.(expression),
 		}
 	}

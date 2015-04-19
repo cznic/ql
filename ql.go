@@ -2205,30 +2205,30 @@ type constraint struct {
 type outerJoinRset struct {
 	typ       int // leftJoin, rightJoin, fullJoin
 	crossJoin *crossJoinRset
-	with      interface{} // string (table name) or *selectStmt
+	source    []interface{}
 	on        expression
 }
 
 func (o *outerJoinRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, data []interface{}) (more bool, err error)) error {
-	rsets := make([]rset, 2)
-	altNames := make([]string, 2)
-	//dbg(".... %p", r)
-	pair0 := o.with
-	pair := pair0.([]interface{})
-	//dbg("%d: %#v", len(pair), pair)
-	altName := pair[1].(string)
-	switch x := pair[0].(type) {
-	case string: // table name
-		rsets[1] = tableRset(x)
-		if altName == "" {
-			altName = x
+	sources := append(o.crossJoin.sources, o.source)
+	rsets := make([]rset, len(sources))
+	altNames := make([]string, len(sources))
+	for i, pair0 := range sources {
+		pair := pair0.([]interface{})
+		altName := pair[1].(string)
+		switch x := pair[0].(type) {
+		case string: // table name
+			rsets[i] = tableRset(x)
+			if altName == "" {
+				altName = x
+			}
+		case *selectStmt:
+			rsets[i] = x
+		default:
+			log.Panic("internal error")
 		}
-	case *selectStmt:
-		rsets[1] = x
-	default:
-		log.Panic("internal error")
+		altNames[i] = altName
 	}
-	altNames[1] = altName
 
 	var flds []*fld
 	fldsSent := false
@@ -2252,6 +2252,9 @@ func (o *outerJoinRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, 
 					return true, g(append(prefix, in...), rsets, x+1)
 				}
 
+				// prefix: left "table" row
+				// in: right "table" row
+				//TODO now check o.on and record unmatched cases for later injection.
 				m, err := f(ids, append(prefix, in...))
 				if !m {
 					stop = true
