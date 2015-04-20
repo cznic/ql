@@ -180,7 +180,7 @@ const sample = `
 			("Heisenberg", 33),
 			("Robinson", 34),
 			("Smith", 34),
-			("John", NULL),
+			("Williams", NULL),
 		;
      COMMIT;
 `
