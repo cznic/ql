@@ -1697,8 +1697,8 @@
 // containing all nulls, and added to the result set. For the RIGHT JOIN
 // variant the discussed rules are used for rows from b not satisfying expr ==
 // true and the virtual, all-null row "comes" from a. The FULL JOIN adds the
-// respective rows which would be otherwise provided by the separate exections
-// of the LEFT JOIN and RIGHT JOIN variants. For additional OUTER JOIN
+// respective rows which would be otherwise provided by the separate executions
+// of the LEFT JOIN and RIGHT JOIN variants. For more thorough OUTER JOIN
 // discussion please see the Wikipedia article at [10].
 //
 // Recordset ordering

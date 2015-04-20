@@ -10568,3 +10568,28 @@ ORDER BY t.s, employee.LastName;
 [B Rafferty 31 31 Sales]
 [B Robinson 34 34 Clerical]
 [B Smith 34 34 Clerical]
+
+-- S 888 // https://github.com/cznic/ql/issues/91
+BEGIN TRANSACTION;
+	CREATE TABLE t (s string);
+	INSERT INTO t VALUES ("A"), ("B");
+COMMIT;
+SELECT *
+FROM t, employee 
+FULL JOIN department
+ON employee.DepartmentID == department.DepartmentID
+ORDER BY t.s, employee.LastName;
+|?t.s, ?employee.LastName, ?employee.DepartmentID, ldepartment.DepartmentID, sdepartment.DepartmentName
+[<nil> <nil> <nil> 35 Marketing]
+[A Heisenberg 33 33 Engineering]
+[A Jones 33 33 Engineering]
+[A Rafferty 31 31 Sales]
+[A Robinson 34 34 Clerical]
+[A Smith 34 34 Clerical]
+[A Williams <nil> <nil> <nil>]
+[B Heisenberg 33 33 Engineering]
+[B Jones 33 33 Engineering]
+[B Rafferty 31 31 Sales]
+[B Robinson 34 34 Clerical]
+[B Smith 34 34 Clerical]
+[B Williams <nil> <nil> <nil>]
