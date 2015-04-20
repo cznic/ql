@@ -2230,17 +2230,18 @@ func (o *outerJoinRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, 
 		altNames[i] = altName
 	}
 
-	var flds []*fld
+	var flds, leftFlds, rightFlds []*fld
 	fldsSent := false
 	iq := 0
 	stop := false
 	ids := map[string]interface{}{}
+	m := map[interface{}]interface{}{}
 	var g func([]interface{}, []rset, int) error
 	g = func(prefix []interface{}, rsets []rset, x int) (err error) {
 		rset := rsets[0]
 		rsets = rsets[1:]
 		ok := false
-		return rset.do(ctx, onlyNames, func(id interface{}, in []interface{}) (more bool, err error) {
+		return rset.do(ctx, onlyNames, func(id interface{}, in []interface{}) (bool, error) {
 			if onlyNames && fldsSent {
 				stop = true
 				return false, nil
@@ -2254,12 +2255,36 @@ func (o *outerJoinRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, 
 
 				// prefix: left "table" row
 				// in: right "table" row
-				//TODO now check o.on and record unmatched cases for later injection.
-				m, err := f(ids, append(prefix, in...))
-				if !m {
+				row := append(prefix, in...)
+				for i, fld := range flds {
+					if nm := fld.name; nm != "" {
+						m[nm] = row[i]
+					}
+				}
+
+				val, err := o.on.eval(ctx, m, ctx.arg)
+				if err != nil {
+					return false, err
+				}
+
+				if val == nil {
+					return true && !stop, nil
+				}
+
+				x, ok := val.(bool)
+				if !ok {
+					return false, fmt.Errorf("invalid ON expression %s (value of type %T)", val, val)
+				}
+
+				if !x {
+					return true && !stop, nil
+				}
+
+				more, err := f(ids, row)
+				if !more {
 					stop = true
 				}
-				return m && !stop, err
+				return more && !stop, err
 			}
 
 			ok = true
@@ -2279,10 +2304,23 @@ func (o *outerJoinRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, 
 				}
 				iq++
 				flds = append(flds, f0...)
+				if leftFlds == nil {
+					leftFlds = flds
+				} else {
+					rightFlds = f0
+				}
 			}
 			if len(rsets) == 0 && !fldsSent {
+				//dbg("---- left fields")
+				//for _, v := range leftFlds {
+				//	dbg("", v.name, v.expr)
+				//}
+				//dbg("---- right fields")
+				//for _, v := range rightFlds {
+				//	dbg("", v.name, v.expr)
+				//}
 				fldsSent = true
-				more, err = f(nil, []interface{}{flds})
+				more, err := f(nil, []interface{}{flds})
 				if !more {
 					stop = true
 				}
@@ -2294,3 +2332,85 @@ func (o *outerJoinRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, 
 	}
 	return g(nil, rsets, 0)
 }
+
+/*
+
+LEFT
+
+[Heisenberg 33 31 Sales]
+[Heisenberg 33 == 33 Engineering]
+[Heisenberg 33 34 Clerical]
+[Heisenberg 33 35 Marketing]
+[Jones 33 31 Sales]
+[Jones 33 == 33 Engineering]
+[Jones 33 34 Clerical]
+[Jones 33 35 Marketing]
+[Rafferty 31 ==  31 Sales]
+[Rafferty 31 33 Engineering]
+[Rafferty 31 34 Clerical]
+[Rafferty 31 35 Marketing]
+[Robinson 34 31 Sales]
+[Robinson 34 33 Engineering]
+[Robinson 34  == 34 Clerical]
+[Robinson 34 35 Marketing]
+[Smith 34 31 Sales]
+[Smith 34 33 Engineering]
+[Smith 34 == 34 Clerical]
+[Smith 34 35 Marketing]
+[Williams <nil> 31 Sales]
+[Williams <nil> 33 Engineering]
+[Williams <nil> 34 Clerical]
+[Williams <nil> 35 Marketing]
+
+[Heisenberg 33 == 33 Engineering]
+[Jones 33 == 33 Engineering]
+[Rafferty 31 ==  31 Sales]
+[Robinson 34  == 34 Clerical]
+[Smith 34 == 34 Clerical]
+
+[Williams <nil> 31 Sales]
+[Williams <nil> 33 Engineering]
+[Williams <nil> 34 Clerical]
+[Williams <nil> 35 Marketing]
+
+RIGHT
+
+[Heisenberg 33 34 Clerical]
+[Jones 33 34 Clerical]
+[Rafferty 31 34 Clerical]
+[Robinson 34 == 34 Clerical]
+[Smith 34 == 34 Clerical]
+[Williams <nil> 34 Clerical]
+[Heisenberg 33 == 33 Engineering]
+[Jones 33 == 33 Engineering]
+[Rafferty 31 33 Engineering]
+[Robinson 34 33 Engineering]
+[Smith 34 33 Engineering]
+[Williams <nil> 33 Engineering]
+[Heisenberg 33 35 Marketing]
+[Jones 33 35 Marketing]
+[Rafferty 31 35 Marketing]
+[Robinson 34 35 Marketing]
+[Smith 34 35 Marketing]
+[Williams <nil> 35 Marketing]
+[Heisenberg 33 31 Sales]
+[Jones 33 31 Sales]
+[Rafferty 31 == 31 Sales]
+[Robinson 34 31 Sales]
+[Smith 34 31 Sales]
+[Williams <nil> 31 Sales]
+
+[Heisenberg 33 == 33 Engineering]
+[Jones 33 == 33 Engineering]
+[Rafferty 31 == 31 Sales]
+[Robinson 34 == 34 Clerical]
+[Smith 34 == 34 Clerical]
+
+[Heisenberg 33 35 Marketing]
+[Jones 33 35 Marketing]
+[Rafferty 31 35 Marketing]
+[Robinson 34 35 Marketing]
+[Smith 34 35 Marketing]
+[Williams <nil> 35 Marketing]
+
+*/
