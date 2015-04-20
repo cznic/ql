@@ -2210,7 +2210,16 @@ type outerJoinRset struct {
 }
 
 func (o *outerJoinRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, data []interface{}) (more bool, err error)) error {
+	if o.typ == fullJoin {
+		return fmt.Errorf("FULL [OUTER] JOIN not supported")
+	}
+
 	sources := append(o.crossJoin.sources, o.source)
+	isRight := o.typ == rightJoin
+	if isRight { // switch last two sources
+		n := len(sources)
+		sources[n-2], sources[n-1] = sources[n-1], sources[n-2]
+	}
 	rsets := make([]rset, len(sources))
 	altNames := make([]string, len(sources))
 	for i, pair0 := range sources {
@@ -2231,12 +2240,14 @@ func (o *outerJoinRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, 
 	}
 
 	var flds, leftFlds, rightFlds []*fld
+	var nF, nL, nR int
 	fldsSent := false
 	iq := 0
 	stop := false
 	ids := map[string]interface{}{}
 	m := map[interface{}]interface{}{}
 	var g func([]interface{}, []rset, int) error
+	var match bool
 	g = func(prefix []interface{}, rsets []rset, x int) (err error) {
 		rset := rsets[0]
 		rsets = rsets[1:]
@@ -2250,12 +2261,45 @@ func (o *outerJoinRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, 
 			if ok {
 				ids[altNames[x]] = id
 				if len(rsets) != 0 {
-					return true, g(append(prefix, in...), rsets, x+1)
+					newPrefix := append(prefix, in...)
+					if len(newPrefix) != len(leftFlds) {
+						return true, g(newPrefix, rsets, x+1)
+					}
+
+					match = false
+					if err := g(newPrefix, rsets, x+1); err != nil {
+						return false, err
+					}
+
+					if match {
+						return true, nil
+					}
+
+					row := append(newPrefix, make([]interface{}, len(rightFlds))...)
+					if isRight {
+						p := nF - nL - nR
+						row2 := row[:p:p]
+						row2 = append(row2, row[p+nL:]...)
+						row2 = append(row2, row[p:p+nL]...)
+						row = row2
+					}
+					more, err := f(ids, row)
+					if !more {
+						stop = true
+					}
+					return more && !stop, err
 				}
 
 				// prefix: left "table" row
 				// in: right "table" row
 				row := append(prefix, in...)
+				if isRight {
+					p := nF - nL - nR
+					row2 := row[:p:p]
+					row2 = append(row2, row[p+nL:]...)
+					row2 = append(row2, row[p:p+nL]...)
+					row = row2
+				}
 				for i, fld := range flds {
 					if nm := fld.name; nm != "" {
 						m[nm] = row[i]
@@ -2280,6 +2324,7 @@ func (o *outerJoinRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, 
 					return true && !stop, nil
 				}
 
+				match = true
 				more, err := f(ids, row)
 				if !more {
 					stop = true
@@ -2311,16 +2356,19 @@ func (o *outerJoinRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, 
 				}
 			}
 			if len(rsets) == 0 && !fldsSent {
-				//dbg("---- left fields")
-				//for _, v := range leftFlds {
-				//	dbg("", v.name, v.expr)
-				//}
-				//dbg("---- right fields")
-				//for _, v := range rightFlds {
-				//	dbg("", v.name, v.expr)
-				//}
 				fldsSent = true
-				more, err := f(nil, []interface{}{flds})
+				nF = len(flds)
+				nL = len(leftFlds)
+				nR = len(rightFlds)
+				x := flds
+				if isRight {
+					p := nF - nL - nR
+					x = x[:p:p]
+					x = append(x, rightFlds...)
+					x = append(x, leftFlds...)
+					flds = x
+				}
+				more, err := f(nil, []interface{}{x})
 				if !more {
 					stop = true
 				}
@@ -2332,85 +2380,3 @@ func (o *outerJoinRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, 
 	}
 	return g(nil, rsets, 0)
 }
-
-/*
-
-LEFT
-
-[Heisenberg 33 31 Sales]
-[Heisenberg 33 == 33 Engineering]
-[Heisenberg 33 34 Clerical]
-[Heisenberg 33 35 Marketing]
-[Jones 33 31 Sales]
-[Jones 33 == 33 Engineering]
-[Jones 33 34 Clerical]
-[Jones 33 35 Marketing]
-[Rafferty 31 ==  31 Sales]
-[Rafferty 31 33 Engineering]
-[Rafferty 31 34 Clerical]
-[Rafferty 31 35 Marketing]
-[Robinson 34 31 Sales]
-[Robinson 34 33 Engineering]
-[Robinson 34  == 34 Clerical]
-[Robinson 34 35 Marketing]
-[Smith 34 31 Sales]
-[Smith 34 33 Engineering]
-[Smith 34 == 34 Clerical]
-[Smith 34 35 Marketing]
-[Williams <nil> 31 Sales]
-[Williams <nil> 33 Engineering]
-[Williams <nil> 34 Clerical]
-[Williams <nil> 35 Marketing]
-
-[Heisenberg 33 == 33 Engineering]
-[Jones 33 == 33 Engineering]
-[Rafferty 31 ==  31 Sales]
-[Robinson 34  == 34 Clerical]
-[Smith 34 == 34 Clerical]
-
-[Williams <nil> 31 Sales]
-[Williams <nil> 33 Engineering]
-[Williams <nil> 34 Clerical]
-[Williams <nil> 35 Marketing]
-
-RIGHT
-
-[Heisenberg 33 34 Clerical]
-[Jones 33 34 Clerical]
-[Rafferty 31 34 Clerical]
-[Robinson 34 == 34 Clerical]
-[Smith 34 == 34 Clerical]
-[Williams <nil> 34 Clerical]
-[Heisenberg 33 == 33 Engineering]
-[Jones 33 == 33 Engineering]
-[Rafferty 31 33 Engineering]
-[Robinson 34 33 Engineering]
-[Smith 34 33 Engineering]
-[Williams <nil> 33 Engineering]
-[Heisenberg 33 35 Marketing]
-[Jones 33 35 Marketing]
-[Rafferty 31 35 Marketing]
-[Robinson 34 35 Marketing]
-[Smith 34 35 Marketing]
-[Williams <nil> 35 Marketing]
-[Heisenberg 33 31 Sales]
-[Jones 33 31 Sales]
-[Rafferty 31 == 31 Sales]
-[Robinson 34 31 Sales]
-[Smith 34 31 Sales]
-[Williams <nil> 31 Sales]
-
-[Heisenberg 33 == 33 Engineering]
-[Jones 33 == 33 Engineering]
-[Rafferty 31 == 31 Sales]
-[Robinson 34 == 34 Clerical]
-[Smith 34 == 34 Clerical]
-
-[Heisenberg 33 35 Marketing]
-[Jones 33 35 Marketing]
-[Rafferty 31 35 Marketing]
-[Robinson 34 35 Marketing]
-[Smith 34 35 Marketing]
-[Williams <nil> 35 Marketing]
-
-*/

@@ -10325,6 +10325,140 @@ SELECT b FROM t ORDER BY b DESC;
 SELECT *
 FROM employee 
 LEFT OUTER JOIN department
-ON true // employee.DepartmentID == department.DepartmentID
-ORDER BY department.DepartmentName, employee.LastName;
-|TODO
+ON employee.DepartmentID == department.DepartmentID
+ORDER BY employee.LastName;
+|semployee.LastName, lemployee.DepartmentID, ldepartment.DepartmentID, sdepartment.DepartmentName
+[Heisenberg 33 33 Engineering]
+[Jones 33 33 Engineering]
+[Rafferty 31 31 Sales]
+[Robinson 34 34 Clerical]
+[Smith 34 34 Clerical]
+[Williams <nil> <nil> <nil>]
+
+-- S 872 // https://github.com/cznic/ql/issues/91
+SELECT *
+FROM employee 
+LEFT JOIN department
+ON employee.DepartmentID == department.DepartmentID
+ORDER BY employee.LastName;
+|semployee.LastName, lemployee.DepartmentID, ldepartment.DepartmentID, sdepartment.DepartmentName
+[Heisenberg 33 33 Engineering]
+[Jones 33 33 Engineering]
+[Rafferty 31 31 Sales]
+[Robinson 34 34 Clerical]
+[Smith 34 34 Clerical]
+[Williams <nil> <nil> <nil>]
+
+-- S 873 // https://github.com/cznic/ql/issues/91
+SELECT *
+FROM employee 
+RIGHT OUTER JOIN department
+ON employee.DepartmentID == department.DepartmentID
+ORDER BY employee.LastName;
+|?employee.LastName, ?employee.DepartmentID, ldepartment.DepartmentID, sdepartment.DepartmentName
+[<nil> <nil> 35 Marketing]
+[Heisenberg 33 33 Engineering]
+[Jones 33 33 Engineering]
+[Rafferty 31 31 Sales]
+[Robinson 34 34 Clerical]
+[Smith 34 34 Clerical]
+
+-- S 874 // https://github.com/cznic/ql/issues/91
+SELECT *
+FROM employee 
+RIGHT JOIN department
+ON employee.DepartmentID == department.DepartmentID
+ORDER BY employee.LastName;
+|?employee.LastName, ?employee.DepartmentID, ldepartment.DepartmentID, sdepartment.DepartmentName
+[<nil> <nil> 35 Marketing]
+[Heisenberg 33 33 Engineering]
+[Jones 33 33 Engineering]
+[Rafferty 31 31 Sales]
+[Robinson 34 34 Clerical]
+[Smith 34 34 Clerical]
+
+-- S 875 // https://github.com/cznic/ql/issues/91
+SELECT *
+FROM employee 
+FULL OUTER JOIN department
+ON employee.DepartmentID == department.DepartmentID;
+||not supported
+
+-- S 876 // https://github.com/cznic/ql/issues/91
+SELECT *
+FROM employee 
+FULL JOIN department
+ON employee.DepartmentID == department.DepartmentID;
+||not supported
+
+-- 877 // https://dev.mysql.com/worklog/task/?id=1604
+BEGIN TRANSACTION;
+	CREATE TABLE t1 (s1 int);
+	CREATE TABLE t2 (s1 int);
+	INSERT INTO t1 VALUES (1);
+	INSERT INTO t1 VALUES (1);
+COMMIT;
+SELECT * FROM t1 LEFT JOIN t2 ON t1.s1 == t2.s1;
+|lt1.s1, ?t2.s1
+[1 <nil>]
+[1 <nil>]
+
+-- 878 // https://github.com/cznic/ql/issues/91
+BEGIN TRANSACTION;
+	CREATE TABLE a (i int, s string);
+	INSERT INTO a VALUES (1, "a"), (3, "a"), (NULL, "an1"), (NULL, "an2");
+	CREATE TABLE b (i int, s string);
+	INSERT INTO b VALUES (2, "b"), (3, "b"), (NULL, "bn1"), (NULL, "bn2");
+COMMIT;
+SELECT * FROM a LEFT JOIN b ON a.i == b.i
+ORDER BY a.s, a.i, b.s, b.i;
+|la.i, sa.s, ?b.i, ?b.s
+[1 a <nil> <nil>]
+[3 a 3 b]
+[<nil> an1 <nil> <nil>]
+[<nil> an2 <nil> <nil>]
+
+-- 879 // https://github.com/cznic/ql/issues/91
+BEGIN TRANSACTION;
+	CREATE TABLE a (i int, s string);
+	INSERT INTO a VALUES (1, "a"), (3, "a"), (NULL, "an1"), (NULL, "an2");
+	CREATE TABLE b (i int, s string);
+	INSERT INTO b VALUES (2, "b"), (3, "b"), (NULL, "bn1"), (NULL, "bn2");
+COMMIT;
+SELECT * FROM a RIGHT JOIN b ON a.i == b.i
+ORDER BY a.s, a.i, b.s, b.i;
+|?a.i, ?a.s, lb.i, sb.s
+[<nil> <nil> 2 b]
+[<nil> <nil> <nil> bn1]
+[<nil> <nil> <nil> bn2]
+[3 a 3 b]
+
+-- 880 // https://github.com/cznic/ql/issues/91
+BEGIN TRANSACTION;
+	CREATE TABLE a (i int, s string);
+	INSERT INTO a VALUES (1, "a"), (3, "a"), (NULL, "an1"), (NULL, "an2");
+	CREATE TABLE b (i int, s string);
+	INSERT INTO b VALUES (2, "b"), (3, "b"), (NULL, "bn1"), (NULL, "bn2");
+COMMIT;
+SELECT * FROM b LEFT JOIN a ON a.i == b.i
+ORDER BY a.s, a.i, b.s, b.i;
+|lb.i, sb.s, ?a.i, ?a.s
+[2 b <nil> <nil>]
+[<nil> bn1 <nil> <nil>]
+[<nil> bn2 <nil> <nil>]
+[3 b 3 a]
+
+-- 881 // https://github.com/cznic/ql/issues/91
+BEGIN TRANSACTION;
+	CREATE TABLE a (i int, s string);
+	INSERT INTO a VALUES (1, "a"), (3, "a"), (NULL, "an1"), (NULL, "an2");
+	CREATE TABLE b (i int, s string);
+	INSERT INTO b VALUES (2, "b"), (3, "b"), (NULL, "bn1"), (NULL, "bn2");
+COMMIT;
+SELECT * FROM b RIGHT JOIN a ON a.i == b.i
+ORDER BY a.s, a.i, b.s, b.i;
+|?b.i, ?b.s, la.i, sa.s
+[<nil> <nil> 1 a]
+[3 b 3 a]
+[<nil> <nil> <nil> an1]
+[<nil> <nil> <nil> an2]
