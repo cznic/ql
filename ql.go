@@ -22,6 +22,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/cznic/b"
 	"github.com/cznic/strutil"
 )
 
@@ -2210,15 +2211,26 @@ type outerJoinRset struct {
 }
 
 func (o *outerJoinRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, data []interface{}) (more bool, err error)) error {
-	if o.typ == fullJoin {
-		return fmt.Errorf("FULL [OUTER] JOIN not supported")
-	}
-
 	sources := append(o.crossJoin.sources, o.source)
-	isRight := o.typ == rightJoin
-	if isRight { // switch last two sources
+	var b3 *b.Tree
+	switch o.typ {
+	case rightJoin: // switch last two sources
 		n := len(sources)
 		sources[n-2], sources[n-1] = sources[n-1], sources[n-2]
+	case fullJoin:
+		b3 = b.TreeNew(func(a, b interface{}) int {
+			x := a.(int64)
+			y := b.(int64)
+			if x < y {
+				return -1
+			}
+
+			if x == y {
+				return 0
+			}
+
+			return 1
+		})
 	}
 	rsets := make([]rset, len(sources))
 	altNames := make([]string, len(sources))
@@ -2240,7 +2252,7 @@ func (o *outerJoinRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, 
 	}
 
 	var flds, leftFlds, rightFlds []*fld
-	var nF, nL, nR int
+	var nF, nP, nL, nR int
 	fldsSent := false
 	iq := 0
 	stop := false
@@ -2248,6 +2260,8 @@ func (o *outerJoinRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, 
 	m := map[interface{}]interface{}{}
 	var g func([]interface{}, []rset, int) error
 	var match bool
+	var rid int64
+	firstR := true
 	g = func(prefix []interface{}, rsets []rset, x int) (err error) {
 		rset := rsets[0]
 		rsets = rsets[1:]
@@ -2262,25 +2276,27 @@ func (o *outerJoinRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, 
 				ids[altNames[x]] = id
 				if len(rsets) != 0 {
 					newPrefix := append(prefix, in...)
-					if len(newPrefix) != len(leftFlds) {
-						return true, g(newPrefix, rsets, x+1)
-					}
-
 					match = false
+					rid = 0
 					if err := g(newPrefix, rsets, x+1); err != nil {
 						return false, err
 					}
 
+					if len(newPrefix) < nP+nL {
+						return true, nil
+					}
+
+					firstR = false
 					if match {
 						return true, nil
 					}
 
 					row := append(newPrefix, make([]interface{}, len(rightFlds))...)
-					if isRight {
-						p := nF - nL - nR
-						row2 := row[:p:p]
-						row2 = append(row2, row[p+nL:]...)
-						row2 = append(row2, row[p:p+nL]...)
+					switch o.typ {
+					case rightJoin:
+						row2 := row[:nP:nP]
+						row2 = append(row2, row[nP+nL:]...)
+						row2 = append(row2, row[nP:nP+nL]...)
 						row = row2
 					}
 					more, err := f(ids, row)
@@ -2293,12 +2309,19 @@ func (o *outerJoinRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, 
 				// prefix: left "table" row
 				// in: right "table" row
 				row := append(prefix, in...)
-				if isRight {
-					p := nF - nL - nR
-					row2 := row[:p:p]
-					row2 = append(row2, row[p+nL:]...)
-					row2 = append(row2, row[p:p+nL]...)
+				switch o.typ {
+				case rightJoin:
+					row2 := row[:nP:nP]
+					row2 = append(row2, row[nP+nL:]...)
+					row2 = append(row2, row[nP:nP+nL]...)
 					row = row2
+				case fullJoin:
+					rid++
+					if !firstR {
+						break
+					}
+
+					b3.Set(rid, in)
 				}
 				for i, fld := range flds {
 					if nm := fld.name; nm != "" {
@@ -2325,6 +2348,9 @@ func (o *outerJoinRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, 
 				}
 
 				match = true
+				if o.typ == fullJoin {
+					b3.Delete(rid)
+				}
 				more, err := f(ids, row)
 				if !more {
 					stop = true
@@ -2349,21 +2375,19 @@ func (o *outerJoinRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, 
 				}
 				iq++
 				flds = append(flds, f0...)
-				if leftFlds == nil {
-					leftFlds = flds
-				} else {
-					rightFlds = f0
-				}
+				leftFlds = append([]*fld(nil), rightFlds...)
+				rightFlds = append([]*fld(nil), f0...)
 			}
 			if len(rsets) == 0 && !fldsSent {
 				fldsSent = true
 				nF = len(flds)
 				nL = len(leftFlds)
 				nR = len(rightFlds)
+				nP = nF - nL - nR
 				x := flds
-				if isRight {
-					p := nF - nL - nR
-					x = x[:p:p]
+				switch o.typ {
+				case rightJoin:
+					x = x[:nP:nP]
 					x = append(x, rightFlds...)
 					x = append(x, leftFlds...)
 					flds = x
@@ -2378,5 +2402,33 @@ func (o *outerJoinRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, 
 			return !stop, nil
 		})
 	}
-	return g(nil, rsets, 0)
+	if err := g(nil, rsets, 0); err != nil {
+		return err
+	}
+
+	if o.typ != fullJoin {
+		return nil
+	}
+
+	it, err := b3.SeekFirst()
+	if err != nil {
+		return err
+	}
+
+	pref := make([]interface{}, nP+nL)
+	for {
+		_, v, err := it.Next()
+		if err != nil { // No more items
+			return nil
+		}
+
+		more, err := f(nil, append(pref, v.([]interface{})...))
+		if err != nil {
+			return err
+		}
+
+		if !more {
+			return nil
+		}
+	}
 }

@@ -14,6 +14,8 @@
 //
 // Change list
 //
+// 2015-04-20: Added support for {LEFT,RIGHT,FULL} [OUTER] JOIN.
+//
 // 2015-04-18: Column definitions can now have constraints and defaults.
 // Details are discussed in the "Constraints and defaults" chapter below the
 // CREATE TABLE statement documentation.
@@ -1676,6 +1678,29 @@
 //	SELECT * FROM employee AS e, ( SELECT * FROM department) AS d;
 //	// Fields are []string{"e.LastName", "e.DepartmentID", "d.DepartmentID", "d.DepartmentName"
 //
+// Outer joins
+//
+// The optional JOIN clause, for example
+//
+//	SELECT *
+//	FROM a
+//	LEFT OUTER JOIN b ON expr;
+//
+// is mostly equal to
+//
+//	SELECT *
+//	FROM a, b
+//	WHERE expr;
+//
+// except that the rows from a which, when they appear in the cross join, never
+// made expr to evaluate to true, are combined with a virtual row from b,
+// containing all nulls, and added to the result set. For the RIGHT JOIN
+// variant the discussed rules are used for rows from b not satisfying expr ==
+// true and the virtual, all-null row "comes" from a. The FULL JOIN adds the
+// respective rows which would be otherwise provided by the separate exections
+// of the LEFT JOIN and RIGHT JOIN variants. For additional OUTER JOIN
+// discussion please see the Wikipedia article at [10].
+//
 // Recordset ordering
 //
 // Resultins rows of a SELECT statement can be optionally ordered by the ORDER
@@ -2370,6 +2395,7 @@
 //	[7]: http://developer.mimer.com/validator/sql-reserved-words.tml
 //	[8]: http://godoc.org/github.com/cznic/zappy
 //	[9]: http://www.w3schools.com/sql/sql_default.asp
+//	[10]: http://en.wikipedia.org/wiki/Join_(SQL)#Outer_join
 //
 // Implementation details
 //

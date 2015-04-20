@@ -10381,15 +10381,15 @@ ORDER BY employee.LastName;
 SELECT *
 FROM employee 
 FULL OUTER JOIN department
-ON employee.DepartmentID == department.DepartmentID;
-||not supported
+ON employee.DepartmentID == none;
+||unknown
 
 -- S 876 // https://github.com/cznic/ql/issues/91
 SELECT *
 FROM employee 
 FULL JOIN department
-ON employee.DepartmentID == department.DepartmentID;
-||not supported
+ON employee.DepartmentID == none;
+||unknown
 
 -- 877 // https://dev.mysql.com/worklog/task/?id=1604
 BEGIN TRANSACTION;
@@ -10462,3 +10462,109 @@ ORDER BY a.s, a.i, b.s, b.i;
 [3 b 3 a]
 [<nil> <nil> <nil> an1]
 [<nil> <nil> <nil> an2]
+
+-- 882 // https://github.com/cznic/ql/issues/91
+BEGIN TRANSACTION;
+	CREATE TABLE a (i int, s string);
+	INSERT INTO a VALUES (1, "a"), (3, "a");
+	CREATE TABLE b (i int, s string);
+	INSERT INTO b VALUES (2, "b"), (3, "b");
+COMMIT;
+SELECT * FROM a FULL JOIN b ON a.i == b.i
+ORDER BY a.s, a.i, b.s, b.i;
+|?a.i, ?a.s, lb.i, sb.s
+[<nil> <nil> 2 b]
+[1 a <nil> <nil>]
+[3 a 3 b]
+
+-- 883 // https://github.com/cznic/ql/issues/91
+BEGIN TRANSACTION;
+	CREATE TABLE a (i int, s string);
+	INSERT INTO a VALUES (1, "a"), (3, "a");
+	CREATE TABLE b (i int, s string);
+	INSERT INTO b VALUES (2, "b"), (3, "b");
+COMMIT;
+SELECT * FROM a FULL OUTER JOIN b ON a.i == b.i
+ORDER BY a.s, a.i, b.s, b.i;
+|?a.i, ?a.s, lb.i, sb.s
+[<nil> <nil> 2 b]
+[1 a <nil> <nil>]
+[3 a 3 b]
+
+-- S 884 // https://github.com/cznic/ql/issues/91
+SELECT *
+FROM employee 
+FULL JOIN department
+ON employee.DepartmentID == department.DepartmentID
+ORDER BY employee.LastName;
+|?employee.LastName, ?employee.DepartmentID, ldepartment.DepartmentID, sdepartment.DepartmentName
+[<nil> <nil> 35 Marketing]
+[Heisenberg 33 33 Engineering]
+[Jones 33 33 Engineering]
+[Rafferty 31 31 Sales]
+[Robinson 34 34 Clerical]
+[Smith 34 34 Clerical]
+[Williams <nil> <nil> <nil>]
+
+-- S 885 // https://github.com/cznic/ql/issues/91
+SELECT *
+FROM employee 
+FULL OUTER JOIN department
+ON employee.DepartmentID == department.DepartmentID
+ORDER BY employee.LastName;
+|?employee.LastName, ?employee.DepartmentID, ldepartment.DepartmentID, sdepartment.DepartmentName
+[<nil> <nil> 35 Marketing]
+[Heisenberg 33 33 Engineering]
+[Jones 33 33 Engineering]
+[Rafferty 31 31 Sales]
+[Robinson 34 34 Clerical]
+[Smith 34 34 Clerical]
+[Williams <nil> <nil> <nil>]
+
+-- S 886 // https://github.com/cznic/ql/issues/91
+BEGIN TRANSACTION;
+	CREATE TABLE t (s string);
+	INSERT INTO t VALUES ("A"), ("B");
+COMMIT;
+SELECT *
+FROM t, employee 
+LEFT JOIN department
+ON employee.DepartmentID == department.DepartmentID
+ORDER BY t.s, employee.LastName;
+|st.s, semployee.LastName, lemployee.DepartmentID, ldepartment.DepartmentID, sdepartment.DepartmentName
+[A Heisenberg 33 33 Engineering]
+[A Jones 33 33 Engineering]
+[A Rafferty 31 31 Sales]
+[A Robinson 34 34 Clerical]
+[A Smith 34 34 Clerical]
+[A Williams <nil> <nil> <nil>]
+[B Heisenberg 33 33 Engineering]
+[B Jones 33 33 Engineering]
+[B Rafferty 31 31 Sales]
+[B Robinson 34 34 Clerical]
+[B Smith 34 34 Clerical]
+[B Williams <nil> <nil> <nil>]
+
+-- S 887 // https://github.com/cznic/ql/issues/91
+BEGIN TRANSACTION;
+	CREATE TABLE t (s string);
+	INSERT INTO t VALUES ("A"), ("B");
+COMMIT;
+SELECT *
+FROM t, employee 
+RIGHT JOIN department
+ON employee.DepartmentID == department.DepartmentID
+ORDER BY t.s, employee.LastName;
+|st.s, ?employee.LastName, ?employee.DepartmentID, ldepartment.DepartmentID, sdepartment.DepartmentName
+[A <nil> <nil> 35 Marketing]
+[A Heisenberg 33 33 Engineering]
+[A Jones 33 33 Engineering]
+[A Rafferty 31 31 Sales]
+[A Robinson 34 34 Clerical]
+[A Smith 34 34 Clerical]
+[B <nil> <nil> 35 Marketing]
+[B Heisenberg 33 33 Engineering]
+[B Jones 33 33 Engineering]
+[B Rafferty 31 31 Sales]
+[B Robinson 34 34 Clerical]
+[B Smith 34 34 Clerical]
