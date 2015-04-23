@@ -10231,7 +10231,7 @@ SELECT TimeStamp IS NOT NULL FROM t;
 -- 863 // https://github.com/cznic/ql/issues/85
 BEGIN TRANSACTION;
 	CREATE TABLE t (
-		Event string Event != "" && Event like "[0-9]+:[ \t]+.*",
+		Event string Event != "" && Event LIKE "[0-9]+:[ \t]+.*",
 	);
 	INSERT INTO t VALUES("123 foo");
 COMMIT;
@@ -10241,7 +10241,7 @@ SELECT Event FROM t;
 -- 864 // https://github.com/cznic/ql/issues/85
 BEGIN TRANSACTION;
 	CREATE TABLE t (
-		Event string Event != "" && Event like "[0-9]+:[ \t]+.*",
+		Event string Event != "" && Event LIKE "[0-9]+:[ \t]+.*",
 	);
 	INSERT INTO t VALUES("123: foo");
 COMMIT;
