@@ -31,68 +31,179 @@ import (
 	list []interface{}
 }
 
-%token	add alter and andand andnot as asc
-	begin between bigIntType bigRatType blobType boolType by byteType
-	column commit complex128Type complex64Type create
-	defaultKwd deleteKwd desc distinct drop durationType
-	eq exists
-	falseKwd floatType float32Type float64Type floatLit from
-	ge group
-	ifKwd imaginaryLit in index insert intType int16Type
-	int32Type int64Type int8Type into intLit is
-	join
-	le like limit lsh 
-	neq not null
-	offset on or order oror
-	qlParam
-	rollback rsh runeType
-	selectKwd set stringType stringLit
-	tableKwd timeType transaction trueKwd truncate
-	uintType uint16Type uint32Type uint64Type uint8Type unique update
-	values
-	where
-
 %token	<item>
-	floatLit imaginaryLit intLit stringLit left right full outer
 
-%token	<item>
-	bigIntType bigRatType blobType boolType byteType
-	complex64Type complex128Type
-	durationType
-	falseKwd floatType float32Type float64Type
-	identifier intType int16Type int32Type int64Type int8Type 
-	null
-	qlParam
-	runeType
-	stringType
-	timeType trueKwd
-	uintType uint16Type uint32Type uint64Type uint8Type
+	/*yy:token "1.%d"   */	floatLit	"floating-point literal"
+	/*yy:token "%c"     */	identifier	"identifier"
+	/*yy:token "%di"    */	imaginaryLit	"imaginary literal"
+	/*yy:token "%d"     */	intLit		"integer literal"
+	/*yy:token "$%d"    */	qlParam		"QL parameter"
+	/*yy:token "\"%c\"" */	stringLit	"string literal"
+
+	add		"ADD"
+	alter		"ALTER"
+	and 		"AND"
+	andand 		"&&"
+	andnot		"&^"
+	as		"AS"
+	asc		"ASC"
+	begin		"BEGIN"
+	between		"BETWEEN"
+	bigIntType	"bigint"
+	bigRatType	"bigrat"
+	blobType	"blob"
+	boolType	"bool"
+	by		"BY"
+	byteType	"byte"
+	column		"COLUMN"
+	commit		"COMMIT"
+	complex128Type	"complex128"
+	complex64Type	"complex64"
+	create		"CREATE"
+	defaultKwd	"DEFAULT"
+	deleteKwd	"DELETE"
+	desc		"DESC"
+	distinct	"DISTINCT"
+	drop		"DROP"
+	durationType	"duration"
+	eq		"=="
+	exists		"EXISTS"
+	falseKwd	"false"
+	floatType	"float"
+	float32Type	"float32"
+	float64Type	"float64"
+	from		"FROM"
+	full		"FULL"
+	ge		">="
+	group		"GROUP"
+	ifKwd		"if"
+	in		"IN"
+	index		"INDEX"
+	insert		"INSERT"
+	intType		"int"
+	int16Type	"int16"
+	int32Type	"int32"
+	int64Type	"int64"
+	int8Type	"int8"
+	into		"INTO"
+	is		"IS"
+	join		"JOIN"
+	le		"<="
+	left		"LEFT"
+	like		"LIKE"
+	limit		"LIMIT"
+	lsh 		"<<"
+	neq		"!="
+	not		"NOT"
+	null		"NULL"
+	offset		"OFFSET"
+	on		"ON"
+	or		"OR"
+	order		"ORDER"
+	oror		"||"
+	outer		"OUTER"
+	right		"RIGHT"
+	rollback	"ROLLBACK"
+	rsh		">>"
+	runeType	"rune"
+	selectKwd	"SELECT"
+	set		"SET"
+	stringType	"string"
+	tableKwd	"TABLE"
+	timeType	"time"
+	transaction	"TRANSACTION"
+	trueKwd		"true"
+	truncate	"TRUNCATE"
+	uintType	"uint"
+	uint16Type	"uint16"
+	uint32Type	"uint32"
+	uint64Type	"uint64"
+	uint8Type	"uint8",
+	unique		"UNIQUE"
+	update		"UPDATE"
+	values		"VALUES"
+	where		"WHERE"
+
 
 %type	<item>
-	AlterTableStmt Assignment AssignmentList AssignmentList1
-	BeginTransactionStmt
-	Call Call1 ColumnDef ColumnName ColumnNameList ColumnNameList1
-	CommitStmt Constraint ConstraintOpt Conversion CreateIndexStmt
-	CreateIndexIfNotExists CreateIndexStmtUnique CreateTableStmt
-	CreateTableStmt1
-	Default DefaultOpt DeleteFromStmt DropIndexStmt DropIndexIfExists
-	DropTableStmt
-	EmptyStmt Expression ExpressionList ExpressionList1
-	Factor Factor1 Field Field1 FieldList
-	GroupByClause
-	Index InsertIntoStmt InsertIntoStmt1 InsertIntoStmt2
-	JoinClause JoinClauseOpt JoinType
-	Literal
-	Operand OrderBy OrderBy1 OuterOpt
-	QualifiedIdent
-	PrimaryExpression PrimaryFactor PrimaryTerm
-	RecordSet RecordSet1 RecordSet2 RollbackStmt
-	SelectStmt SelectStmtDistinct SelectStmtFieldList SelectStmtLimit
-	SelectStmtWhere SelectStmtGroup SelectStmtOffset SelectStmtOrder Slice
-	Statement StatementList
-	TableName Term TruncateTableStmt Type
-	UnaryExpr UpdateStmt UpdateStmt1
-	WhereClause
+	AlterTableStmt		"ALTER TABLE statement"
+	Assignment		"assignment"
+	AssignmentList		"assignment list"
+	AssignmentList1		"assignment list optional trailing comma"
+	BeginTransactionStmt	"BEGIN TRANSACTION statement"
+	Call			"function call"
+	Call1			"function call optional argument list"
+	ColumnDef		"table column definition"
+	ColumnName		"column name"
+	ColumnNameList		"column name list"
+	ColumnNameList1		"column name list with optional trailing comma"
+	CommaOpt		"optional comma"
+	CommitStmt		"COMMIT statement"
+	Constraint		"column value constraint"
+	ConstraintOpt		"optional column value constraint"
+	Conversion		"conversion"
+	CreateIndexStmt		"CREATE INDEX statement"
+	CreateIndexIfNotExists	"CREATE INDEX statement optional IF NOT EXISTS cluse"
+	CreateIndexStmtUnique	"CREATE INDEX optional UNIQUE clause"
+	CreateTableStmt		"CREATE TABLE statement"
+	CreateTableStmt1	"CREATE TABLE statement colum definition list"
+	Default			"DEFAULT clause"
+	DefaultOpt		"optional DEFAULT clause"
+	DeleteFromStmt		"DELETE FROM statement"
+	DropIndexStmt		"DROP INDEX statement"
+	DropIndexIfExists	"DROP INDEX statement optional IF EXISTS clause"
+	DropTableStmt		"DROP TABLE statement"
+	EmptyStmt		"empty statement"
+	Expression		"expression"
+	ExpressionList		"expression list"
+	ExpressionList1		"expression list expression"
+	Factor			"expression factor"
+	Factor1			"binary expression factor"
+	Field			"field expression"
+	Field1			"field expression optional AS clause"
+	FieldList		"field expression list"
+	GroupByClause		"GROUP BY clause"
+	Index			"string index"
+	InsertIntoStmt		"INSERT INTO statement"
+	InsertIntoStmt1		"INSERT INTO statement optional column list clause"
+	InsertIntoStmt2		"INSERT INTO statement optional values list"
+	JoinClause		"SELECT statement JOIN clause"
+	JoinClauseOpt		"SELECT statement optional JOIN clause"
+	JoinType		"join type"
+	Literal			"literal value"
+	logAnd			"logical and operator"
+	logOr			"logical or operator"
+	Operand			"operand"
+	OrderBy			"ORDER BY clause"
+	OrderBy1		"ORDER BY clause optional collation specification"
+	OuterOpt		"optional OUTER clause"
+	QualifiedIdent		"qualified identifier"
+	PrimaryExpression	"primary expression"
+	PrimaryFactor		"primary expression factor"
+	PrimaryTerm		"primary expression term"
+	RecordSet		"record set"
+	RecordSet1		"record set name or parenthesized SELECTECT statement"
+	RecordSet2		"record set optional AS clause"
+	RollbackStmt		"ROLLBACK statement"
+	SelectStmt		"SELECT statement"
+	SelectStmtDistinct	"SELECT statement optional DISTINCT clause"
+	SelectStmtFieldList	"SELECT statement field list"
+	SelectStmtLimit		"SELECT statement optional LIMIT clause"
+	SelectStmtWhere		"SELECT statement optional WHERE clause"
+	SelectStmtGroup		"SELECT statement optional GROUP BY clause"
+	SelectStmtOffset	"SELECT statement optional OFFSET clause"
+	SelectStmtOrder		"SELECT statement optional ORDER BY clause"
+	Slice			"string slice"
+	Statement		"statement"
+	StatementList		"statement list"
+	TableName		"table name"
+	Term			"expression term"
+	TruncateTableStmt	"TRANSACTION TABLE statement"
+	Type			"type"
+	UnaryExpr		"unary expression"
+	UpdateStmt		"UPDATE statement"
+	UpdateStmt1		"UPDATE statement optional WHERE clause"
+	WhereClause		"WHERE clause"
 
 %type	<list>	RecordSetList
 
@@ -413,7 +524,11 @@ Expression:
 
 logOr:
 	oror
+	{
+	}
 |	or
+	{
+	}
 
 ExpressionList:
 	Expression ExpressionList1 CommaOpt
@@ -1056,7 +1171,11 @@ Term:
 
 logAnd:
 	andand
+	{
+	}
 |	and
+	{
+	}
 
 TruncateTableStmt:
 	truncate tableKwd TableName
@@ -1159,7 +1278,15 @@ WhereClause:
 
 
 SetOpt:
+	{
+	}
 |	set
+	{
+	}
 
 CommaOpt:
+	{
+	}
 |	','
+	{
+	}

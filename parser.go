@@ -37,96 +37,96 @@ type yyXError struct {
 const (
 	yyDefault      = 57435
 	yyEOFCode      = 57344
-	add            = 57346
-	alter          = 57347
-	and            = 57348
-	andand         = 57349
-	andnot         = 57350
-	as             = 57351
-	asc            = 57352
-	begin          = 57353
-	between        = 57354
-	bigIntType     = 57355
-	bigRatType     = 57356
-	blobType       = 57357
-	boolType       = 57358
-	by             = 57359
-	byteType       = 57360
-	column         = 57361
-	commit         = 57362
-	complex128Type = 57363
-	complex64Type  = 57364
-	create         = 57365
-	defaultKwd     = 57366
-	deleteKwd      = 57367
-	desc           = 57368
-	distinct       = 57369
-	drop           = 57370
-	durationType   = 57371
-	eq             = 57372
+	add            = 57352
+	alter          = 57353
+	and            = 57354
+	andand         = 57355
+	andnot         = 57356
+	as             = 57357
+	asc            = 57358
+	begin          = 57359
+	between        = 57360
+	bigIntType     = 57361
+	bigRatType     = 57362
+	blobType       = 57363
+	boolType       = 57364
+	by             = 57365
+	byteType       = 57366
+	column         = 57367
+	commit         = 57368
+	complex128Type = 57369
+	complex64Type  = 57370
+	create         = 57371
+	defaultKwd     = 57372
+	deleteKwd      = 57373
+	desc           = 57374
+	distinct       = 57375
+	drop           = 57376
+	durationType   = 57377
+	eq             = 57378
 	yyErrCode      = 57345
-	exists         = 57373
-	falseKwd       = 57374
-	float32Type    = 57376
-	float64Type    = 57377
-	floatLit       = 57378
-	floatType      = 57375
-	from           = 57379
-	full           = 57432
-	ge             = 57380
-	group          = 57381
-	identifier     = 57434
-	ifKwd          = 57382
-	imaginaryLit   = 57383
-	in             = 57384
-	index          = 57385
-	insert         = 57386
-	int16Type      = 57388
-	int32Type      = 57389
-	int64Type      = 57390
-	int8Type       = 57391
-	intLit         = 57393
-	intType        = 57387
-	into           = 57392
-	is             = 57394
-	join           = 57395
-	le             = 57396
-	left           = 57430
-	like           = 57397
-	limit          = 57398
-	lsh            = 57399
-	neq            = 57400
-	not            = 57401
-	null           = 57402
-	offset         = 57403
-	on             = 57404
-	or             = 57405
-	order          = 57406
-	oror           = 57407
-	outer          = 57433
-	qlParam        = 57408
-	right          = 57431
-	rollback       = 57409
-	rsh            = 57410
-	runeType       = 57411
-	selectKwd      = 57412
-	set            = 57413
-	stringLit      = 57415
-	stringType     = 57414
-	tableKwd       = 57416
-	timeType       = 57417
-	transaction    = 57418
-	trueKwd        = 57419
-	truncate       = 57420
-	uint16Type     = 57422
-	uint32Type     = 57423
-	uint64Type     = 57424
-	uint8Type      = 57425
-	uintType       = 57421
-	unique         = 57426
-	update         = 57427
-	values         = 57428
-	where          = 57429
+	exists         = 57379
+	falseKwd       = 57380
+	float32Type    = 57382
+	float64Type    = 57383
+	floatLit       = 57346
+	floatType      = 57381
+	from           = 57384
+	full           = 57385
+	ge             = 57386
+	group          = 57387
+	identifier     = 57347
+	ifKwd          = 57388
+	imaginaryLit   = 57348
+	in             = 57389
+	index          = 57390
+	insert         = 57391
+	int16Type      = 57393
+	int32Type      = 57394
+	int64Type      = 57395
+	int8Type       = 57396
+	intLit         = 57349
+	intType        = 57392
+	into           = 57397
+	is             = 57398
+	join           = 57399
+	le             = 57400
+	left           = 57401
+	like           = 57402
+	limit          = 57403
+	lsh            = 57404
+	neq            = 57405
+	not            = 57406
+	null           = 57407
+	offset         = 57408
+	on             = 57409
+	or             = 57410
+	order          = 57411
+	oror           = 57412
+	outer          = 57413
+	qlParam        = 57350
+	right          = 57414
+	rollback       = 57415
+	rsh            = 57416
+	runeType       = 57417
+	selectKwd      = 57418
+	set            = 57419
+	stringLit      = 57351
+	stringType     = 57420
+	tableKwd       = 57421
+	timeType       = 57422
+	transaction    = 57423
+	trueKwd        = 57424
+	truncate       = 57425
+	uint16Type     = 57427
+	uint32Type     = 57428
+	uint64Type     = 57429
+	uint8Type      = 57430
+	uintType       = 57426
+	unique         = 57431
+	update         = 57432
+	values         = 57433
+	where          = 57434
 
 	yyMaxDepth = 200
 	yyTabOfs   = -212
@@ -142,68 +142,68 @@ var (
 		94:    5,   // '^' (130x)
 		44:    6,   // ',' (129x)
 		40:    7,   // '(' (123x)
-		57434: 8,   // identifier (115x)
-		57403: 9,   // offset (102x)
-		57398: 10,  // limit (100x)
-		57366: 11,  // defaultKwd (93x)
-		57406: 12,  // order (89x)
-		57429: 13,  // where (86x)
-		57402: 14,  // null (82x)
-		57355: 15,  // bigIntType (81x)
-		57356: 16,  // bigRatType (81x)
-		57357: 17,  // blobType (81x)
-		57358: 18,  // boolType (81x)
-		57360: 19,  // byteType (81x)
-		57363: 20,  // complex128Type (81x)
-		57364: 21,  // complex64Type (81x)
-		57371: 22,  // durationType (81x)
-		57376: 23,  // float32Type (81x)
-		57377: 24,  // float64Type (81x)
-		57375: 25,  // floatType (81x)
-		57388: 26,  // int16Type (81x)
-		57389: 27,  // int32Type (81x)
-		57390: 28,  // int64Type (81x)
-		57391: 29,  // int8Type (81x)
-		57387: 30,  // intType (81x)
-		57411: 31,  // runeType (81x)
-		57414: 32,  // stringType (81x)
-		57417: 33,  // timeType (81x)
-		57422: 34,  // uint16Type (81x)
-		57423: 35,  // uint32Type (81x)
-		57424: 36,  // uint64Type (81x)
-		57425: 37,  // uint8Type (81x)
-		57421: 38,  // uintType (81x)
-		57381: 39,  // group (80x)
-		57401: 40,  // not (80x)
-		57374: 41,  // falseKwd (79x)
-		57378: 42,  // floatLit (79x)
-		57383: 43,  // imaginaryLit (79x)
-		57393: 44,  // intLit (79x)
-		57405: 45,  // or (79x)
-		57407: 46,  // oror (79x)
-		57408: 47,  // qlParam (79x)
-		57415: 48,  // stringLit (79x)
-		57419: 49,  // trueKwd (79x)
+		57347: 8,   // identifier (115x)
+		57408: 9,   // offset (102x)
+		57403: 10,  // limit (100x)
+		57372: 11,  // defaultKwd (93x)
+		57411: 12,  // order (89x)
+		57434: 13,  // where (86x)
+		57407: 14,  // null (82x)
+		57361: 15,  // bigIntType (81x)
+		57362: 16,  // bigRatType (81x)
+		57363: 17,  // blobType (81x)
+		57364: 18,  // boolType (81x)
+		57366: 19,  // byteType (81x)
+		57369: 20,  // complex128Type (81x)
+		57370: 21,  // complex64Type (81x)
+		57377: 22,  // durationType (81x)
+		57382: 23,  // float32Type (81x)
+		57383: 24,  // float64Type (81x)
+		57381: 25,  // floatType (81x)
+		57393: 26,  // int16Type (81x)
+		57394: 27,  // int32Type (81x)
+		57395: 28,  // int64Type (81x)
+		57396: 29,  // int8Type (81x)
+		57392: 30,  // intType (81x)
+		57417: 31,  // runeType (81x)
+		57420: 32,  // stringType (81x)
+		57422: 33,  // timeType (81x)
+		57427: 34,  // uint16Type (81x)
+		57428: 35,  // uint32Type (81x)
+		57429: 36,  // uint64Type (81x)
+		57430: 37,  // uint8Type (81x)
+		57426: 38,  // uintType (81x)
+		57387: 39,  // group (80x)
+		57406: 40,  // not (80x)
+		57380: 41,  // falseKwd (79x)
+		57346: 42,  // floatLit (79x)
+		57348: 43,  // imaginaryLit (79x)
+		57349: 44,  // intLit (79x)
+		57410: 45,  // or (79x)
+		57412: 46,  // oror (79x)
+		57350: 47,  // qlParam (79x)
+		57351: 48,  // stringLit (79x)
+		57424: 49,  // trueKwd (79x)
 		33:    50,  // '!' (75x)
-		57379: 51,  // from (74x)
-		57352: 52,  // asc (70x)
-		57368: 53,  // desc (70x)
+		57384: 51,  // from (74x)
+		57358: 52,  // asc (70x)
+		57374: 53,  // desc (70x)
 		93:    54,  // ']' (69x)
-		57351: 55,  // as (68x)
+		57357: 55,  // as (68x)
 		58:    56,  // ':' (66x)
-		57348: 57,  // and (66x)
-		57349: 58,  // andand (64x)
+		57354: 57,  // and (66x)
+		57355: 58,  // andand (64x)
 		124:   59,  // '|' (55x)
-		57354: 60,  // between (53x)
-		57384: 61,  // in (53x)
+		57360: 60,  // between (53x)
+		57389: 61,  // in (53x)
 		60:    62,  // '<' (52x)
 		62:    63,  // '>' (52x)
-		57372: 64,  // eq (52x)
-		57380: 65,  // ge (52x)
-		57394: 66,  // is (52x)
-		57396: 67,  // le (52x)
-		57397: 68,  // like (52x)
-		57400: 69,  // neq (52x)
+		57378: 64,  // eq (52x)
+		57386: 65,  // ge (52x)
+		57398: 66,  // is (52x)
+		57400: 67,  // le (52x)
+		57402: 68,  // like (52x)
+		57405: 69,  // neq (52x)
 		57509: 70,  // Type (50x)
 		57451: 71,  // Conversion (49x)
 		57480: 72,  // Literal (49x)
@@ -215,9 +215,9 @@ var (
 		37:    78,  // '%' (43x)
 		38:    79,  // '&' (43x)
 		47:    80,  // '/' (43x)
-		57350: 81,  // andnot (43x)
-		57399: 82,  // lsh (43x)
-		57410: 83,  // rsh (43x)
+		57356: 81,  // andnot (43x)
+		57404: 82,  // lsh (43x)
+		57416: 83,  // rsh (43x)
 		57487: 84,  // PrimaryTerm (38x)
 		57486: 85,  // PrimaryFactor (34x)
 		91:    86,  // '[' (30x)
@@ -227,68 +227,68 @@ var (
 		57464: 90,  // Expression (21x)
 		57515: 91,  // logOr (15x)
 		57444: 92,  // ColumnName (10x)
-		57432: 93,  // full (10x)
-		57430: 94,  // left (10x)
-		57431: 95,  // right (10x)
-		57412: 96,  // selectKwd (9x)
+		57385: 93,  // full (10x)
+		57401: 94,  // left (10x)
+		57414: 95,  // right (10x)
+		57418: 96,  // selectKwd (9x)
 		57506: 97,  // TableName (9x)
 		57447: 98,  // CommaOpt (7x)
-		57404: 99,  // on (7x)
+		57409: 99,  // on (7x)
 		57465: 100, // ExpressionList (6x)
-		57395: 101, // join (6x)
+		57399: 101, // join (6x)
 		57494: 102, // SelectStmt (6x)
 		57441: 103, // Call (5x)
 		57473: 104, // Index (5x)
 		57503: 105, // Slice (5x)
 		57443: 106, // ColumnDef (4x)
-		57370: 107, // drop (4x)
-		57373: 108, // exists (4x)
-		57382: 109, // ifKwd (4x)
-		57385: 110, // index (4x)
-		57433: 111, // outer (4x)
-		57416: 112, // tableKwd (4x)
-		57428: 113, // values (4x)
+		57376: 107, // drop (4x)
+		57379: 108, // exists (4x)
+		57388: 109, // ifKwd (4x)
+		57390: 110, // index (4x)
+		57413: 111, // outer (4x)
+		57421: 112, // tableKwd (4x)
+		57433: 113, // values (4x)
 		57489: 114, // RecordSet (3x)
 		57490: 115, // RecordSet1 (3x)
 		57516: 116, // semiOpt (3x)
 		57513: 117, // WhereClause (3x)
 		61:    118, // '=' (2x)
-		57346: 119, // add (2x)
-		57347: 120, // alter (2x)
+		57352: 119, // add (2x)
+		57353: 120, // alter (2x)
 		57436: 121, // AlterTableStmt (2x)
 		57437: 122, // Assignment (2x)
-		57353: 123, // begin (2x)
+		57359: 123, // begin (2x)
 		57440: 124, // BeginTransactionStmt (2x)
-		57359: 125, // by (2x)
+		57365: 125, // by (2x)
 		57445: 126, // ColumnNameList (2x)
-		57362: 127, // commit (2x)
+		57368: 127, // commit (2x)
 		57448: 128, // CommitStmt (2x)
-		57365: 129, // create (2x)
+		57371: 129, // create (2x)
 		57453: 130, // CreateIndexStmt (2x)
 		57455: 131, // CreateTableStmt (2x)
 		57456: 132, // CreateTableStmt1 (2x)
 		57459: 133, // DeleteFromStmt (2x)
-		57367: 134, // deleteKwd (2x)
+		57373: 134, // deleteKwd (2x)
 		57461: 135, // DropIndexStmt (2x)
 		57462: 136, // DropTableStmt (2x)
 		57463: 137, // EmptyStmt (2x)
 		57469: 138, // Field (2x)
-		57386: 139, // insert (2x)
+		57391: 139, // insert (2x)
 		57474: 140, // InsertIntoStmt (2x)
 		57514: 141, // logAnd (2x)
-		57409: 142, // rollback (2x)
+		57415: 142, // rollback (2x)
 		57493: 143, // RollbackStmt (2x)
-		57413: 144, // set (2x)
+		57419: 144, // set (2x)
 		57504: 145, // Statement (2x)
-		57420: 146, // truncate (2x)
+		57425: 146, // truncate (2x)
 		57508: 147, // TruncateTableStmt (2x)
-		57427: 148, // update (2x)
+		57432: 148, // update (2x)
 		57511: 149, // UpdateStmt (2x)
 		46:    150, // '.' (1x)
 		57438: 151, // AssignmentList (1x)
 		57439: 152, // AssignmentList1 (1x)
 		57442: 153, // Call1 (1x)
-		57361: 154, // column (1x)
+		57367: 154, // column (1x)
 		57446: 155, // ColumnNameList1 (1x)
 		57449: 156, // Constraint (1x)
 		57450: 157, // ConstraintOpt (1x)
@@ -296,7 +296,7 @@ var (
 		57454: 159, // CreateIndexStmtUnique (1x)
 		57457: 160, // Default (1x)
 		57458: 161, // DefaultOpt (1x)
-		57369: 162, // distinct (1x)
+		57375: 162, // distinct (1x)
 		57460: 163, // DropIndexIfExists (1x)
 		57466: 164, // ExpressionList1 (1x)
 		57470: 165, // Field1 (1x)
@@ -304,7 +304,7 @@ var (
 		57472: 167, // GroupByClause (1x)
 		57475: 168, // InsertIntoStmt1 (1x)
 		57476: 169, // InsertIntoStmt2 (1x)
-		57392: 170, // into (1x)
+		57397: 170, // into (1x)
 		57477: 171, // JoinClause (1x)
 		57478: 172, // JoinClauseOpt (1x)
 		57479: 173, // JoinType (1x)
@@ -322,8 +322,8 @@ var (
 		57501: 185, // SelectStmtWhere (1x)
 		57502: 186, // SetOpt (1x)
 		57505: 187, // StatementList (1x)
-		57418: 188, // transaction (1x)
-		57426: 189, // unique (1x)
+		57423: 188, // transaction (1x)
+		57431: 189, // unique (1x)
 		57512: 190, // UpdateStmt1 (1x)
 		57435: 191, // $default (0x)
 		57345: 192, // error (0x)
@@ -764,129 +764,89 @@ var (
 		yyXError{341, -1}: "expected ')'",
 		yyXError{342, -1}: "expected ')'",
 		yyXError{32, -1}:  "expected '='",
-		yyXError{198, -1}: "expected Assignment or one of [$end ';' identifier where]",
-		yyXError{29, -1}:  "expected AssignmentList or SetOpt or one of [identifier set]",
-		yyXError{30, -1}:  "expected AssignmentList or identifier",
-		yyXError{33, -1}:  "expected AssignmentList1 or CommaOpt or one of [$end ',' ';' where]",
-		yyXError{57, -1}:  "expected Call or Index or Slice or one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between defaultKwd desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]",
-		yyXError{90, -1}:  "expected Call or Index or Slice or one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between defaultKwd desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]",
-		yyXError{122, -1}: "expected Call or Index or Slice or one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between defaultKwd desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]",
-		yyXError{123, -1}: "expected Call or Index or Slice or one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between defaultKwd desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]",
-		yyXError{124, -1}: "expected Call or Index or Slice or one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between defaultKwd desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]",
-		yyXError{91, -1}:  "expected Call1 or one of ['!' '(' ')' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{307, -1}: "expected ColumnDef or identifier",
-		yyXError{325, -1}: "expected ColumnDef or identifier",
-		yyXError{347, -1}: "expected ColumnDef or identifier",
-		yyXError{312, -1}: "expected ColumnDef or one of [')' identifier]",
-		yyXError{349, -1}: "expected ColumnName or identifier",
-		yyXError{249, -1}: "expected ColumnName or one of [$end ')' ';' identifier limit offset order]",
-		yyXError{244, -1}: "expected ColumnNameList or identifier",
-		yyXError{272, -1}: "expected ColumnNameList or identifier",
-		yyXError{245, -1}: "expected ColumnNameList1 or CommaOpt or one of [$end ')' ',' ';' limit offset order]",
-		yyXError{309, -1}: "expected CommaOpt or CreateTableStmt1 or one of [')' ',']",
-		yyXError{326, -1}: "expected CommaOpt or CreateTableStmt1 or one of [')' ',']",
-		yyXError{116, -1}: "expected CommaOpt or ExpressionList1 or logOr or one of [$end ')' ',' ';' asc desc limit offset or oror]",
-		yyXError{279, -1}: "expected CommaOpt or InsertIntoStmt2 or one of [$end ',' ';']",
-		yyXError{216, -1}: "expected CommaOpt or JoinClauseOpt or SelectStmtGroup or SelectStmtLimit or SelectStmtOffset or SelectStmtOrder or SelectStmtWhere or one of [$end ')' ',' ';' full group left limit offset order right where]",
-		yyXError{117, -1}: "expected CommaOpt or one of [$end ')' ',' ';' asc desc limit offset]",
-		yyXError{247, -1}: "expected CommaOpt or one of [$end ')' ',' ';' limit offset order]",
-		yyXError{196, -1}: "expected CommaOpt or one of [$end ',' ';' where]",
-		yyXError{280, -1}: "expected CommaOpt or one of [$end ',' ';']",
-		yyXError{310, -1}: "expected CommaOpt or one of [')' ',']",
-		yyXError{327, -1}: "expected CommaOpt or one of [')' ',']",
-		yyXError{315, -1}: "expected ConstraintOpt or DefaultOpt or one of [$end '!' '(' ')' '+' ',' '-' ';' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type defaultKwd durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType not null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{330, -1}: "expected CreateIndexIfNotExists or one of [identifier ifKwd]",
-		yyXError{5, -1}:   "expected CreateIndexStmtUnique or one of [index tableKwd unique]",
-		yyXError{316, -1}: "expected DefaultOpt or one of [$end ')' ',' ';' defaultKwd]",
-		yyXError{286, -1}: "expected DropIndexIfExists or one of [identifier ifKwd]",
-		yyXError{119, -1}: "expected Expression or one of [$end '!' '(' ')' '+' '-' ';' '^' asc bigIntType bigRatType blobType boolType byteType complex128Type complex64Type desc durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType limit null offset qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{92, -1}:  "expected Expression or one of ['!' '(' '+' '-' ':' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{97, -1}:  "expected Expression or one of ['!' '(' '+' '-' ']' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{110, -1}: "expected Expression or one of ['!' '(' '+' '-' ']' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{38, -1}:  "expected Expression or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{54, -1}:  "expected Expression or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{193, -1}: "expected Expression or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{200, -1}: "expected Expression or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{234, -1}: "expected Expression or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{237, -1}: "expected Expression or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{255, -1}: "expected Expression or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{322, -1}: "expected Expression or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{180, -1}: "expected ExpressionList or SelectStmt or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType selectKwd stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{187, -1}: "expected ExpressionList or SelectStmt or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType selectKwd stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{239, -1}: "expected ExpressionList or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{277, -1}: "expected ExpressionList or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{283, -1}: "expected ExpressionList or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{105, -1}: "expected Factor or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{264, -1}: "expected Field or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType from identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{206, -1}: "expected Field1 or logOr or one of [',' as from or oror]",
-		yyXError{270, -1}: "expected InsertIntoStmt1 or SelectStmt or one of ['(' selectKwd values]",
-		yyXError{218, -1}: "expected JoinClauseOpt or SelectStmtGroup or SelectStmtLimit or SelectStmtOffset or SelectStmtOrder or SelectStmtWhere or one of [$end ')' ';' full group left limit offset order right where]",
-		yyXError{240, -1}: "expected OrderBy1 or one of [$end ')' ';' asc desc limit offset]",
-		yyXError{222, -1}: "expected OuterOpt or one of [join outer]",
-		yyXError{86, -1}:  "expected PrimaryExpression or one of ['(' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{87, -1}:  "expected PrimaryExpression or one of ['(' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{88, -1}:  "expected PrimaryExpression or one of ['(' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{89, -1}:  "expected PrimaryExpression or one of ['(' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{153, -1}: "expected PrimaryFactor or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{155, -1}: "expected PrimaryFactor or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{156, -1}: "expected PrimaryFactor or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{157, -1}: "expected PrimaryFactor or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{158, -1}: "expected PrimaryFactor or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{159, -1}: "expected PrimaryFactor or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{160, -1}: "expected PrimaryFactor or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{161, -1}: "expected PrimaryFactor or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{173, -1}: "expected PrimaryFactor or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{176, -1}: "expected PrimaryFactor or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{178, -1}: "expected PrimaryFactor or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{143, -1}: "expected PrimaryTerm or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{144, -1}: "expected PrimaryTerm or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{145, -1}: "expected PrimaryTerm or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{146, -1}: "expected PrimaryTerm or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{217, -1}: "expected RecordSet or one of [$end '(' ')' ';' full group identifier left limit offset order right where]",
-		yyXError{253, -1}: "expected RecordSet or one of ['(' identifier]",
-		yyXError{212, -1}: "expected RecordSet2 or one of [$end ')' ',' ';' as full group left limit offset on order right where]",
-		yyXError{211, -1}: "expected RecordSetList or one of ['(' identifier]",
-		yyXError{271, -1}: "expected SelectStmt or one of [selectKwd values]",
-		yyXError{214, -1}: "expected SelectStmt or selectKwd",
-		yyXError{10, -1}:  "expected SelectStmtDistinct or SelectStmtFieldList or one of ['!' '(' '*' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type distinct durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{204, -1}: "expected SelectStmtFieldList or one of ['!' '(' '*' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{224, -1}: "expected SelectStmtGroup or SelectStmtLimit or SelectStmtOffset or SelectStmtOrder or SelectStmtWhere or one of [$end ')' ';' group limit offset order where]",
-		yyXError{225, -1}: "expected SelectStmtGroup or SelectStmtLimit or SelectStmtOffset or SelectStmtOrder or one of [$end ')' ';' group limit offset order]",
-		yyXError{228, -1}: "expected SelectStmtLimit or SelectStmtOffset or SelectStmtOrder or one of [$end ')' ';' limit offset order]",
-		yyXError{231, -1}: "expected SelectStmtLimit or SelectStmtOffset or one of [$end ')' ';' limit offset]",
-		yyXError{233, -1}: "expected SelectStmtOffset or one of [$end ')' ';' offset]",
-		yyXError{352, -1}: "expected Statement or one of [$end ';' alter begin commit create deleteKwd drop insert rollback selectKwd truncate update]",
-		yyXError{0, -1}:   "expected StatementList or one of [$end ';' alter begin commit create deleteKwd drop insert rollback selectKwd truncate update]",
-		yyXError{27, -1}:  "expected TableName or identifier",
-		yyXError{202, -1}: "expected TableName or identifier",
-		yyXError{269, -1}: "expected TableName or identifier",
-		yyXError{290, -1}: "expected TableName or identifier",
-		yyXError{296, -1}: "expected TableName or identifier",
-		yyXError{305, -1}: "expected TableName or identifier",
-		yyXError{345, -1}: "expected TableName or identifier",
-		yyXError{287, -1}: "expected TableName or one of [identifier ifKwd]",
-		yyXError{301, -1}: "expected TableName or one of [identifier ifKwd]",
-		yyXError{100, -1}: "expected Term or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{308, -1}: "expected Type or one of [bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType float32Type float64Type floatType int16Type int32Type int64Type int8Type intType runeType stringType timeType uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{127, -1}: "expected UnaryExpr or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{128, -1}: "expected UnaryExpr or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{129, -1}: "expected UnaryExpr or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{130, -1}: "expected UnaryExpr or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{131, -1}: "expected UnaryExpr or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{132, -1}: "expected UnaryExpr or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{133, -1}: "expected UnaryExpr or one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{35, -1}:  "expected UpdateStmt1 or one of [$end ';' where]",
-		yyXError{297, -1}: "expected WhereClause or one of [$end ';' where]",
-		yyXError{227, -1}: "expected by",
-		yyXError{230, -1}: "expected by",
-		yyXError{348, -1}: "expected column",
-		yyXError{289, -1}: "expected exists",
-		yyXError{293, -1}: "expected exists",
-		yyXError{304, -1}: "expected exists",
-		yyXError{333, -1}: "expected exists",
-		yyXError{6, -1}:   "expected from",
-		yyXError{209, -1}: "expected from",
-		yyXError{210, -1}: "expected from",
+		yyXError{227, -1}: "expected BY",
+		yyXError{230, -1}: "expected BY",
+		yyXError{348, -1}: "expected COLUMN",
+		yyXError{5, -1}:   "expected CREATE INDEX optional UNIQUE clause or one of [INDEX, TABLE, UNIQUE]",
+		yyXError{330, -1}: "expected CREATE INDEX statement optional IF NOT EXISTS cluse or one of [identifier, if]",
+		yyXError{309, -1}: "expected CREATE TABLE statement colum definition list or optional comma or one of [')', ',']",
+		yyXError{326, -1}: "expected CREATE TABLE statement colum definition list or optional comma or one of [')', ',']",
+		yyXError{286, -1}: "expected DROP INDEX statement optional IF EXISTS clause or one of [identifier, if]",
+		yyXError{289, -1}: "expected EXISTS",
+		yyXError{293, -1}: "expected EXISTS",
+		yyXError{304, -1}: "expected EXISTS",
+		yyXError{333, -1}: "expected EXISTS",
+		yyXError{6, -1}:   "expected FROM",
+		yyXError{209, -1}: "expected FROM",
+		yyXError{210, -1}: "expected FROM",
+		yyXError{299, -1}: "expected INDEX",
+		yyXError{300, -1}: "expected INDEX",
+		yyXError{270, -1}: "expected INSERT INTO statement optional column list clause or SELECT statement or one of ['(', SELECT, VALUES]",
+		yyXError{279, -1}: "expected INSERT INTO statement optional values list or optional comma or one of [$end, ',', ';']",
+		yyXError{8, -1}:   "expected INTO",
+		yyXError{251, -1}: "expected JOIN",
+		yyXError{252, -1}: "expected JOIN",
+		yyXError{303, -1}: "expected NOT",
+		yyXError{332, -1}: "expected NOT",
+		yyXError{170, -1}: "expected NULL",
+		yyXError{317, -1}: "expected NULL",
+		yyXError{254, -1}: "expected ON",
+		yyXError{335, -1}: "expected ON",
+		yyXError{240, -1}: "expected ORDER BY clause optional collation specification or one of [$end, ')', ';', ASC, DESC, LIMIT, OFFSET]",
+		yyXError{211, -1}: "expected RecordSetList or one of ['(', identifier]",
+		yyXError{10, -1}:  "expected SELECT statement field list or SELECT statement optional DISTINCT clause or one of ['!', '(', '*', '+', '-', '^', DISTINCT, NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{204, -1}: "expected SELECT statement field list or one of ['!', '(', '*', '+', '-', '^', NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{218, -1}: "expected SELECT statement optional GROUP BY clause or SELECT statement optional JOIN clause or SELECT statement optional LIMIT clause or SELECT statement optional OFFSET clause or SELECT statement optional ORDER BY clause or SELECT statement optional WHERE clause or one of [$end, ')', ';', FULL, GROUP, LEFT, LIMIT, OFFSET, ORDER, RIGHT, WHERE]",
+		yyXError{216, -1}: "expected SELECT statement optional GROUP BY clause or SELECT statement optional JOIN clause or SELECT statement optional LIMIT clause or SELECT statement optional OFFSET clause or SELECT statement optional ORDER BY clause or SELECT statement optional WHERE clause or optional comma or one of [$end, ')', ',', ';', FULL, GROUP, LEFT, LIMIT, OFFSET, ORDER, RIGHT, WHERE]",
+		yyXError{224, -1}: "expected SELECT statement optional GROUP BY clause or SELECT statement optional LIMIT clause or SELECT statement optional OFFSET clause or SELECT statement optional ORDER BY clause or SELECT statement optional WHERE clause or one of [$end, ')', ';', GROUP, LIMIT, OFFSET, ORDER, WHERE]",
+		yyXError{225, -1}: "expected SELECT statement optional GROUP BY clause or SELECT statement optional LIMIT clause or SELECT statement optional OFFSET clause or SELECT statement optional ORDER BY clause or one of [$end, ')', ';', GROUP, LIMIT, OFFSET, ORDER]",
+		yyXError{228, -1}: "expected SELECT statement optional LIMIT clause or SELECT statement optional OFFSET clause or SELECT statement optional ORDER BY clause or one of [$end, ')', ';', LIMIT, OFFSET, ORDER]",
+		yyXError{231, -1}: "expected SELECT statement optional LIMIT clause or SELECT statement optional OFFSET clause or one of [$end, ')', ';', LIMIT, OFFSET]",
+		yyXError{233, -1}: "expected SELECT statement optional OFFSET clause or one of [$end, ')', ';', OFFSET]",
+		yyXError{214, -1}: "expected SELECT statement or SELECT",
+		yyXError{180, -1}: "expected SELECT statement or expression list or one of ['!', '(', '+', '-', '^', NULL, QL parameter, SELECT, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{187, -1}: "expected SELECT statement or expression list or one of ['!', '(', '+', '-', '^', NULL, QL parameter, SELECT, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{271, -1}: "expected SELECT statement or one of [SELECT, VALUES]",
+		yyXError{29, -1}:  "expected SetOpt or assignment list or one of [SET, identifier]",
+		yyXError{2, -1}:   "expected TABLE",
+		yyXError{26, -1}:  "expected TABLE",
+		yyXError{3, -1}:   "expected TRANSACTION",
+		yyXError{35, -1}:  "expected UPDATE statement optional WHERE clause or one of [$end, ';', WHERE]",
+		yyXError{297, -1}: "expected WHERE clause or one of [$end, ';', WHERE]",
+		yyXError{33, -1}:  "expected assignment list optional trailing comma or optional comma or one of [$end, ',', ';', WHERE]",
+		yyXError{30, -1}:  "expected assignment list or identifier",
+		yyXError{198, -1}: "expected assignment or one of [$end, ';', WHERE, identifier]",
+		yyXError{244, -1}: "expected column name list or identifier",
+		yyXError{272, -1}: "expected column name list or identifier",
+		yyXError{245, -1}: "expected column name list with optional trailing comma or optional comma or one of [$end, ')', ',', ';', LIMIT, OFFSET, ORDER]",
+		yyXError{349, -1}: "expected column name or identifier",
+		yyXError{249, -1}: "expected column name or one of [$end, ')', ';', LIMIT, OFFSET, ORDER, identifier]",
+		yyXError{105, -1}: "expected expression factor or one of ['!', '(', '+', '-', '^', NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{116, -1}: "expected expression list expression or logical or operator or optional comma or one of [$end, ')', ',', ';', ASC, DESC, LIMIT, OFFSET, OR, ||]",
+		yyXError{239, -1}: "expected expression list or one of ['!', '(', '+', '-', '^', NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{277, -1}: "expected expression list or one of ['!', '(', '+', '-', '^', NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{283, -1}: "expected expression list or one of ['!', '(', '+', '-', '^', NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{119, -1}: "expected expression or one of [$end, '!', '(', ')', '+', '-', ';', '^', ASC, DESC, LIMIT, NULL, OFFSET, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{92, -1}:  "expected expression or one of ['!', '(', '+', '-', ':', '^', NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{97, -1}:  "expected expression or one of ['!', '(', '+', '-', ']', '^', NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{110, -1}: "expected expression or one of ['!', '(', '+', '-', ']', '^', NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{38, -1}:  "expected expression or one of ['!', '(', '+', '-', '^', NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{54, -1}:  "expected expression or one of ['!', '(', '+', '-', '^', NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{193, -1}: "expected expression or one of ['!', '(', '+', '-', '^', NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{200, -1}: "expected expression or one of ['!', '(', '+', '-', '^', NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{234, -1}: "expected expression or one of ['!', '(', '+', '-', '^', NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{237, -1}: "expected expression or one of ['!', '(', '+', '-', '^', NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{255, -1}: "expected expression or one of ['!', '(', '+', '-', '^', NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{322, -1}: "expected expression or one of ['!', '(', '+', '-', '^', NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{100, -1}: "expected expression term or one of ['!', '(', '+', '-', '^', NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{206, -1}: "expected field expression optional AS clause or logical or operator or one of [',', AS, FROM, OR, ||]",
+		yyXError{264, -1}: "expected field expression or one of ['!', '(', '+', '-', '^', FROM, NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{91, -1}:  "expected function call optional argument list or one of ['!', '(', ')', '+', '-', '^', NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{57, -1}:  "expected function call or string index or string slice or one of [!=, $end, &&, &^, '%', '&', '(', ')', '*', '+', ',', '-', '/', ':', ';', '<', '>', '[', ']', '^', '|', <<, <=, ==, >=, >>, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{90, -1}:  "expected function call or string index or string slice or one of [!=, $end, &&, &^, '%', '&', '(', ')', '*', '+', ',', '-', '/', ':', ';', '<', '>', '[', ']', '^', '|', <<, <=, ==, >=, >>, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{122, -1}: "expected function call or string index or string slice or one of [!=, $end, &&, &^, '%', '&', '(', ')', '*', '+', ',', '-', '/', ':', ';', '<', '>', '[', ']', '^', '|', <<, <=, ==, >=, >>, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{123, -1}: "expected function call or string index or string slice or one of [!=, $end, &&, &^, '%', '&', '(', ')', '*', '+', ',', '-', '/', ':', ';', '<', '>', '[', ']', '^', '|', <<, <=, ==, >=, >>, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{124, -1}: "expected function call or string index or string slice or one of [!=, $end, &&, &^, '%', '&', '(', ')', '*', '+', ',', '-', '/', ':', ';', '<', '>', '[', ']', '^', '|', <<, <=, ==, >=, >>, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
 		yyXError{31, -1}:  "expected identifier",
 		yyXError{125, -1}: "expected identifier",
 		yyXError{262, -1}: "expected identifier",
@@ -897,204 +857,244 @@ var (
 		yyXError{334, -1}: "expected identifier",
 		yyXError{336, -1}: "expected identifier",
 		yyXError{338, -1}: "expected identifier",
-		yyXError{299, -1}: "expected index",
-		yyXError{300, -1}: "expected index",
-		yyXError{8, -1}:   "expected into",
-		yyXError{251, -1}: "expected join",
-		yyXError{252, -1}: "expected join",
-		yyXError{40, -1}:  "expected logAnd or one of [$end ')' ',' ':' ';' ']' and andand as asc defaultKwd desc from group limit offset or order oror where]",
-		yyXError{104, -1}: "expected logAnd or one of [$end ')' ',' ':' ';' ']' and andand as asc defaultKwd desc from group limit offset or order oror where]",
-		yyXError{120, -1}: "expected logOr or one of [$end ')' ',' ';' asc desc limit offset or oror]",
-		yyXError{318, -1}: "expected logOr or one of [$end ')' ',' ';' defaultKwd or oror]",
-		yyXError{324, -1}: "expected logOr or one of [$end ')' ',' ';' or oror]",
-		yyXError{256, -1}: "expected logOr or one of [$end ')' ';' group limit offset or order oror where]",
-		yyXError{41, -1}:  "expected logOr or one of [$end ')' ';' group limit offset or order oror]",
-		yyXError{235, -1}: "expected logOr or one of [$end ')' ';' offset or oror]",
-		yyXError{238, -1}: "expected logOr or one of [$end ')' ';' or oror]",
-		yyXError{201, -1}: "expected logOr or one of [$end ',' ';' or oror where]",
-		yyXError{141, -1}: "expected logOr or one of [')' or oror]",
-		yyXError{194, -1}: "expected logOr or one of [')' or oror]",
-		yyXError{96, -1}:  "expected logOr or one of [':' ']' or oror]",
-		yyXError{98, -1}:  "expected logOr or one of [']' or oror]",
-		yyXError{111, -1}: "expected logOr or one of [']' or oror]",
-		yyXError{303, -1}: "expected not",
-		yyXError{332, -1}: "expected not",
-		yyXError{170, -1}: "expected null",
-		yyXError{317, -1}: "expected null",
-		yyXError{254, -1}: "expected on",
-		yyXError{335, -1}: "expected on",
-		yyXError{62, -1}:  "expected one of [$end '!' '(' ')' '+' ',' '-' ';' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type defaultKwd durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType not null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{63, -1}:  "expected one of [$end '!' '(' ')' '+' ',' '-' ';' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type defaultKwd durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType not null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{64, -1}:  "expected one of [$end '!' '(' ')' '+' ',' '-' ';' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type defaultKwd durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType not null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{65, -1}:  "expected one of [$end '!' '(' ')' '+' ',' '-' ';' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type defaultKwd durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType not null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{66, -1}:  "expected one of [$end '!' '(' ')' '+' ',' '-' ';' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type defaultKwd durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType not null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{67, -1}:  "expected one of [$end '!' '(' ')' '+' ',' '-' ';' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type defaultKwd durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType not null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{68, -1}:  "expected one of [$end '!' '(' ')' '+' ',' '-' ';' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type defaultKwd durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType not null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{69, -1}:  "expected one of [$end '!' '(' ')' '+' ',' '-' ';' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type defaultKwd durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType not null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{70, -1}:  "expected one of [$end '!' '(' ')' '+' ',' '-' ';' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type defaultKwd durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType not null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{71, -1}:  "expected one of [$end '!' '(' ')' '+' ',' '-' ';' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type defaultKwd durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType not null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{72, -1}:  "expected one of [$end '!' '(' ')' '+' ',' '-' ';' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type defaultKwd durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType not null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{73, -1}:  "expected one of [$end '!' '(' ')' '+' ',' '-' ';' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type defaultKwd durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType not null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{74, -1}:  "expected one of [$end '!' '(' ')' '+' ',' '-' ';' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type defaultKwd durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType not null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{75, -1}:  "expected one of [$end '!' '(' ')' '+' ',' '-' ';' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type defaultKwd durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType not null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{76, -1}:  "expected one of [$end '!' '(' ')' '+' ',' '-' ';' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type defaultKwd durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType not null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{77, -1}:  "expected one of [$end '!' '(' ')' '+' ',' '-' ';' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type defaultKwd durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType not null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{78, -1}:  "expected one of [$end '!' '(' ')' '+' ',' '-' ';' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type defaultKwd durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType not null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{79, -1}:  "expected one of [$end '!' '(' ')' '+' ',' '-' ';' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type defaultKwd durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType not null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{80, -1}:  "expected one of [$end '!' '(' ')' '+' ',' '-' ';' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type defaultKwd durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType not null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{81, -1}:  "expected one of [$end '!' '(' ')' '+' ',' '-' ';' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type defaultKwd durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType not null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{82, -1}:  "expected one of [$end '!' '(' ')' '+' ',' '-' ';' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type defaultKwd durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType not null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{83, -1}:  "expected one of [$end '!' '(' ')' '+' ',' '-' ';' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type defaultKwd durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType not null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{84, -1}:  "expected one of [$end '!' '(' ')' '+' ',' '-' ';' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type defaultKwd durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType not null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{85, -1}:  "expected one of [$end '!' '(' ')' '+' ',' '-' ';' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type defaultKwd durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType not null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{60, -1}:  "expected one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '.' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between defaultKwd desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]",
-		yyXError{44, -1}:  "expected one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between defaultKwd desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]",
-		yyXError{45, -1}:  "expected one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between defaultKwd desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]",
-		yyXError{46, -1}:  "expected one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between defaultKwd desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]",
-		yyXError{47, -1}:  "expected one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between defaultKwd desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]",
-		yyXError{48, -1}:  "expected one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between defaultKwd desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]",
-		yyXError{49, -1}:  "expected one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between defaultKwd desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]",
-		yyXError{50, -1}:  "expected one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between defaultKwd desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]",
-		yyXError{51, -1}:  "expected one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between defaultKwd desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]",
-		yyXError{52, -1}:  "expected one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between defaultKwd desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]",
-		yyXError{53, -1}:  "expected one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between defaultKwd desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]",
-		yyXError{55, -1}:  "expected one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between defaultKwd desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]",
-		yyXError{56, -1}:  "expected one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between defaultKwd desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]",
-		yyXError{93, -1}:  "expected one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between defaultKwd desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]",
-		yyXError{94, -1}:  "expected one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between defaultKwd desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]",
-		yyXError{95, -1}:  "expected one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between defaultKwd desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]",
-		yyXError{99, -1}:  "expected one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between defaultKwd desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]",
-		yyXError{103, -1}: "expected one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between defaultKwd desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]",
-		yyXError{109, -1}: "expected one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between defaultKwd desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]",
-		yyXError{112, -1}: "expected one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between defaultKwd desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]",
-		yyXError{113, -1}: "expected one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between defaultKwd desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]",
-		yyXError{121, -1}: "expected one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between defaultKwd desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]",
-		yyXError{126, -1}: "expected one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between defaultKwd desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]",
-		yyXError{142, -1}: "expected one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between defaultKwd desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]",
-		yyXError{195, -1}: "expected one of [$end '%' '&' '(' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' '[' ']' '^' '|' and andand andnot as asc between defaultKwd desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]",
-		yyXError{58, -1}:  "expected one of [$end '%' '&' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' ']' '^' '|' and andand andnot as asc between defaultKwd desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]",
-		yyXError{59, -1}:  "expected one of [$end '%' '&' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' ']' '^' '|' and andand andnot as asc between defaultKwd desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]",
-		yyXError{134, -1}: "expected one of [$end '%' '&' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' ']' '^' '|' and andand andnot as asc between defaultKwd desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]",
-		yyXError{135, -1}: "expected one of [$end '%' '&' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' ']' '^' '|' and andand andnot as asc between defaultKwd desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]",
-		yyXError{136, -1}: "expected one of [$end '%' '&' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' ']' '^' '|' and andand andnot as asc between defaultKwd desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]",
-		yyXError{137, -1}: "expected one of [$end '%' '&' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' ']' '^' '|' and andand andnot as asc between defaultKwd desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]",
-		yyXError{138, -1}: "expected one of [$end '%' '&' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' ']' '^' '|' and andand andnot as asc between defaultKwd desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]",
-		yyXError{139, -1}: "expected one of [$end '%' '&' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' ']' '^' '|' and andand andnot as asc between defaultKwd desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]",
-		yyXError{140, -1}: "expected one of [$end '%' '&' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' ']' '^' '|' and andand andnot as asc between defaultKwd desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]",
-		yyXError{147, -1}: "expected one of [$end '%' '&' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' ']' '^' '|' and andand andnot as asc between defaultKwd desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]",
-		yyXError{148, -1}: "expected one of [$end '%' '&' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' ']' '^' '|' and andand andnot as asc between defaultKwd desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]",
-		yyXError{149, -1}: "expected one of [$end '%' '&' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' ']' '^' '|' and andand andnot as asc between defaultKwd desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]",
-		yyXError{150, -1}: "expected one of [$end '%' '&' ')' '*' '+' ',' '-' '/' ':' ';' '<' '>' ']' '^' '|' and andand andnot as asc between defaultKwd desc eq from ge group in is le like limit lsh neq not offset or order oror rsh where]",
-		yyXError{28, -1}:  "expected one of [$end '(' ';' add drop identifier selectKwd set values where]",
-		yyXError{282, -1}: "expected one of [$end '(' ';']",
-		yyXError{43, -1}:  "expected one of [$end ')' '+' ',' '-' ':' ';' '<' '>' ']' '^' '|' and andand as asc between defaultKwd desc eq from ge group in is le like limit neq not offset or order oror where]",
-		yyXError{162, -1}: "expected one of [$end ')' '+' ',' '-' ':' ';' '<' '>' ']' '^' '|' and andand as asc between defaultKwd desc eq from ge group in is le like limit neq not offset or order oror where]",
-		yyXError{163, -1}: "expected one of [$end ')' '+' ',' '-' ':' ';' '<' '>' ']' '^' '|' and andand as asc between defaultKwd desc eq from ge group in is le like limit neq not offset or order oror where]",
-		yyXError{164, -1}: "expected one of [$end ')' '+' ',' '-' ':' ';' '<' '>' ']' '^' '|' and andand as asc between defaultKwd desc eq from ge group in is le like limit neq not offset or order oror where]",
-		yyXError{165, -1}: "expected one of [$end ')' '+' ',' '-' ':' ';' '<' '>' ']' '^' '|' and andand as asc between defaultKwd desc eq from ge group in is le like limit neq not offset or order oror where]",
-		yyXError{166, -1}: "expected one of [$end ')' '+' ',' '-' ':' ';' '<' '>' ']' '^' '|' and andand as asc between defaultKwd desc eq from ge group in is le like limit neq not offset or order oror where]",
-		yyXError{167, -1}: "expected one of [$end ')' '+' ',' '-' ':' ';' '<' '>' ']' '^' '|' and andand as asc between defaultKwd desc eq from ge group in is le like limit neq not offset or order oror where]",
-		yyXError{168, -1}: "expected one of [$end ')' '+' ',' '-' ':' ';' '<' '>' ']' '^' '|' and andand as asc between defaultKwd desc eq from ge group in is le like limit neq not offset or order oror where]",
-		yyXError{174, -1}: "expected one of [$end ')' '+' ',' '-' ':' ';' ']' '^' '|' and andand as asc defaultKwd desc from group limit offset or order oror where]",
-		yyXError{179, -1}: "expected one of [$end ')' '+' ',' '-' ':' ';' ']' '^' '|' and andand as asc defaultKwd desc from group limit offset or order oror where]",
-		yyXError{42, -1}:  "expected one of [$end ')' ',' ':' ';' '<' '>' ']' and andand as asc between defaultKwd desc eq from ge group in is le like limit neq not offset or order oror where]",
-		yyXError{61, -1}:  "expected one of [$end ')' ',' ':' ';' ']' and andand as asc defaultKwd desc from group limit offset or order oror where]",
-		yyXError{108, -1}: "expected one of [$end ')' ',' ':' ';' ']' and andand as asc defaultKwd desc from group limit offset or order oror where]",
-		yyXError{169, -1}: "expected one of [$end ')' ',' ':' ';' ']' and andand as asc defaultKwd desc from group limit offset or order oror where]",
-		yyXError{171, -1}: "expected one of [$end ')' ',' ':' ';' ']' and andand as asc defaultKwd desc from group limit offset or order oror where]",
-		yyXError{185, -1}: "expected one of [$end ')' ',' ':' ';' ']' and andand as asc defaultKwd desc from group limit offset or order oror where]",
-		yyXError{186, -1}: "expected one of [$end ')' ',' ':' ';' ']' and andand as asc defaultKwd desc from group limit offset or order oror where]",
-		yyXError{191, -1}: "expected one of [$end ')' ',' ':' ';' ']' and andand as asc defaultKwd desc from group limit offset or order oror where]",
-		yyXError{192, -1}: "expected one of [$end ')' ',' ':' ';' ']' and andand as asc defaultKwd desc from group limit offset or order oror where]",
-		yyXError{34, -1}:  "expected one of [$end ')' ',' ';' '=' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType float32Type float64Type floatType int16Type int32Type int64Type int8Type intType limit offset order runeType stringType timeType uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{213, -1}: "expected one of [$end ')' ',' ';' as full group left limit offset on order right where]",
-		yyXError{260, -1}: "expected one of [$end ')' ',' ';' as full group left limit offset on order right where]",
-		yyXError{319, -1}: "expected one of [$end ')' ',' ';' defaultKwd]",
-		yyXError{320, -1}: "expected one of [$end ')' ',' ';' defaultKwd]",
-		yyXError{261, -1}: "expected one of [$end ')' ',' ';' full group left limit offset on order right where]",
-		yyXError{263, -1}: "expected one of [$end ')' ',' ';' full group left limit offset on order right where]",
-		yyXError{215, -1}: "expected one of [$end ')' ',' ';' full group left limit offset order right where]",
-		yyXError{257, -1}: "expected one of [$end ')' ',' ';' full group left limit offset order right where]",
-		yyXError{250, -1}: "expected one of [$end ')' ',' ';' limit offset order]",
-		yyXError{321, -1}: "expected one of [$end ')' ',' ';']",
-		yyXError{323, -1}: "expected one of [$end ')' ',' ';']",
-		yyXError{118, -1}: "expected one of [$end ')' ';' asc desc limit offset]",
-		yyXError{223, -1}: "expected one of [$end ')' ';' group limit offset order where]",
-		yyXError{226, -1}: "expected one of [$end ')' ';' group limit offset order]",
-		yyXError{229, -1}: "expected one of [$end ')' ';' limit offset order]",
-		yyXError{246, -1}: "expected one of [$end ')' ';' limit offset order]",
-		yyXError{248, -1}: "expected one of [$end ')' ';' limit offset order]",
-		yyXError{232, -1}: "expected one of [$end ')' ';' limit offset]",
-		yyXError{241, -1}: "expected one of [$end ')' ';' limit offset]",
-		yyXError{242, -1}: "expected one of [$end ')' ';' limit offset]",
-		yyXError{243, -1}: "expected one of [$end ')' ';' limit offset]",
-		yyXError{236, -1}: "expected one of [$end ')' ';']",
-		yyXError{199, -1}: "expected one of [$end ',' ';' where]",
-		yyXError{285, -1}: "expected one of [$end ',' ';']",
-		yyXError{197, -1}: "expected one of [$end ';' where]",
-		yyXError{1, -1}:   "expected one of [$end ';']",
-		yyXError{4, -1}:   "expected one of [$end ';']",
-		yyXError{9, -1}:   "expected one of [$end ';']",
-		yyXError{11, -1}:  "expected one of [$end ';']",
-		yyXError{12, -1}:  "expected one of [$end ';']",
-		yyXError{13, -1}:  "expected one of [$end ';']",
-		yyXError{14, -1}:  "expected one of [$end ';']",
-		yyXError{15, -1}:  "expected one of [$end ';']",
-		yyXError{16, -1}:  "expected one of [$end ';']",
-		yyXError{17, -1}:  "expected one of [$end ';']",
-		yyXError{18, -1}:  "expected one of [$end ';']",
-		yyXError{19, -1}:  "expected one of [$end ';']",
-		yyXError{20, -1}:  "expected one of [$end ';']",
-		yyXError{21, -1}:  "expected one of [$end ';']",
-		yyXError{22, -1}:  "expected one of [$end ';']",
-		yyXError{23, -1}:  "expected one of [$end ';']",
-		yyXError{24, -1}:  "expected one of [$end ';']",
-		yyXError{25, -1}:  "expected one of [$end ';']",
-		yyXError{36, -1}:  "expected one of [$end ';']",
-		yyXError{37, -1}:  "expected one of [$end ';']",
-		yyXError{203, -1}: "expected one of [$end ';']",
-		yyXError{276, -1}: "expected one of [$end ';']",
-		yyXError{281, -1}: "expected one of [$end ';']",
-		yyXError{288, -1}: "expected one of [$end ';']",
-		yyXError{291, -1}: "expected one of [$end ';']",
-		yyXError{295, -1}: "expected one of [$end ';']",
-		yyXError{298, -1}: "expected one of [$end ';']",
-		yyXError{314, -1}: "expected one of [$end ';']",
-		yyXError{329, -1}: "expected one of [$end ';']",
-		yyXError{340, -1}: "expected one of [$end ';']",
-		yyXError{343, -1}: "expected one of [$end ';']",
-		yyXError{344, -1}: "expected one of [$end ';']",
-		yyXError{350, -1}: "expected one of [$end ';']",
-		yyXError{351, -1}: "expected one of [$end ';']",
-		yyXError{353, -1}: "expected one of [$end ';']",
-		yyXError{205, -1}: "expected one of ['!' '(' '*' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{101, -1}: "expected one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{102, -1}: "expected one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{106, -1}: "expected one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{107, -1}: "expected one of ['!' '(' '+' '-' '^' bigIntType bigRatType blobType boolType byteType complex128Type complex64Type durationType falseKwd float32Type float64Type floatLit floatType identifier imaginaryLit int16Type int32Type int64Type int8Type intLit intType null qlParam runeType stringLit stringType timeType trueKwd uint16Type uint32Type uint64Type uint8Type uintType]",
-		yyXError{339, -1}: "expected one of ['(' ')']",
-		yyXError{313, -1}: "expected one of [')' ',']",
-		yyXError{172, -1}: "expected one of ['+' '-' '^' '|' and]",
-		yyXError{177, -1}: "expected one of ['+' '-' '^' '|' and]",
-		yyXError{207, -1}: "expected one of [',' from]",
-		yyXError{208, -1}: "expected one of [',' from]",
-		yyXError{265, -1}: "expected one of [',' from]",
-		yyXError{266, -1}: "expected one of [',' from]",
-		yyXError{268, -1}: "expected one of [',' from]",
-		yyXError{346, -1}: "expected one of [add drop]",
-		yyXError{152, -1}: "expected one of [between in]",
-		yyXError{7, -1}:   "expected one of [index tableKwd]",
-		yyXError{219, -1}: "expected one of [join outer]",
-		yyXError{220, -1}: "expected one of [join outer]",
-		yyXError{221, -1}: "expected one of [join outer]",
-		yyXError{154, -1}: "expected one of [not null]",
-		yyXError{274, -1}: "expected one of [selectKwd values]",
-		yyXError{182, -1}: "expected semiOpt or one of [')' ';']",
-		yyXError{189, -1}: "expected semiOpt or one of [')' ';']",
-		yyXError{258, -1}: "expected semiOpt or one of [')' ';']",
-		yyXError{2, -1}:   "expected tableKwd",
-		yyXError{26, -1}:  "expected tableKwd",
-		yyXError{3, -1}:   "expected transaction",
+		yyXError{40, -1}:  "expected logical and operator or one of [$end, &&, ')', ',', ':', ';', ']', AND, AS, ASC, DEFAULT, DESC, FROM, GROUP, LIMIT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{104, -1}: "expected logical and operator or one of [$end, &&, ')', ',', ':', ';', ']', AND, AS, ASC, DEFAULT, DESC, FROM, GROUP, LIMIT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{120, -1}: "expected logical or operator or one of [$end, ')', ',', ';', ASC, DESC, LIMIT, OFFSET, OR, ||]",
+		yyXError{318, -1}: "expected logical or operator or one of [$end, ')', ',', ';', DEFAULT, OR, ||]",
+		yyXError{324, -1}: "expected logical or operator or one of [$end, ')', ',', ';', OR, ||]",
+		yyXError{256, -1}: "expected logical or operator or one of [$end, ')', ';', GROUP, LIMIT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{41, -1}:  "expected logical or operator or one of [$end, ')', ';', GROUP, LIMIT, OFFSET, OR, ORDER, ||]",
+		yyXError{235, -1}: "expected logical or operator or one of [$end, ')', ';', OFFSET, OR, ||]",
+		yyXError{238, -1}: "expected logical or operator or one of [$end, ')', ';', OR, ||]",
+		yyXError{201, -1}: "expected logical or operator or one of [$end, ',', ';', OR, WHERE, ||]",
+		yyXError{141, -1}: "expected logical or operator or one of [')', OR, ||]",
+		yyXError{194, -1}: "expected logical or operator or one of [')', OR, ||]",
+		yyXError{96, -1}:  "expected logical or operator or one of [':', ']', OR, ||]",
+		yyXError{98, -1}:  "expected logical or operator or one of [']', OR, ||]",
+		yyXError{111, -1}: "expected logical or operator or one of [']', OR, ||]",
+		yyXError{60, -1}:  "expected one of [!=, $end, &&, &^, '%', '&', '(', ')', '*', '+', ',', '-', '.', '/', ':', ';', '<', '>', '[', ']', '^', '|', <<, <=, ==, >=, >>, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{44, -1}:  "expected one of [!=, $end, &&, &^, '%', '&', '(', ')', '*', '+', ',', '-', '/', ':', ';', '<', '>', '[', ']', '^', '|', <<, <=, ==, >=, >>, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{45, -1}:  "expected one of [!=, $end, &&, &^, '%', '&', '(', ')', '*', '+', ',', '-', '/', ':', ';', '<', '>', '[', ']', '^', '|', <<, <=, ==, >=, >>, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{46, -1}:  "expected one of [!=, $end, &&, &^, '%', '&', '(', ')', '*', '+', ',', '-', '/', ':', ';', '<', '>', '[', ']', '^', '|', <<, <=, ==, >=, >>, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{47, -1}:  "expected one of [!=, $end, &&, &^, '%', '&', '(', ')', '*', '+', ',', '-', '/', ':', ';', '<', '>', '[', ']', '^', '|', <<, <=, ==, >=, >>, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{48, -1}:  "expected one of [!=, $end, &&, &^, '%', '&', '(', ')', '*', '+', ',', '-', '/', ':', ';', '<', '>', '[', ']', '^', '|', <<, <=, ==, >=, >>, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{49, -1}:  "expected one of [!=, $end, &&, &^, '%', '&', '(', ')', '*', '+', ',', '-', '/', ':', ';', '<', '>', '[', ']', '^', '|', <<, <=, ==, >=, >>, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{50, -1}:  "expected one of [!=, $end, &&, &^, '%', '&', '(', ')', '*', '+', ',', '-', '/', ':', ';', '<', '>', '[', ']', '^', '|', <<, <=, ==, >=, >>, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{51, -1}:  "expected one of [!=, $end, &&, &^, '%', '&', '(', ')', '*', '+', ',', '-', '/', ':', ';', '<', '>', '[', ']', '^', '|', <<, <=, ==, >=, >>, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{52, -1}:  "expected one of [!=, $end, &&, &^, '%', '&', '(', ')', '*', '+', ',', '-', '/', ':', ';', '<', '>', '[', ']', '^', '|', <<, <=, ==, >=, >>, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{53, -1}:  "expected one of [!=, $end, &&, &^, '%', '&', '(', ')', '*', '+', ',', '-', '/', ':', ';', '<', '>', '[', ']', '^', '|', <<, <=, ==, >=, >>, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{55, -1}:  "expected one of [!=, $end, &&, &^, '%', '&', '(', ')', '*', '+', ',', '-', '/', ':', ';', '<', '>', '[', ']', '^', '|', <<, <=, ==, >=, >>, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{56, -1}:  "expected one of [!=, $end, &&, &^, '%', '&', '(', ')', '*', '+', ',', '-', '/', ':', ';', '<', '>', '[', ']', '^', '|', <<, <=, ==, >=, >>, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{93, -1}:  "expected one of [!=, $end, &&, &^, '%', '&', '(', ')', '*', '+', ',', '-', '/', ':', ';', '<', '>', '[', ']', '^', '|', <<, <=, ==, >=, >>, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{94, -1}:  "expected one of [!=, $end, &&, &^, '%', '&', '(', ')', '*', '+', ',', '-', '/', ':', ';', '<', '>', '[', ']', '^', '|', <<, <=, ==, >=, >>, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{95, -1}:  "expected one of [!=, $end, &&, &^, '%', '&', '(', ')', '*', '+', ',', '-', '/', ':', ';', '<', '>', '[', ']', '^', '|', <<, <=, ==, >=, >>, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{99, -1}:  "expected one of [!=, $end, &&, &^, '%', '&', '(', ')', '*', '+', ',', '-', '/', ':', ';', '<', '>', '[', ']', '^', '|', <<, <=, ==, >=, >>, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{103, -1}: "expected one of [!=, $end, &&, &^, '%', '&', '(', ')', '*', '+', ',', '-', '/', ':', ';', '<', '>', '[', ']', '^', '|', <<, <=, ==, >=, >>, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{109, -1}: "expected one of [!=, $end, &&, &^, '%', '&', '(', ')', '*', '+', ',', '-', '/', ':', ';', '<', '>', '[', ']', '^', '|', <<, <=, ==, >=, >>, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{112, -1}: "expected one of [!=, $end, &&, &^, '%', '&', '(', ')', '*', '+', ',', '-', '/', ':', ';', '<', '>', '[', ']', '^', '|', <<, <=, ==, >=, >>, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{113, -1}: "expected one of [!=, $end, &&, &^, '%', '&', '(', ')', '*', '+', ',', '-', '/', ':', ';', '<', '>', '[', ']', '^', '|', <<, <=, ==, >=, >>, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{121, -1}: "expected one of [!=, $end, &&, &^, '%', '&', '(', ')', '*', '+', ',', '-', '/', ':', ';', '<', '>', '[', ']', '^', '|', <<, <=, ==, >=, >>, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{126, -1}: "expected one of [!=, $end, &&, &^, '%', '&', '(', ')', '*', '+', ',', '-', '/', ':', ';', '<', '>', '[', ']', '^', '|', <<, <=, ==, >=, >>, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{142, -1}: "expected one of [!=, $end, &&, &^, '%', '&', '(', ')', '*', '+', ',', '-', '/', ':', ';', '<', '>', '[', ']', '^', '|', <<, <=, ==, >=, >>, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{195, -1}: "expected one of [!=, $end, &&, &^, '%', '&', '(', ')', '*', '+', ',', '-', '/', ':', ';', '<', '>', '[', ']', '^', '|', <<, <=, ==, >=, >>, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{58, -1}:  "expected one of [!=, $end, &&, &^, '%', '&', ')', '*', '+', ',', '-', '/', ':', ';', '<', '>', ']', '^', '|', <<, <=, ==, >=, >>, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{59, -1}:  "expected one of [!=, $end, &&, &^, '%', '&', ')', '*', '+', ',', '-', '/', ':', ';', '<', '>', ']', '^', '|', <<, <=, ==, >=, >>, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{134, -1}: "expected one of [!=, $end, &&, &^, '%', '&', ')', '*', '+', ',', '-', '/', ':', ';', '<', '>', ']', '^', '|', <<, <=, ==, >=, >>, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{135, -1}: "expected one of [!=, $end, &&, &^, '%', '&', ')', '*', '+', ',', '-', '/', ':', ';', '<', '>', ']', '^', '|', <<, <=, ==, >=, >>, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{136, -1}: "expected one of [!=, $end, &&, &^, '%', '&', ')', '*', '+', ',', '-', '/', ':', ';', '<', '>', ']', '^', '|', <<, <=, ==, >=, >>, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{137, -1}: "expected one of [!=, $end, &&, &^, '%', '&', ')', '*', '+', ',', '-', '/', ':', ';', '<', '>', ']', '^', '|', <<, <=, ==, >=, >>, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{138, -1}: "expected one of [!=, $end, &&, &^, '%', '&', ')', '*', '+', ',', '-', '/', ':', ';', '<', '>', ']', '^', '|', <<, <=, ==, >=, >>, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{139, -1}: "expected one of [!=, $end, &&, &^, '%', '&', ')', '*', '+', ',', '-', '/', ':', ';', '<', '>', ']', '^', '|', <<, <=, ==, >=, >>, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{140, -1}: "expected one of [!=, $end, &&, &^, '%', '&', ')', '*', '+', ',', '-', '/', ':', ';', '<', '>', ']', '^', '|', <<, <=, ==, >=, >>, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{147, -1}: "expected one of [!=, $end, &&, &^, '%', '&', ')', '*', '+', ',', '-', '/', ':', ';', '<', '>', ']', '^', '|', <<, <=, ==, >=, >>, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{148, -1}: "expected one of [!=, $end, &&, &^, '%', '&', ')', '*', '+', ',', '-', '/', ':', ';', '<', '>', ']', '^', '|', <<, <=, ==, >=, >>, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{149, -1}: "expected one of [!=, $end, &&, &^, '%', '&', ')', '*', '+', ',', '-', '/', ':', ';', '<', '>', ']', '^', '|', <<, <=, ==, >=, >>, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{150, -1}: "expected one of [!=, $end, &&, &^, '%', '&', ')', '*', '+', ',', '-', '/', ':', ';', '<', '>', ']', '^', '|', <<, <=, ==, >=, >>, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{43, -1}:  "expected one of [!=, $end, &&, ')', '+', ',', '-', ':', ';', '<', '>', ']', '^', '|', <=, ==, >=, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{162, -1}: "expected one of [!=, $end, &&, ')', '+', ',', '-', ':', ';', '<', '>', ']', '^', '|', <=, ==, >=, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{163, -1}: "expected one of [!=, $end, &&, ')', '+', ',', '-', ':', ';', '<', '>', ']', '^', '|', <=, ==, >=, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{164, -1}: "expected one of [!=, $end, &&, ')', '+', ',', '-', ':', ';', '<', '>', ']', '^', '|', <=, ==, >=, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{165, -1}: "expected one of [!=, $end, &&, ')', '+', ',', '-', ':', ';', '<', '>', ']', '^', '|', <=, ==, >=, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{166, -1}: "expected one of [!=, $end, &&, ')', '+', ',', '-', ':', ';', '<', '>', ']', '^', '|', <=, ==, >=, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{167, -1}: "expected one of [!=, $end, &&, ')', '+', ',', '-', ':', ';', '<', '>', ']', '^', '|', <=, ==, >=, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{168, -1}: "expected one of [!=, $end, &&, ')', '+', ',', '-', ':', ';', '<', '>', ']', '^', '|', <=, ==, >=, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{42, -1}:  "expected one of [!=, $end, &&, ')', ',', ':', ';', '<', '>', ']', <=, ==, >=, AND, AS, ASC, BETWEEN, DEFAULT, DESC, FROM, GROUP, IN, IS, LIKE, LIMIT, NOT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{174, -1}: "expected one of [$end, &&, ')', '+', ',', '-', ':', ';', ']', '^', '|', AND, AS, ASC, DEFAULT, DESC, FROM, GROUP, LIMIT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{179, -1}: "expected one of [$end, &&, ')', '+', ',', '-', ':', ';', ']', '^', '|', AND, AS, ASC, DEFAULT, DESC, FROM, GROUP, LIMIT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{61, -1}:  "expected one of [$end, &&, ')', ',', ':', ';', ']', AND, AS, ASC, DEFAULT, DESC, FROM, GROUP, LIMIT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{108, -1}: "expected one of [$end, &&, ')', ',', ':', ';', ']', AND, AS, ASC, DEFAULT, DESC, FROM, GROUP, LIMIT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{169, -1}: "expected one of [$end, &&, ')', ',', ':', ';', ']', AND, AS, ASC, DEFAULT, DESC, FROM, GROUP, LIMIT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{171, -1}: "expected one of [$end, &&, ')', ',', ':', ';', ']', AND, AS, ASC, DEFAULT, DESC, FROM, GROUP, LIMIT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{185, -1}: "expected one of [$end, &&, ')', ',', ':', ';', ']', AND, AS, ASC, DEFAULT, DESC, FROM, GROUP, LIMIT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{186, -1}: "expected one of [$end, &&, ')', ',', ':', ';', ']', AND, AS, ASC, DEFAULT, DESC, FROM, GROUP, LIMIT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{191, -1}: "expected one of [$end, &&, ')', ',', ':', ';', ']', AND, AS, ASC, DEFAULT, DESC, FROM, GROUP, LIMIT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{192, -1}: "expected one of [$end, &&, ')', ',', ':', ';', ']', AND, AS, ASC, DEFAULT, DESC, FROM, GROUP, LIMIT, OFFSET, OR, ORDER, WHERE, ||]",
+		yyXError{62, -1}:  "expected one of [$end, '!', '(', ')', '+', ',', '-', ';', '^', DEFAULT, NOT, NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{63, -1}:  "expected one of [$end, '!', '(', ')', '+', ',', '-', ';', '^', DEFAULT, NOT, NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{64, -1}:  "expected one of [$end, '!', '(', ')', '+', ',', '-', ';', '^', DEFAULT, NOT, NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{65, -1}:  "expected one of [$end, '!', '(', ')', '+', ',', '-', ';', '^', DEFAULT, NOT, NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{66, -1}:  "expected one of [$end, '!', '(', ')', '+', ',', '-', ';', '^', DEFAULT, NOT, NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{67, -1}:  "expected one of [$end, '!', '(', ')', '+', ',', '-', ';', '^', DEFAULT, NOT, NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{68, -1}:  "expected one of [$end, '!', '(', ')', '+', ',', '-', ';', '^', DEFAULT, NOT, NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{69, -1}:  "expected one of [$end, '!', '(', ')', '+', ',', '-', ';', '^', DEFAULT, NOT, NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{70, -1}:  "expected one of [$end, '!', '(', ')', '+', ',', '-', ';', '^', DEFAULT, NOT, NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{71, -1}:  "expected one of [$end, '!', '(', ')', '+', ',', '-', ';', '^', DEFAULT, NOT, NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{72, -1}:  "expected one of [$end, '!', '(', ')', '+', ',', '-', ';', '^', DEFAULT, NOT, NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{73, -1}:  "expected one of [$end, '!', '(', ')', '+', ',', '-', ';', '^', DEFAULT, NOT, NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{74, -1}:  "expected one of [$end, '!', '(', ')', '+', ',', '-', ';', '^', DEFAULT, NOT, NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{75, -1}:  "expected one of [$end, '!', '(', ')', '+', ',', '-', ';', '^', DEFAULT, NOT, NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{76, -1}:  "expected one of [$end, '!', '(', ')', '+', ',', '-', ';', '^', DEFAULT, NOT, NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{77, -1}:  "expected one of [$end, '!', '(', ')', '+', ',', '-', ';', '^', DEFAULT, NOT, NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{78, -1}:  "expected one of [$end, '!', '(', ')', '+', ',', '-', ';', '^', DEFAULT, NOT, NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{79, -1}:  "expected one of [$end, '!', '(', ')', '+', ',', '-', ';', '^', DEFAULT, NOT, NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{80, -1}:  "expected one of [$end, '!', '(', ')', '+', ',', '-', ';', '^', DEFAULT, NOT, NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{81, -1}:  "expected one of [$end, '!', '(', ')', '+', ',', '-', ';', '^', DEFAULT, NOT, NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{82, -1}:  "expected one of [$end, '!', '(', ')', '+', ',', '-', ';', '^', DEFAULT, NOT, NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{83, -1}:  "expected one of [$end, '!', '(', ')', '+', ',', '-', ';', '^', DEFAULT, NOT, NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{84, -1}:  "expected one of [$end, '!', '(', ')', '+', ',', '-', ';', '^', DEFAULT, NOT, NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{85, -1}:  "expected one of [$end, '!', '(', ')', '+', ',', '-', ';', '^', DEFAULT, NOT, NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{28, -1}:  "expected one of [$end, '(', ';', ADD, DROP, SELECT, SET, VALUES, WHERE, identifier]",
+		yyXError{282, -1}: "expected one of [$end, '(', ';']",
+		yyXError{34, -1}:  "expected one of [$end, ')', ',', ';', '=', LIMIT, OFFSET, ORDER, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, float, float32, float64, int, int16, int32, int64, int8, rune, string, time, uint, uint16, uint32, uint64, uint8]",
+		yyXError{213, -1}: "expected one of [$end, ')', ',', ';', AS, FULL, GROUP, LEFT, LIMIT, OFFSET, ON, ORDER, RIGHT, WHERE]",
+		yyXError{260, -1}: "expected one of [$end, ')', ',', ';', AS, FULL, GROUP, LEFT, LIMIT, OFFSET, ON, ORDER, RIGHT, WHERE]",
+		yyXError{319, -1}: "expected one of [$end, ')', ',', ';', DEFAULT]",
+		yyXError{320, -1}: "expected one of [$end, ')', ',', ';', DEFAULT]",
+		yyXError{261, -1}: "expected one of [$end, ')', ',', ';', FULL, GROUP, LEFT, LIMIT, OFFSET, ON, ORDER, RIGHT, WHERE]",
+		yyXError{263, -1}: "expected one of [$end, ')', ',', ';', FULL, GROUP, LEFT, LIMIT, OFFSET, ON, ORDER, RIGHT, WHERE]",
+		yyXError{215, -1}: "expected one of [$end, ')', ',', ';', FULL, GROUP, LEFT, LIMIT, OFFSET, ORDER, RIGHT, WHERE]",
+		yyXError{257, -1}: "expected one of [$end, ')', ',', ';', FULL, GROUP, LEFT, LIMIT, OFFSET, ORDER, RIGHT, WHERE]",
+		yyXError{250, -1}: "expected one of [$end, ')', ',', ';', LIMIT, OFFSET, ORDER]",
+		yyXError{321, -1}: "expected one of [$end, ')', ',', ';']",
+		yyXError{323, -1}: "expected one of [$end, ')', ',', ';']",
+		yyXError{118, -1}: "expected one of [$end, ')', ';', ASC, DESC, LIMIT, OFFSET]",
+		yyXError{223, -1}: "expected one of [$end, ')', ';', GROUP, LIMIT, OFFSET, ORDER, WHERE]",
+		yyXError{226, -1}: "expected one of [$end, ')', ';', GROUP, LIMIT, OFFSET, ORDER]",
+		yyXError{229, -1}: "expected one of [$end, ')', ';', LIMIT, OFFSET, ORDER]",
+		yyXError{246, -1}: "expected one of [$end, ')', ';', LIMIT, OFFSET, ORDER]",
+		yyXError{248, -1}: "expected one of [$end, ')', ';', LIMIT, OFFSET, ORDER]",
+		yyXError{232, -1}: "expected one of [$end, ')', ';', LIMIT, OFFSET]",
+		yyXError{241, -1}: "expected one of [$end, ')', ';', LIMIT, OFFSET]",
+		yyXError{242, -1}: "expected one of [$end, ')', ';', LIMIT, OFFSET]",
+		yyXError{243, -1}: "expected one of [$end, ')', ';', LIMIT, OFFSET]",
+		yyXError{236, -1}: "expected one of [$end, ')', ';']",
+		yyXError{199, -1}: "expected one of [$end, ',', ';', WHERE]",
+		yyXError{285, -1}: "expected one of [$end, ',', ';']",
+		yyXError{197, -1}: "expected one of [$end, ';', WHERE]",
+		yyXError{1, -1}:   "expected one of [$end, ';']",
+		yyXError{4, -1}:   "expected one of [$end, ';']",
+		yyXError{9, -1}:   "expected one of [$end, ';']",
+		yyXError{11, -1}:  "expected one of [$end, ';']",
+		yyXError{12, -1}:  "expected one of [$end, ';']",
+		yyXError{13, -1}:  "expected one of [$end, ';']",
+		yyXError{14, -1}:  "expected one of [$end, ';']",
+		yyXError{15, -1}:  "expected one of [$end, ';']",
+		yyXError{16, -1}:  "expected one of [$end, ';']",
+		yyXError{17, -1}:  "expected one of [$end, ';']",
+		yyXError{18, -1}:  "expected one of [$end, ';']",
+		yyXError{19, -1}:  "expected one of [$end, ';']",
+		yyXError{20, -1}:  "expected one of [$end, ';']",
+		yyXError{21, -1}:  "expected one of [$end, ';']",
+		yyXError{22, -1}:  "expected one of [$end, ';']",
+		yyXError{23, -1}:  "expected one of [$end, ';']",
+		yyXError{24, -1}:  "expected one of [$end, ';']",
+		yyXError{25, -1}:  "expected one of [$end, ';']",
+		yyXError{36, -1}:  "expected one of [$end, ';']",
+		yyXError{37, -1}:  "expected one of [$end, ';']",
+		yyXError{203, -1}: "expected one of [$end, ';']",
+		yyXError{276, -1}: "expected one of [$end, ';']",
+		yyXError{281, -1}: "expected one of [$end, ';']",
+		yyXError{288, -1}: "expected one of [$end, ';']",
+		yyXError{291, -1}: "expected one of [$end, ';']",
+		yyXError{295, -1}: "expected one of [$end, ';']",
+		yyXError{298, -1}: "expected one of [$end, ';']",
+		yyXError{314, -1}: "expected one of [$end, ';']",
+		yyXError{329, -1}: "expected one of [$end, ';']",
+		yyXError{340, -1}: "expected one of [$end, ';']",
+		yyXError{343, -1}: "expected one of [$end, ';']",
+		yyXError{344, -1}: "expected one of [$end, ';']",
+		yyXError{350, -1}: "expected one of [$end, ';']",
+		yyXError{351, -1}: "expected one of [$end, ';']",
+		yyXError{353, -1}: "expected one of [$end, ';']",
+		yyXError{205, -1}: "expected one of ['!', '(', '*', '+', '-', '^', NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{101, -1}: "expected one of ['!', '(', '+', '-', '^', NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{102, -1}: "expected one of ['!', '(', '+', '-', '^', NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{106, -1}: "expected one of ['!', '(', '+', '-', '^', NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{107, -1}: "expected one of ['!', '(', '+', '-', '^', NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{339, -1}: "expected one of ['(', ')']",
+		yyXError{313, -1}: "expected one of [')', ',']",
+		yyXError{172, -1}: "expected one of ['+', '-', '^', '|', AND]",
+		yyXError{177, -1}: "expected one of ['+', '-', '^', '|', AND]",
+		yyXError{207, -1}: "expected one of [',', FROM]",
+		yyXError{208, -1}: "expected one of [',', FROM]",
+		yyXError{265, -1}: "expected one of [',', FROM]",
+		yyXError{266, -1}: "expected one of [',', FROM]",
+		yyXError{268, -1}: "expected one of [',', FROM]",
+		yyXError{346, -1}: "expected one of [ADD, DROP]",
+		yyXError{152, -1}: "expected one of [BETWEEN, IN]",
+		yyXError{7, -1}:   "expected one of [INDEX, TABLE]",
+		yyXError{219, -1}: "expected one of [JOIN, OUTER]",
+		yyXError{220, -1}: "expected one of [JOIN, OUTER]",
+		yyXError{221, -1}: "expected one of [JOIN, OUTER]",
+		yyXError{154, -1}: "expected one of [NOT, NULL]",
+		yyXError{274, -1}: "expected one of [SELECT, VALUES]",
+		yyXError{316, -1}: "expected optional DEFAULT clause or one of [$end, ')', ',', ';', DEFAULT]",
+		yyXError{315, -1}: "expected optional DEFAULT clause or optional column value constraint or one of [$end, '!', '(', ')', '+', ',', '-', ';', '^', DEFAULT, NOT, NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{222, -1}: "expected optional OUTER clause or one of [JOIN, OUTER]",
+		yyXError{117, -1}: "expected optional comma or one of [$end, ')', ',', ';', ASC, DESC, LIMIT, OFFSET]",
+		yyXError{247, -1}: "expected optional comma or one of [$end, ')', ',', ';', LIMIT, OFFSET, ORDER]",
+		yyXError{196, -1}: "expected optional comma or one of [$end, ',', ';', WHERE]",
+		yyXError{280, -1}: "expected optional comma or one of [$end, ',', ';']",
+		yyXError{310, -1}: "expected optional comma or one of [')', ',']",
+		yyXError{327, -1}: "expected optional comma or one of [')', ',']",
+		yyXError{153, -1}: "expected primary expression factor or one of ['!', '(', '+', '-', '^', NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{155, -1}: "expected primary expression factor or one of ['!', '(', '+', '-', '^', NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{156, -1}: "expected primary expression factor or one of ['!', '(', '+', '-', '^', NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{157, -1}: "expected primary expression factor or one of ['!', '(', '+', '-', '^', NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{158, -1}: "expected primary expression factor or one of ['!', '(', '+', '-', '^', NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{159, -1}: "expected primary expression factor or one of ['!', '(', '+', '-', '^', NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{160, -1}: "expected primary expression factor or one of ['!', '(', '+', '-', '^', NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{161, -1}: "expected primary expression factor or one of ['!', '(', '+', '-', '^', NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{173, -1}: "expected primary expression factor or one of ['!', '(', '+', '-', '^', NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{176, -1}: "expected primary expression factor or one of ['!', '(', '+', '-', '^', NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{178, -1}: "expected primary expression factor or one of ['!', '(', '+', '-', '^', NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{86, -1}:  "expected primary expression or one of ['(', NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{87, -1}:  "expected primary expression or one of ['(', NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{88, -1}:  "expected primary expression or one of ['(', NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{89, -1}:  "expected primary expression or one of ['(', NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{143, -1}: "expected primary expression term or one of ['!', '(', '+', '-', '^', NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{144, -1}: "expected primary expression term or one of ['!', '(', '+', '-', '^', NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{145, -1}: "expected primary expression term or one of ['!', '(', '+', '-', '^', NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{146, -1}: "expected primary expression term or one of ['!', '(', '+', '-', '^', NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{212, -1}: "expected record set optional AS clause or one of [$end, ')', ',', ';', AS, FULL, GROUP, LEFT, LIMIT, OFFSET, ON, ORDER, RIGHT, WHERE]",
+		yyXError{217, -1}: "expected record set or one of [$end, '(', ')', ';', FULL, GROUP, LEFT, LIMIT, OFFSET, ORDER, RIGHT, WHERE, identifier]",
+		yyXError{253, -1}: "expected record set or one of ['(', identifier]",
+		yyXError{182, -1}: "expected semiOpt or one of [')', ';']",
+		yyXError{189, -1}: "expected semiOpt or one of [')', ';']",
+		yyXError{258, -1}: "expected semiOpt or one of [')', ';']",
+		yyXError{0, -1}:   "expected statement list or one of [$end, ';', ALTER, BEGIN, COMMIT, CREATE, DELETE, DROP, INSERT, ROLLBACK, SELECT, TRUNCATE, UPDATE]",
+		yyXError{352, -1}: "expected statement or one of [$end, ';', ALTER, BEGIN, COMMIT, CREATE, DELETE, DROP, INSERT, ROLLBACK, SELECT, TRUNCATE, UPDATE]",
+		yyXError{307, -1}: "expected table column definition or identifier",
+		yyXError{325, -1}: "expected table column definition or identifier",
+		yyXError{347, -1}: "expected table column definition or identifier",
+		yyXError{312, -1}: "expected table column definition or one of [')', identifier]",
+		yyXError{27, -1}:  "expected table name or identifier",
+		yyXError{202, -1}: "expected table name or identifier",
+		yyXError{269, -1}: "expected table name or identifier",
+		yyXError{290, -1}: "expected table name or identifier",
+		yyXError{296, -1}: "expected table name or identifier",
+		yyXError{305, -1}: "expected table name or identifier",
+		yyXError{345, -1}: "expected table name or identifier",
+		yyXError{287, -1}: "expected table name or one of [identifier, if]",
+		yyXError{301, -1}: "expected table name or one of [identifier, if]",
+		yyXError{308, -1}: "expected type or one of [bigint, bigrat, blob, bool, byte, complex128, complex64, duration, float, float32, float64, int, int16, int32, int64, int8, rune, string, time, uint, uint16, uint32, uint64, uint8]",
+		yyXError{127, -1}: "expected unary expression or one of ['!', '(', '+', '-', '^', NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{128, -1}: "expected unary expression or one of ['!', '(', '+', '-', '^', NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{129, -1}: "expected unary expression or one of ['!', '(', '+', '-', '^', NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{130, -1}: "expected unary expression or one of ['!', '(', '+', '-', '^', NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{131, -1}: "expected unary expression or one of ['!', '(', '+', '-', '^', NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{132, -1}: "expected unary expression or one of ['!', '(', '+', '-', '^', NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
+		yyXError{133, -1}: "expected unary expression or one of ['!', '(', '+', '-', '^', NULL, QL parameter, bigint, bigrat, blob, bool, byte, complex128, complex64, duration, false, float, float32, float64, floating-point literal, identifier, imaginary literal, int, int16, int32, int64, int8, integer literal, rune, string, string literal, time, true, uint, uint16, uint32, uint64, uint8]",
 	}
 
 	yyParseTab = [354][]uint16{
@@ -1660,12 +1660,10 @@ yynewstate:
 			if !ok {
 				msg, ok = yyXErrors[yyXError{yyshift, -1}]
 			}
-			if !ok {
+			if !ok || msg == "" {
 				msg = "syntax error"
 			}
-			if msg != "" {
-				yylex.Error(msg)
-			}
+			yylex.Error(msg)
 			Nerrs++
 			fallthrough
 
@@ -1988,6 +1986,12 @@ yynewstate:
 				yylex.(*lexer).err("%v", err)
 				return 1
 			}
+		}
+	case 45:
+		{
+		}
+	case 46:
+		{
 		}
 	case 47:
 		{
@@ -2506,6 +2510,12 @@ yynewstate:
 				return 1
 			}
 		}
+	case 172:
+		{
+		}
+	case 173:
+		{
+		}
 	case 174:
 		{
 			yyVAL.item = &truncateTableStmt{tableName: yyS[yypt-0].item.(string)}
@@ -2566,6 +2576,18 @@ yynewstate:
 	case 207:
 		{
 			yyVAL.item = &whereRset{expr: yyS[yypt-0].item.(expression)}
+		}
+	case 208:
+		{
+		}
+	case 209:
+		{
+		}
+	case 210:
+		{
+		}
+	case 211:
+		{
 		}
 
 	}
