@@ -1,5 +1,4 @@
 %{
-
 // Copyright (c) 2014 The ql Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
@@ -8,9 +7,6 @@
 // at 2013-10-04 23:10:47.861401015 +0200 CEST
 //
 //  $ ebnf2y -o ql.y -oe ql.ebnf -start StatementList -pkg ql -p _
-//
-// CAUTION: If this file is a Go source file (*.go), it was generated
-// automatically by '$ goyacc' from a *.y file - DO NOT EDIT in that case!
 // 
 //   [1]: http://github.com/cznic/ebnf2y
 
