@@ -1986,12 +1986,6 @@ yynewstate:
 				return 1
 			}
 		}
-	case 45:
-		{
-		}
-	case 46:
-		{
-		}
 	case 47:
 		{
 			yyVAL.item = append([]expression{yyS[yypt-2].item.(expression)}, yyS[yypt-1].item.([]expression)...)
@@ -2509,12 +2503,6 @@ yynewstate:
 				return 1
 			}
 		}
-	case 172:
-		{
-		}
-	case 173:
-		{
-		}
 	case 174:
 		{
 			yyVAL.item = &truncateTableStmt{tableName: yyS[yypt-0].item.(string)}
@@ -2575,18 +2563,6 @@ yynewstate:
 	case 207:
 		{
 			yyVAL.item = &whereRset{expr: yyS[yypt-0].item.(expression)}
-		}
-	case 208:
-		{
-		}
-	case 209:
-		{
-		}
-	case 210:
-		{
-		}
-	case 211:
-		{
 		}
 
 	}
