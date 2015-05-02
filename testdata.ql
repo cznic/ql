@@ -10593,3 +10593,80 @@ ORDER BY t.s, employee.LastName;
 [B Robinson 34 34 Clerical]
 [B Smith 34 34 Clerical]
 [B Williams <nil> <nil> <nil>]
+
+-- 889 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t1 (a int, b int, c int);
+	CREATE TABLE t2 (a int, b int NOT NULL, c int);
+	CREATE TABLE t3 (a int, b int a < b && b < c, c int);
+	CREATE TABLE t4 (a int, b int a < b && b < c DEFAULT (a+c)/2, c int);
+	CREATE TABLE t5 (a int, b int NOT NULL DEFAULT (a+c)/2, c int);
+	CREATE TABLE t6 (a int, b int DEFAULT (a+c)/2, c int);
+COMMIT;
+SELECT * FROM __Table ORDER BY Name;
+|sName, sSchema
+[__Column2 CREATE TABLE __Column2 (TableName string, Name string, NotNull bool, ConstraintExpr string, DefaultExpr string);]
+[t1 CREATE TABLE t1 (a int64, b int64, c int64);]
+[t2 CREATE TABLE t2 (a int64, b int64 NOT NULL, c int64);]
+[t3 CREATE TABLE t3 (a int64, b int64 a<b&&b<c, c int64);]
+[t4 CREATE TABLE t4 (a int64, b int64 a<b&&b<c DEFAULT (a+c)/2, c int64);]
+[t5 CREATE TABLE t5 (a int64, b int64 NOT NULL DEFAULT (a+c)/2, c int64);]
+[t6 CREATE TABLE t6 (a int64, b int64 DEFAULT (a+c)/2, c int64);]
+
+-- 890 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t1 (a int, b int, c int);
+	CREATE TABLE t2 (a int, b int NOT NULL, c int);
+	CREATE TABLE t3 (a int, b int a < b && b < c, c int);
+	CREATE TABLE t4 (a int, b int a < b && b < c DEFAULT (a+c)/2, c int);
+	CREATE TABLE t5 (a int, b int NOT NULL DEFAULT (a+c)/2, c int);
+	CREATE TABLE t6 (a int, b int DEFAULT (a+c)/2, c int);
+COMMIT;
+SELECT * FROM __Column2 ORDER BY TableName, Name;
+|sTableName, sName, bNotNull, sConstraintExpr, sDefaultExpr
+[t2 b true  ]
+[t3 b false a<b&&b<c ]
+[t4 b false a<b&&b<c (a+c)/2]
+[t5 b true  (a+c)/2]
+[t6 b false  (a+c)/2]
+
+-- 891 // https://github.com/cznic/ql/issues/85
+BEGIN TRANSACTION;
+	CREATE TABLE t1 (a int, b int, c int);
+	CREATE TABLE t2 (a int, b int NOT NULL, c int);
+	CREATE TABLE t3 (a int, b int a < b && b < c, c int);
+	CREATE TABLE t4 (a int, b int a < b && b < c DEFAULT (a+c)/2, c int);
+	CREATE TABLE t5 (a int, b int NOT NULL DEFAULT (a+c)/2, c int);
+	CREATE TABLE t6 (a int, b int DEFAULT (a+c)/2, c int);
+COMMIT;
+SELECT
+	__Column.TableName, __Column.Ordinal, __Column.Name, __Column.Type,
+	__Column2.NotNull, __Column2.ConstraintExpr, __Column2.DefaultExpr,
+FROM __Column
+LEFT JOIN __Column2
+ON __Column.TableName == __Column2.TableName && __Column.Name == __Column2.Name
+ORDER BY __Column.TableName, __Column.Ordinal;
+|s__Column.TableName, l__Column.Ordinal, s__Column.Name, s__Column.Type, ?__Column2.NotNull, ?__Column2.ConstraintExpr, ?__Column2.DefaultExpr
+[__Column2 1 TableName string <nil> <nil> <nil>]
+[__Column2 2 Name string <nil> <nil> <nil>]
+[__Column2 3 NotNull bool <nil> <nil> <nil>]
+[__Column2 4 ConstraintExpr string <nil> <nil> <nil>]
+[__Column2 5 DefaultExpr string <nil> <nil> <nil>]
+[t1 1 a int64 <nil> <nil> <nil>]
+[t1 2 b int64 <nil> <nil> <nil>]
+[t1 3 c int64 <nil> <nil> <nil>]
+[t2 1 a int64 <nil> <nil> <nil>]
+[t2 2 b int64 true  ]
+[t2 3 c int64 <nil> <nil> <nil>]
+[t3 1 a int64 <nil> <nil> <nil>]
+[t3 2 b int64 false a<b&&b<c ]
+[t3 3 c int64 <nil> <nil> <nil>]
+[t4 1 a int64 <nil> <nil> <nil>]
+[t4 2 b int64 false a<b&&b<c (a+c)/2]
+[t4 3 c int64 <nil> <nil> <nil>]
+[t5 1 a int64 <nil> <nil> <nil>]
+[t5 2 b int64 true  (a+c)/2]
+[t5 3 c int64 <nil> <nil> <nil>]
+[t6 1 a int64 <nil> <nil> <nil>]
+[t6 2 b int64 false  (a+c)/2]
+[t6 3 c int64 <nil> <nil> <nil>]

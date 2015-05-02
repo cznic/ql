@@ -1266,7 +1266,17 @@ func (r tableRset) doSysTable(ctx *execCtx, onlyNames bool, f func(id interface{
 		rec[0] = ti.Name
 		a := []string{}
 		for _, ci := range ti.Columns {
-			a = append(a, fmt.Sprintf("%s %s", ci.Name, ci.Type))
+			s := ""
+			if ci.NotNull {
+				s += " NOT NULL"
+			}
+			if c := ci.Constraint; c != "" {
+				s += " " + c
+			}
+			if d := ci.Default; d != "" {
+				s += " DEFAULT " + d
+			}
+			a = append(a, fmt.Sprintf("%s %s%s", ci.Name, ci.Type, s))
 		}
 		rec[1] = fmt.Sprintf("CREATE TABLE %s (%s);", ti.Name, strings.Join(a, ", "))
 		id++
@@ -2133,8 +2143,11 @@ func (t Type) String() string {
 
 // ColumnInfo provides meta data describing a table column.
 type ColumnInfo struct {
-	Name string // Column name.
-	Type Type   // Column type (BigInt, BigRat, ...).
+	Name       string // Column name.
+	Type       Type   // Column type (BigInt, BigRat, ...).
+	NotNull    bool   // Column cannot be NULL.
+	Constraint string // Constraint expression, if any.
+	Default    string // Default expression, if any.
 }
 
 // TableInfo provides meta data describing a DB table.
@@ -2166,11 +2179,42 @@ type DbInfo struct {
 }
 
 func (db *DB) info() (r *DbInfo, err error) {
+	_, hasColumn2 := db.root.tables["__Column2"]
 	r = &DbInfo{Name: db.Name()}
 	for nm, t := range db.root.tables {
 		ti := TableInfo{Name: nm}
+		m := map[string]*ColumnInfo{}
+		if hasColumn2 {
+			rs, err := selectColumn2.l[0].exec(&execCtx{db: db})
+			if err != nil {
+				return nil, err
+			}
+			ok := false
+			if err := rs.(recordset).do(
+				&execCtx{db: db, arg: []interface{}{nm}},
+				false,
+				func(id interface{}, data []interface{}) (more bool, err error) {
+					if ok {
+						ci := &ColumnInfo{NotNull: data[1].(bool), Constraint: data[2].(string), Default: data[3].(string)}
+						m[data[0].(string)] = ci
+						return true, nil
+					}
+
+					ok = true
+					return true, nil
+				},
+			); err != nil {
+				return nil, err
+			}
+		}
 		for _, c := range t.cols {
-			ti.Columns = append(ti.Columns, ColumnInfo{Name: c.name, Type: Type(c.typ)})
+			ci := ColumnInfo{Name: c.name, Type: Type(c.typ)}
+			if c2 := m[c.name]; c2 != nil {
+				ci.NotNull = c2.NotNull
+				ci.Constraint = c2.Constraint
+				ci.Default = c2.Default
+			}
+			ti.Columns = append(ti.Columns, ci)
 		}
 		r.Tables = append(r.Tables, ti)
 		for i, x := range t.indices {

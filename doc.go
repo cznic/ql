@@ -14,6 +14,11 @@
 //
 // Change list
 //
+// 2015-05-02: The Schema field of table __Table now correctly reflects any
+// column constraints and/or defaults. Also, the (*DB).Info method now has that
+// information provided in new ColumInfo fields NotNull, Constraint and
+// Default.
+//
 // 2015-04-20: Added support for {LEFT,RIGHT,FULL} [OUTER] JOIN.
 //
 // 2015-04-18: Column definitions can now have constraints and defaults.
@@ -1896,6 +1901,27 @@
 //	CREATE TABLE __Column (TableName string, Ordinal int, Name string, Type string);
 //
 // The Ordinal column defines the 1-based index of the column in the record.
+//
+// Columns2 Table
+//
+// The table __Colum2 lists all columns of all tables in the DB which have the
+// constraint NOT NULL or which have a constraint expression defined or which
+// have a default expression defined. The schema is
+//
+//	CREATE TABLE __Column2 (TableName string, Name string, NotNull bool, ConstraintExpr string, DefaultExpr string)
+//
+// It's possible to obtain a consolidated recordset for all properties of all
+// DB columns using
+//
+//	SELECT
+//		__Column.TableName, __Column.Ordinal, __Column.Name, __Column.Type,
+//		__Column2.NotNull, __Column2.ConstraintExpr, __Column2.DefaultExpr,
+//	FROM __Column
+//	LEFT JOIN __Column2
+//	ON __Column.TableName == __Column2.TableName && __Column.Name == __Column2.Name
+//	ORDER BY __Column.TableName, __Column.Ordinal;
+//
+// The Name column is the column name in TableName. To
 //
 // Indices table
 //
