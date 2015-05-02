@@ -1921,7 +1921,7 @@
 //	ON __Column.TableName == __Column2.TableName && __Column.Name == __Column2.Name
 //	ORDER BY __Column.TableName, __Column.Ordinal;
 //
-// The Name column is the column name in TableName. To
+// The Name column is the column name in TableName.
 //
 // Indices table
 //
