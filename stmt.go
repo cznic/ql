@@ -1060,6 +1060,7 @@ type createIndexStmt struct {
 	indexName   string
 	tableName   string
 	unique      bool
+	exprList    []expression
 }
 
 func (s *createIndexStmt) String() string {

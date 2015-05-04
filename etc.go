@@ -2760,10 +2760,13 @@ func isOrderedType(v interface{}) (y interface{}, r bool, err error) {
 }
 
 var isSystemName = map[string]bool{
-	"__Column":  true,
-	"__Column2": true,
-	"__Index":   true,
-	"__Table":   true,
+	"__Column":       true,
+	"__Column2":      true,
+	"__Index":        true,
+	"__Index2":       true,
+	"__Index2_Expr":  true,
+	"__Index2_Table": true,
+	"__Table":        true,
 }
 
 func qualifier(s string) string {
