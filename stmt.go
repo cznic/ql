@@ -30,9 +30,6 @@ var (
 	_ stmt = beginTransactionStmt{}
 	_ stmt = commitStmt{}
 	_ stmt = rollbackStmt{}
-
-	exprCache   = map[string]expression{}
-	exprCacheMu sync.Mutex
 )
 
 type stmt interface {
@@ -59,27 +56,6 @@ type updateStmt struct {
 	tableName string
 	list      []assignment
 	where     expression
-}
-
-func str2expr(expr string) (expression, error) {
-	exprCacheMu.Lock()
-	e := exprCache[expr]
-	exprCacheMu.Unlock()
-	if e != nil {
-		return e, nil
-	}
-
-	src := "select " + expr + " from t"
-	l, err := Compile(src)
-	if err != nil {
-		return nil, err
-	}
-
-	e = l.l[0].(*selectStmt).flds[0].expr
-	exprCacheMu.Lock()
-	exprCache[expr] = e
-	exprCacheMu.Unlock()
-	return e, nil
 }
 
 func (s *updateStmt) String() string {
@@ -875,14 +851,14 @@ func constraintsAndDefaults(ctx *execCtx, table string) (constraints []*constrai
 				if nonNull || cexpr != "" {
 					co = &constraint{}
 					if cexpr != "" {
-						if co.expr, err = str2expr(cexpr); err != nil {
+						if co.expr, err = ctx.db.str2expr(cexpr); err != nil {
 							return nil, nil, fmt.Errorf("constraint %q: %v", cexpr, err)
 						}
 					}
 				}
 				constraints[i] = co
 				if dexpr != "" {
-					if defaults[i], err = str2expr(dexpr); err != nil {
+					if defaults[i], err = ctx.db.str2expr(dexpr); err != nil {
 						return nil, nil, fmt.Errorf("constraint %q: %v", dexpr, err)
 					}
 				}

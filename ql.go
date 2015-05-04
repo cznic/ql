@@ -1650,25 +1650,47 @@ func cols2meta(f []*col) (s string) {
 
 // DB represent the database capable of executing QL statements.
 type DB struct {
-	cc    *TCtx // Current transaction context
-	isMem bool
-	mu    sync.Mutex
-	root  *root
-	rw    bool // DB FSM
-	rwmu  sync.RWMutex
-	store storage
-	tnl   int // Transaction nesting level
+	cc          *TCtx // Current transaction context
+	isMem       bool
+	mu          sync.Mutex
+	root        *root
+	rw          bool // DB FSM
+	rwmu        sync.RWMutex
+	store       storage
+	tnl         int // Transaction nesting level
+	exprCache   map[string]expression
+	exprCacheMu sync.Mutex
 }
 
 func newDB(store storage) (db *DB, err error) {
 	db0 := &DB{
-		store: store,
+		exprCache: map[string]expression{},
+		store:     store,
 	}
 	if db0.root, err = newRoot(store); err != nil {
 		return
 	}
 
 	return db0, nil
+}
+
+func (db *DB) str2expr(expr string) (expression, error) {
+	db.exprCacheMu.Lock()
+	e := db.exprCache[expr]
+	db.exprCacheMu.Unlock()
+	if e != nil {
+		return e, nil
+	}
+
+	e, err := compileExpr(expr)
+	if err != nil {
+		return nil, err
+	}
+
+	db.exprCacheMu.Lock()
+	db.exprCache[expr] = e
+	db.exprCacheMu.Unlock()
+	return e, nil
 }
 
 // Name returns the name of the DB.
@@ -1709,6 +1731,16 @@ func Compile(src string) (List, error) {
 	}
 
 	return List{l.list, l.params}, nil
+}
+
+func compileExpr(src string) (expression, error) {
+	l := newLexer(src)
+	l.inj = parseExpression
+	if yyParse(l) != 0 {
+		return nil, l.errs[0]
+	}
+
+	return l.expr, nil
 }
 
 func compile(src string) (List, error) {

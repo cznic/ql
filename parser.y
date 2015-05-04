@@ -120,6 +120,7 @@ import (
 	values		"VALUES"
 	where		"WHERE"
 
+	parseExpression	"parse expression prefix"
 
 %type	<item>
 	AlterTableStmt		"ALTER TABLE statement"
@@ -203,9 +204,16 @@ import (
 
 %type	<list>	RecordSetList
 
-%start	StatementList
+%start	Start
 
 %%
+
+Start:
+	StatementList
+|	parseExpression Expression
+	{
+		yylex.(*lexer).expr = $2.(expression)
+	}
 
 AlterTableStmt:
 	alter tableKwd TableName add ColumnDef

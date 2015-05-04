@@ -20,7 +20,9 @@ type lexer struct {
         c      int
         col    int
         errs   []error
+	expr   expression
         i      int
+	inj    int
         lcol   int
         line   int
         list   []stmt
@@ -86,6 +88,11 @@ func (l *lexer) Lex(lval *yySymType) (r int) {
                 S1
                 S2
         )
+
+	if n := l.inj; n != 0 {
+		l.inj = 0
+		return n
+	}
 
         c0, c := 0, l.c
 %}
