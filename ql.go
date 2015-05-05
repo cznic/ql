@@ -1863,6 +1863,7 @@ func mustCompile(src string) List {
 // write ahead log is used. Database is recovered after a crash from the write
 // ahead log automatically on open.
 func (db *DB) Execute(ctx *TCtx, l List, arg ...interface{}) (rs []Recordset, index int, err error) {
+	dbg("====")
 	// Sanitize args
 	for i, v := range arg {
 		switch x := v.(type) {
@@ -1884,8 +1885,29 @@ func (db *DB) Execute(ctx *TCtx, l List, arg ...interface{}) (rs []Recordset, in
 		ctx.LastInsertID, ctx.RowsAffected = 0, 0
 	}
 
-	var s stmt
-	for index, s = range l.l {
+	list := l.l
+	checkCreateIndex := ctx != nil
+	for i := 0; i < len(list); i++ {
+	again:
+		s := list[i]
+		dbg("\t%d: %v", i, s)
+		if checkCreateIndex {
+			if _, ok := s.(*createIndexStmt); ok {
+				db.mu.Lock()
+				_, hasIndex2 := db.root.tables["__Index2"]
+				db.mu.Unlock()
+				if !hasIndex2 {
+					old := list
+					list = nil
+					list = append(list, createIndex2.l...)
+					list = append(list, old[i:]...)
+					checkCreateIndex = false
+					dbg("CONTINUE: old %v, new %v", len(old), len(list))
+					i = 0
+					goto again
+				}
+			}
+		}
 		r, err := db.run1(ctx, &tnl0, s, arg...)
 		if err != nil {
 			for tnl0 >= 0 && db.tnl > tnl0 {
@@ -1904,7 +1926,7 @@ func (db *DB) Execute(ctx *TCtx, l List, arg ...interface{}) (rs []Recordset, in
 }
 
 func (db *DB) run1(pc *TCtx, tnl0 *int, s stmt, arg ...interface{}) (rs Recordset, err error) {
-	//dbg("%v", s)
+	dbg("%p %v", pc, s)
 	db.mu.Lock()
 	switch db.rw {
 	case false:
@@ -2025,15 +2047,7 @@ func (db *DB) run1(pc *TCtx, tnl0 *int, s stmt, arg ...interface{}) (rs Recordse
 				return nil, fmt.Errorf("invalid passed transaction context")
 			}
 
-			if !s.isUpdating() {
-				return s.exec(&execCtx{db, arg})
-			}
-
-			if rs, err = s.exec(&execCtx{db, arg}); err != nil {
-				return
-			}
-
-			return rs, nil
+			return s.exec(&execCtx{db, arg})
 		}
 	}
 }

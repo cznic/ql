@@ -604,6 +604,10 @@ func (s *selectStmt) exec0() (r rset) { //LATER overlapping goroutines/pipelines
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	r = rset(s.from)
+	if o := s.outer; o != nil {
+		o.crossJoin = r.(*crossJoinRset)
+		r = o
+	}
 	if w := s.where; w != nil {
 		switch ok, list := isPossiblyRewriteableCrossJoinWhereExpression(w.expr); ok && len(s.from.sources) > 1 {
 		case true:
@@ -656,10 +660,6 @@ func (s *selectStmt) exec0() (r rset) { //LATER overlapping goroutines/pipelines
 		default:
 			r = &whereRset{expr: w.expr, src: r}
 		}
-	}
-	if o := s.outer; o != nil {
-		o.crossJoin = r.(*crossJoinRset)
-		r = o
 	}
 	switch {
 	case !s.hasAggregates && s.group == nil: // nop

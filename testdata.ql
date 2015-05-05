@@ -7321,7 +7321,7 @@ BEGIN TRANSACTION;
 	CREATE TABLE t (i int, s string);
 	CREATE INDEX x ON t (i);
 COMMIT;
-SELECT * FROM __Index ORDER BY TableName, ColumnName, Name;
+SELECT * FROM __Index WHERE !hasPrefix(TableName, "__") ORDER BY TableName, ColumnName, Name;
 |sTableName, sColumnName, sName, bIsUnique
 [t i x false]
 
@@ -7332,7 +7332,7 @@ BEGIN TRANSACTION;
 	CREATE INDEX id ON t (id());
 	CREATE TABLE u (b bool, i bigint, t time, d duration);
 COMMIT;
-SELECT * FROM __Index ORDER BY TableName, ColumnName, Name;
+SELECT * FROM __Index WHERE !hasPrefix(TableName, "__") ORDER BY TableName, ColumnName, Name;
 |sTableName, sColumnName, sName, bIsUnique
 [t i x false]
 [t id() id false]
@@ -7346,7 +7346,7 @@ BEGIN TRANSACTION;
 	CREATE INDEX z ON u (t);
 	CREATE UNIQUE INDEX y ON u (i);
 COMMIT;
-SELECT * FROM __Index ORDER BY TableName, ColumnName, Name;
+SELECT * FROM __Index WHERE !hasPrefix(TableName, "__") ORDER BY TableName, ColumnName, Name;
 |sTableName, sColumnName, sName, bIsUnique
 [t i x false]
 [t id() id false]
@@ -10603,9 +10603,8 @@ BEGIN TRANSACTION;
 	CREATE TABLE t5 (a int, b int NOT NULL DEFAULT (a+c)/2, c int);
 	CREATE TABLE t6 (a int, b int DEFAULT (a+c)/2, c int);
 COMMIT;
-SELECT * FROM __Table ORDER BY Name;
+SELECT * FROM __Table WHERE !hasPrefix(Name, "__") ORDER BY Name;
 |sName, sSchema
-[__Column2 CREATE TABLE __Column2 (TableName string, Name string, NotNull bool, ConstraintExpr string, DefaultExpr string);]
 [t1 CREATE TABLE t1 (a int64, b int64, c int64);]
 [t2 CREATE TABLE t2 (a int64, b int64 NOT NULL, c int64);]
 [t3 CREATE TABLE t3 (a int64, b int64 a<b&&b<c, c int64);]
@@ -10645,13 +10644,9 @@ SELECT
 FROM __Column
 LEFT JOIN __Column2
 ON __Column.TableName == __Column2.TableName && __Column.Name == __Column2.Name
+WHERE !hasPrefix(__Column.TableName, "__") 
 ORDER BY __Column.TableName, __Column.Ordinal;
 |s__Column.TableName, l__Column.Ordinal, s__Column.Name, s__Column.Type, ?__Column2.NotNull, ?__Column2.ConstraintExpr, ?__Column2.DefaultExpr
-[__Column2 1 TableName string <nil> <nil> <nil>]
-[__Column2 2 Name string <nil> <nil> <nil>]
-[__Column2 3 NotNull bool <nil> <nil> <nil>]
-[__Column2 4 ConstraintExpr string <nil> <nil> <nil>]
-[__Column2 5 DefaultExpr string <nil> <nil> <nil>]
 [t1 1 a int64 <nil> <nil> <nil>]
 [t1 2 b int64 <nil> <nil> <nil>]
 [t1 3 c int64 <nil> <nil> <nil>]

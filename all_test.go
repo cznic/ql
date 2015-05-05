@@ -974,8 +974,9 @@ func dumpDB(db *DB, tag string) (string, error) {
 	f := strutil.IndentFormatter(&buf, "\t")
 	f.Format("---- %s%i\n", tag)
 	for nm, tab := range db.root.tables {
+		hh := tab.hhead
 		h := tab.head
-		f.Format("%u%q: head %d, scols0 %q, scols %q%i\n", nm, h, cols2meta(tab.cols0), cols2meta(tab.cols))
+		f.Format("%u%q: hhead %d, head %d, scols0 %q, scols %q%i\n", nm, hh, h, cols2meta(tab.cols0), cols2meta(tab.cols))
 		for h != 0 {
 			rec, err := db.store.Read(nil, h, tab.cols...)
 			if err != nil {
@@ -1031,28 +1032,36 @@ func testIndices(db *DB, t *testing.T) {
 
 		s, err := dumpDB(db, "post\n\t"+q)
 		if err != nil {
+			t.Log(q)
+			t.Log(s)
 			t.Fatal(err)
 		}
 
-		t.Logf("%s\n\n", s)
+		//t.Logf("%s\n\n", s)
 		if db.isMem {
 			return
 		}
 
 		nm := db.Name()
 		if err = db.Close(); err != nil {
+			t.Log(q)
+			t.Log(s)
 			t.Fatal(err)
 		}
 
 		if db, err = OpenFile(nm, &Options{}); err != nil {
+			t.Log(q)
+			t.Log(s)
 			t.Fatal(err)
 		}
 
 		if s, err = dumpDB(db, "reopened"); err != nil {
+			t.Log(q)
+			t.Log(s)
 			t.Fatal(err)
 		}
 
-		t.Logf("%s\n\n", s)
+		//t.Logf("%s\n\n", s)
 	}
 
 	e(`	BEGIN TRANSACTION;
@@ -1176,7 +1185,11 @@ func TestIndices(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	defer os.RemoveAll(dir)
+	defer func() {
+		dbg("", dir)
+		//TODO os.RemoveAll(dir)
+
+	}()
 
 	nm := filepath.Join(dir, "ql.db")
 	db, err = OpenFile(nm, &Options{CanCreate: true})
