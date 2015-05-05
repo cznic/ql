@@ -10670,3 +10670,96 @@ ORDER BY __Column.TableName, __Column.Ordinal;
 [t6 1 a int64 <nil> <nil> <nil>]
 [t6 2 b int64 false  (a+c)/2]
 [t6 3 c int64 <nil> <nil> <nil>]
+
+-- 892
+BEGIN TRANSACTION;
+        DROP TABLE __Index2;
+COMMIT;
+||system table
+
+-- 893
+BEGIN TRANSACTION;
+        CREATE TABLE __Index2 (i int);
+COMMIT;
+||system table
+
+-- 894
+BEGIN TRANSACTION;
+        UPDATE __Index2 SET i = 42;
+COMMIT;
+||system table
+
+-- 895
+BEGIN TRANSACTION;
+        CREATE INDEX __Index2X ON __Index2(x);
+COMMIT;
+||system table
+
+-- 896
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+COMMIT;
+SELECT * FROM __Index2;
+||does not exist
+
+-- 897
+BEGIN TRANSACTION;
+        DROP TABLE __Index2_Expr;
+COMMIT;
+||system table
+
+-- 898
+BEGIN TRANSACTION;
+        CREATE TABLE __Index2_Expr (i int);
+COMMIT;
+||system table
+
+-- 899
+BEGIN TRANSACTION;
+        UPDATE __Index2_Expr SET i = 42;
+COMMIT;
+||system table
+
+-- 900
+BEGIN TRANSACTION;
+        CREATE INDEX __Index2X ON __Index2_Expr(x);
+COMMIT;
+||system table
+
+-- 901
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+COMMIT;
+SELECT * FROM __Index2_Expr;
+||does not exist
+
+-- 902
+BEGIN TRANSACTION;
+        DROP TABLE __Index2_Column;
+COMMIT;
+||system table
+
+-- 903
+BEGIN TRANSACTION;
+        CREATE TABLE __Index2_Column (i int);
+COMMIT;
+||system table
+
+-- 904
+BEGIN TRANSACTION;
+        UPDATE __Index2_Column SET i = 42;
+COMMIT;
+||system table
+
+-- 905
+BEGIN TRANSACTION;
+        CREATE INDEX __Index2X ON __Index2_Column(x);
+COMMIT;
+||system table
+
+-- 906
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+COMMIT;
+SELECT * FROM __Index2_Column;
+||does not exist

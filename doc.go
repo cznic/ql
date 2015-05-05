@@ -1882,11 +1882,11 @@
 //
 // System Tables
 //
-// To allow to query for DB meta data, there exist specially named virtual
-// tables.
+// To allow to query for DB meta data, there exist specially named tables, some
+// of them being virtual.
 //
-// Note: System tables have fake table-wise unique but meaningless and unstable
-// record IDs. Do not apply the built-in id() to any system table.
+// Note: Virtual system tables may have fake table-wise unique but meaningless
+// and unstable record IDs. Do not apply the built-in id() to any system table.
 //
 // Tables Table
 //
@@ -1894,7 +1894,8 @@
 //
 //	CREATE TABLE __Table (Name string, Schema string);
 //
-// The Schema column returns the statement to (re)create table Name.
+// The Schema column returns the statement to (re)create table Name. This table
+// is virtual.
 //
 // Columns Table
 //
@@ -1903,6 +1904,7 @@
 //	CREATE TABLE __Column (TableName string, Ordinal int, Name string, Type string);
 //
 // The Ordinal column defines the 1-based index of the column in the record.
+// This table is virtual.
 //
 // Columns2 Table
 //
@@ -1932,7 +1934,7 @@
 //	CREATE TABLE __Index (TableName string, ColumnName string, Name string, IsUnique bool);
 //
 // The IsUnique columns reflects if the index was created using the optional
-// UNIQUE clause.
+// UNIQUE clause. This table is virtual.
 //
 // Built-in functions
 //
