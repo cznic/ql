@@ -1688,6 +1688,13 @@ func (db *DB) str2expr(expr string) (expression, error) {
 	}
 
 	db.exprCacheMu.Lock()
+	for k := range db.exprCache {
+		if len(db.exprCache) < 1000 {
+			break
+		}
+
+		delete(db.exprCache, k)
+	}
 	db.exprCache[expr] = e
 	db.exprCacheMu.Unlock()
 	return e, nil

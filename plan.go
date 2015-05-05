@@ -11,7 +11,7 @@ var (
 			// Index register 2.
 			create table __Index2(
 				TableName string,
-				IndexName      string,
+				IndexName string,
 				IsUnique  bool,
 				Root      int64,  // BTree handle
 			);

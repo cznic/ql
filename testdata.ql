@@ -5536,7 +5536,7 @@ SELECT * FROM t;
 BEGIN TRANSACTION;
 	CREATE INDEX x ON t (qty());
 COMMIT;
-||only .* id
+||undefined.* qty
 
 -- 506
 BEGIN TRANSACTION;

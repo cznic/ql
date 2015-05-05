@@ -1341,7 +1341,7 @@
 // column name of the table the index is on.
 //
 //  CreateIndexStmt = "CREATE" [ "UNIQUE" ] "INDEX" [ "IF" "NOT" "EXISTS" ]
-//  	IndexName "ON" TableName "(" ( ColumnName | "id" Call ) ")" .
+//  	IndexName "ON" TableName "(" ExpressionList ")" .
 //
 // For example
 //
@@ -1362,6 +1362,8 @@
 //
 // The optional IF NOT EXISTS clause makes the statement a no operation if the
 // index already exists.
+//
+// TODO update CREATE INDEX docs for latest grammar change.
 //
 // CREATE TABLE
 //

@@ -324,36 +324,37 @@ Conversion:
 	}
 
 CreateIndexStmt:
-	create CreateIndexStmtUnique index CreateIndexIfNotExists identifier on identifier '(' identifier ')'
+	create CreateIndexStmtUnique index CreateIndexIfNotExists identifier on identifier '(' ExpressionList ')'
 	{
-		indexName, tableName, columnName := $5.(string), $7.(string), $9.(string)
-		$$ = &createIndexStmt{unique: $2.(bool), ifNotExists: $4.(bool), indexName: indexName, tableName: tableName, colName: columnName}
-		if indexName == tableName || indexName == columnName {
-			yylex.(*lexer).err("index name collision: %s", indexName)
-			return 1
-		}
+		indexName, tableName, exprList := $5.(string), $7.(string), $9.([]expression)
+		simpleIndex := len(exprList) == 1
+		var columnName string
+		if simpleIndex {
+			expr := exprList[0]
+			switch x := expr.(type) {
+			case *ident:
+				columnName = x.s
+			case *call:
+				if x.f == "id" && len(x.arg) == 0 {
+					columnName = "id()"
+					break
+				}
 
-		if yylex.(*lexer).root {
-			break
+				simpleIndex = false
+			default:
+				simpleIndex = false
+			}
 		}
-
-		if isSystemName[indexName] || isSystemName[tableName] {
-			yylex.(*lexer).err("name is used for system tables: %s", indexName)
-			return 1
-		}
-	}
-|	create CreateIndexStmtUnique index CreateIndexIfNotExists identifier on identifier '(' identifier '(' ')' ')'
-	{
-		indexName, tableName, columnName := $5.(string), $7.(string), $9.(string)
-		$$ = &createIndexStmt{unique: $2.(bool), ifNotExists: $4.(bool), indexName: indexName, tableName: tableName, colName: "id()"}
-		if $9.(string) != "id" {
-			yylex.(*lexer).err("only the built-in function id() can be used in index: %s()", columnName)
-			return 1
-		}
-
-		if indexName == tableName {
-			yylex.(*lexer).err("index name collision: %s", indexName)
-			return 1
+		
+		switch {
+		case simpleIndex:
+			$$ = &createIndexStmt{unique: $2.(bool), ifNotExists: $4.(bool), indexName: indexName, tableName: tableName, colName: columnName}
+			if indexName == tableName || indexName == columnName {
+				yylex.(*lexer).err("index name collision: %s", indexName)
+				return 1
+			}
+		default:
+			panic("TODO")
 		}
 
 		if yylex.(*lexer).root {
