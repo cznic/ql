@@ -191,10 +191,6 @@ const sample = `
 // guarantees not to panic on recoverable errors and return an error instead.
 // Test errors are not returned but reported to t.
 func test(t *testing.T, s testDB) (panicked error) {
-	if testing.Short() {
-		t.Skip("skipping test in short mode.")
-	}
-
 	defer func() {
 		if e := recover(); e != nil {
 			switch x := e.(type) {

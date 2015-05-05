@@ -259,10 +259,18 @@ func TestMemStorage(t *testing.T) {
 }
 
 func TestFileStorage(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
+
 	test(t, &fileTestDB{})
 }
 
 func TestOSFileStorage(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
+
 	test(t, &osFileTestDB{})
 }
 

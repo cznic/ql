@@ -1841,7 +1841,7 @@ yynewstate:
 
 			switch {
 			case simpleIndex:
-				yyVAL.item = &createIndexStmt{unique: yyS[yypt-8].item.(bool), ifNotExists: yyS[yypt-6].item.(bool), indexName: indexName, tableName: tableName, colName: columnName}
+				yyVAL.item = &createIndexStmt{unique: yyS[yypt-8].item.(bool), ifNotExists: yyS[yypt-6].item.(bool), indexName: indexName, tableName: tableName, colName: columnName, exprList: exprList}
 				if indexName == tableName || indexName == columnName {
 					yylex.(*lexer).err("index name collision: %s", indexName)
 					return 1

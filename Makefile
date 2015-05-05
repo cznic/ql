@@ -65,9 +65,6 @@ ql.y: doc.go
 scanner.go: scanner.l parser.go
 	golex -o $@ $<
 
-short: editor
-	go test -run MemStorage
-
 todo:
 	@grep -n ^[[:space:]]*_[[:space:]]*=[[:space:]][[:alpha:]][[:alnum:]]* *.go *.l parser.y || true
 	@grep -n TODO *.go *.l parser.y testdata.ql || true

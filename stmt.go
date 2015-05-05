@@ -1055,13 +1055,15 @@ func (rollbackStmt) isUpdating() bool {
 }
 
 type createIndexStmt struct {
-	colName     string // alt. "id()" for index on id()
+	colName     string // alt. "id()" for simple index on id()
 	ifNotExists bool
 	indexName   string
 	tableName   string
 	unique      bool
 	exprList    []expression
 }
+
+func (s *createIndexStmt) isSimpleIndex() bool { return s.colName != "" }
 
 func (s *createIndexStmt) String() string {
 	u := ""
@@ -1072,7 +1074,15 @@ func (s *createIndexStmt) String() string {
 	if s.ifNotExists {
 		e = "IF NOT EXISTS "
 	}
-	return fmt.Sprintf("CREATE %sINDEX %s%s ON %s (%s);", u, e, s.indexName, s.tableName, s.colName)
+	expr := s.colName
+	if !s.isSimpleIndex() {
+		var a []string
+		for _, v := range s.exprList {
+			a = append(a, v.String())
+		}
+		expr = strings.Join(a, ", ")
+	}
+	return fmt.Sprintf("CREATE %sINDEX %s%s ON %s (%s);", u, e, s.indexName, s.tableName, expr)
 }
 
 func (s *createIndexStmt) exec(ctx *execCtx) (Recordset, error) {

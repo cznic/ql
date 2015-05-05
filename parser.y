@@ -348,7 +348,7 @@ CreateIndexStmt:
 		
 		switch {
 		case simpleIndex:
-			$$ = &createIndexStmt{unique: $2.(bool), ifNotExists: $4.(bool), indexName: indexName, tableName: tableName, colName: columnName}
+			$$ = &createIndexStmt{unique: $2.(bool), ifNotExists: $4.(bool), indexName: indexName, tableName: tableName, colName: columnName, exprList: exprList}
 			if indexName == tableName || indexName == columnName {
 				yylex.(*lexer).err("index name collision: %s", indexName)
 				return 1
