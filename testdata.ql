@@ -8531,7 +8531,7 @@ BEGIN TRANSACTION;
 		blob("012"),
 		true,
 	);
-	DELETE FROM t WHERE id() == 1;
+	DELETE FROM t WHERE id() IN (SELECT id() FROM t);
 COMMIT;
 SELECT * FROM t;
 |?username, ?departname, ?created, ?detail_id, ?height, ?avatar, ?is_man
@@ -8549,7 +8549,7 @@ BEGIN TRANSACTION;
 		__testBlob(256),
 		true,
 	);
-	DELETE FROM t WHERE id() == 1;
+	DELETE FROM t WHERE id() IN (SELECT id() FROM t);
 COMMIT;
 SELECT * FROM t;
 |?username, ?departname, ?created, ?detail_id, ?height, ?avatar, ?is_man
@@ -8567,7 +8567,7 @@ BEGIN TRANSACTION;
 		__testBlob(1<<16),
 		true,
 	);
-	DELETE FROM t WHERE id() == 1;
+	DELETE FROM t WHERE id() IN (SELECT id() FROM t);
 COMMIT;
 SELECT * FROM t;
 |?username, ?departname, ?created, ?detail_id, ?height, ?avatar, ?is_man
@@ -8585,7 +8585,7 @@ BEGIN TRANSACTION;
 		__testBlob(1<<20),
 		true,
 	);
-	DELETE FROM t WHERE id() == 1;
+	DELETE FROM t WHERE id() IN (SELECT id() FROM t);
 COMMIT;
 SELECT * FROM t;
 |?username, ?departname, ?created, ?detail_id, ?height, ?avatar, ?is_man
@@ -8611,9 +8611,9 @@ BEGIN TRANSACTION;
 		__testBlob(1<<21),
 		true,
 	);
-	DELETE FROM t WHERE id() == 1;
+	DELETE FROM t WHERE id() IN (SELECT id() FROM t WHERE username == "xiaolunwen");
 COMMIT;
-SELECT id() == 2, username == "2xiaolunwen", len(string(avatar)) == 1<<21 FROM t;
+SELECT id() IN (SELECT id() FROM t WHERE username == "2xiaolunwen"), username == "2xiaolunwen", len(string(avatar)) == 1<<21 FROM t;
 |b, b, b
 [true true true]
 
@@ -8638,9 +8638,9 @@ BEGIN TRANSACTION;
 		__testBlob(1<<21),
 		true,
 	);
-	DELETE FROM t WHERE id() == 2;
+	DELETE FROM t WHERE id() IN (SELECT id() FROM t WHERE username == "2xiaolunwen");
 COMMIT;
-SELECT id() == 1, username == "xiaolunwen", len(string(avatar)) == 1<<20 FROM t;
+SELECT id() IN (SELECT id() FROM t WHERE username == "xiaolunwen"), username == "xiaolunwen", len(string(avatar)) == 1<<20 FROM t;
 |b, b, b
 [true true true]
 
@@ -8669,10 +8669,10 @@ SELECT * FROM t WHERE id() < 4; // reverse order -> no index used
 -- 736
 BEGIN TRANSACTION;
 	CREATE TABLE t (i int);
-	CREATE INDEX x ON t (id());
+	CREATE INDEX x ON t (i);
 	INSERT INTO t VALUES (1), (2), (3), (4), (5), (6);
 COMMIT;
-SELECT * FROM t WHERE id() < 4; // ordered -> index is used
+SELECT * FROM t WHERE i < 4 ; // ordered -> index is used
 |li
 [1]
 [2]
@@ -8681,10 +8681,10 @@ SELECT * FROM t WHERE id() < 4; // ordered -> index is used
 -- 737
 BEGIN TRANSACTION;
 	CREATE TABLE t (i int);
-	CREATE INDEX x ON t (id());
+	CREATE INDEX x ON t (i);
 	INSERT INTO t VALUES (1), (2), (3), (4), (5), (6);
 COMMIT;
-SELECT * FROM t WHERE id() <= 4; // ordered -> index is used
+SELECT * FROM t WHERE i <= 4; // ordered -> index is used
 |li
 [1]
 [2]
@@ -8694,20 +8694,20 @@ SELECT * FROM t WHERE id() <= 4; // ordered -> index is used
 -- 738
 BEGIN TRANSACTION;
 	CREATE TABLE t (i int);
-	CREATE INDEX x ON t (id());
+	CREATE INDEX x ON t (i);
 	INSERT INTO t VALUES (1), (2), (3), (4), (5), (6);
 COMMIT;
-SELECT * FROM t WHERE id() == 4;
+SELECT * FROM t WHERE i == 4;
 |li
 [4]
 
 -- 739
 BEGIN TRANSACTION;
 	CREATE TABLE t (i int);
-	CREATE INDEX x ON t (id());
+	CREATE INDEX x ON t (i);
 	INSERT INTO t VALUES (1), (2), (3), (4), (5), (6);
 COMMIT;
-SELECT * FROM t WHERE id() >= 4; // ordered -> index is used
+SELECT * FROM t WHERE i >= 4; // ordered -> index is used
 |li
 [4]
 [5]
@@ -8716,10 +8716,10 @@ SELECT * FROM t WHERE id() >= 4; // ordered -> index is used
 -- 740
 BEGIN TRANSACTION;
 	CREATE TABLE t (i int);
-	CREATE INDEX x ON t (id());
+	CREATE INDEX x ON t (i);
 	INSERT INTO t VALUES (1), (2), (3), (4), (5), (6);
 COMMIT;
-SELECT * FROM t WHERE id() > 4;
+SELECT * FROM t WHERE i > 4;
 |li
 [6]
 [5]
@@ -8727,25 +8727,25 @@ SELECT * FROM t WHERE id() > 4;
 -- 741
 BEGIN TRANSACTION;
 	CREATE TABLE t (i int);
-	CREATE INDEX x ON t (id());
+	CREATE INDEX x ON t (i);
 	CREATE TABLE u (i int);
 	CREATE INDEX y ON u (i);
 	INSERT INTO t VALUES (1), (2), (3), (4), (5), (6);
 	INSERT INTO u VALUES (10), (20), (30), (40), (50), (60);
 COMMIT;
-SELECT t.ID, t.i, u.i FROM
-	(SELECT id() as ID, i FROM t WHERE id() < 4) AS t,
+SELECT * FROM
+	(SELECT i FROM t WHERE i < 4) AS t,
 	(SELECT * FROM u WHERE i < 40) AS u; // ordered -> both indices are used
-|lt.ID, lt.i, lu.i
-[1 1 10]
-[1 1 20]
-[1 1 30]
-[2 2 10]
-[2 2 20]
-[2 2 30]
-[3 3 10]
-[3 3 20]
-[3 3 30]
+|lt.i, lu.i
+[1 10]
+[1 20]
+[1 30]
+[2 10]
+[2 20]
+[2 30]
+[3 10]
+[3 20]
+[3 30]
 
 -- 742 // https://github.com/cznic/ql/pull/65
 BEGIN TRANSACTION;

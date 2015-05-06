@@ -303,9 +303,10 @@ func test(t *testing.T, s testDB) (panicked error) {
 						COMMIT;
 						`,
 						tab.Name)); err != nil {
-						panic(err)
+						panic(fmt.Errorf("%q: %v", tab.Name, err))
 					}
 				}
+				db.hasIndex2 = 0
 			}()
 
 			if err = s.mark(); err != nil {

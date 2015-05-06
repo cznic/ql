@@ -34,27 +34,42 @@ var (
 		create index if not exists __xIndex2_Column_ColumnName on __Index2_Column(ColumnName);
 `)
 
-	insertIndex2      = mustCompile("insert into __Index2 values($1, $2, $3)")
+	insertIndex2      = mustCompile("insert into __Index2 values($1, $2, $3, $4)")
 	insertIndex2Expr  = mustCompile("insert into __Index2_Expr values($1, $2)")
 	insertIndex2Table = mustCompile("insert into __Index2_Column values($1, $2)")
 
-	deleteIndex2 = mustCompile(`
-		begin transaction;
-			delete from __Index2_Column
-			where Index2_Expr_ID in (
-				select id() from __Index2_Expr
-				where Index2_ID in (
-					select id() from __Index2 where IndexName == $1;
-				);
-			);
-
-			delete from __Index2_Expr
+	deleteIndex2ByIndexName = mustCompile(`
+		delete from __Index2_Column
+		where Index2_Expr_ID in (
+			select id() from __Index2_Expr
 			where Index2_ID in (
 				select id() from __Index2 where IndexName == $1;
-			);	
+			);
+		);
 
-			delete from __Index2
-			where IndexName == $1;
-		commit;
+		delete from __Index2_Expr
+		where Index2_ID in (
+			select id() from __Index2 where IndexName == $1;
+		);	
+
+		delete from __Index2
+		where IndexName == $1;
+`)
+	deleteIndex2ByTableName = mustCompile(`
+		delete from __Index2_Column
+		where Index2_Expr_ID in (
+			select id() from __Index2_Expr
+			where Index2_ID in (
+				select id() from __Index2 where TableName == $1;
+			);
+		);
+
+		delete from __Index2_Expr
+		where Index2_ID in (
+			select id() from __Index2 where TableName == $1;
+		);	
+
+		delete from __Index2
+		where TableName == $1;
 `)
 )

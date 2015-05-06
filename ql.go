@@ -1692,6 +1692,20 @@ func (db *DB) createIndex2() error {
 	return nil
 }
 
+func (db *DB) hasAllIndex2() bool {
+	t := db.root.tables
+	if _, ok := t["__Index2"]; !ok {
+		return false
+	}
+
+	if _, ok := t["__Index2_Expr"]; !ok {
+		return false
+	}
+
+	_, ok := t["__Index2_Column"]
+	return ok
+}
+
 func (db *DB) str2expr(expr string) (expression, error) {
 	db.exprCacheMu.Lock()
 	e := db.exprCache[expr]

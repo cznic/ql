@@ -9,7 +9,6 @@ all: editor scanner.go parser.go
 	go build
 	go vet || true
 	golint
-	go install ./...
 	make todo
 
 bench: all
@@ -35,7 +34,7 @@ editor: ql.y scanner.go parser.go coerce.go
 	go fmt
 	go test -i
 	go test -short
-	go install
+	go install ./...
 
 internalError:
 	egrep -ho '"internal error.*"' *.go | sort | cat -n
