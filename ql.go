@@ -1926,7 +1926,15 @@ func (db *DB) Execute(ctx *TCtx, l List, arg ...interface{}) (rs []Recordset, in
 }
 
 func (db *DB) run1(pc *TCtx, tnl0 *int, s stmt, arg ...interface{}) (rs Recordset, err error) {
-	dbg("%p %v", pc, s)
+	//dbg("=================================================================")
+	//dbg("BEFORE %s", s)
+	//dumpTables4(db)
+	//defer func() {
+	//	dbg("AFTER")
+	//	dumpTables4(db)
+	//	dbg("*****************************************************************")
+	//}()
+	//dbg("%v", s)
 	db.mu.Lock()
 	switch db.rw {
 	case false:
@@ -2133,26 +2141,23 @@ func (db *DB) do(r recordset, names int, f func(data []interface{}) (more bool, 
 }
 
 func (db *DB) beginTransaction() { //TODO Rewrite, must use much smaller undo info!
-	oldRoot := db.root
-	newRoot := &root{}
-	*newRoot = *oldRoot
-	newRoot.parent = oldRoot
-	a := make([]*table, 0, len(oldRoot.tables))
-	newRoot.tables = make(map[string]*table, len(oldRoot.tables))
-	for k, v := range oldRoot.tables {
-		c := v.clone()
-		a = append(a, c)
-		newRoot.tables[k] = c
+	root := *db.root
+	root.parent = db.root
+	root.tables = make(map[string]*table, len(db.root.tables))
+	var tprev *table
+	for t := db.root.thead; t != nil; t = t.tnext {
+		t2 := t.clone()
+		root.tables[t2.name] = t2
+		t2.tprev = tprev
+		switch {
+		case tprev == nil:
+			root.thead = t2
+		default:
+			tprev.tnext = t2
+		}
+		tprev = t2
 	}
-	for i := 0; i < len(a)-1; i++ {
-		l, p := a[i], a[i+1]
-		l.tnext = p
-		p.tprev = l
-	}
-	if len(a) != 0 {
-		newRoot.thead = a[0]
-	}
-	db.root = newRoot
+	db.root = &root
 }
 
 func (db *DB) rollback() {

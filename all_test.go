@@ -1022,6 +1022,14 @@ func dumpDB(db *DB, tag string) (string, error) {
 	return buf.String(), nil
 }
 
+func dumpTables4(db *DB) {
+	dbg("---- db.root.head is %v", db.root.head)
+	for t := db.root.thead; t != nil; t = t.tnext {
+		dbg("\ttable @ %v: %q, next %v", t.h, t.name, t.next)
+	}
+	dbg("----")
+}
+
 func testIndices(db *DB, t *testing.T) {
 	ctx := NewRWCtx()
 	var err error
@@ -1032,25 +1040,22 @@ func testIndices(db *DB, t *testing.T) {
 
 		s, err := dumpDB(db, "post\n\t"+q)
 		if err != nil {
-			t.Log(q)
 			t.Log(s)
 			t.Fatal(err)
 		}
 
-		//t.Logf("%s\n\n", s)
 		if db.isMem {
 			return
 		}
 
 		nm := db.Name()
+
 		if err = db.Close(); err != nil {
-			t.Log(q)
 			t.Log(s)
 			t.Fatal(err)
 		}
 
 		if db, err = OpenFile(nm, &Options{}); err != nil {
-			t.Log(q)
 			t.Log(s)
 			t.Fatal(err)
 		}
@@ -1061,13 +1066,13 @@ func testIndices(db *DB, t *testing.T) {
 			t.Fatal(err)
 		}
 
-		//t.Logf("%s\n\n", s)
 	}
 
 	e(`	BEGIN TRANSACTION;
 			CREATE TABLE t (i int);
 		COMMIT;`)
 	e(`	BEGIN TRANSACTION;
+			CREATE TABLE IF NOT EXISTS Index2 (TableName string);
 			CREATE INDEX x ON t (id());
 		COMMIT;`)
 	e(`	BEGIN TRANSACTION;
