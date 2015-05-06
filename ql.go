@@ -1865,6 +1865,14 @@ func (db *DB) Execute(ctx *TCtx, l List, arg ...interface{}) (rs []Recordset, in
 }
 
 func (db *DB) run1(pc *TCtx, tnl0 *int, s stmt, arg ...interface{}) (rs Recordset, err error) {
+	//dbg("=================================================================")
+	//dbg("BEFORE %s", s)
+	//dumpTables4(db)
+	//defer func() {
+	//	dbg("AFTER")
+	//	dumpTables4(db)
+	//	dbg("*****************************************************************")
+	//}()
 	//dbg("%v", s)
 	db.mu.Lock()
 	switch db.rw {

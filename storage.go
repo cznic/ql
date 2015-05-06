@@ -518,12 +518,12 @@ func newRoot(store storage) (r *root, err error) {
 		}, nil
 	case 1: // existing DB, load tables
 		if len(data) != 1 {
-			return nil, fmt.Errorf("corrupted DB") //LATER these messages must be distinct
+			return nil, fmt.Errorf("corrupted DB: root is an %d-scalar", len(data))
 		}
 
 		p, ok := data[0].(int64)
 		if !ok {
-			return nil, fmt.Errorf("corrupted DB")
+			return nil, fmt.Errorf("corrupted DB: root head has type %T", data[0])
 		}
 
 		r := &root{
@@ -553,7 +553,7 @@ func newRoot(store storage) (r *root, err error) {
 			}
 
 			if r.tables[t.name] != nil { // duplicate
-				return nil, fmt.Errorf("corrupted DB")
+				return nil, fmt.Errorf("corrupted DB: duplicate table metadata for table %s", t.name)
 			}
 
 			r.tables[t.name] = t
