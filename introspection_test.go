@@ -250,9 +250,9 @@ func ExampleSchema() {
 
 	schema := MustSchema((*department)(nil), "", nil)
 	sel := MustCompile(`
-		SELECT * FROM __Table;
-		SELECT * FROM __Column;
-		SELECT * FROM __Index;`,
+		SELECT * FROM __Table WHERE !hasPrefix(Name, "__") ORDER BY Name;
+		SELECT * FROM __Column WHERE !hasPrefix(TableName, "__") ORDER BY TableName, Ordinal;
+		SELECT * FROM __Index WHERE !hasPrefix(TableName, "__") ORDER BY Name, ColumnName;`,
 	)
 	fmt.Print(schema)
 

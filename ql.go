@@ -1660,6 +1660,7 @@ type DB struct {
 	tnl         int // Transaction nesting level
 	exprCache   map[string]expression
 	exprCacheMu sync.Mutex
+	hasIndex2   int // 0: nope, 1: in progress, 2: yes.
 }
 
 func newDB(store storage) (db *DB, err error) {
@@ -1672,6 +1673,23 @@ func newDB(store storage) (db *DB, err error) {
 	}
 
 	return db0, nil
+}
+
+func (db *DB) createIndex2() error {
+	if db.hasIndex2 != 0 {
+		return nil
+	}
+
+	db.hasIndex2 = 1
+	ctx := execCtx{db: db}
+	for _, s := range createIndex2.l {
+		if _, err := s.exec(&ctx); err != nil {
+			db.hasIndex2 = 0
+			return err
+		}
+	}
+	db.hasIndex2 = 2
+	return nil
 }
 
 func (db *DB) str2expr(expr string) (expression, error) {
@@ -1863,7 +1881,6 @@ func mustCompile(src string) List {
 // write ahead log is used. Database is recovered after a crash from the write
 // ahead log automatically on open.
 func (db *DB) Execute(ctx *TCtx, l List, arg ...interface{}) (rs []Recordset, index int, err error) {
-	dbg("====")
 	// Sanitize args
 	for i, v := range arg {
 		switch x := v.(type) {
@@ -1886,28 +1903,7 @@ func (db *DB) Execute(ctx *TCtx, l List, arg ...interface{}) (rs []Recordset, in
 	}
 
 	list := l.l
-	checkCreateIndex := ctx != nil
-	for i := 0; i < len(list); i++ {
-	again:
-		s := list[i]
-		dbg("\t%d: %v", i, s)
-		if checkCreateIndex {
-			if _, ok := s.(*createIndexStmt); ok {
-				db.mu.Lock()
-				_, hasIndex2 := db.root.tables["__Index2"]
-				db.mu.Unlock()
-				if !hasIndex2 {
-					old := list
-					list = nil
-					list = append(list, createIndex2.l...)
-					list = append(list, old[i:]...)
-					checkCreateIndex = false
-					dbg("CONTINUE: old %v, new %v", len(old), len(list))
-					i = 0
-					goto again
-				}
-			}
-		}
+	for _, s := range list {
 		r, err := db.run1(ctx, &tnl0, s, arg...)
 		if err != nil {
 			for tnl0 >= 0 && db.tnl > tnl0 {

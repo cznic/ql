@@ -1121,6 +1121,10 @@ func (s *createIndexStmt) exec(ctx *execCtx) (Recordset, error) {
 		return nil, fmt.Errorf("CREATE INDEX: column does not exist: %s", s.colName)
 	}
 
+	if err := ctx.db.createIndex2(); err != nil {
+		return nil, err
+	}
+
 	if err := t.addIndex(s.unique, s.indexName, c.index); err != nil {
 		return nil, fmt.Errorf("CREATE INDEX: %v", err)
 	}

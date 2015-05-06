@@ -582,6 +582,10 @@ func BenchmarkInsertFile1kBn1e3t1e5(b *testing.B) {
 }
 
 func TestReopen(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
+
 	f, err := ioutil.TempFile("", "ql-test-")
 	if err != nil {
 		t.Fatal(err)
@@ -1184,6 +1188,10 @@ func TestIndices(t *testing.T) {
 	}
 
 	testIndices(db, t)
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
+
 	dir, err := ioutil.TempDir("", "ql-test")
 
 	if err != nil {
@@ -1191,8 +1199,7 @@ func TestIndices(t *testing.T) {
 	}
 
 	defer func() {
-		dbg("", dir)
-		//TODO os.RemoveAll(dir)
+		os.RemoveAll(dir)
 
 	}()
 
@@ -1983,6 +1990,10 @@ func TestIssue35(t *testing.T) {
 }
 
 func TestIssue28(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
+
 	RegisterDriver()
 	dir, err := ioutil.TempDir("", "ql-test-")
 	if err != nil {
@@ -2147,6 +2158,10 @@ func rndBytes(n int, seed int64) []byte {
 }
 
 func TestIssue50(t *testing.T) { // https://github.com/cznic/ql/issues/50
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
+
 	const dbFileName = "scans.qldb"
 
 	type Scan struct {
@@ -2287,6 +2302,10 @@ $9
 }
 
 func TestIssue56(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
+
 	var schema = `
 CREATE TABLE IF NOT EXISTS Test (
 	A string,
@@ -2670,6 +2689,10 @@ func Example_lIKE() {
 }
 
 func TestIssue73(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
+
 	RegisterDriver()
 	dir, err := ioutil.TempDir("", "ql-test-")
 	if err != nil {

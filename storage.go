@@ -140,7 +140,6 @@ func (t *table) load() (err error) {
 		return
 	}
 
-	dbg("table.load: data @ %+v: %v", t.h, data)
 	var hasIndices bool
 	switch n := len(data); n {
 	case 4:
