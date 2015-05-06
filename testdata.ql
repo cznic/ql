@@ -8611,7 +8611,7 @@ BEGIN TRANSACTION;
 		__testBlob(1<<21),
 		true,
 	);
-	DELETE FROM t WHERE id() IN (SELECT id() FROM t WHERE username == "xiaolunwen");
+	DELETE FROM t WHERE id() IN (SELECT id() FROM t WHERE username == "xiaolunwen"); //TODO simplify, also everywhere else
 COMMIT;
 SELECT id() IN (SELECT id() FROM t WHERE username == "2xiaolunwen"), username == "2xiaolunwen", len(string(avatar)) == 1<<21 FROM t;
 |b, b, b

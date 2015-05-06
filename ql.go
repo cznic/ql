@@ -1680,6 +1680,7 @@ func (db *DB) createIndex2() error {
 		return nil
 	}
 
+	//TODO also pull eny existing indices data into __Index2* tables.
 	db.hasIndex2 = 1
 	ctx := execCtx{db: db}
 	for _, s := range createIndex2.l {

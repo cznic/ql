@@ -11,6 +11,7 @@ var (
 			TableName string,
 			IndexName string,
 			IsUnique  bool,
+			IsSimple  bool,   // Just a column name or id().
 			Root      int64,  // BTree handle
 		);
 
@@ -34,9 +35,9 @@ var (
 		create index if not exists __xIndex2_Column_ColumnName on __Index2_Column(ColumnName);
 `)
 
-	insertIndex2      = mustCompile("insert into __Index2 values($1, $2, $3, $4)")
-	insertIndex2Expr  = mustCompile("insert into __Index2_Expr values($1, $2)")
-	insertIndex2Table = mustCompile("insert into __Index2_Column values($1, $2)")
+	insertIndex2       = mustCompile("insert into __Index2 values($1, $2, $3, $4, $5)")
+	insertIndex2Expr   = mustCompile("insert into __Index2_Expr values($1, $2)")
+	insertIndex2Column = mustCompile("insert into __Index2_Column values($1, $2)")
 
 	deleteIndex2ByIndexName = mustCompile(`
 		delete from __Index2_Column

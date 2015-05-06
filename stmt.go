@@ -1160,13 +1160,35 @@ func (s *createIndexStmt) exec(ctx *execCtx) (Recordset, error) {
 		return nil, err
 	}
 
-	if _, err := insertIndex2.l[0].exec(&execCtx{db: ctx.db, arg: []interface{}{
-		s.tableName,
-		s.indexName,
-		s.unique,
-		int64(0), //TODO BTree handle*/
-	}}); err != nil {
-		return nil, err
+	switch {
+	case s.isSimpleIndex():
+		xcol := ctx.db.root.tables[s.tableName].findIndexByName(s.indexName)
+		ctx.arg = []interface{}{
+			s.tableName,
+			s.indexName,
+			s.unique,
+			true,
+			xcol.xroot,
+		}
+		if _, err := insertIndex2.l[0].exec(ctx); err != nil {
+			return nil, err
+		}
+
+		ctx.arg = []interface{}{ctx.db.root.lastInsertID, s.colName}
+		if _, err := insertIndex2Expr.l[0].exec(ctx); err != nil {
+			return nil, err
+		}
+
+		if s.colName == "id()" {
+			break
+		}
+
+		ctx.arg = []interface{}{ctx.db.root.lastInsertID, s.colName}
+		if _, err := insertIndex2Column.l[0].exec(ctx); err != nil {
+			return nil, err
+		}
+	default:
+		panic("TODO")
 	}
 
 	return nil, nil
