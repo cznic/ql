@@ -187,7 +187,7 @@ const sample = `
 `
 
 // Test provides a testing facility for alternative storage implementations.
-// The storef should return freshly created and empty storage. Removing the
+// The s.setup should return a freshly created and empty storage. Removing the
 // store from the system is the responsibility of the caller. The test only
 // guarantees not to panic on recoverable errors and return an error instead.
 // Test errors are not returned but reported to t.
@@ -306,8 +306,9 @@ func test(t *testing.T, s testDB) (panicked error) {
 			defer func() {
 				tnl := db.tnl
 				if tnl != tnl0 {
-					panic(fmt.Errorf("tnl0 %v, tnl %v", tnl0, tnl))
+					panic(fmt.Errorf("internal error: tnl0 %v, tnl %v", tnl0, tnl))
 				}
+
 				nfo, err := db.Info()
 				if err != nil {
 					panic(err)
