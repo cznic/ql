@@ -10918,3 +10918,182 @@ WHERE Index2_Expr_ID IN (
 	)
 );
 |?ColumnName
+
+-- 917
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	CREATE INDEX x ON t(i);
+	CREATE INDEX y ON t(id());
+	DROP INDEX x;
+COMMIT;
+SELECT TableName, IndexName, IsUnique, IsSimple, Root > 0 OR Root == -1 // -1: memory DB
+FROM __Index2
+WHERE !hasPrefix(TableName, "__")
+ORDER BY IndexName;
+|sTableName, sIndexName, bIsUnique, bIsSimple, b
+[t y false true true]
+
+-- 918
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	CREATE INDEX x ON t(i);
+	CREATE INDEX y ON t(id());
+	DROP INDEX y;
+COMMIT;
+SELECT TableName, IndexName, IsUnique, IsSimple, Root > 0 OR Root == -1 // -1: memory DB
+FROM __Index2
+WHERE !hasPrefix(TableName, "__")
+ORDER BY IndexName;
+|sTableName, sIndexName, bIsUnique, bIsSimple, b
+[t x false true true]
+
+-- 919
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	CREATE INDEX x ON t(i);
+	CREATE INDEX y ON t(id());
+	DROP INDEX x;
+	DROP INDEX y;
+COMMIT;
+SELECT TableName, IndexName, IsUnique, IsSimple, Root > 0 OR Root == -1 // -1: memory DB
+FROM __Index2
+WHERE !hasPrefix(TableName, "__")
+ORDER BY IndexName;
+|?TableName, ?IndexName, ?IsUnique, ?IsSimple, ?
+
+-- 920
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	CREATE INDEX x ON t(i);
+	CREATE INDEX y ON t(id());
+	DROP INDEX x;
+COMMIT;
+SELECT Expr
+FROM __Index2_Expr
+WHERE Index2_ID IN (
+	SELECT id()
+	FROM __Index2 
+	WHERE IndexName == "x" OR IndexName == "y"
+)
+ORDER BY Expr;
+|sExpr
+[id()]
+
+-- 921
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	CREATE INDEX x ON t(i);
+	CREATE INDEX y ON t(id());
+	DROP INDEX y;
+COMMIT;
+SELECT Expr
+FROM __Index2_Expr
+WHERE Index2_ID IN (
+	SELECT id()
+	FROM __Index2 
+	WHERE IndexName == "x" OR IndexName == "y"
+)
+ORDER BY Expr;
+|sExpr
+[i]
+
+-- 921
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	CREATE INDEX x ON t(i);
+	CREATE INDEX y ON t(id());
+	DROP INDEX x;
+	DROP INDEX y;
+COMMIT;
+SELECT Expr
+FROM __Index2_Expr
+WHERE Index2_ID IN (
+	SELECT id()
+	FROM __Index2 
+	WHERE IndexName == "x" OR IndexName == "y"
+)
+ORDER BY Expr;
+|?Expr
+
+-- 922
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	CREATE INDEX x ON t(i);
+	CREATE INDEX y ON t(id());
+	DROP INDEX x;
+COMMIT;
+SELECT ColumnName
+FROM __Index2_Column
+WHERE Index2_Expr_ID IN (
+	SELECT id()
+	FROM __Index2_Expr
+	WHERE Index2_ID IN (
+		SELECT id()
+		FROM __Index2
+		WHERE IndexName == "x"
+	)
+);
+|?ColumnName
+
+-- 923
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	CREATE INDEX x ON t(i);
+	CREATE INDEX y ON t(id());
+	DROP INDEX y;
+COMMIT;
+SELECT ColumnName
+FROM __Index2_Column
+WHERE Index2_Expr_ID IN (
+	SELECT id()
+	FROM __Index2_Expr
+	WHERE Index2_ID IN (
+		SELECT id()
+		FROM __Index2
+		WHERE IndexName == "x"
+	)
+);
+|sColumnName
+[i]
+
+-- 924
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	CREATE INDEX x ON t(i);
+	CREATE INDEX y ON t(id());
+	DROP INDEX x;
+	DROP INDEX y;
+COMMIT;
+SELECT ColumnName
+FROM __Index2_Column
+WHERE Index2_Expr_ID IN (
+	SELECT id()
+	FROM __Index2_Expr
+	WHERE Index2_ID IN (
+		SELECT id()
+		FROM __Index2
+		WHERE IndexName == "x"
+	)
+);
+|?ColumnName
+
+-- 925
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	CREATE INDEX x ON t(i);
+	CREATE INDEX y ON t(id());
+	DROP INDEX y;
+	DROP INDEX x;
+COMMIT;
+SELECT ColumnName
+FROM __Index2_Column
+WHERE Index2_Expr_ID IN (
+	SELECT id()
+	FROM __Index2_Expr
+	WHERE Index2_ID IN (
+		SELECT id()
+		FROM __Index2
+		WHERE IndexName == "x"
+	)
+);
+|?ColumnName
