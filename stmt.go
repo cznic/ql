@@ -1135,23 +1135,29 @@ func (s *createIndexStmt) exec(ctx *execCtx) (Recordset, error) {
 		return nil, fmt.Errorf("CREATE INDEX: index name collision with existing column: %s", s.indexName)
 	}
 
-	index := -1
+	colIndex := -1
 	if s.colName != "id()" {
 		c := findCol(t.cols, s.colName)
 		if c == nil {
 			return nil, fmt.Errorf("CREATE INDEX: column does not exist: %s", s.colName)
 		}
 
-		index = c.index
+		colIndex = c.index
 	}
 
-	h, err := t.addIndex(s.unique, s.indexName, index)
-	if err != nil {
-		return nil, fmt.Errorf("CREATE INDEX: %v", err)
-	}
+	var h int64
+	switch {
+	case s.isSimpleIndex():
+		var err error
+		if h, err = t.addIndex(s.unique, s.indexName, colIndex); err != nil {
+			return nil, fmt.Errorf("CREATE INDEX: %v", err)
+		}
 
-	if err := t.updated(); err != nil {
-		return nil, err
+		if err = t.updated(); err != nil {
+			return nil, err
+		}
+	default:
+		panic("TODO")
 	}
 
 	switch ctx.db.hasIndex2 {

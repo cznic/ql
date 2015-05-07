@@ -66,6 +66,13 @@ type indexedCol struct {
 	xroot  int64
 }
 
+type index2 struct {
+	unique bool
+	x      btreeIndex
+	xroot  int64
+	expr   expression
+}
+
 type indexKey struct {
 	value interface{}
 	h     int64
@@ -79,19 +86,20 @@ type indexKey struct {
 // 4: indices string - optional
 // 5: hxroots int64 - optional
 type table struct {
-	cols    []*col // logical
-	cols0   []*col // physical
-	h       int64  //
-	head    int64  // head of the single linked record list
-	hhead   int64  // handle of the head of the single linked record list
-	hxroots int64
-	indices []*indexedCol
-	name    string
-	next    int64 // single linked table list
-	store   storage
-	tnext   *table
-	tprev   *table
-	xroots  []interface{}
+	cols     []*col // logical
+	cols0    []*col // physical
+	h        int64  //
+	head     int64  // head of the single linked record list
+	hhead    int64  // handle of the head of the single linked record list
+	hxroots  int64
+	indices  []*indexedCol
+	indices2 map[string]*index2
+	name     string
+	next     int64 // single linked table list
+	store    storage
+	tnext    *table
+	tprev    *table
+	xroots   []interface{}
 }
 
 func (t *table) hasIndices() bool { return len(t.indices) != 0 }
@@ -99,6 +107,13 @@ func (t *table) hasIndices() bool { return len(t.indices) != 0 }
 func (t *table) clone() *table {
 	r := &table{}
 	*r = *t
+	r.indices2 = nil
+	if n := len(t.indices2); n != 0 {
+		r.indices2 = make(map[string]*index2, n)
+		for k, v := range t.indices2 {
+			r.indices2[k] = v
+		}
+	}
 	r.cols = make([]*col, len(t.cols))
 	for i, v := range t.cols {
 		c := &col{}
