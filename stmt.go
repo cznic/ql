@@ -441,6 +441,15 @@ func (s *alterTableDropColumnStmt) exec(ctx *execCtx) (Recordset, error) {
 					if err := t.dropIndex(c.index + 1); err != nil {
 						return nil, err
 					}
+
+					if ctx.db.hasAllIndex2() {
+						xc := &execCtx{db: ctx.db, arg: []interface{}{v.name}}
+						for _, s := range deleteIndex2ByIndexName.l {
+							if _, err := s.exec(xc); err != nil {
+								return nil, err
+							}
+						}
+					}
 				}
 			}
 			return nil, t.updated()
