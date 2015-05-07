@@ -10894,7 +10894,7 @@ WHERE Index2_Expr_ID IN (
 	WHERE Index2_ID IN (
 		SELECT id()
 		FROM __Index2
-		WHERE IndexName == "x"
+		WHERE IndexName == "x" OR IndexName == "y"
 	)
 );
 |sColumnName
@@ -10914,7 +10914,7 @@ WHERE Index2_Expr_ID IN (
 	WHERE Index2_ID IN (
 		SELECT id()
 		FROM __Index2
-		WHERE IndexName == "y"
+		WHERE IndexName == "y" OR IndexName == "y"
 	)
 );
 |?ColumnName
@@ -11030,7 +11030,7 @@ WHERE Index2_Expr_ID IN (
 	WHERE Index2_ID IN (
 		SELECT id()
 		FROM __Index2
-		WHERE IndexName == "x"
+		WHERE IndexName == "x" OR IndexName == "y"
 	)
 );
 |?ColumnName
@@ -11050,7 +11050,7 @@ WHERE Index2_Expr_ID IN (
 	WHERE Index2_ID IN (
 		SELECT id()
 		FROM __Index2
-		WHERE IndexName == "x"
+		WHERE IndexName == "x" OR IndexName == "y"
 	)
 );
 |sColumnName
@@ -11072,7 +11072,7 @@ WHERE Index2_Expr_ID IN (
 	WHERE Index2_ID IN (
 		SELECT id()
 		FROM __Index2
-		WHERE IndexName == "x"
+		WHERE IndexName == "x" OR IndexName == "y"
 	)
 );
 |?ColumnName
@@ -11093,7 +11093,7 @@ WHERE Index2_Expr_ID IN (
 	WHERE Index2_ID IN (
 		SELECT id()
 		FROM __Index2
-		WHERE IndexName == "x"
+		WHERE IndexName == "x" OR IndexName == "y"
 	)
 );
 |?ColumnName

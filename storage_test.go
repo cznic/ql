@@ -280,6 +280,13 @@ func test(t *testing.T, s testDB) (panicked error) {
 			continue
 		}
 
+		for _, s := range list.l {
+			if err := testMentionedColumns(s); err != nil {
+				t.Error(itest, err)
+				return
+			}
+		}
+
 		s1 := list.String()
 		list1, err := Compile(s1)
 		if err != nil {

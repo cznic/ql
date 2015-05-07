@@ -2862,3 +2862,76 @@ func TestInPredicateBug(t *testing.T) {
 		t.Fatalf("\n%v\n%v", g, e)
 	}
 }
+
+func testMentionedColumns(s stmt) (err error) {
+	defer func() {
+		if e := recover(); e != nil {
+			switch x := e.(type) {
+			case error:
+				err = x
+			default:
+				err = fmt.Errorf("error: %v", e)
+			}
+		}
+	}()
+
+	switch x := s.(type) {
+	case
+		*alterTableAddStmt,
+		*alterTableDropColumnStmt,
+		beginTransactionStmt,
+		*createTableStmt,
+		commitStmt,
+		*dropIndexStmt,
+		*dropTableStmt,
+		rollbackStmt,
+		*truncateTableStmt:
+		// nop
+	case *createIndexStmt:
+		for _, e := range x.exprList {
+			mentionedColumns(e)
+		}
+	case *deleteStmt:
+		if e := x.where; e != nil {
+			mentionedColumns(e)
+		}
+	case *insertIntoStmt:
+		for _, ll := range x.lists {
+			for _, e := range ll {
+				mentionedColumns(e)
+			}
+		}
+	case *selectStmt:
+		for _, f := range x.flds {
+			mentionedColumns(f.expr)
+		}
+		if o := x.outer; o != nil {
+			mentionedColumns(o.on)
+		}
+		if l := x.limit; l != nil {
+			mentionedColumns(l.expr)
+		}
+		if o := x.offset; o != nil {
+			mentionedColumns(o.expr)
+		}
+		if o := x.order; o != nil {
+			for _, e := range o.by {
+				mentionedColumns(e)
+			}
+		}
+		if w := x.where; w != nil {
+			mentionedColumns(w.expr)
+		}
+	case *updateStmt:
+		for _, v := range x.list {
+			mentionedColumns(v.expr)
+		}
+		if e := x.where; e != nil {
+			mentionedColumns(e)
+		}
+	default:
+		dbg("%T", x)
+		panic("internal error")
+	}
+	return nil
+}

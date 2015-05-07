@@ -35,6 +35,64 @@ type expression interface {
 	String() string
 }
 
+func mentionedColumns0(e expression, m map[string]struct{}) {
+	switch x := e.(type) {
+	case parameter,
+		value:
+		// nop
+	case *binaryOperation:
+		mentionedColumns0(x.l, m)
+		mentionedColumns0(x.r, m)
+	case *call:
+		for _, e := range x.arg {
+			mentionedColumns0(e, m)
+		}
+	case *conversion:
+		mentionedColumns0(x.val, m)
+	case *ident:
+		if !x.isQualified() {
+			m[x.s] = struct{}{}
+		}
+	case *indexOp:
+		mentionedColumns0(x.expr, m)
+		mentionedColumns0(x.x, m)
+	case *isNull:
+		mentionedColumns0(x.expr, m)
+	case *pexpr:
+		mentionedColumns0(x.expr, m)
+	case *pIn:
+		mentionedColumns0(x.expr, m)
+		for _, e := range x.list {
+			mentionedColumns0(e, m)
+		}
+	case *pLike:
+		mentionedColumns0(x.expr, m)
+		mentionedColumns0(x.pattern, m)
+	case *slice:
+		mentionedColumns0(x.expr, m)
+		if y := x.lo; y != nil {
+			mentionedColumns0(*y, m)
+		}
+		if y := x.hi; y != nil {
+			mentionedColumns0(*y, m)
+		}
+	case *unaryOperation:
+		mentionedColumns0(x.v, m)
+	default:
+		panic("internal error")
+	}
+}
+
+func mentionedColumns(e expression) []string {
+	m := map[string]struct{}{}
+	mentionedColumns0(e, m)
+	var a []string
+	for k := range m {
+		a = append(a, k)
+	}
+	return a
+}
+
 func staticExpr(e expression) (expression, error) {
 	if e.isStatic() {
 		v, err := e.eval(nil, nil, nil)
