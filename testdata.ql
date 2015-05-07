@@ -10781,7 +10781,7 @@ WHERE Index2_ID IN (
 	SELECT id()
 	FROM __Index2 
 	WHERE IndexName == "x"
-)
+);
 |sExpr
 [i]
 
@@ -10800,7 +10800,7 @@ WHERE Index2_Expr_ID IN (
 		FROM __Index2
 		WHERE IndexName == "x"
 	)
-)
+);
 |sColumnName
 [i]
 
@@ -10826,7 +10826,7 @@ WHERE Index2_ID IN (
 	SELECT id()
 	FROM __Index2 
 	WHERE IndexName == "x"
-)
+);
 |sExpr
 [id()]
 
@@ -10845,5 +10845,19 @@ WHERE Index2_Expr_ID IN (
 		FROM __Index2
 		WHERE IndexName == "x"
 	)
-)
+);
 |?ColumnName
+
+-- 913
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	CREATE unique INDEX x ON t(i);
+	CREATE INDEX y ON t(id());
+COMMIT;
+SELECT TableName, IndexName, IsUnique, IsSimple, Root > 0 OR Root == -1 // -1: memory DB
+FROM __Index2
+WHERE !hasPrefix(TableName, "__")
+ORDER BY IndexName;
+|sTableName, sIndexName, bIsUnique, bIsSimple, b
+[t x true true true]
+[t y false true true]
