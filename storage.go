@@ -323,13 +323,13 @@ func (t *table) truncate() (err error) {
 	return t.updated()
 }
 
-func (t *table) addIndex0(unique bool, indexName string, colIndex int) (btreeIndex, error) {
+func (t *table) addIndex0(unique bool, indexName string, colIndex int) (int64, btreeIndex, error) {
 	switch len(t.indices) {
 	case 0:
 		indices := make([]*indexedCol, len(t.cols0)+1)
 		h, x, err := t.store.CreateIndex(unique)
 		if err != nil {
-			return nil, err
+			return -1, nil, err
 		}
 
 		indices[colIndex+1] = &indexedCol{indexName, unique, x, h}
@@ -337,11 +337,11 @@ func (t *table) addIndex0(unique bool, indexName string, colIndex int) (btreeInd
 		xroots[colIndex+1] = h
 		hx, err := t.store.Create(xroots...)
 		if err != nil {
-			return nil, err
+			return -1, nil, err
 		}
 
 		t.hxroots, t.xroots, t.indices = hx, xroots, indices
-		return x, t.updated()
+		return h, x, t.updated()
 	default:
 		ex := t.indices[colIndex+1]
 		if ex != nil && ex.name != "" {
@@ -349,28 +349,28 @@ func (t *table) addIndex0(unique bool, indexName string, colIndex int) (btreeInd
 			if colIndex >= 0 {
 				colName = t.cols0[colIndex].name
 			}
-			return nil, fmt.Errorf("column %s already has an index: %s", colName, ex.name)
+			return -1, nil, fmt.Errorf("column %s already has an index: %s", colName, ex.name)
 		}
 
 		h, x, err := t.store.CreateIndex(unique)
 		if err != nil {
-			return nil, err
+			return -1, nil, err
 		}
 
 		t.xroots[colIndex+1] = h
 		if err := t.store.Update(t.hxroots, t.xroots...); err != nil {
-			return nil, err
+			return -1, nil, err
 		}
 
 		t.indices[colIndex+1] = &indexedCol{indexName, unique, x, h}
-		return x, t.updated()
+		return h, x, t.updated()
 	}
 }
 
-func (t *table) addIndex(unique bool, indexName string, colIndex int) error {
-	x, err := t.addIndex0(unique, indexName, colIndex)
+func (t *table) addIndex(unique bool, indexName string, colIndex int) (int64, error) {
+	h, x, err := t.addIndex0(unique, indexName, colIndex)
 	if err != nil {
-		return err
+		return -1, err
 	}
 
 	// Must fill the new index.
@@ -379,7 +379,7 @@ func (t *table) addIndex(unique bool, indexName string, colIndex int) error {
 	for h != 0 {
 		rec, err := store.Read(nil, h, t.cols...)
 		if err != nil {
-			return err
+			return -1, err
 		}
 
 		if n := ncols + 2 - len(rec); n > 0 {
@@ -387,12 +387,12 @@ func (t *table) addIndex(unique bool, indexName string, colIndex int) error {
 		}
 
 		if err = x.Create(rec[colIndex+2], h); err != nil {
-			return err
+			return -1, err
 		}
 
 		h = rec[0].(int64)
 	}
-	return nil
+	return h, nil
 }
 
 func (t *table) dropIndex(xIndex int) error {

@@ -1103,57 +1103,46 @@ func (s *createIndexStmt) String() string {
 	return fmt.Sprintf("CREATE %sINDEX %s%s ON %s (%s);", u, e, s.indexName, s.tableName, expr)
 }
 
-func (s *createIndexStmt) exec0(ctx *execCtx) (bool, error) {
+func (s *createIndexStmt) exec(ctx *execCtx) (Recordset, error) {
 	root := ctx.db.root
 	if t, i := root.findIndexByName(s.indexName); i != nil {
 		if s.ifNotExists {
-			return false, nil
+			return nil, nil
 		}
 
-		return false, fmt.Errorf("CREATE INDEX: table %s already has an index named %s", t.name, i.name)
+		return nil, fmt.Errorf("CREATE INDEX: table %s already has an index named %s", t.name, i.name)
 	}
 
 	if root.tables[s.indexName] != nil {
-		return false, fmt.Errorf("CREATE INDEX: index name collision with existing table: %s", s.indexName)
+		return nil, fmt.Errorf("CREATE INDEX: index name collision with existing table: %s", s.indexName)
 	}
 
 	t, ok := root.tables[s.tableName]
 	if !ok {
-		return false, fmt.Errorf("CREATE INDEX: table does not exist %s", s.tableName)
+		return nil, fmt.Errorf("CREATE INDEX: table does not exist %s", s.tableName)
 	}
 
 	if findCol(t.cols, s.indexName) != nil {
-		return false, fmt.Errorf("CREATE INDEX: index name collision with existing column: %s", s.indexName)
+		return nil, fmt.Errorf("CREATE INDEX: index name collision with existing column: %s", s.indexName)
 	}
 
-	if s.colName == "id()" {
-		if err := t.addIndex(s.unique, s.indexName, -1); err != nil {
-			return false, fmt.Errorf("CREATE INDEX: %v", err)
+	index := -1
+	if s.colName != "id()" {
+		c := findCol(t.cols, s.colName)
+		if c == nil {
+			return nil, fmt.Errorf("CREATE INDEX: column does not exist: %s", s.colName)
 		}
 
-		return true, t.updated()
+		index = c.index
 	}
 
-	c := findCol(t.cols, s.colName)
-	if c == nil {
-		return false, fmt.Errorf("CREATE INDEX: column does not exist: %s", s.colName)
-	}
-
-	if err := t.addIndex(s.unique, s.indexName, c.index); err != nil {
-		return false, fmt.Errorf("CREATE INDEX: %v", err)
-	}
-
-	return true, t.updated()
-}
-
-func (s *createIndexStmt) exec(ctx *execCtx) (Recordset, error) {
-	ok, err := s.exec0(ctx)
+	h, err := t.addIndex(s.unique, s.indexName, index)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("CREATE INDEX: %v", err)
 	}
 
-	if !ok {
-		return nil, nil
+	if err := t.updated(); err != nil {
+		return nil, err
 	}
 
 	if err := ctx.db.createIndex2(); err != nil {
@@ -1162,13 +1151,12 @@ func (s *createIndexStmt) exec(ctx *execCtx) (Recordset, error) {
 
 	switch {
 	case s.isSimpleIndex():
-		xcol := ctx.db.root.tables[s.tableName].findIndexByName(s.indexName)
 		ctx.arg = []interface{}{
 			s.tableName,
 			s.indexName,
 			s.unique,
 			true,
-			xcol.xroot,
+			h,
 		}
 		if _, err := insertIndex2.l[0].exec(ctx); err != nil {
 			return nil, err
