@@ -1145,41 +1145,25 @@ func (s *createIndexStmt) exec(ctx *execCtx) (Recordset, error) {
 		return nil, err
 	}
 
-	if err := ctx.db.createIndex2(); err != nil {
-		return nil, err
-	}
-
-	switch {
-	case s.isSimpleIndex():
-		ctx.arg = []interface{}{
-			s.tableName,
-			s.indexName,
-			s.unique,
-			true,
-			h,
-		}
-		if _, err := insertIndex2.l[0].exec(ctx); err != nil {
-			return nil, err
+	switch ctx.db.hasIndex2 {
+	case 0:
+		return nil, ctx.db.createIndex2()
+	case 1:
+		return nil, nil
+	case 2:
+		if s.isSimpleIndex() {
+			expr := s.colName
+			var cols []string
+			if expr != "id()" {
+				cols = []string{expr}
+			}
+			return nil, ctx.db.insertIndex2(s.tableName, s.indexName, expr, cols, s.unique, true, h)
 		}
 
-		ctx.arg = []interface{}{ctx.db.root.lastInsertID, s.colName}
-		if _, err := insertIndex2Expr.l[0].exec(ctx); err != nil {
-			return nil, err
-		}
-
-		if s.colName == "id()" {
-			break
-		}
-
-		ctx.arg = []interface{}{ctx.db.root.lastInsertID, s.colName}
-		if _, err := insertIndex2Column.l[0].exec(ctx); err != nil {
-			return nil, err
-		}
-	default:
 		panic("TODO")
+	default:
+		panic("internal error")
 	}
-
-	return nil, nil
 }
 
 func (s *createIndexStmt) isUpdating() bool { return true }

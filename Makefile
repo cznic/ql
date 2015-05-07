@@ -5,7 +5,7 @@
 .PHONY: all clean nuke
 
 all: editor scanner.go parser.go
-	go test
+	go test -timeout 1h
 	go build
 	go vet || true
 	golint

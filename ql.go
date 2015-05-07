@@ -1672,6 +1672,9 @@ func newDB(store storage) (db *DB, err error) {
 		return
 	}
 
+	if db0.hasAllIndex2() {
+		db0.hasIndex2 = 2
+	}
 	return db0, nil
 }
 
@@ -1680,7 +1683,6 @@ func (db *DB) createIndex2() error {
 		return nil
 	}
 
-	//TODO also pull eny existing indices data into __Index2* tables.
 	db.hasIndex2 = 1
 	ctx := execCtx{db: db}
 	for _, s := range createIndex2.l {
@@ -1689,7 +1691,56 @@ func (db *DB) createIndex2() error {
 			return err
 		}
 	}
+
+	for t := db.root.thead; t != nil; t = t.tnext {
+		for i, index := range t.indices {
+			if index == nil {
+				continue
+			}
+
+			expr := "id()"
+			var cols []string
+			if i != 0 {
+				expr = t.cols[i-1].name
+				cols = []string{expr}
+			}
+
+			if err := db.insertIndex2(t.name, index.name, expr, cols, index.unique, true, index.xroot); err != nil {
+				db.hasIndex2 = 0
+				return err
+			}
+		}
+	}
+
 	db.hasIndex2 = 2
+	return nil
+}
+
+func (db *DB) insertIndex2(tableName, indexName, expr string, cols []string, unique, isSimple bool, h int64) error {
+	ctx := execCtx{db: db}
+	ctx.arg = []interface{}{
+		tableName,
+		indexName,
+		unique,
+		isSimple,
+		h,
+	}
+	if _, err := insertIndex2.l[0].exec(&ctx); err != nil {
+		return err
+	}
+
+	ctx.arg = []interface{}{db.root.lastInsertID, expr}
+	if _, err := insertIndex2Expr.l[0].exec(&ctx); err != nil {
+		return err
+	}
+
+	for _, col := range cols {
+		ctx.arg = []interface{}{db.root.lastInsertID, col}
+		if _, err := insertIndex2Column.l[0].exec(&ctx); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 

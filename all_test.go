@@ -1039,6 +1039,7 @@ func testIndices(db *DB, t *testing.T) {
 	var err error
 	e := func(q string) {
 		if _, _, err = db.Run(ctx, q); err != nil {
+			t.Log(q)
 			t.Fatal(err)
 		}
 
