@@ -10861,3 +10861,60 @@ ORDER BY IndexName;
 |sTableName, sIndexName, bIsUnique, bIsSimple, b
 [t x true true true]
 [t y false true true]
+
+-- 914
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	CREATE INDEX x ON t(i);
+	CREATE INDEX y ON t(id());
+COMMIT;
+SELECT Expr
+FROM __Index2_Expr
+WHERE Index2_ID IN (
+	SELECT id()
+	FROM __Index2 
+	WHERE IndexName == "x" OR IndexName == "y"
+)
+ORDER BY Expr;
+|sExpr
+[i]
+[id()]
+
+-- 915
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	CREATE INDEX x ON t(i);
+	CREATE INDEX y ON t(id());
+COMMIT;
+SELECT ColumnName
+FROM __Index2_Column
+WHERE Index2_Expr_ID IN (
+	SELECT id()
+	FROM __Index2_Expr
+	WHERE Index2_ID IN (
+		SELECT id()
+		FROM __Index2
+		WHERE IndexName == "x"
+	)
+);
+|sColumnName
+[i]
+
+-- 916
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	CREATE INDEX x ON t(i);
+	CREATE INDEX y ON t(id());
+COMMIT;
+SELECT ColumnName
+FROM __Index2_Column
+WHERE Index2_Expr_ID IN (
+	SELECT id()
+	FROM __Index2_Expr
+	WHERE Index2_ID IN (
+		SELECT id()
+		FROM __Index2
+		WHERE IndexName == "y"
+	)
+);
+|?ColumnName

@@ -390,7 +390,7 @@ func (t *table) addIndex0(unique bool, indexName string, colIndex int) (int64, b
 }
 
 func (t *table) addIndex(unique bool, indexName string, colIndex int) (int64, error) {
-	h, x, err := t.addIndex0(unique, indexName, colIndex)
+	hx, x, err := t.addIndex0(unique, indexName, colIndex)
 	if err != nil {
 		return -1, err
 	}
@@ -414,7 +414,7 @@ func (t *table) addIndex(unique bool, indexName string, colIndex int) (int64, er
 
 		h = rec[0].(int64)
 	}
-	return h, nil
+	return hx, nil
 }
 
 func (t *table) dropIndex(xIndex int) error {
