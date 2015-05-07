@@ -20,6 +20,7 @@ var (
 	oN        = flag.Int("N", 0, "")
 	oM        = flag.Int("M", 0, "")
 	oFastFail = flag.Bool("fastFail", false, "")
+	oSlow     = flag.Bool("slow", false, "Do not wrap storage tests in a single outer transaction, write everything to disk file. Very slow.")
 )
 
 var testdata []string
@@ -211,13 +212,25 @@ func test(t *testing.T, s testDB) (panicked error) {
 		return
 	}
 
+	tctx := NewRWCtx()
+	if !*oSlow {
+		if _, _, err := db.Execute(tctx, txBegin); err != nil {
+			t.Error(err)
+			return nil
+		}
+	}
+
 	if err = s.mark(); err != nil {
 		t.Error(err)
 		return
 	}
 
 	defer func() {
-		if err = s.teardown(); err != nil {
+		x := tctx
+		if *oSlow {
+			x = nil
+		}
+		if err = s.teardown(x); err != nil {
 			t.Error(err)
 		}
 	}()
@@ -288,16 +301,20 @@ func test(t *testing.T, s testDB) (panicked error) {
 			continue
 		}
 
-		tctx := NewRWCtx()
 		if !func() (ok bool) {
+			tnl0 := db.tnl
 			defer func() {
+				tnl := db.tnl
+				if tnl != tnl0 {
+					panic(fmt.Errorf("tnl0 %v, tnl %v", tnl0, tnl))
+				}
 				nfo, err := db.Info()
 				if err != nil {
 					panic(err)
 				}
 
 				for _, tab := range nfo.Tables {
-					if _, _, err = db.run(NewRWCtx(), fmt.Sprintf(`
+					if _, _, err = db.run(tctx, fmt.Sprintf(`
 						BEGIN TRANSACTION;
 							DROP table %s;
 						COMMIT;

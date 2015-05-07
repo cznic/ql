@@ -1963,17 +1963,17 @@ func (db *DB) Execute(ctx *TCtx, l List, arg ...interface{}) (rs []Recordset, in
 		}
 	}
 
-	tnl0 := -1
+	tnl0 := db.tnl
 	if ctx != nil {
 		ctx.LastInsertID, ctx.RowsAffected = 0, 0
 	}
 
 	list := l.l
 	for _, s := range list {
-		r, err := db.run1(ctx, &tnl0, s, arg...)
+		r, err := db.run1(ctx, s, arg...)
 		if err != nil {
-			for tnl0 >= 0 && db.tnl > tnl0 {
-				if _, e2 := db.run1(ctx, &tnl0, rollbackStmt{}); e2 != nil {
+			for db.tnl > tnl0 {
+				if _, e2 := db.run1(ctx, rollbackStmt{}); e2 != nil {
 					err = e2
 				}
 			}
@@ -1987,7 +1987,7 @@ func (db *DB) Execute(ctx *TCtx, l List, arg ...interface{}) (rs []Recordset, in
 	return
 }
 
-func (db *DB) run1(pc *TCtx, tnl0 *int, s stmt, arg ...interface{}) (rs Recordset, err error) {
+func (db *DB) run1(pc *TCtx, s stmt, arg ...interface{}) (rs Recordset, err error) {
 	//dbg("=================================================================")
 	//dbg("BEFORE %s", s)
 	//dumpTables4(db)
@@ -2014,7 +2014,6 @@ func (db *DB) run1(pc *TCtx, tnl0 *int, s stmt, arg ...interface{}) (rs Recordse
 			db.beginTransaction()
 			db.rwmu.Lock()
 			db.cc = pc
-			*tnl0 = db.tnl // 0
 			db.tnl++
 			db.rw = true
 			return
@@ -2052,7 +2051,6 @@ func (db *DB) run1(pc *TCtx, tnl0 *int, s stmt, arg ...interface{}) (rs Recordse
 
 				db.rw = true
 				db.rwmu.Lock()
-				*tnl0 = db.tnl // 0
 			}
 
 			if err = db.store.BeginTransaction(); err != nil {

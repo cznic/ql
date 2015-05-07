@@ -274,6 +274,9 @@ func (s *mem) newUndo(tag int, h int64, data []interface{}) {
 func (s *mem) Acid() bool { return false }
 
 func (s *mem) Close() (err error) {
+	if s.tnl != 0 {
+		return fmt.Errorf("cannot close DB while open transaction exist")
+	}
 	*s = mem{}
 	return
 }

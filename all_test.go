@@ -100,7 +100,7 @@ func fldsString(f []*fld) string {
 type testDB interface {
 	setup() (db *DB, err error)
 	mark() (err error)
-	teardown() (err error)
+	teardown(ctx *TCtx) (err error)
 }
 
 var (
@@ -129,7 +129,7 @@ func (m *memTestDB) mark() (err error) {
 	return
 }
 
-func (m *memTestDB) teardown() (err error) {
+func (m *memTestDB) teardown(ctx *TCtx) (err error) {
 	if m.m0 < 0 {
 		return
 	}
@@ -143,7 +143,12 @@ func (m *memTestDB) teardown() (err error) {
 		return fmt.Errorf("STORAGE LEAK: allocs: got %d, exp %d", g, e)
 	}
 
-	return
+	if ctx == nil {
+		return nil
+	}
+
+	_, _, err = m.db.Execute(ctx, txCommit)
+	return err
 }
 
 type fileTestDB struct {
@@ -174,7 +179,7 @@ func (m *fileTestDB) mark() (err error) {
 	return
 }
 
-func (m *fileTestDB) teardown() (err error) {
+func (m *fileTestDB) teardown(ctx *TCtx) (err error) {
 	runtime.GOMAXPROCS(m.gmp0)
 	defer func() {
 		f := m.db.store.(*file)
@@ -197,7 +202,13 @@ func (m *fileTestDB) teardown() (err error) {
 	if g, e := n, m.m0; g != e {
 		return fmt.Errorf("STORAGE LEAK: allocs: got %d, exp %d", g, e)
 	}
-	return
+
+	if ctx == nil {
+		return nil
+	}
+
+	_, _, err = m.db.Execute(ctx, txCommit)
+	return err
 }
 
 type osFileTestDB struct {
@@ -228,7 +239,7 @@ func (m *osFileTestDB) mark() (err error) {
 	return
 }
 
-func (m *osFileTestDB) teardown() (err error) {
+func (m *osFileTestDB) teardown(ctx *TCtx) (err error) {
 	runtime.GOMAXPROCS(m.gmp0)
 	defer func() {
 		f := m.db.store.(*file)
@@ -251,7 +262,13 @@ func (m *osFileTestDB) teardown() (err error) {
 	if g, e := n, m.m0; g != e {
 		return fmt.Errorf("STORAGE LEAK: allocs: got %d, exp %d", g, e)
 	}
-	return
+
+	if ctx == nil {
+		return nil
+	}
+
+	_, _, err = m.db.Execute(ctx, txCommit)
+	return err
 }
 
 func TestMemStorage(t *testing.T) {
@@ -325,7 +342,7 @@ func benchmarkSelect(b *testing.B, n int, sel List, ts testDB) {
 		return
 	}
 
-	defer ts.teardown()
+	defer ts.teardown(nil)
 
 	ctx := NewRWCtx()
 	if _, i, err := db.Execute(ctx, compiledCreate); err != nil {
@@ -463,7 +480,7 @@ func benchmarkInsert(b *testing.B, batch, total int, ts testDB) {
 		return
 	}
 
-	defer ts.teardown()
+	defer ts.teardown(nil)
 
 	ctx := NewRWCtx()
 	if _, i, err := db.Execute(ctx, compiledCreate2); err != nil {
