@@ -1743,7 +1743,7 @@ BEGIN TRANSACTION;
 	CREATE TABLE p (p bool);
 	INSERT INTO p VALUES (NULL), (false), (true);
 COMMIT;
-SELECT p.p AS p, q.p AS q, p.p &oror; q.p AS p_or_q, p.p && q.p aS p_and_q FROM p, p AS q;
+SELECT p.p AS p, q.p AS q, p.p OR q.p AS p_or_q, p.p && q.p aS p_and_q FROM p, p AS q;
 |bp, bq, bp_or_q, bp_and_q
 [true true true true]
 [true false true false]
@@ -1963,7 +1963,7 @@ ORDER BY y;
 [2]
 
 -- S 179
-SELECT * from employee WHERE LastName == "Jones" &oror; DepartmentID IS NULL
+SELECT * from employee WHERE LastName == "Jones" OR DepartmentID IS NULL
 ORDER by LastName DESC;
 |sLastName, ?DepartmentID
 [Williams <nil>]
@@ -2217,7 +2217,7 @@ SELECT * FROM department
 -- S 203
 BEGIN TRANSACTION;
 	DELETE FROM department
-	WHERE DepartmentID == 35 &oror; DepartmentName != "" && DepartmentName[0] == 'C';
+	WHERE DepartmentID == 35 OR DepartmentName != "" && DepartmentName[0] == 'C';
 COMMIT;
 SELECT * FROM department
 ORDER BY DepartmentID;
@@ -2732,9 +2732,9 @@ BEGIN TRANSACTION;
 	;
 COMMIT;
 SELECT
-	id() == 1 && s == "a" &oror;
-	id() == 2 && s == "\ufffd" && s == "\xef\xbf\xbd" &oror;
-	id() == 3 && s == "\u00f8" && s == "ø" && s == "\xc3\xb8" &oror;
+	id() == 1 && s == "a"OR 
+	id() == 2 && s == "\ufffd" && s == "\xef\xbf\xbd"OR 
+	id() == 3 && s == "\u00f8" && s == "ø" && s == "\xc3\xb8"OR 
 	id() == 4 && s == "\u65e5" && s == "日" && s == "\xe6\x97\xa5"
 FROM t;
 |b
@@ -7901,7 +7901,7 @@ BEGIN TRANSACTION;
 COMMIT;
 
 --' Should print 4.
-SELECT count(1) AS total FROM fibonacci WHERE input >= 5 && input <= 7 &oror; input == 3;
+SELECT count(1) AS total FROM fibonacci WHERE input >= 5 && input <= 7 OR input == 3;
 |ltotal
 [4]
 
@@ -7928,7 +7928,7 @@ BEGIN TRANSACTION;
 COMMIT;
 
 --' Should output (6, 8) (5, 5).
-SELECT * FROM fibonacci WHERE input >= 5 && input <= 7 &oror; input == 3 ORDER BY input DESC LIMIT 2 OFFSET 1;
+SELECT * FROM fibonacci WHERE input >= 5 && input <= 7 OR input == 3 ORDER BY input DESC LIMIT 2 OFFSET 1;
 |linput, loutput
 [6 8]
 [5 5]
@@ -7955,7 +7955,7 @@ BEGIN TRANSACTION;
   INSERT INTO fibonacci (input, output) VALUES (9, 34);
   --' Let's delete 4 rows.
   // Delete where input == 5, input == 6, input == 7 or input == 3
-  DELETE FROM fibonacci WHERE input >= 5 && input <= 7 &oror; input == 3;
+  DELETE FROM fibonacci WHERE input >= 5 && input <= 7 OR input == 3;
 COMMIT;
 SELECT * FROM fibonacci ORDER BY input;
 |linput, loutput
@@ -7990,7 +7990,7 @@ COMMIT;
 --' Let's delete 4 rows.
 BEGIN TRANSACTION;
   // Delete where input == 5, input == 6, input == 7 or input == 3
-  DELETE FROM fibonacci WHERE input >= 5 && input <= 7 &oror; input == 3;
+  DELETE FROM fibonacci WHERE input >= 5 && input <= 7 OR input == 3;
 COMMIT;
 SELECT * FROM fibonacci ORDER BY input;
 |linput, loutput
@@ -8023,10 +8023,10 @@ BEGIN TRANSACTION;
   INSERT INTO fibonacci (input, output) VALUES (9, 34);
   --' Let's delete 4 rows.
   // Delete where input == 5, input == 6, input == 7 or input == 3
-  DELETE FROM fibonacci WHERE input >= 5 && input <= 7 &oror; input == 3;
+  DELETE FROM fibonacci WHERE input >= 5 && input <= 7 OR input == 3;
 COMMIT;
 --' Try to count the rows we've just deleted, using the very same condition. Result is 1, should be 0.
-SELECT count() AS total FROM fibonacci WHERE input >= 5 && input <= 7 &oror; input == 3;
+SELECT count() AS total FROM fibonacci WHERE input >= 5 && input <= 7 OR input == 3;
 |ltotal
 [0]
 
@@ -8054,10 +8054,10 @@ COMMIT;
 BEGIN TRANSACTION;
   --' Let's delete 4 rows.
   // Delete where input == 5, input == 6, input == 7 or input == 3
-  DELETE FROM fibonacci WHERE input >= 5 && input <= 7 &oror; input == 3;
+  DELETE FROM fibonacci WHERE input >= 5 && input <= 7 OR input == 3;
 COMMIT;
 --' Try to count the rows we've just deleted, using the very same condition. Result is 1, should be 0.
-SELECT count() AS total FROM fibonacci WHERE input >= 5 && input <= 7 &oror; input == 3;
+SELECT count() AS total FROM fibonacci WHERE input >= 5 && input <= 7 OR input == 3;
 |ltotal
 [0]
 
@@ -10758,3 +10758,92 @@ BEGIN TRANSACTION;
 COMMIT;
 SELECT * FROM __Index2_Column;
 ||does not exist
+
+-- 907
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	CREATE INDEX x ON t(i);
+COMMIT;
+SELECT TableName, IndexName, IsUnique, IsSimple, Root > 0 OR Root == -1 // -1: memory DB
+FROM __Index2
+WHERE !hasPrefix(TableName, "__");
+|sTableName, sIndexName, bIsUnique, bIsSimple, b
+[t x false true true]
+
+-- 908
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	CREATE INDEX x ON t(i);
+COMMIT;
+SELECT Expr
+FROM __Index2_Expr
+WHERE Index2_ID IN (
+	SELECT id()
+	FROM __Index2 
+	WHERE IndexName == "x"
+)
+|sExpr
+[i]
+
+-- 909
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	CREATE INDEX x ON t(i);
+COMMIT;
+SELECT ColumnName
+FROM __Index2_Column
+WHERE Index2_Expr_ID IN (
+	SELECT id()
+	FROM __Index2_Expr
+	WHERE Index2_ID IN (
+		SELECT id()
+		FROM __Index2
+		WHERE IndexName == "x"
+	)
+)
+|sColumnName
+[i]
+
+-- 910
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	CREATE INDEX x ON t(id());
+COMMIT;
+SELECT TableName, IndexName, IsUnique, IsSimple, Root > 0 OR Root == -1 // -1: memory DB
+FROM __Index2
+WHERE !hasPrefix(TableName, "__");
+|sTableName, sIndexName, bIsUnique, bIsSimple, b
+[t x false true true]
+
+-- 911
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	CREATE INDEX x ON t(id());
+COMMIT;
+SELECT Expr
+FROM __Index2_Expr
+WHERE Index2_ID IN (
+	SELECT id()
+	FROM __Index2 
+	WHERE IndexName == "x"
+)
+|sExpr
+[id()]
+
+-- 912
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	CREATE INDEX x ON t(id());
+COMMIT;
+SELECT ColumnName
+FROM __Index2_Column
+WHERE Index2_Expr_ID IN (
+	SELECT id()
+	FROM __Index2_Expr
+	WHERE Index2_ID IN (
+		SELECT id()
+		FROM __Index2
+		WHERE IndexName == "x"
+	)
+)
+|?ColumnName

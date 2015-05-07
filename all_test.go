@@ -47,6 +47,9 @@ func dbg(s string, va ...interface{}) {
 }
 
 func caller(s string, va ...interface{}) {
+	if s == "" {
+		s = strings.Repeat("%v ", len(va))
+	}
 	_, fn, fl, _ := runtime.Caller(2)
 	fmt.Printf("caller: %s:%d: ", path.Base(fn), fl)
 	fmt.Printf(s, va...)

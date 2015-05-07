@@ -451,6 +451,10 @@ func (s *alterTableDropColumnStmt) exec(ctx *execCtx) (Recordset, error) {
 						}
 					}
 				}
+
+				if t.hasIndices2() {
+					panic("TODO")
+				}
 			}
 			return nil, t.updated()
 		}
@@ -1119,7 +1123,7 @@ func (s *createIndexStmt) exec(ctx *execCtx) (Recordset, error) {
 			return nil, nil
 		}
 
-		return nil, fmt.Errorf("CREATE INDEX: table %s already has an index named %s", t.name, i.name)
+		return nil, fmt.Errorf("CREATE INDEX: table %s already has an index named %s", t.name, s.indexName)
 	}
 
 	if root.tables[s.indexName] != nil {

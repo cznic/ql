@@ -1367,10 +1367,14 @@ func (r tableRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, data 
 	}
 
 	t, ok := ctx.db.root.tables[string(r)]
-	var x *indexedCol
 	if !ok && isTesting {
-		if _, x = ctx.db.root.findIndexByName(string(r)); x != nil {
-			return r.doIndex(x, ctx, onlyNames, f)
+		if _, x0 := ctx.db.root.findIndexByName(string(r)); x0 != nil {
+			switch x := x0.(type) {
+			case *indexedCol:
+				return r.doIndex(x, ctx, onlyNames, f)
+			default:
+				panic("TODO")
+			}
 		}
 	}
 

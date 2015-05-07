@@ -70,7 +70,8 @@ type index2 struct {
 	unique bool
 	x      btreeIndex
 	xroot  int64
-	expr   expression
+	src    string
+	expr   expression // compiled src
 }
 
 type indexKey struct {
@@ -102,7 +103,8 @@ type table struct {
 	xroots   []interface{}
 }
 
-func (t *table) hasIndices() bool { return len(t.indices) != 0 }
+func (t *table) hasIndices() bool  { return len(t.indices) != 0 || len(t.indices2) != 0 }
+func (t *table) hasIndices2() bool { return len(t.indices2) != 0 }
 
 func (t *table) clone() *table {
 	r := &table{}
@@ -140,9 +142,14 @@ func (t *table) clone() *table {
 	return r
 }
 
-func (t *table) findIndexByName(name string) *indexedCol {
+func (t *table) findIndexByName(name string) interface{} {
 	for _, v := range t.indices {
 		if v != nil && v.name == name {
+			return v
+		}
+	}
+	for k, v := range t.indices2 {
+		if k == name {
 			return v
 		}
 	}
@@ -580,7 +587,7 @@ func newRoot(store storage) (r *root, err error) {
 	}
 }
 
-func (r *root) findIndexByName(name string) (*table, *indexedCol) {
+func (r *root) findIndexByName(name string) (*table, interface{}) {
 	for _, t := range r.tables {
 		if i := t.findIndexByName(name); i != nil {
 			return t, i
