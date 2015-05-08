@@ -356,12 +356,18 @@ func (s *dropIndexStmt) exec(ctx *execCtx) (Recordset, error) {
 		}
 	}
 
-	for i, v := range t.indices {
-		if v == nil || v.name != s.indexName {
-			continue
-		}
+	switch ix := x.(type) {
+	case *indexedCol:
+		for i, v := range t.indices {
+			if v == nil || v.name != s.indexName {
+				continue
+			}
 
-		return nil, t.dropIndex(i)
+			return nil, t.dropIndex(i)
+		}
+	case *index2:
+		delete(t.indices2, s.indexName)
+		return nil, ix.x.Drop()
 	}
 
 	panic("internal error 058")
