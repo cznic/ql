@@ -350,7 +350,7 @@ ORDER BY c2 DESC;
 
 -- 39
 BEGIN TRANSACTION;
-CREATE TABLE t (c1 int, c2 string);
+	CREATE TABLE t (c1 int, c2 string);
 	INSERT INTO t VALUES (1, "a");
 	INSERT INTO t VALUES (2, "a");
 	INSERT INTO t VALUES (3, "b");
@@ -2732,9 +2732,9 @@ BEGIN TRANSACTION;
 	;
 COMMIT;
 SELECT
-	id() == 1 && s == "a"OR 
-	id() == 2 && s == "\ufffd" && s == "\xef\xbf\xbd"OR 
-	id() == 3 && s == "\u00f8" && s == "ø" && s == "\xc3\xb8"OR 
+	id() == 1 && s == "a" OR 
+	id() == 2 && s == "\ufffd" && s == "\xef\xbf\xbd" OR 
+	id() == 3 && s == "\u00f8" && s == "ø" && s == "\xc3\xb8" OR 
 	id() == 4 && s == "\u65e5" && s == "日" && s == "\xe6\x97\xa5"
 FROM t;
 |b
