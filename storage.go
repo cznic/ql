@@ -446,7 +446,7 @@ func (t *table) addIndex2(execCtx *execCtx, unique bool, indexName string, exprL
 			ci := col.index
 			v := interface{}(nil)
 			if ci < len(rec) {
-				v = rec[ci]
+				v = rec[ci+2]
 			}
 			m[col.name] = v
 		}

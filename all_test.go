@@ -1208,7 +1208,7 @@ func testIndices(db *DB, t *testing.T) {
 	e(`	BEGIN TRANSACTION;
 			DROP TABLE IF EXISTS t;
 			CREATE TABLE t (i int);
-			CREATE INDEX x ON t (i+1);
+			CREATE INDEX x ON t (i+1, 2*i); // Non simple index.
 		COMMIT;`)
 	e(`	BEGIN TRANSACTION;
 			DROP INDEX x;

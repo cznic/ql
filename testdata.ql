@@ -11856,3 +11856,13 @@ ORDER BY ColumnName;
 |sColumnName
 [b]
 [c]
+
+-- 967
+BEGIN TRANSACTION;
+	CREATE TABLE t(a int, b int, c int);
+	CREATE INDEX x ON t(a + c, c - b);
+	INSERT INTO t VALUES(1, 2, 3);
+COMMIT;
+SELECT * FROM t;
+|la, lb, lc
+[1 2 3]
