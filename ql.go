@@ -1184,8 +1184,8 @@ func (r *selectRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, dat
 
 type tableRset string
 
-func (r tableRset) doIndex(x *indexedCol, ctx *execCtx, onlyNames bool, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
-	flds := []*fld{&fld{name: x.name}}
+func (r tableRset) doIndex(xname string, x btreeIndex, ctx *execCtx, onlyNames bool, f func(id interface{}, data []interface{}) (more bool, err error)) (err error) {
+	flds := []*fld{&fld{name: xname}}
 	m, err := f(nil, []interface{}{flds})
 	if onlyNames {
 		return err
@@ -1195,26 +1195,12 @@ func (r tableRset) doIndex(x *indexedCol, ctx *execCtx, onlyNames bool, f func(i
 		return
 	}
 
-	en, _, err := x.x.Seek(nil)
+	en, _, err := x.Seek([]interface{}{nil})
 	if err != nil {
 		return err
 	}
 
 	var id int64
-	//TODO- rec := []interface{}{nil}
-	//TODO- for {
-	//TODO- 	k, _, err := en.Next()
-	//TODO- 	if err != nil {
-	//TODO- 		return noEOF(err)
-	//TODO- 	}
-
-	//TODO- 	id++
-	//TODO- 	rec[0] = k
-	//TODO- 	m, err := f(id, rec)
-	//TODO- 	if !m || err != nil {
-	//TODO- 		return err
-	//TODO- 	}
-	//TODO- }
 	for {
 		k, _, err := en.Next()
 		if err != nil {
@@ -1385,9 +1371,11 @@ func (r tableRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, data 
 		if _, x0 := ctx.db.root.findIndexByName(string(r)); x0 != nil {
 			switch x := x0.(type) {
 			case *indexedCol:
-				return r.doIndex(x, ctx, onlyNames, f)
+				return r.doIndex(x.name, x.x, ctx, onlyNames, f)
+			case *index2:
+				return r.doIndex(string(r), x.x, ctx, onlyNames, f)
 			default:
-				panic("TODO")
+				panic("internal error 079")
 			}
 		}
 	}

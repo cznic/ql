@@ -255,7 +255,7 @@ func test(t *testing.T, s testDB) (panicked error) {
 		max = n
 	}
 	for itest, test := range testdata[*oN:max] {
-		dbg("---------------------------------------- itest %d", itest)
+		//dbg("---------------------------------------- itest %d", itest)
 		var re *regexp.Regexp
 		a := strings.Split(test+"|", "|")
 		q, rset := a[0], strings.TrimSpace(a[1])

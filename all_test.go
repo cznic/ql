@@ -1027,7 +1027,7 @@ func dumpDB(db *DB, tag string) (string, error) {
 				cname = tab.cols0[i-1].name
 			}
 			f.Format("index %s on %s%i\n", xname, cname)
-			it, _, err := v.x.Seek(nil)
+			it, _, err := v.x.Seek([]interface{}{nil})
 			if err != nil {
 				return "", err
 			}
