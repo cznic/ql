@@ -1703,13 +1703,13 @@ func (db *DB) createIndex2() error {
 			}
 
 			expr := "id()"
-			var cols []string
+			cols := [][]string{{}}
 			if i != 0 {
 				expr = t.cols[i-1].name
-				cols = []string{expr}
+				cols = [][]string{{expr}}
 			}
 
-			if err := db.insertIndex2(t.name, index.name, expr, cols, index.unique, true, index.xroot); err != nil {
+			if err := db.insertIndex2(t.name, index.name, []string{expr}, cols, index.unique, true, index.xroot); err != nil {
 				db.hasIndex2 = 0
 				return err
 			}
@@ -1720,7 +1720,7 @@ func (db *DB) createIndex2() error {
 	return nil
 }
 
-func (db *DB) insertIndex2(tableName, indexName, expr string, cols []string, unique, isSimple bool, h int64) error {
+func (db *DB) insertIndex2(tableName, indexName string, expr []string, cols [][]string, unique, isSimple bool, h int64) error {
 	ctx := execCtx{db: db}
 	ctx.arg = []interface{}{
 		tableName,
@@ -1733,18 +1733,21 @@ func (db *DB) insertIndex2(tableName, indexName, expr string, cols []string, uni
 		return err
 	}
 
-	ctx.arg = []interface{}{db.root.lastInsertID, expr}
-	if _, err := insertIndex2Expr.l[0].exec(&ctx); err != nil {
-		return err
-	}
-
-	for _, col := range cols {
-		ctx.arg = []interface{}{db.root.lastInsertID, col}
-		if _, err := insertIndex2Column.l[0].exec(&ctx); err != nil {
+	id := db.root.lastInsertID
+	for i, e := range expr {
+		ctx.arg = []interface{}{id, e}
+		if _, err := insertIndex2Expr.l[0].exec(&ctx); err != nil {
 			return err
 		}
-	}
+		id := db.root.lastInsertID
 
+		for _, col := range cols[i] {
+			ctx.arg = []interface{}{id, col}
+			if _, err := insertIndex2Column.l[0].exec(&ctx); err != nil {
+				return err
+			}
+		}
+	}
 	return nil
 }
 

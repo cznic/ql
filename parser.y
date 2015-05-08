@@ -346,15 +346,14 @@ CreateIndexStmt:
 			}
 		}
 		
-		switch {
-		case simpleIndex:
-			$$ = &createIndexStmt{unique: $2.(bool), ifNotExists: $4.(bool), indexName: indexName, tableName: tableName, colName: columnName, exprList: exprList}
-			if indexName == tableName || indexName == columnName {
-				yylex.(*lexer).err("index name collision: %s", indexName)
-				return 1
-			}
-		default:
-			panic("TODO")
+		if !simpleIndex {
+			columnName = ""
+		}
+		$$ = &createIndexStmt{unique: $2.(bool), ifNotExists: $4.(bool), indexName: indexName, tableName: tableName, colName: columnName, exprList: exprList}
+
+		if indexName == tableName || indexName == columnName {
+			yylex.(*lexer).err("index name collision: %s", indexName)
+			return 1
 		}
 
 		if yylex.(*lexer).root {

@@ -1139,20 +1139,20 @@ func (s *createIndexStmt) exec(ctx *execCtx) (Recordset, error) {
 		return nil, fmt.Errorf("CREATE INDEX: index name collision with existing column: %s", s.indexName)
 	}
 
-	colIndex := -1
-	if s.colName != "id()" {
-		c := findCol(t.cols, s.colName)
-		if c == nil {
-			return nil, fmt.Errorf("CREATE INDEX: column does not exist: %s", s.colName)
-		}
-
-		colIndex = c.index
-	}
-
 	var h int64
+	var err error
 	switch {
 	case s.isSimpleIndex():
-		var err error
+		colIndex := -1
+		if s.colName != "id()" {
+			c := findCol(t.cols, s.colName)
+			if c == nil {
+				return nil, fmt.Errorf("CREATE INDEX: column does not exist: %s", s.colName)
+			}
+
+			colIndex = c.index
+		}
+
 		if h, err = t.addIndex(s.unique, s.indexName, colIndex); err != nil {
 			return nil, fmt.Errorf("CREATE INDEX: %v", err)
 		}
@@ -1161,28 +1161,42 @@ func (s *createIndexStmt) exec(ctx *execCtx) (Recordset, error) {
 			return nil, err
 		}
 	default:
-		panic("TODO")
+		if h, err = t.addIndex2(ctx, s.unique, s.indexName, s.exprList); err != nil {
+			return nil, fmt.Errorf("CREATE INDEX: %v", err)
+		}
 	}
 
 	switch ctx.db.hasIndex2 {
 	case 0:
-		return nil, ctx.db.createIndex2()
+		if err := ctx.db.createIndex2(); err != nil {
+			return nil, err
+		}
+
+		if s.isSimpleIndex() {
+			return nil, nil
+		}
 	case 1:
 		return nil, nil
 	case 2:
 		if s.isSimpleIndex() {
 			expr := s.colName
-			var cols []string
+			cols := [][]string{{}}
 			if expr != "id()" {
-				cols = []string{expr}
+				cols = [][]string{{expr}}
 			}
-			return nil, ctx.db.insertIndex2(s.tableName, s.indexName, expr, cols, s.unique, true, h)
+			return nil, ctx.db.insertIndex2(s.tableName, s.indexName, []string{expr}, cols, s.unique, true, h)
 		}
-
-		panic("TODO")
 	default:
 		panic("internal error")
 	}
+
+	exprList := make([]string, 0, len(s.exprList))
+	colList := make([][]string, 0, len(exprList))
+	for _, e := range s.exprList {
+		exprList = append(exprList, e.String())
+		colList = append(colList, mentionedColumns(e))
+	}
+	return nil, ctx.db.insertIndex2(s.tableName, s.indexName, exprList, colList, s.unique, false, h)
 }
 
 func (s *createIndexStmt) isUpdating() bool { return true }

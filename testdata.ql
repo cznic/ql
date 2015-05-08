@@ -11787,3 +11787,72 @@ WHERE Index2_Expr_ID IN (
 )
 ORDER BY ColumnName;
 |?ColumnName
+
+-- 963
+BEGIN TRANSACTION;
+	CREATE TABLE t(a int, b int);
+	CREATE INDEX x ON t(a + c, c - b);
+COMMIT;
+SELECT TableName, IndexName, IsUnique, IsSimple, Root > 0 OR Root == -1 // -1: mem DB
+FROM __Index2
+WHERE TableName == "t";
+|sTableName, sIndexName, bIsUnique, bIsSimple, b
+[t x false false true]
+
+-- 964
+BEGIN TRANSACTION;
+	CREATE TABLE t(a int, b int, c int);
+	CREATE INDEX x ON t(a + c, c - b);
+COMMIT;
+SELECT Expr FROM __Index2_Expr
+WHERE Index2_ID IN (
+	SELECT id()
+	FROM __Index2
+	WHERE IndexName == "x"
+)
+ORDER BY Expr;
+|sExpr
+[a+c]
+[c-b]
+
+-- 965
+BEGIN TRANSACTION;
+	CREATE TABLE t(a int, b int, c int);
+	CREATE INDEX x ON t(a + c, c - b);
+COMMIT;
+SELECT ColumnName
+FROM __Index2_Column
+WHERE Index2_Expr_ID IN (
+	SELECT id()
+	FROM __Index2_Expr
+	WHERE Index2_ID IN (
+		SELECT id()
+		FROM __Index2
+		WHERE IndexName == "x"
+	) && Expr == "a+c"
+)
+ORDER BY ColumnName;
+|sColumnName
+[a]
+[c]
+
+-- 966
+BEGIN TRANSACTION;
+	CREATE TABLE t(a int, b int, c int);
+	CREATE INDEX x ON t(a + c, c - b);
+COMMIT;
+SELECT ColumnName
+FROM __Index2_Column
+WHERE Index2_Expr_ID IN (
+	SELECT id()
+	FROM __Index2_Expr
+	WHERE Index2_ID IN (
+		SELECT id()
+		FROM __Index2
+		WHERE IndexName == "x"
+	) && Expr == "c-b"
+)
+ORDER BY ColumnName;
+|sColumnName
+[b]
+[c]

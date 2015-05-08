@@ -67,11 +67,10 @@ type indexedCol struct {
 }
 
 type index2 struct {
-	unique bool
-	x      btreeIndex
-	xroot  int64
-	src    string
-	expr   expression // compiled src
+	unique   bool
+	x        btreeIndex
+	xroot    int64
+	exprList []expression
 }
 
 type indexKey struct {
@@ -417,6 +416,58 @@ func (t *table) addIndex(unique bool, indexName string, colIndex int) (int64, er
 	return hx, nil
 }
 
+func (t *table) addIndex2(execCtx *execCtx, unique bool, indexName string, exprList []expression) (int64, error) {
+	if _, ok := t.indices2[indexName]; ok {
+		panic("internal error")
+	}
+
+	hx, x, err := t.store.CreateIndex(unique)
+	if err != nil {
+		return -1, err
+	}
+	x2 := &index2{unique, x, hx, exprList}
+	if t.indices2 == nil {
+		t.indices2 = map[string]*index2{}
+	}
+	t.indices2[indexName] = x2
+
+	// Must fill the new index.
+	m := map[interface{}]interface{}{}
+	h, store := t.head, t.store
+	vlist := make([]interface{}, len(exprList))
+	for h != 0 {
+		rec, err := store.Read(nil, h, t.cols...)
+		if err != nil {
+			return -1, err
+		}
+
+		for _, col := range t.cols {
+			ci := col.index
+			v := interface{}(nil)
+			if ci < len(rec) {
+				v = rec[ci]
+			}
+			m[col.name] = v
+		}
+
+		for i, e := range exprList {
+			v, err := e.eval(execCtx, m, nil)
+			if err != nil {
+				return -1, err
+			}
+
+			vlist[i] = v
+		}
+
+		if err = x.Create(vlist, h); err != nil {
+			return -1, err
+		}
+
+		h = rec[0].(int64)
+	}
+	return hx, nil
+}
+
 func (t *table) dropIndex(xIndex int) error {
 	t.xroots[xIndex] = 0
 	if err := t.indices[xIndex].x.Drop(); err != nil {
@@ -647,6 +698,11 @@ func (r *root) dropTable(t *table) (err error) {
 			if err = v.x.Drop(); err != nil {
 				return
 			}
+		}
+	}
+	for _, v := range t.indices2 {
+		if err = v.x.Drop(); err != nil {
+			return
 		}
 	}
 
