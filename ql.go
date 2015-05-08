@@ -1683,9 +1683,7 @@ func newDB(store storage) (db *DB, err error) {
 	}
 
 	db0.hasIndex2 = 2
-	return db0, nil
-
-	rss, _, err := db0.Run(nil, "select id(), TableName, IndexName, IsUnique, Root from __Index2")
+	rss, _, err := db0.Run(nil, "select id(), TableName, IndexName, IsUnique, Root from __Index2 where !IsSimple")
 	if err != nil {
 		return nil, err
 	}
@@ -1708,6 +1706,7 @@ func newDB(store storage) (db *DB, err error) {
 		unique := row[3].(bool)
 		xroot := row[4].(int64)
 
+		//dbg("newDB: tn %v, xn %v, xroot %v", tn, xn, xroot)
 		t := db0.root.tables[tn]
 		if t == nil {
 			return nil, fmt.Errorf("DB index refers to nonexistent table: %s", tn)
@@ -1739,7 +1738,7 @@ func newDB(store storage) (db *DB, err error) {
 		}
 
 		if len(rows) == 0 {
-			return nil, fmt.Errorf("corrupted DB: index has no expression: %s", xn)
+			return nil, fmt.Errorf("index has no expression: %s", xn)
 		}
 
 		var list []expression

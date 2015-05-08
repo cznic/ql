@@ -422,6 +422,7 @@ func (t *table) addIndex2(execCtx *execCtx, unique bool, indexName string, exprL
 	}
 
 	hx, x, err := t.store.CreateIndex(unique)
+	//dbg("addIndex2: %s, exprlist %v, root %v", indexName, exprList, hx)
 	if err != nil {
 		return -1, err
 	}
@@ -436,7 +437,6 @@ func (t *table) addIndex2(execCtx *execCtx, unique bool, indexName string, exprL
 	h, store := t.head, t.store
 	vlist := make([]interface{}, len(exprList))
 	for h != 0 {
-		panic("TODO")
 		rec, err := store.Read(nil, h, t.cols...)
 		if err != nil {
 			return -1, err
