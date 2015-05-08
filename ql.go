@@ -521,13 +521,15 @@ func (r *whereRset) doIndexedBool(t *table, en indexIterator, v bool, f func(id 
 			return noEOF(err)
 		}
 
-		switch x := k.(type) {
+		switch x := k[0].(type) {
 		case nil:
 			panic("internal error 052") // nil should sort before true
 		case bool:
 			if x != v {
 				return nil
 			}
+		default:
+			panic("internal error 078")
 		}
 
 		if _, err := tableRset("").doOne(t, h, f); err != nil {
@@ -566,7 +568,7 @@ func (r *whereRset) tryBinOp(execCtx *execCtx, t *table, id *ident, v value, op 
 			return true, err
 		}
 
-		en, _, err := xCol.x.Seek(v.val)
+		en, _, err := xCol.x.Seek([]interface{}{v.val})
 		if err != nil {
 			return true, noEOF(err)
 		}
@@ -581,7 +583,7 @@ func (r *whereRset) tryBinOp(execCtx *execCtx, t *table, id *ident, v value, op 
 				return true, noEOF(err)
 			}
 
-			ex.l = value{k}
+			ex.l = value{k[0]}
 			eval, err := ex.eval(execCtx, nil, nil)
 			if err != nil {
 				return true, err
@@ -616,7 +618,7 @@ func (r *whereRset) tryBinOp(execCtx *execCtx, t *table, id *ident, v value, op 
 				return true, noEOF(err)
 			}
 
-			ex.l = value{k}
+			ex.l = value{k[0]}
 			eval, err := ex.eval(execCtx, nil, nil)
 			if err != nil {
 				return true, err
@@ -658,7 +660,7 @@ func (r *whereRset) tryBinOpID(execCtx *execCtx, t *table, v value, op int, f fu
 			return true, err
 		}
 
-		en, _, err := xCol.x.Seek(v.val)
+		en, _, err := xCol.x.Seek([]interface{}{v.val})
 		if err != nil {
 			return true, noEOF(err)
 		}
@@ -673,7 +675,7 @@ func (r *whereRset) tryBinOpID(execCtx *execCtx, t *table, v value, op int, f fu
 				return true, noEOF(err)
 			}
 
-			ex.l = value{k}
+			ex.l = value{k[0]}
 			eval, err := ex.eval(execCtx, nil, nil)
 			if err != nil {
 				return true, err
@@ -708,7 +710,7 @@ func (r *whereRset) tryBinOpID(execCtx *execCtx, t *table, v value, op int, f fu
 				return true, noEOF(err)
 			}
 
-			ex.l = value{k}
+			ex.l = value{k[0]}
 			eval, err := ex.eval(execCtx, nil, nil)
 			if err != nil {
 				return true, err
@@ -772,7 +774,7 @@ func (r *whereRset) tryUseIndex(ctx *execCtx, f func(id interface{}, data []inte
 				return false, nil
 			}
 
-			en, _, err := xCol.x.Seek(false)
+			en, _, err := xCol.x.Seek([]interface{}{false})
 			if err != nil {
 				return false, noEOF(err)
 			}
@@ -796,7 +798,7 @@ func (r *whereRset) tryUseIndex(ctx *execCtx, f func(id interface{}, data []inte
 			return false, nil
 		}
 
-		en, _, err := xCol.x.Seek(true)
+		en, _, err := xCol.x.Seek([]interface{}{true})
 		if err != nil {
 			return false, noEOF(err)
 		}
@@ -1199,7 +1201,20 @@ func (r tableRset) doIndex(x *indexedCol, ctx *execCtx, onlyNames bool, f func(i
 	}
 
 	var id int64
-	rec := []interface{}{nil}
+	//TODO- rec := []interface{}{nil}
+	//TODO- for {
+	//TODO- 	k, _, err := en.Next()
+	//TODO- 	if err != nil {
+	//TODO- 		return noEOF(err)
+	//TODO- 	}
+
+	//TODO- 	id++
+	//TODO- 	rec[0] = k
+	//TODO- 	m, err := f(id, rec)
+	//TODO- 	if !m || err != nil {
+	//TODO- 		return err
+	//TODO- 	}
+	//TODO- }
 	for {
 		k, _, err := en.Next()
 		if err != nil {
@@ -1207,8 +1222,7 @@ func (r tableRset) doIndex(x *indexedCol, ctx *execCtx, onlyNames bool, f func(i
 		}
 
 		id++
-		rec[0] = k
-		m, err := f(id, rec)
+		m, err := f(id, k)
 		if !m || err != nil {
 			return err
 		}
@@ -2373,10 +2387,11 @@ type TableInfo struct {
 //
 //	CREATE INDEX Name ON Table (Column);
 type IndexInfo struct {
-	Name   string // Index name
-	Table  string // Table name.
-	Column string // Column name.
-	Unique bool   // Wheter the index is unique.
+	Name           string   // Index name
+	Table          string   // Table name.
+	Column         string   // Column name.
+	Unique         bool     // Wheter the index is unique.
+	ExpressionList []string // Index expression list.
 }
 
 // DbInfo provides meta data describing a DB.
@@ -2437,7 +2452,19 @@ func (db *DB) info() (r *DbInfo, err error) {
 			default:
 				cn = t.cols0[i-1].name
 			}
-			r.Indices = append(r.Indices, IndexInfo{x.name, nm, cn, x.unique})
+			r.Indices = append(r.Indices, IndexInfo{x.name, nm, cn, x.unique, []string{cn}})
+		}
+		var a []string
+		for k := range t.indices2 {
+			a = append(a, k)
+		}
+		for _, k := range a {
+			x := t.indices2[k]
+			a = a[:0]
+			for _, e := range x.exprList {
+				a = append(a, e.String())
+			}
+			r.Indices = append(r.Indices, IndexInfo{k, nm, "", x.unique, a})
 		}
 	}
 	return
@@ -2498,7 +2525,7 @@ func (o *outerJoinRset) do(ctx *execCtx, onlyNames bool, f func(id interface{}, 
 		case *selectStmt:
 			rsets[i] = x
 		default:
-			log.Panic("internal error")
+			log.Panic("internal error 074")
 		}
 		altNames[i] = altName
 	}

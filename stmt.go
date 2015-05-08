@@ -167,10 +167,11 @@ func (s *updateStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 				continue
 			}
 
-			if err = v.x.Delete(old[i-1], h); err != nil {
+			if err = v.x.Delete([]interface{}{old[i-1]}, h); err != nil {
 				return nil, err
 			}
 		}
+		//TODO indices2
 
 		if err = t.store.UpdateRow(h, blobCols, data...); err != nil { //LATER detect which blobs are actually affected
 			return nil, err
@@ -185,10 +186,12 @@ func (s *updateStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 				continue
 			}
 
-			if err = v.x.Create(data[2+i-1], h); err != nil {
+			if err = v.x.Create([]interface{}{data[2+i-1]}, h); err != nil {
 				return nil, err
 			}
 		}
+		//TODO indices2
+
 		cc.RowsAffected++
 	}
 	return
@@ -266,7 +269,7 @@ func (s *deleteStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 			}
 
 			// overflow chunks left in place
-			if err = v.x.Delete(data[i+1], h); err != nil {
+			if err = v.x.Delete([]interface{}{data[i+1]}, h); err != nil {
 				return nil, err
 			}
 		}
@@ -601,7 +604,7 @@ func (s *selectStmt) String() string {
 			b.WriteString(x.String())
 			b.WriteString(")")
 		default:
-			panic("internal error")
+			panic("internal error 075")
 		}
 		if s := o.source[1].(string); s != "" {
 			b.WriteString(" AS " + s)
@@ -798,10 +801,11 @@ func (s *insertIntoStmt) execSelect(t *table, cols []*col, ctx *execCtx, constra
 				}
 
 				// Any overflow chunks are shared with the BTree key
-				if err = v.x.Create(data0[i+1], h); err != nil {
+				if err = v.x.Create([]interface{}{data0[i+1]}, h); err != nil {
 					return false, err
 				}
 			}
+			//TODO indices2
 
 			cc.RowsAffected++
 			ctx.db.root.lastInsertID = id
@@ -1193,7 +1197,7 @@ func (s *createIndexStmt) exec(ctx *execCtx) (Recordset, error) {
 			return nil, ctx.db.insertIndex2(s.tableName, s.indexName, []string{expr}, cols, s.unique, true, h)
 		}
 	default:
-		panic("internal error")
+		panic("internal error 076")
 	}
 
 	exprList := make([]string, 0, len(s.exprList))

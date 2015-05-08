@@ -39,45 +39,45 @@ func (x *memIndex) Clear() error {
 	return nil
 }
 
-func (x *memIndex) Create(indexedValue interface{}, h int64) error {
+func (x *memIndex) Create(indexedValues []interface{}, h int64) error {
 	t := x.t
 	switch {
 	case !x.unique:
-		k := indexKey{indexedValue, h}
-		x.m.newUndo(undoCreateX, 0, []interface{}{x, k})
+		k := indexKey{indexedValues, h}
+		x.m.newUndo(undoCreateX, 0, []interface{}{x, k}) //TODO why is old value, if any, not saved?
 		t.Set(k, 0)
-	case indexedValue == nil: // unique, NULL
+	case isIndexNull(indexedValues): // unique, NULL
 		k := indexKey{nil, h}
-		x.m.newUndo(undoCreateX, 0, []interface{}{x, k})
+		x.m.newUndo(undoCreateX, 0, []interface{}{x, k}) //TODO why is old value, if any, not saved?
 		t.Set(k, 0)
 	default: // unique, non NULL
-		k := indexKey{indexedValue, 0}
+		k := indexKey{indexedValues, 0}
 		if _, ok := t.Get(k); ok { //LATER need .Put
-			return fmt.Errorf("cannot insert into unique index: duplicate value: %v", indexedValue)
+			return fmt.Errorf("cannot insert into unique index: duplicate value(s): %v", indexedValues)
 		}
 
-		x.m.newUndo(undoCreateX, 0, []interface{}{x, k})
+		x.m.newUndo(undoCreateX, 0, []interface{}{x, k}) //TODO why is old value, if any, not saved?
 		t.Set(k, int(h))
 	}
 	return nil
 }
 
-func (x *memIndex) Delete(indexedValue interface{}, h int64) error {
+func (x *memIndex) Delete(indexedValues []interface{}, h int64) error {
 	t := x.t
 	var k indexKey
 	var v interface{}
 	var ok, okv bool
 	switch {
 	case !x.unique:
-		k = indexKey{indexedValue, h}
+		k = indexKey{indexedValues, h}
 		v, okv = t.Get(k)
 		ok = t.delete(k)
-	case indexedValue == nil: // unique, NULL
+	case isIndexNull(indexedValues): // unique, NULL
 		k = indexKey{nil, h}
 		v, okv = t.Get(k)
 		ok = t.delete(k)
 	default: // unique, non NULL
-		k = indexKey{indexedValue, 0}
+		k = indexKey{indexedValues, 0}
 		v, okv = t.Get(k)
 		ok = t.delete(k)
 	}
@@ -97,8 +97,8 @@ func (x *memIndex) Drop() error {
 	return nil
 }
 
-func (x *memIndex) Seek(indexedValue interface{}) (indexIterator, bool, error) {
-	it, hit := x.t.Seek(indexKey{indexedValue, 0})
+func (x *memIndex) Seek(indexedValues []interface{}) (indexIterator, bool, error) {
+	it, hit := x.t.Seek(indexKey{indexedValues, 0})
 	return &xenumerator2{*it, x.unique}, hit, nil
 }
 
@@ -125,7 +125,7 @@ type xenumerator2 struct {
 	unique bool
 }
 
-func (it *xenumerator2) Next() (interface{}, int64, error) {
+func (it *xenumerator2) Next() ([]interface{}, int64, error) {
 	k, h, err := it.it.Next()
 	if err != nil {
 		return nil, -1, err
@@ -143,7 +143,7 @@ func (it *xenumerator2) Next() (interface{}, int64, error) {
 	}
 }
 
-func (it *xenumerator2) Prev() (interface{}, int64, error) {
+func (it *xenumerator2) Prev() ([]interface{}, int64, error) {
 	k, h, err := it.it.Prev()
 	if err != nil {
 		return nil, -1, err
@@ -605,7 +605,7 @@ type (
 )
 
 func (a *indexKey) cmp(b *indexKey) int {
-	r := collate1(a.value, b.value)
+	r := collate(a.value, b.value)
 	if r != 0 {
 		return r
 	}

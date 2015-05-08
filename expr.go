@@ -79,7 +79,7 @@ func mentionedColumns0(e expression, m map[string]struct{}) {
 	case *unaryOperation:
 		mentionedColumns0(x.v, m)
 	default:
-		panic("internal error")
+		panic("internal error 073")
 	}
 }
 

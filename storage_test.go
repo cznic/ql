@@ -255,7 +255,7 @@ func test(t *testing.T, s testDB) (panicked error) {
 		max = n
 	}
 	for itest, test := range testdata[*oN:max] {
-		//dbg("---------------------------------------- itest %d", itest)
+		dbg("---------------------------------------- itest %d", itest)
 		var re *regexp.Regexp
 		a := strings.Split(test+"|", "|")
 		q, rset := a[0], strings.TrimSpace(a[1])
@@ -313,7 +313,7 @@ func test(t *testing.T, s testDB) (panicked error) {
 			defer func() {
 				tnl := db.tnl
 				if tnl != tnl0 {
-					panic(fmt.Errorf("internal error: tnl0 %v, tnl %v", tnl0, tnl))
+					panic(fmt.Errorf("internal error 057: tnl0 %v, tnl %v", tnl0, tnl))
 				}
 
 				nfo, err := db.Info()
@@ -321,14 +321,28 @@ func test(t *testing.T, s testDB) (panicked error) {
 					panic(err)
 				}
 
+				for _, idx := range nfo.Indices {
+					//dbg("#%d: cleanup index %s", itest, idx.Name)
+					if _, _, err = db.run(tctx, fmt.Sprintf(`
+						BEGIN TRANSACTION;
+							DROP INDEX %s;
+						COMMIT;
+						`,
+						idx.Name)); err != nil {
+						t.Errorf("#%d: cleanup DROP INDEX %s: %v", itest, idx.Name, err)
+						ok = false
+					}
+				}
 				for _, tab := range nfo.Tables {
+					//dbg("#%d: cleanup table %s", itest, tab.Name)
 					if _, _, err = db.run(tctx, fmt.Sprintf(`
 						BEGIN TRANSACTION;
 							DROP table %s;
 						COMMIT;
 						`,
 						tab.Name)); err != nil {
-						panic(fmt.Errorf("%q: %v", tab.Name, err))
+						t.Errorf("#%d: cleanup DROP TABLE %s: %v", itest, tab.Name, err)
+						ok = false
 					}
 				}
 				db.hasIndex2 = 0

@@ -36,6 +36,11 @@ func init() {
 	isTesting = true
 }
 
+func dieHard(exitValue int) {
+	debug.PrintStack()
+	os.Exit(exitValue)
+}
+
 func dbg(s string, va ...interface{}) {
 	if s == "" {
 		s = strings.Repeat("%v ", len(va))
@@ -2948,7 +2953,7 @@ func testMentionedColumns(s stmt) (err error) {
 		}
 	default:
 		dbg("%T", x)
-		panic("internal error")
+		panic("internal error 056")
 	}
 	return nil
 }

@@ -45,18 +45,18 @@ type temp interface {
 }
 
 type indexIterator interface {
-	Next() (k interface{}, h int64, err error)
-	Prev() (k interface{}, h int64, err error)
+	Next() (k []interface{}, h int64, err error)
+	Prev() (k []interface{}, h int64, err error)
 }
 
 type btreeIndex interface {
-	Clear() error                                                            // supports truncate table statement
-	Create(indexedValue interface{}, h int64) error                          // supports insert into statement
-	Delete(indexedValue interface{}, h int64) error                          // supports delete from statement
-	Drop() error                                                             // supports drop table, drop index statements
-	Seek(indexedValue interface{}) (iter indexIterator, hit bool, err error) // supports where clause
-	SeekFirst() (iter indexIterator, err error)                              // supports aggregate min / ascending order by
-	SeekLast() (iter indexIterator, err error)                               // supports aggregate max / descending order by
+	Clear() error                                                               // supports truncate table statement
+	Create(indexedValues []interface{}, h int64) error                          // supports insert into statement
+	Delete(indexedValues []interface{}, h int64) error                          // supports delete from statement
+	Drop() error                                                                // supports drop table, drop index statements
+	Seek(indexedValues []interface{}) (iter indexIterator, hit bool, err error) // supports where clause
+	SeekFirst() (iter indexIterator, err error)                                 // supports aggregate min / ascending order by
+	SeekLast() (iter indexIterator, err error)                                  // supports aggregate max / descending order by
 }
 
 type indexedCol struct {
@@ -74,7 +74,7 @@ type index2 struct {
 }
 
 type indexKey struct {
-	value interface{}
+	value []interface{}
 	h     int64
 }
 
@@ -407,7 +407,7 @@ func (t *table) addIndex(unique bool, indexName string, colIndex int) (int64, er
 			rec = append(rec, make([]interface{}, n)...)
 		}
 
-		if err = x.Create(rec[colIndex+2], h); err != nil {
+		if err = x.Create([]interface{}{rec[colIndex+2]}, h); err != nil {
 			return -1, err
 		}
 
@@ -418,7 +418,7 @@ func (t *table) addIndex(unique bool, indexName string, colIndex int) (int64, er
 
 func (t *table) addIndex2(execCtx *execCtx, unique bool, indexName string, exprList []expression) (int64, error) {
 	if _, ok := t.indices2[indexName]; ok {
-		panic("internal error")
+		panic("internal error 077")
 	}
 
 	hx, x, err := t.store.CreateIndex(unique)
@@ -521,10 +521,11 @@ func (t *table) addRecord(r []interface{}) (id int64, err error) {
 			continue
 		}
 
-		if err = v.x.Create(r[i+1], h); err != nil {
+		if err = v.x.Create([]interface{}{r[i+1]}, h); err != nil {
 			return
 		}
 	}
+	//TODO indices2
 
 	if err = t.store.Update(t.hhead, h); err != nil {
 		return
