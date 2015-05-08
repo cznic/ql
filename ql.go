@@ -1676,8 +1676,20 @@ func newDB(store storage) (db *DB, err error) {
 		return
 	}
 
-	if db0.hasAllIndex2() {
-		db0.hasIndex2 = 2
+	if !db0.hasAllIndex2 {
+		return db0, nil
+	}
+
+	db0.hasIndex2 = 2
+	rss, _, err := db0.Run(nil, "select id(), TableName, IndexName, IsUnique, Root from __Index2")
+	if err != nil {
+		return nil, err
+	}
+
+	if err := rss[0].Do(false, func(data []interface{}) (more bool, err error) {
+		return true, nil
+	}); err != nil {
+		return nil, err
 	}
 	return db0, nil
 }
