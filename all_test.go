@@ -1058,6 +1058,12 @@ func testIndices(db *DB, t *testing.T) {
 	ctx := NewRWCtx()
 	var err error
 	e := func(q string) {
+		s0, err := dumpDB(db, "pre\n\t"+q)
+		if err != nil {
+			t.Log(s0)
+			t.Fatal(err)
+		}
+
 		if _, _, err = db.Run(ctx, q); err != nil {
 			t.Log(q)
 			t.Fatal(err)
@@ -1065,6 +1071,7 @@ func testIndices(db *DB, t *testing.T) {
 
 		s, err := dumpDB(db, "post\n\t"+q)
 		if err != nil {
+			t.Log(s0)
 			t.Log(s)
 			t.Fatal(err)
 		}
@@ -1076,17 +1083,19 @@ func testIndices(db *DB, t *testing.T) {
 		nm := db.Name()
 
 		if err = db.Close(); err != nil {
+			t.Log(s0)
 			t.Log(s)
 			t.Fatal(err)
 		}
 
 		if db, err = OpenFile(nm, &Options{}); err != nil {
+			t.Log(s0)
 			t.Log(s)
 			t.Fatal(err)
 		}
 
 		if s, err = dumpDB(db, "reopened"); err != nil {
-			t.Log(q)
+			t.Log(s0)
 			t.Log(s)
 			t.Fatal(err)
 		}

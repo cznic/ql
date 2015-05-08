@@ -1667,6 +1667,8 @@ type DB struct {
 	hasIndex2   int // 0: nope, 1: in progress, 2: yes.
 }
 
+var selIndex2Expr = MustCompile("select Expr from __Index2_Expr where Index2_ID == $1")
+
 func newDB(store storage) (db *DB, err error) {
 	db0 := &DB{
 		exprCache: map[string]expression{},
@@ -1676,20 +1678,90 @@ func newDB(store storage) (db *DB, err error) {
 		return
 	}
 
-	if !db0.hasAllIndex2 {
+	if !db0.hasAllIndex2() {
 		return db0, nil
 	}
 
 	db0.hasIndex2 = 2
+	return db0, nil
+
 	rss, _, err := db0.Run(nil, "select id(), TableName, IndexName, IsUnique, Root from __Index2")
 	if err != nil {
 		return nil, err
 	}
 
-	if err := rss[0].Do(false, func(data []interface{}) (more bool, err error) {
-		return true, nil
-	}); err != nil {
+	rows, err := rss[0].Rows(-1, 0)
+	if err != nil {
 		return nil, err
+	}
+
+	for _, row := range rows {
+		defer func() {
+			if e := recover(); e != nil {
+				err = fmt.Errorf("error loading DB indices: %v", e)
+			}
+		}()
+
+		id := row[0].(int64)
+		tn := row[1].(string)
+		xn := row[2].(string)
+		unique := row[3].(bool)
+		xroot := row[4].(int64)
+
+		t := db0.root.tables[tn]
+		if t == nil {
+			return nil, fmt.Errorf("DB index refers to nonexistent table: %s", tn)
+		}
+
+		x, err := store.OpenIndex(unique, xroot)
+		if err != nil {
+			return nil, err
+		}
+
+		if v := t.indices2[xn]; v != nil {
+			return nil, fmt.Errorf("duplicate DB index: %s", xn)
+		}
+
+		ix := &index2{
+			unique: unique,
+			x:      x,
+			xroot:  xroot,
+		}
+
+		rss, _, err := db0.Execute(nil, selIndex2Expr, id)
+		if err != nil {
+			return nil, err
+		}
+
+		rows, err := rss[0].Rows(-1, 0)
+		if err != nil {
+			return nil, err
+		}
+
+		if len(rows) == 0 {
+			return nil, fmt.Errorf("corrupted DB: index has no expression: %s", xn)
+		}
+
+		var list []expression
+		for _, row := range rows {
+			src, ok := row[0].(string)
+			if !ok {
+				return nil, fmt.Errorf("index %s: expression of type %T", xn, row[0])
+			}
+
+			expr, err := db0.str2expr(src)
+			if err != nil {
+				return nil, fmt.Errorf("index %s: expression error: %v", xn, err)
+			}
+
+			list = append(list, expr)
+		}
+
+		ix.exprList = list
+		if t.indices2 == nil {
+			t.indices2 = map[string]*index2{}
+		}
+		t.indices2[xn] = ix
 	}
 	return db0, nil
 }
