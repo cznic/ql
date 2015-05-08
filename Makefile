@@ -5,11 +5,11 @@
 .PHONY: all clean nuke
 
 all: editor scanner.go parser.go
-	go test
 	go build
 	go vet || true
 	golint
 	make todo
+	go install ./...
 
 bench: all
 	go test -run NONE -bench .
@@ -33,8 +33,7 @@ cpu: ql.test
 editor: ql.y scanner.go parser.go coerce.go
 	go fmt
 	go test -i
-	go test -short
-	go install ./...
+	go test
 
 internalError:
 	egrep -ho '"internal error.*"' *.go | sort | cat -n

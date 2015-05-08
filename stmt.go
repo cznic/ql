@@ -1046,7 +1046,7 @@ func (s *insertIntoStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 			}
 		}
 
-		id, err := t.addRecord(r)
+		id, err := t.addRecord(ctx, r)
 		if err != nil {
 			return nil, err
 		}

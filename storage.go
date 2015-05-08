@@ -505,7 +505,7 @@ func (t *table) updated() (err error) {
 // 0: next record handle int64
 // 1: record id          int64
 // 2...: data row
-func (t *table) addRecord(r []interface{}) (id int64, err error) {
+func (t *table) addRecord(execCtx *execCtx, r []interface{}) (id int64, err error) {
 	if id, err = t.store.ID(); err != nil {
 		return
 	}
@@ -525,7 +525,38 @@ func (t *table) addRecord(r []interface{}) (id int64, err error) {
 			return
 		}
 	}
-	//TODO indices2
+
+	var m map[interface{}]interface{}
+	var vlist []interface{}
+	for _, x := range t.indices2 {
+		n := len(x.exprList)
+		if n > len(vlist) {
+			vlist = make([]interface{}, n)
+		}
+		vlist = vlist[:n]
+		for _, col := range t.cols {
+			ci := col.index
+			v := interface{}(nil)
+			if ci < len(r) {
+				v = r[ci+2]
+			}
+			if m == nil {
+				m = map[interface{}]interface{}{}
+			}
+			m[col.name] = v
+		}
+		for i, e := range x.exprList {
+			v, err := e.eval(execCtx, m, nil)
+			if err != nil {
+				return -1, err
+			}
+
+			vlist[i] = v
+		}
+		if err = x.x.Create(vlist, h); err != nil {
+			return -1, err
+		}
+	}
 
 	if err = t.store.Update(t.hhead, h); err != nil {
 		return

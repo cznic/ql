@@ -11876,3 +11876,23 @@ COMMIT;
 SELECT * FROM x;
 |lx
 [4 1]
+
+-- 969
+BEGIN TRANSACTION;
+	CREATE TABLE t(a int, b int, c int);
+	CREATE INDEX x ON t(a + c, c - b);
+	INSERT INTO t VALUES(1, 2, 3);
+COMMIT;
+SELECT * FROM t;
+|la, lb, lc
+[1 2 3]
+
+-- 970
+BEGIN TRANSACTION;
+	CREATE TABLE t(a int, b int, c int);
+	CREATE INDEX x ON t(a + c, c - b);
+	INSERT INTO t VALUES(1, 2, 3);
+COMMIT;
+SELECT * FROM x;
+|lx
+[4 1]
