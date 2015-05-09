@@ -715,6 +715,7 @@ func (s *file) Create(data ...interface{}) (h int64, err error) {
 
 	b, err := lldb.EncodeScalars(data...)
 	if err != nil {
+		dbg("")
 		return
 	}
 
@@ -1131,23 +1132,15 @@ func isIndexNull(data []interface{}) bool {
 	return true
 }
 
-func normalizeIndexedValues(data []interface{}) {
-	for i, v := range data {
-		if chunk, ok := v.(chunk); ok {
-			data[i] = chunk.b
-		}
-	}
-}
-
 // The []byte version of the key in the BTree shares chunks, if any, with
 // the value stored in the record.
 func (x *fileIndex) Create(indexedValues []interface{}, h int64) error {
-	normalizeIndexedValues(indexedValues)
 	t := x.t
 	switch {
 	case !x.unique:
 		k, err := lldb.EncodeScalars(append(indexedValues, h)...)
 		if err != nil {
+			dbg("")
 			return err
 		}
 
@@ -1155,6 +1148,7 @@ func (x *fileIndex) Create(indexedValues []interface{}, h int64) error {
 	case isIndexNull(indexedValues): // unique, NULL
 		k, err := lldb.EncodeScalars(nil, h)
 		if err != nil {
+			dbg("")
 			return err
 		}
 
@@ -1162,11 +1156,13 @@ func (x *fileIndex) Create(indexedValues []interface{}, h int64) error {
 	default: // unique, non NULL
 		k, err := lldb.EncodeScalars(append(indexedValues, int64(0))...)
 		if err != nil {
+			dbg("")
 			return err
 		}
 
 		v, err := lldb.EncodeScalars(h)
 		if err != nil {
+			dbg("")
 			return err
 		}
 
@@ -1182,7 +1178,13 @@ func (x *fileIndex) Create(indexedValues []interface{}, h int64) error {
 }
 
 func (x *fileIndex) Delete(indexedValues []interface{}, h int64) error {
-	normalizeIndexedValues(indexedValues)
+	for i, indexedValue := range indexedValues {
+		chunk, ok := indexedValue.(chunk)
+		if ok {
+			indexedValues[i] = chunk.b
+		}
+	}
+
 	t := x.t
 	var k []byte
 	var err error
@@ -1195,6 +1197,7 @@ func (x *fileIndex) Delete(indexedValues []interface{}, h int64) error {
 		k, err = lldb.EncodeScalars(append(indexedValues, int64(0))...)
 	}
 	if err != nil {
+		dbg("")
 		return err
 	}
 
@@ -1210,9 +1213,9 @@ func (x *fileIndex) Drop() error {
 }
 
 func (x *fileIndex) Seek(indexedValues []interface{}) (indexIterator, bool, error) { //TODO(indices) blobs: +test
-	normalizeIndexedValues(indexedValues)
 	k, err := lldb.EncodeScalars(append(indexedValues, 0)...)
 	if err != nil {
+		dbg("")
 		return nil, false, err
 	}
 

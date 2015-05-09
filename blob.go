@@ -84,6 +84,23 @@ func newGobCoder() (g *gobCoder) {
 	return
 }
 
+func isBlobType(v interface{}) (bool, Type) {
+	switch v.(type) {
+	case []byte:
+		return true, Blob
+	case *big.Int:
+		return true, BigInt
+	case *big.Rat:
+		return true, BigRat
+	case time.Time:
+		return true, Time
+	case time.Duration:
+		return true, Duration
+	default:
+		return false, -1
+	}
+}
+
 func (g *gobCoder) encode(v interface{}) (b []byte, err error) {
 	g.mu.Lock()
 	defer g.mu.Unlock()

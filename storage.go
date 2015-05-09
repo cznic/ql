@@ -92,6 +92,10 @@ func (x *index2) eval(ctx *execCtx, cols []*col, id int64, r []interface{}, m ma
 			return nil, err
 		}
 
+		if ok, typ := isBlobType(v); ok {
+			return nil, fmt.Errorf("value of a complex index cannot be of blob-like type: %v", typ)
+		}
+
 		vlist[i] = v
 	}
 	return vlist, nil
