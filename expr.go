@@ -83,14 +83,10 @@ func mentionedColumns0(e expression, m map[string]struct{}) {
 	}
 }
 
-func mentionedColumns(e expression) []string {
+func mentionedColumns(e expression) map[string]struct{} {
 	m := map[string]struct{}{}
 	mentionedColumns0(e, m)
-	var a []string
-	for k := range m {
-		a = append(a, k)
-	}
-	return a
+	return m
 }
 
 func staticExpr(e expression) (expression, error) {

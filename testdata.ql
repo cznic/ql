@@ -11386,3 +11386,102 @@ COMMIT;
 SELECT * FROM x;
 |lx
 [4 1]
+
+-- 944
+BEGIN TRANSACTION;
+	CREATE TABLE t(a int, b int, c int);
+	CREATE INDEX x ON t(a + c, c - b);
+	DROP INDEX x;
+COMMIT;
+SELECT * FROM x;
+||x does not exist
+
+-- 945
+BEGIN TRANSACTION;
+	CREATE TABLE t(a int, b int, c int);
+	CREATE INDEX x ON t(a + c, c - b);
+	DROP TABLE t;
+COMMIT;
+SELECT * FROM x;
+||x does not exist
+
+-- 946
+BEGIN TRANSACTION;
+	CREATE TABLE t(a int, b int, c int);
+	CREATE INDEX x ON t(a + c, c - b);
+	ALTER TABLE t DROP COLUMN a;
+COMMIT;
+SELECT * FROM x;
+||x does not exist
+
+-- 947
+BEGIN TRANSACTION;
+	CREATE TABLE t(a int, b int, c int);
+	CREATE INDEX x ON t(a + c, c - b);
+	ALTER TABLE t DROP COLUMN b;
+COMMIT;
+SELECT * FROM x;
+||x does not exist
+
+-- 948
+BEGIN TRANSACTION;
+	CREATE TABLE t(a int, b int, c int);
+	CREATE INDEX x ON t(a + c, c - b);
+	ALTER TABLE t DROP COLUMN c;
+COMMIT;
+SELECT * FROM x;
+||x does not exist
+
+-- 949
+BEGIN TRANSACTION;
+	CREATE TABLE t(a int, b int, c int);
+	CREATE INDEX x ON t(a, c);
+	ALTER TABLE t DROP COLUMN a;
+COMMIT;
+SELECT * FROM x;
+||x does not exist
+
+-- 950
+BEGIN TRANSACTION;
+	CREATE TABLE t(a int, b int, c int);
+	CREATE INDEX x ON t(a, c);
+	ALTER TABLE t DROP COLUMN b;
+COMMIT;
+SELECT * FROM x;
+|?x
+
+-- 951
+BEGIN TRANSACTION;
+	CREATE TABLE t(a int, b int, c int);
+	CREATE INDEX x ON t(a, c);
+	ALTER TABLE t DROP COLUMN a;
+COMMIT;
+SELECT * FROM x;
+||x does not exist
+
+-- 952
+BEGIN TRANSACTION;
+	CREATE TABLE t(a int, b int, c int);
+	CREATE INDEX x ON t(a, c);
+	INSERT INTO t VALUES(1, 2, 3);
+	ALTER TABLE t DROP COLUMN b;
+COMMIT;
+SELECT * FROM x;
+|lx
+[1 3]
+
+-- 953
+BEGIN TRANSACTION;
+	CREATE TABLE t(a int, b int, c int);
+	CREATE INDEX x ON t(a, c);
+	INSERT INTO t VALUES(10, 20, 30);
+	ALTER TABLE t DROP COLUMN b;
+	INSERT INTO t VALUES(1, 3);
+	ALTER TABLE t ADD b string;
+	INSERT INTO t VALUES(5, 15, "foo");
+COMMIT;
+SELECT * FROM x;
+|lx
+[1 3]
+[5 15]
+[10 30]

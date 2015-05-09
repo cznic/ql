@@ -1767,6 +1767,24 @@ func newDB(store storage) (db *DB, err error) {
 	return db0, nil
 }
 
+func (db *DB) deleteIndex2ByIndexName(nm string) error {
+	for _, s := range deleteIndex2ByIndexName.l {
+		if _, err := s.exec(&execCtx{db: db, arg: []interface{}{nm}}); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (db *DB) deleteIndex2ByTableName(nm string) error {
+	for _, s := range deleteIndex2ByTableName.l {
+		if _, err := s.exec(&execCtx{db: db, arg: []interface{}{nm}}); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (db *DB) createIndex2() error {
 	if db.hasIndex2 != 0 {
 		return nil

@@ -351,11 +351,8 @@ func (s *dropIndexStmt) exec(ctx *execCtx) (Recordset, error) {
 	}
 
 	if ctx.db.hasAllIndex2() {
-		xc := &execCtx{db: ctx.db, arg: []interface{}{s.indexName}}
-		for _, s := range deleteIndex2ByIndexName.l {
-			if _, err := s.exec(xc); err != nil {
-				return nil, err
-			}
+		if err := ctx.db.deleteIndex2ByIndexName(s.indexName); err != nil {
+			return nil, err
 		}
 	}
 
@@ -396,11 +393,8 @@ func (s *dropTableStmt) exec(ctx *execCtx) (Recordset, error) {
 	}
 
 	if ctx.db.hasAllIndex2() {
-		xc := &execCtx{db: ctx.db, arg: []interface{}{s.tableName}}
-		for _, s := range deleteIndex2ByTableName.l {
-			if _, err := s.exec(xc); err != nil {
-				return nil, err
-			}
+		if err := ctx.db.deleteIndex2ByTableName(s.tableName); err != nil {
+			return nil, err
 		}
 	}
 
@@ -446,23 +440,36 @@ func (s *alterTableDropColumnStmt) exec(ctx *execCtx) (Recordset, error) {
 			c.name = ""
 			t.cols0[c.index].name = ""
 			if t.hasIndices() {
-				if v := t.indices[c.index+1]; v != nil {
-					if err := t.dropIndex(c.index + 1); err != nil {
-						return nil, err
-					}
+				if len(t.indices) != 0 {
+					if v := t.indices[c.index+1]; v != nil {
+						if err := t.dropIndex(c.index + 1); err != nil {
+							return nil, err
+						}
 
-					if ctx.db.hasAllIndex2() {
-						xc := &execCtx{db: ctx.db, arg: []interface{}{v.name}}
-						for _, s := range deleteIndex2ByIndexName.l {
-							if _, err := s.exec(xc); err != nil {
+						if ctx.db.hasAllIndex2() {
+							if err := ctx.db.deleteIndex2ByIndexName(v.name); err != nil {
 								return nil, err
 							}
 						}
 					}
 				}
 
-				if t.hasIndices2() { //TODO indices2
-					panic("TODO")
+				for nm, ix := range t.indices2 {
+					for _, e := range ix.exprList {
+						m := mentionedColumns(e)
+						if _, ok := m[s.colName]; ok {
+							if err := ctx.db.deleteIndex2ByIndexName(nm); err != nil {
+								return nil, err
+							}
+
+							if err := ix.x.Drop(); err != nil {
+								return nil, err
+							}
+
+							delete(t.indices2, nm)
+							break
+						}
+					}
 				}
 			}
 			return nil, t.updated()
@@ -516,7 +523,7 @@ func (s *alterTableAddStmt) exec(ctx *execCtx) (Recordset, error) {
 		}
 	}
 
-	if t.hasIndices() {
+	if len(t.indices) != 0 {
 		t.indices = append(t.indices, nil)
 		t.xroots = append(t.xroots, 0)
 		if err := t.store.Update(t.hxroots, t.xroots...); err != nil {
