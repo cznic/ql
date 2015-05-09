@@ -459,7 +459,7 @@ func (t *table) addIndex2(execCtx *execCtx, unique bool, indexName string, exprL
 	// Must fill the new index.
 	m := map[interface{}]interface{}{}
 	h, store := t.head, t.store
-	vlist := make([]interface{}, len(exprList))
+	//TODO- vlist := make([]interface{}, len(exprList))
 	for h != 0 {
 		rec, err := store.Read(nil, h, t.cols...)
 		if err != nil {
@@ -475,16 +475,26 @@ func (t *table) addIndex2(execCtx *execCtx, unique bool, indexName string, exprL
 			m[col.name] = v
 		}
 
-		for i, e := range exprList {
-			v, err := e.eval(execCtx, m, nil)
-			if err != nil {
-				return -1, err
-			}
+		//TODO- for i, e := range exprList {
+		//TODO- 	v, err := e.eval(execCtx, m, nil)
+		//TODO- 	if err != nil {
+		//TODO- 		return -1, err
+		//TODO- 	}
 
-			vlist[i] = v
+		//TODO- 	vlist[i] = v
+		//TODO- }
+
+		//TODO- if err = x.Create(vlist, h); err != nil {
+		//TODO- 	return -1, err
+		//TODO- }
+
+		id := rec[1].(int64)
+		vlist, err := x2.eval(execCtx, t.cols, id, rec[2:], nil)
+		if err != nil {
+			return -1, err
 		}
 
-		if err = x.Create(vlist, h); err != nil {
+		if err := x2.x.Create(vlist, h); err != nil {
 			return -1, err
 		}
 

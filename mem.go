@@ -30,16 +30,20 @@ type memIndex struct {
 }
 
 func newMemIndex(m *mem, unique bool) *memIndex {
-	return &memIndex{t: xtreeNew(), unique: unique, m: m}
+	r := &memIndex{t: xtreeNew(), unique: unique, m: m}
+	//dbg("newMemIndex %p, %p", r, m)
+	return r
 }
 
 func (x *memIndex) Clear() error {
+	//dbg("memIndex(%p, %p).Clear", x, x.m)
 	x.m.newUndo(undoClearX, 0, []interface{}{x, x.t})
 	x.t = xtreeNew()
 	return nil
 }
 
 func (x *memIndex) Create(indexedValues []interface{}, h int64) error {
+	//dbg("memIndex(%p, %p).Create %v, %v", x, x.m, indexedValues, h)
 	t := x.t
 	switch {
 	case !x.unique:
@@ -63,6 +67,7 @@ func (x *memIndex) Create(indexedValues []interface{}, h int64) error {
 }
 
 func (x *memIndex) Delete(indexedValues []interface{}, h int64) error {
+	//dbg("memIndex(%p, %p).Delete %v, %v", x, x.m, indexedValues, h)
 	t := x.t
 	var k indexKey
 	var v interface{}
