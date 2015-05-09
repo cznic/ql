@@ -814,8 +814,15 @@ func (s *insertIntoStmt) execSelect(t *table, cols []*col, ctx *execCtx, constra
 					return false, err
 				}
 			}
-			if err := t.addRecordIndices2(ctx, h, data0); err != nil {
-				return false, err
+			for _, ix := range t.indices2 {
+				vlist, err := ix.eval(ctx, t.cols, id, data0[2:])
+				if err != nil {
+					return false, err
+				}
+
+				if err := ix.x.Create(vlist, h); err != nil {
+					return false, err
+				}
 			}
 
 			cc.RowsAffected++

@@ -73,6 +73,28 @@ type index2 struct { // Expression list index.
 	exprList []expression
 }
 
+func (x *index2) eval(ctx *execCtx, cols []*col, id int64, r []interface{}) ([]interface{}, error) {
+	m := map[interface{}]interface{}{"$id": id}
+	vlist := make([]interface{}, len(x.exprList))
+	for _, col := range cols {
+		ci := col.index
+		v := interface{}(nil)
+		if ci < len(r) {
+			v = r[ci]
+		}
+		m[col.name] = v
+	}
+	for i, e := range x.exprList {
+		v, err := e.eval(ctx, m, nil)
+		if err != nil {
+			return nil, err
+		}
+
+		vlist[i] = v
+	}
+	return vlist, nil
+}
+
 type indexKey struct {
 	value []interface{}
 	h     int64
@@ -526,40 +548,16 @@ func (t *table) addRecord(execCtx *execCtx, r []interface{}) (id int64, err erro
 		}
 	}
 
-	if err := t.addRecordIndices2(execCtx, h, r); err != nil {
-		return -1, err
-	}
-	//TODO- m := map[interface{}]interface{}{"id()": id}
-	//TODO- var vlist []interface{}
-	//TODO- for _, x := range t.indices2 {
-	//TODO- 	n := len(x.exprList)
-	//TODO- 	if n > len(vlist) {
-	//TODO- 		vlist = make([]interface{}, n)
-	//TODO- 	}
-	//TODO- 	vlist = vlist[:n]
-	//TODO- 	for _, col := range t.cols {
-	//TODO- 		ci := col.index
-	//TODO- 		v := interface{}(nil)
-	//TODO- 		if ci < len(r) {
-	//TODO- 			v = r[ci+2]
-	//TODO- 		}
-	//TODO- 		if m == nil {
-	//TODO- 			m = map[interface{}]interface{}{}
-	//TODO- 		}
-	//TODO- 		m[col.name] = v
-	//TODO- 	}
-	//TODO- 	for i, e := range x.exprList {
-	//TODO- 		v, err := e.eval(execCtx, m, nil)
-	//TODO- 		if err != nil {
-	//TODO- 			return -1, err
-	//TODO- 		}
+	for _, ix := range t.indices2 {
+		vlist, err := ix.eval(execCtx, t.cols, id, r[2:])
+		if err != nil {
+			return -1, err
+		}
 
-	//TODO- 		vlist[i] = v
-	//TODO- 	}
-	//TODO- 	if err = x.x.Create(vlist, h); err != nil {
-	//TODO- 		return -1, err
-	//TODO- 	}
-	//TODO- }
+		if err := ix.x.Create(vlist, h); err != nil {
+			return -1, err
+		}
+	}
 
 	if err = t.store.Update(t.hhead, h); err != nil {
 		return
@@ -567,41 +565,6 @@ func (t *table) addRecord(execCtx *execCtx, r []interface{}) (id int64, err erro
 
 	t.head = h
 	return
-}
-
-func (t *table) addRecordIndices2(execCtx *execCtx, h int64, r []interface{}) error {
-	m := map[interface{}]interface{}{"$id": r[1].(int64)}
-	var vlist []interface{}
-	for _, x := range t.indices2 {
-		n := len(x.exprList)
-		if n > len(vlist) {
-			vlist = make([]interface{}, n)
-		}
-		vlist = vlist[:n]
-		for _, col := range t.cols {
-			ci := col.index
-			v := interface{}(nil)
-			if ci < len(r) {
-				v = r[ci+2]
-			}
-			if m == nil {
-				m = map[interface{}]interface{}{}
-			}
-			m[col.name] = v
-		}
-		for i, e := range x.exprList {
-			v, err := e.eval(execCtx, m, nil)
-			if err != nil {
-				return err
-			}
-
-			vlist[i] = v
-		}
-		if err := x.x.Create(vlist, h); err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 func (t *table) flds() (r []*fld) {
