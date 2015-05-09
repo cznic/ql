@@ -172,6 +172,7 @@ func (s *updateStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 			}
 		}
 		//TODO indices2
+		//dieHard(1)
 
 		if err = t.store.UpdateRow(h, blobCols, data...); err != nil { //LATER detect which blobs are actually affected
 			return nil, err
@@ -191,6 +192,7 @@ func (s *updateStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 			}
 		}
 		//TODO indices2
+		//dieHard(1)
 
 		cc.RowsAffected++
 	}
@@ -812,7 +814,9 @@ func (s *insertIntoStmt) execSelect(t *table, cols []*col, ctx *execCtx, constra
 					return false, err
 				}
 			}
-			//TODO indices2
+			if err := t.addRecordIndices2(ctx, h, data0); err != nil {
+				return false, err
+			}
 
 			cc.RowsAffected++
 			ctx.db.root.lastInsertID = id
@@ -1178,6 +1182,15 @@ func (s *createIndexStmt) exec(ctx *execCtx) (Recordset, error) {
 			return nil, err
 		}
 	default:
+		for _, e := range s.exprList {
+			m := mentionedColumns(e)
+			for colName := range m {
+				c := findCol(t.cols, colName)
+				if c == nil {
+					return nil, fmt.Errorf("CREATE INDEX: column does not exist: %s", colName)
+				}
+			}
+		}
 		if h, err = t.addIndex2(ctx, s.unique, s.indexName, s.exprList); err != nil {
 			return nil, fmt.Errorf("CREATE INDEX: %v", err)
 		}

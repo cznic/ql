@@ -11322,7 +11322,7 @@ ORDER BY Expr;
 
 -- 938
 BEGIN TRANSACTION;
-	CREATE TABLE t(a int, b int);
+	CREATE TABLE t(a int, b int, c int);
 	CREATE INDEX x ON t(a + c, c - b);
 COMMIT;
 SELECT TableName, IndexName, IsUnique, IsSimple, Root > 0 OR Root == -1 // -1: mem DB
@@ -11519,8 +11519,10 @@ SELECT * FROM x;
 BEGIN TRANSACTION;
 	CREATE TABLE t(a int, b int, c int);
 	CREATE INDEX x ON t(b, c);
-	INSERT INTO t VALUES (100, 200, 300), (1, 2, 3), (10, 20, 30);
-	INSERT INTO t VALUES (NULL, 200, 300), (1, NULL, 3), (10, NULL, 30), (NULL, NULL, NULL);
+	INSERT INTO t VALUES
+		(100, 200, 300), (1, 2, 3), (10, 20, 30),
+		(NULL, 200, 300), (1, NULL, 3), (10, NULL, 30),
+		(NULL, NULL, NULL);
 COMMIT;
 SELECT * FROM x;
 |?x
@@ -11531,3 +11533,129 @@ SELECT * FROM x;
 [20 30]
 [200 300]
 [200 300]
+
+-- 957
+BEGIN TRANSACTION;
+	CREATE TABLE t(a int, b int, c int);
+	CREATE INDEX x ON t(b, c);
+	INSERT INTO t VALUES
+		(100, 200, 300), (1, 2, 3), (10, 20, 30),
+		(NULL, 200, 300), (1, NULL, 3), (10, NULL, 30),
+		(NULL, NULL, NULL), (NULL, NULL, NULL);
+COMMIT;
+SELECT * FROM x;
+|?x
+[<nil> <nil>]
+[<nil> <nil>]
+[<nil> 3]
+[<nil> 30]
+[2 3]
+[20 30]
+[200 300]
+[200 300]
+
+-- 958
+BEGIN TRANSACTION;
+	CREATE TABLE t(a int, b int, c int);
+	CREATE UNIQUE INDEX x ON t(b, c);
+	INSERT INTO t VALUES
+		(100, 200, 300), (1, 2, 3), (10, 20, 30),
+		(NULL, 200, 300), (1, NULL, 3), (10, NULL, 30),
+		(NULL, NULL, NULL), (NULL, NULL, NULL);
+COMMIT;
+SELECT * FROM x;
+||duplicate .* [200 300]
+
+-- 959
+BEGIN TRANSACTION;
+	CREATE TABLE t(a int, b int, c int);
+	CREATE INDEX x ON t(b, c);
+	INSERT INTO t VALUES
+		(100, 200, 300), (1, 2, 3), (10, 20, 30),
+		(NULL, 200, 301), (1, NULL, 3), (10, NULL, 30),
+		(NULL, NULL, NULL), (NULL, NULL, NULL);
+COMMIT;
+SELECT * FROM x;
+|?x
+[<nil> <nil>]
+[<nil> <nil>]
+[<nil> 3]
+[<nil> 30]
+[2 3]
+[20 30]
+[200 300]
+[200 301]
+
+-- 960
+BEGIN TRANSACTION;
+	CREATE INDEX x ON t (qty()+1);
+COMMIT;
+||undefined.* qty
+
+-- 961
+BEGIN TRANSACTION;
+	CREATE INDEX x ON t (qty+1);
+COMMIT;
+||table.*not exist
+
+-- 962
+BEGIN TRANSACTION;
+	CREATE TABLE t (c int);
+	CREATE INDEX x ON t (qty+1);
+COMMIT;
+||column.*not exist
+
+-- 963
+BEGIN TRANSACTION;
+	CREATE TABLE t (c int);
+	CREATE INDEX x ON t (id()+1);
+COMMIT;
+SELECT * FROM t;
+|?c
+
+-- 964
+BEGIN TRANSACTION;
+	CREATE TABLE t (c int);
+	CREATE INDEX x ON t (id()+1);
+	CREATE INDEX y ON t (id()+1);
+COMMIT;
+SELECT * FROM t;
+|?c
+
+-- 965
+BEGIN TRANSACTION;
+	CREATE TABLE t (c int);
+	CREATE INDEX x ON t (id()+1);
+	CREATE INDEX x ON t (c+1);
+COMMIT;
+SELECT * FROM t;
+||already
+
+-- 966
+BEGIN TRANSACTION;
+	CREATE TABLE t (c int);
+	CREATE INDEX x ON t (c+1);
+	INSERT INTO t VALUES(42);
+COMMIT;
+SELECT * FROM x;
+|lx
+[43]
+
+-- 967
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	CREATE INDEX x ON t (i+1000);
+	INSERT INTO t VALUES(42);
+	INSERT INTO t VALUES(24);
+	//CREATE INDEX y ON t (i+2000);
+	INSERT INTO t VALUES(1);
+	INSERT INTO t VALUES(999);
+	UPDATE t i = 240 WHERE i == 24;
+	//DELETE FROM t WHERE i == 240;
+COMMIT;
+SELECT * FROM x; //TODO
+|lx
+[1001]
+[1024]
+[1042]
+[1999]
