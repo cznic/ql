@@ -364,6 +364,11 @@ func (t *table) truncate() (err error) {
 			return err
 		}
 	}
+	for _, ix := range t.indices2 {
+		if err := ix.x.Clear(); err != nil {
+			return err
+		}
+	}
 	t.head = 0
 	return t.updated()
 }
