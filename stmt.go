@@ -113,7 +113,8 @@ func (s *updateStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 		for _, col := range t.cols {
 			m[col.name] = data[2+col.index]
 		}
-		m["$id"] = data[1]
+		id := data[1].(int64)
+		m["$id"] = id
 		if expr != nil {
 			val, err := s.where.eval(ctx, m, ctx.arg)
 			if err != nil {
@@ -135,6 +136,16 @@ func (s *updateStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 		}
 
 		// hit
+		for _, ix := range t.indices2 {
+			vlist, err := ix.eval(ctx, t.cols, id, data[2:], nil)
+			if err != nil {
+				return nil, err
+			}
+
+			if err := ix.x.Delete(vlist, h); err != nil {
+				return nil, err
+			}
+		}
 		for i, asgn := range s.list {
 			val, err := asgn.expr.eval(ctx, m, ctx.arg)
 			if err != nil {
@@ -171,8 +182,6 @@ func (s *updateStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 				return nil, err
 			}
 		}
-		//TODO indices2
-		//dieHard(1)
 
 		if err = t.store.UpdateRow(h, blobCols, data...); err != nil { //LATER detect which blobs are actually affected
 			return nil, err
@@ -191,8 +200,16 @@ func (s *updateStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 				return nil, err
 			}
 		}
-		//TODO indices2
-		//dieHard(1)
+		for _, ix := range t.indices2 {
+			vlist, err := ix.eval(ctx, t.cols, id, data[2:], nil)
+			if err != nil {
+				return nil, err
+			}
+
+			if err := ix.x.Create(vlist, h); err != nil {
+				return nil, err
+			}
+		}
 
 		cc.RowsAffected++
 	}
@@ -245,7 +262,8 @@ func (s *deleteStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 		for _, col := range t.cols {
 			m[col.name] = data[2+col.index]
 		}
-		m["$id"] = data[1]
+		id := data[1].(int64)
+		m["$id"] = id
 		val, err := s.where.eval(ctx, m, ctx.arg)
 		if err != nil {
 			return nil, err
@@ -272,6 +290,16 @@ func (s *deleteStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 
 			// overflow chunks left in place
 			if err = v.x.Delete([]interface{}{data[i+1]}, h); err != nil {
+				return nil, err
+			}
+		}
+		for _, ix := range t.indices2 {
+			vlist, err := ix.eval(ctx, t.cols, id, data[2:], m)
+			if err != nil {
+				return nil, err
+			}
+
+			if err := ix.x.Delete(vlist, h); err != nil {
 				return nil, err
 			}
 		}
@@ -815,7 +843,7 @@ func (s *insertIntoStmt) execSelect(t *table, cols []*col, ctx *execCtx, constra
 				}
 			}
 			for _, ix := range t.indices2 {
-				vlist, err := ix.eval(ctx, t.cols, id, data0[2:])
+				vlist, err := ix.eval(ctx, t.cols, id, data0[2:], nil)
 				if err != nil {
 					return false, err
 				}

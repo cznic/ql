@@ -73,16 +73,18 @@ type index2 struct { // Expression list index.
 	exprList []expression
 }
 
-func (x *index2) eval(ctx *execCtx, cols []*col, id int64, r []interface{}) ([]interface{}, error) {
-	m := map[interface{}]interface{}{"$id": id}
+func (x *index2) eval(ctx *execCtx, cols []*col, id int64, r []interface{}, m map[interface{}]interface{}) ([]interface{}, error) {
 	vlist := make([]interface{}, len(x.exprList))
-	for _, col := range cols {
-		ci := col.index
-		v := interface{}(nil)
-		if ci < len(r) {
-			v = r[ci]
+	if m == nil {
+		m = map[interface{}]interface{}{"$id": id}
+		for _, col := range cols {
+			ci := col.index
+			v := interface{}(nil)
+			if ci < len(r) {
+				v = r[ci]
+			}
+			m[col.name] = v
 		}
-		m[col.name] = v
 	}
 	for i, e := range x.exprList {
 		v, err := e.eval(ctx, m, nil)
@@ -549,7 +551,7 @@ func (t *table) addRecord(execCtx *execCtx, r []interface{}) (id int64, err erro
 	}
 
 	for _, ix := range t.indices2 {
-		vlist, err := ix.eval(execCtx, t.cols, id, r[2:])
+		vlist, err := ix.eval(execCtx, t.cols, id, r[2:], nil)
 		if err != nil {
 			return -1, err
 		}
