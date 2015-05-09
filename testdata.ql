@@ -1041,7 +1041,7 @@ BEGIN TRANSACTION;
 	CREATE TABLE t (c1 bool);
 	INSERT INTO t VALUES (1);
 COMMIT;
-||cannot .* int64.*bool .* c1
+||type int64.*type bool
 
 -- 84
 BEGIN TRANSACTION;
@@ -1057,7 +1057,7 @@ BEGIN TRANSACTION;
 	CREATE TABLE t (c1 int8);
 	INSERT INTO t VALUES ("foo");
 COMMIT;
-||cannot .* string.*int8 .* c1
+||type string.*type int8
 
 -- 86
 BEGIN TRANSACTION;
@@ -1090,7 +1090,7 @@ BEGIN TRANSACTION;
 CREATE TABLE t (c1 int32);
 	INSERT INTO t VALUES (uint32(1));
 COMMIT;
-||cannot .* uint32.*int32 .* c1
+||type uint32.*type int32
 
 -- 90
 BEGIN TRANSACTION;
@@ -1105,7 +1105,7 @@ BEGIN TRANSACTION;
 	CREATE TABLE t (c1 int64);
 	INSERT INTO t VALUES (int8(1));
 COMMIT;
-||cannot .* int8.*int64 .* c1
+||type int8.*type int64
 
 -- 92
 BEGIN TRANSACTION;
@@ -1121,7 +1121,7 @@ BEGIN TRANSACTION;
 	CREATE TABLE t (c1 int);
 	INSERT INTO t VALUES (int8(1));
 COMMIT;
-||cannot .* int8.*int64 .* c1
+||type int8.*type int64
 
 -- 94
 BEGIN TRANSACTION;
@@ -1155,7 +1155,7 @@ BEGIN TRANSACTION;
 	CREATE TABLE t (c1 byte);
 	INSERT INTO t VALUES (int8(1));
 COMMIT;
-||cannot .* int8.*uint8 .* c1
+||type int8.*type uint8
 
 -- 98
 BEGIN TRANSACTION;
@@ -1171,7 +1171,7 @@ BEGIN TRANSACTION;
 	CREATE TABLE t (c1 uint16);
 	INSERT INTO t VALUES (int(1));
 COMMIT;
-||cannot .* int64.*uint16 .* c1
+||type int64.*uint16
 
 -- 100
 BEGIN TRANSACTION;
@@ -1186,7 +1186,7 @@ BEGIN TRANSACTION;
 	CREATE TABLE t (c1 uint32);
 	INSERT INTO t VALUES (int32(1));
 COMMIT;
-||cannot .* int32.*uint32 .* c1
+||type int32.*type uint32
 
 -- 102
 BEGIN TRANSACTION;
@@ -1202,7 +1202,7 @@ BEGIN TRANSACTION;
 	CREATE TABLE t (c1 uint64);
 	INSERT INTO t VALUES (int(1));
 COMMIT;
-||cannot .* int64.*uint64 .* c1
+||type int64.*type uint64
 
 -- 104
 BEGIN TRANSACTION;
@@ -1218,7 +1218,7 @@ BEGIN TRANSACTION;
 	CREATE TABLE t (c1 uint);
 	INSERT INTO t VALUES (int(1));
 COMMIT;
-||cannot .* int64.*uint64 .* c1
+||type int64.*type uint64
 
 -- 106
 BEGIN TRANSACTION;
@@ -1244,7 +1244,7 @@ BEGIN TRANSACTION;
 	INSERT INTO t VALUES (float64(1));
 COMMIT;
 SELECT * from t;
-||cannot .* float64.*float32 .* c1
+||type float64.*type float32
 
 -- 109
 BEGIN TRANSACTION;
@@ -1297,7 +1297,7 @@ BEGIN TRANSACTION;
 	INSERT INTO t VALUES (complex128(complex(1, 0.5)));
 COMMIT;
 SELECT * from t;
-||cannot .* complex128.*complex64 .* c1
+||type complex128.*type complex64
 
 -- 115
 BEGIN TRANSACTION;
@@ -1322,7 +1322,7 @@ BEGIN TRANSACTION;
 	CREATE TABLE t (c1 string);
 	INSERT INTO t VALUES (1);
 COMMIT;
-||cannot .* int64.*string .* c1
+||type int64.*type string
 
 -- 118
 BEGIN TRANSACTION;
@@ -1359,7 +1359,7 @@ BEGIN TRANSACTION;
 COMMIT;
 SELECT * from t
 WHERE c1 == 8;
-||cannot .* float64.*int8 .* c1
+||type float64.*type int8
 
 -- 122
 BEGIN TRANSACTION;
@@ -1716,7 +1716,7 @@ BEGIN TRANSACTION;
 	INSERT INTO t VALUES (int64(2), "b");
 COMMIT;
 SELECT c2 FROM t;
-||cannot .*int64.*int32 .* c1
+||type int64.*type int32
 
 -- 157
 BEGIN TRANSACTION;
@@ -2402,7 +2402,7 @@ BEGIN TRANSACTION;
 		DepartmentID = "foo";
 COMMIT;
 SELECT * FROM employee;
-||cannot .* string.*int64 .* DepartmentID
+||type string.*type int64
 
 -- S 218
 SELECT foo[len()] FROM bar;
@@ -11735,10 +11735,85 @@ SELECT * FROM x;
 
 -- 974
 BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	CREATE INDEX x ON t (i+1);
+	INSERT INTO t VALUES(NULL);
+	INSERT INTO t VALUES(50);
+	INSERT INTO t VALUES(10);
+	INSERT INTO t VALUES(40);
+	INSERT INTO t VALUES(20);
+	INSERT INTO t VALUES(30);
+	INSERT INTO t VALUES(30);
+	INSERT INTO t VALUES(20);
+	INSERT INTO t VALUES(40);
+	INSERT INTO t VALUES(10);
+	INSERT INTO t VALUES(50);
+	INSERT INTO t VALUES(NULL);
+COMMIT;
+SELECT * FROM x;
+|?x
+[<nil>]
+[<nil>]
+[11]
+[11]
+[21]
+[21]
+[31]
+[31]
+[41]
+[41]
+[51]
+[51]
+
+-- 975
+BEGIN TRANSACTION;
+	CREATE TABLE t (i blob);
+	CREATE INDEX x ON t (blob(string(i)));
+COMMIT;
+SELECT * FROM x;
+|?x
+
+-- 976
+BEGIN TRANSACTION;
+	CREATE TABLE t (i blob);
+	CREATE INDEX x ON t (blob(string(i)));
+	INSERT INTO t VALUES (blob("foo"));
+COMMIT;
+SELECT * FROM x;
+||blob-like
+
+-- 977
+BEGIN TRANSACTION;
 	CREATE TABLE t (i bigint);
 	CREATE INDEX x ON t (i+1);
 	INSERT INTO t VALUES (42);
 COMMIT;
 SELECT * FROM x;
-|?x
-[43]
+||blob-like
+
+-- 978
+BEGIN TRANSACTION;
+	CREATE TABLE t (i bigrat);
+	CREATE INDEX x ON t (i+1);
+	INSERT INTO t VALUES (42);
+COMMIT;
+SELECT * FROM x;
+||blob-like
+
+-- 979
+BEGIN TRANSACTION;
+	CREATE TABLE t (i time);
+	CREATE INDEX x ON t (timeIn(i, "local"));
+	INSERT INTO t VALUES (now());
+COMMIT;
+SELECT * FROM x;
+||blob-like
+
+-- 980
+BEGIN TRANSACTION;
+	CREATE TABLE t (i duration);
+	CREATE INDEX x ON t (since(now()));
+	INSERT INTO t VALUES (duration("3s"));
+COMMIT;
+SELECT * FROM x;
+||blob-like

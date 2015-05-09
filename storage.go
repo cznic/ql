@@ -73,18 +73,23 @@ type index2 struct { // Expression list index.
 	exprList []expression
 }
 
-func (x *index2) eval(ctx *execCtx, cols []*col, id int64, r []interface{}, m map[interface{}]interface{}) ([]interface{}, error) {
+func (x *index2) eval(ctx *execCtx, cols []*col, id int64, r []interface{}) ([]interface{}, error) {
+	f, isFile := ctx.db.store.(*file)
 	vlist := make([]interface{}, len(x.exprList))
-	if m == nil {
-		m = map[interface{}]interface{}{"$id": id}
-		for _, col := range cols {
-			ci := col.index
-			v := interface{}(nil)
-			if ci < len(r) {
-				v = r[ci]
-			}
-			m[col.name] = v
+	m := map[interface{}]interface{}{"$id": id}
+	for _, col := range cols {
+		ci := col.index
+		v := interface{}(nil)
+		if ci < len(r) {
+			v = r[ci]
 		}
+		if b, ok := v.([]byte); ok && isFile {
+			var err error
+			if v, err = expand1(chunk{f: f, b: b}, nil); err != nil {
+				return nil, err
+			}
+		}
+		m[col.name] = v
 	}
 	for i, e := range x.exprList {
 		v, err := e.eval(ctx, m, nil)
@@ -498,7 +503,7 @@ func (t *table) addIndex2(execCtx *execCtx, unique bool, indexName string, exprL
 		//TODO- }
 
 		id := rec[1].(int64)
-		vlist, err := x2.eval(execCtx, t.cols, id, rec[2:], nil)
+		vlist, err := x2.eval(execCtx, t.cols, id, rec[2:])
 		if err != nil {
 			return -1, err
 		}
@@ -570,7 +575,7 @@ func (t *table) addRecord(execCtx *execCtx, r []interface{}) (id int64, err erro
 	}
 
 	for _, ix := range t.indices2 {
-		vlist, err := ix.eval(execCtx, t.cols, id, r[2:], nil)
+		vlist, err := ix.eval(execCtx, t.cols, id, r[2:])
 		if err != nil {
 			return -1, err
 		}

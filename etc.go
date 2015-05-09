@@ -1362,9 +1362,6 @@ func typeCheck(rec []interface{}, cols []*col) (err error) {
 					continue
 				case qFloat32, qFloat64, qInt8, qInt16, qInt32, qInt64, qUint8, qUint16, qUint32, qUint64:
 					return fmt.Errorf("constant %v truncated to real", y)
-				case qString:
-				default:
-					log.Panic("internal error 007")
 				}
 			case idealFloat:
 				y := float64(v.(idealFloat))
@@ -1485,8 +1482,6 @@ func typeCheck(rec []interface{}, cols []*col) (err error) {
 				case qBigRat:
 					rec[i] = big.NewRat(1, 1).SetFloat64(y)
 					continue
-				default:
-					log.Panic("internal error 008")
 				}
 			case idealInt:
 				y := int64(v.(idealInt))
@@ -1567,8 +1562,6 @@ func typeCheck(rec []interface{}, cols []*col) (err error) {
 				case qBigRat:
 					rec[i] = big.NewRat(1, 1).SetInt64(y)
 					continue
-				default:
-					log.Panic("internal error 009")
 				}
 			case idealRune:
 				y := int64(v.(idealRune))
@@ -1649,8 +1642,6 @@ func typeCheck(rec []interface{}, cols []*col) (err error) {
 				case qBigRat:
 					rec[i] = big.NewRat(1, 1).SetInt64(y)
 					continue
-				default:
-					log.Panic("internal error 010")
 				}
 			case idealUint:
 				y := uint64(v.(idealUint))
@@ -1730,12 +1721,9 @@ func typeCheck(rec []interface{}, cols []*col) (err error) {
 					ii := big.NewInt(0).SetUint64(y)
 					rec[i] = big.NewRat(1, 1).SetInt(ii)
 					continue
-				default:
-					log.Panic("internal error 011")
 				}
 			}
-			//dbg("v %T(%v), typ %s", v, v, typeStr(c.typ))
-			return fmt.Errorf("cannot use %v (type %T) as %s in assignment/comparison to/with column %s", v, ideal(v), typeStr(c.typ), c.name)
+			return fmt.Errorf("cannot use %v (type %T) in assignment to, or comparison with, column %s (type %s)", v, ideal(v), c.name, typeStr(c.typ))
 		}
 	}
 	return

@@ -715,7 +715,6 @@ func (s *file) Create(data ...interface{}) (h int64, err error) {
 
 	b, err := lldb.EncodeScalars(data...)
 	if err != nil {
-		dbg("")
 		return
 	}
 
@@ -1140,7 +1139,6 @@ func (x *fileIndex) Create(indexedValues []interface{}, h int64) error {
 	case !x.unique:
 		k, err := lldb.EncodeScalars(append(indexedValues, h)...)
 		if err != nil {
-			dbg("")
 			return err
 		}
 
@@ -1148,7 +1146,6 @@ func (x *fileIndex) Create(indexedValues []interface{}, h int64) error {
 	case isIndexNull(indexedValues): // unique, NULL
 		k, err := lldb.EncodeScalars(nil, h)
 		if err != nil {
-			dbg("")
 			return err
 		}
 
@@ -1156,13 +1153,11 @@ func (x *fileIndex) Create(indexedValues []interface{}, h int64) error {
 	default: // unique, non NULL
 		k, err := lldb.EncodeScalars(append(indexedValues, int64(0))...)
 		if err != nil {
-			dbg("")
 			return err
 		}
 
 		v, err := lldb.EncodeScalars(h)
 		if err != nil {
-			dbg("")
 			return err
 		}
 
@@ -1197,7 +1192,6 @@ func (x *fileIndex) Delete(indexedValues []interface{}, h int64) error {
 		k, err = lldb.EncodeScalars(append(indexedValues, int64(0))...)
 	}
 	if err != nil {
-		dbg("")
 		return err
 	}
 
@@ -1215,7 +1209,6 @@ func (x *fileIndex) Drop() error {
 func (x *fileIndex) Seek(indexedValues []interface{}) (indexIterator, bool, error) { //TODO(indices) blobs: +test
 	k, err := lldb.EncodeScalars(append(indexedValues, 0)...)
 	if err != nil {
-		dbg("")
 		return nil, false, err
 	}
 

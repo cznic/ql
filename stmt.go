@@ -137,7 +137,7 @@ func (s *updateStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 
 		// hit
 		for _, ix := range t.indices2 {
-			vlist, err := ix.eval(ctx, t.cols, id, data[2:], nil)
+			vlist, err := ix.eval(ctx, t.cols, id, data[2:])
 			if err != nil {
 				return nil, err
 			}
@@ -201,7 +201,7 @@ func (s *updateStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 			}
 		}
 		for _, ix := range t.indices2 {
-			vlist, err := ix.eval(ctx, t.cols, id, data[2:], nil)
+			vlist, err := ix.eval(ctx, t.cols, id, data[2:])
 			if err != nil {
 				return nil, err
 			}
@@ -294,7 +294,7 @@ func (s *deleteStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 			}
 		}
 		for _, ix := range t.indices2 {
-			vlist, err := ix.eval(ctx, t.cols, id, data[2:], m)
+			vlist, err := ix.eval(ctx, t.cols, id, data[2:])
 			if err != nil {
 				return nil, err
 			}
@@ -843,7 +843,7 @@ func (s *insertIntoStmt) execSelect(t *table, cols []*col, ctx *execCtx, constra
 				}
 			}
 			for _, ix := range t.indices2 {
-				vlist, err := ix.eval(ctx, t.cols, id, data0[2:], nil)
+				vlist, err := ix.eval(ctx, t.cols, id, data0[2:])
 				if err != nil {
 					return false, err
 				}
