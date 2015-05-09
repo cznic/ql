@@ -461,7 +461,7 @@ func (s *alterTableDropColumnStmt) exec(ctx *execCtx) (Recordset, error) {
 					}
 				}
 
-				if t.hasIndices2() {
+				if t.hasIndices2() { //TODO indices2
 					panic("TODO")
 				}
 			}
@@ -1189,24 +1189,17 @@ func (s *createIndexStmt) exec(ctx *execCtx) (Recordset, error) {
 		return nil, nil
 	case 2:
 		if s.isSimpleIndex() {
-			expr := s.colName
-			cols := [][]string{{}}
-			if expr != "id()" {
-				cols = [][]string{{expr}}
-			}
-			return nil, ctx.db.insertIndex2(s.tableName, s.indexName, []string{expr}, cols, s.unique, true, h)
+			return nil, ctx.db.insertIndex2(s.tableName, s.indexName, []string{s.colName}, s.unique, true, h)
 		}
 	default:
 		panic("internal error 076")
 	}
 
 	exprList := make([]string, 0, len(s.exprList))
-	colList := make([][]string, 0, len(exprList))
 	for _, e := range s.exprList {
 		exprList = append(exprList, e.String())
-		colList = append(colList, mentionedColumns(e))
 	}
-	return nil, ctx.db.insertIndex2(s.tableName, s.indexName, exprList, colList, s.unique, false, h)
+	return nil, ctx.db.insertIndex2(s.tableName, s.indexName, exprList, s.unique, false, h)
 }
 
 func (s *createIndexStmt) isUpdating() bool { return true }
