@@ -14,6 +14,16 @@
 //
 // Change list
 //
+// 2015-05-09: The grammar of the CREATE INDEX statement now accepts an
+// expression list instead of a single expression, which was further limited to
+// just a column name or the built-in id().  As a side effect, composite
+// indices are now functional. However, the values in the expression-list style
+// index are not yet used by other statements or the statement/query planner.
+// The composite index is useful while having UNIQUE clause to check for
+// semantically duplicate rows before they get added to the table or when such
+// a row is mutated using the UPDATE statement and the expression-list style
+// index tuple of the row is thus recomputed.
+//
 // 2015-05-02: The Schema field of table __Table now correctly reflects any
 // column constraints and/or defaults. Also, the (*DB).Info method now has that
 // information provided in new ColumInfo fields NotNull, Constraint and
@@ -1358,12 +1368,25 @@
 // indices might be used to improve the performance when the ORDER BY clause is
 // present.
 //
-// The UNIQUE modifier requires the indexed values to be unique or NULL.
+// The UNIQUE modifier requires the indexed values tuple to be index-wise
+// unique or have all values NULL.
 //
 // The optional IF NOT EXISTS clause makes the statement a no operation if the
 // index already exists.
 //
-// TODO update CREATE INDEX docs for latest grammar change.
+// Simple index
+//
+// A simple index consists of only one expression which must be either a column
+// name or the built-in id().
+//
+// Expression list index
+//
+// A more complex and more general index is one that consists of more than one
+// expression or its single expression does not qualify as a simple index. In
+// this case the type of all expressions in the list must be one of the non
+// blob-like types.
+//
+// Note: Blob-like types are blob, bigint, bigrat, time and duration.
 //
 // CREATE TABLE
 //
