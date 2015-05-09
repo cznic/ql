@@ -1195,9 +1195,9 @@ func (r tableRset) doIndex(xname string, x btreeIndex, ctx *execCtx, onlyNames b
 		return
 	}
 
-	en, _, err := x.Seek([]interface{}{nil})
+	en, err := x.SeekFirst()
 	if err != nil {
-		return err
+		return noEOF(err)
 	}
 
 	var id int64

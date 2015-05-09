@@ -11485,3 +11485,49 @@ SELECT * FROM x;
 [1 3]
 [5 15]
 [10 30]
+
+-- 954
+BEGIN TRANSACTION;
+	CREATE TABLE t(a int, b int, c int);
+	CREATE INDEX x ON t(b, c);
+	INSERT INTO t VALUES (100, 200, 300), (1, 2, 3), (10, 20, 30);
+COMMIT;
+SELECT * FROM x;
+|lx
+[2 3]
+[20 30]
+[200 300]
+
+-- 955
+BEGIN TRANSACTION;
+	CREATE TABLE t(a int, b int, c int);
+	CREATE INDEX x ON t(b);
+	INSERT INTO t VALUES (100, 200, 300), (1, 2, 3), (10, 20, 30);
+	INSERT INTO t VALUES (NULL, 200, 300), (1, NULL, 3), (10, NULL, 30), (NULL, NULL, NULL);
+COMMIT;
+SELECT * FROM x;
+|?x
+[<nil>]
+[<nil>]
+[<nil>]
+[2]
+[20]
+[200]
+[200]
+
+-- 956
+BEGIN TRANSACTION;
+	CREATE TABLE t(a int, b int, c int);
+	CREATE INDEX x ON t(b, c);
+	INSERT INTO t VALUES (100, 200, 300), (1, 2, 3), (10, 20, 30);
+	INSERT INTO t VALUES (NULL, 200, 300), (1, NULL, 3), (10, NULL, 30), (NULL, NULL, NULL);
+COMMIT;
+SELECT * FROM x;
+|?x
+[<nil> <nil>]
+[<nil> 3]
+[<nil> 30]
+[2 3]
+[20 30]
+[200 300]
+[200 300]
