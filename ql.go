@@ -1680,6 +1680,13 @@ func newDB(store storage) (db *DB, err error) {
 		return
 	}
 
+	ctx := &execCtx{db: db0}
+	for _, t := range db0.root.tables {
+		if err := t.constraintsAndDefaults(ctx); err != nil {
+			return nil, err
+		}
+	}
+
 	if !db0.hasAllIndex2() {
 		return db0, nil
 	}
