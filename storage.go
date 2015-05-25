@@ -119,28 +119,185 @@ type indexKey struct {
 // 4: indices string - optional
 // 5: hxroots int64 - optional
 type table struct {
-	cols     []*col // logical
-	cols0    []*col // physical
-	h        int64  //
-	head     int64  // head of the single linked record list
-	hhead    int64  // handle of the head of the single linked record list
-	hxroots  int64
-	indices  []*indexedCol
-	indices2 map[string]*index2
-	name     string
-	next     int64 // single linked table list
-	store    storage
-	tnext    *table
-	tprev    *table
-	xroots   []interface{}
+	cols        []*col // logical
+	cols0       []*col // physical
+	h           int64  //
+	head        int64  // head of the single linked record list
+	hhead       int64  // handle of the head of the single linked record list
+	hxroots     int64
+	indices     []*indexedCol
+	indices2    map[string]*index2
+	name        string
+	next        int64 // single linked table list
+	store       storage
+	tnext       *table
+	tprev       *table
+	xroots      []interface{}
+	constraints []*constraint
+	defaults    []expression
 }
 
 func (t *table) hasIndices() bool  { return len(t.indices) != 0 || len(t.indices2) != 0 }
 func (t *table) hasIndices2() bool { return len(t.indices2) != 0 }
 
+func (t *table) constraintsAndDefaults(ctx *execCtx) error {
+	if isSystemName[t.name] {
+		return nil
+	}
+
+	_, ok := ctx.db.root.tables["__Column2"]
+	if !ok {
+		return nil
+	}
+
+	cols := t.cols
+	constraints := make([]*constraint, len(cols))
+	defaults := make([]expression, len(cols))
+	arg := []interface{}{t.name}
+	rs, err := selectColumn2.l[0].exec(&execCtx{db: ctx.db})
+	if err != nil {
+		return err
+	}
+
+	var rows [][]interface{}
+	ok = false
+	if err := rs.(recordset).do(
+		&execCtx{db: ctx.db, arg: arg},
+		false,
+		func(id interface{}, data []interface{}) (more bool, err error) {
+			if ok {
+				rows = append(rows, data)
+				return true, nil
+			}
+
+			ok = true
+			return true, nil
+		},
+	); err != nil {
+		return err
+	}
+
+	hasConstraints := false
+	hasDefauls := false
+	for _, row := range rows {
+		nm := row[0].(string)
+		nonNull := row[1].(bool)
+		cexpr := row[2].(string)
+		dexpr := row[3].(string)
+		for i, c := range cols {
+			if c.name == nm {
+				var co *constraint
+				if nonNull || cexpr != "" {
+					co = &constraint{}
+					if cexpr != "" {
+						if co.expr, err = ctx.db.str2expr(cexpr); err != nil {
+							return fmt.Errorf("constraint %q: %v", cexpr, err)
+						}
+					}
+				}
+				if co != nil {
+					hasConstraints = true
+				}
+				constraints[i] = co
+				if dexpr != "" {
+					hasDefauls = true
+					if defaults[i], err = ctx.db.str2expr(dexpr); err != nil {
+						return fmt.Errorf("constraint %q: %v", dexpr, err)
+					}
+				}
+			}
+		}
+	}
+	if hasConstraints {
+		t.constraints = constraints
+	}
+	if hasDefauls {
+		t.defaults = defaults
+	}
+	return nil
+}
+
+func (t *table) checkConstraintsAndDefaults(ctx *execCtx, row []interface{}, m map[interface{}]interface{}) error {
+	cols := t.cols
+
+	if len(t.defaults) != 0 {
+		// 1.
+		for _, c := range cols {
+			m[c.name] = row[c.index]
+		}
+
+		// 2.
+		for i, c := range cols {
+			val := row[c.index]
+			expr := t.defaults[i]
+			if val != nil || expr == nil {
+				continue
+			}
+
+			dval, err := expr.eval(ctx, m, ctx.arg)
+			if err != nil {
+				return err
+			}
+
+			row[c.index] = dval
+			if err = typeCheck(row, []*col{c}); err != nil {
+				return err
+			}
+		}
+	}
+
+	if len(t.constraints) != 0 {
+		// 3.
+		for _, c := range cols {
+			m[c.name] = row[c.index]
+		}
+
+		// 4.
+		for i, c := range cols {
+			constraint := t.constraints[i]
+			if constraint == nil {
+				continue
+			}
+
+			val := row[c.index]
+			expr := constraint.expr
+			if expr == nil { // Constraint: NOT NULL
+				if val == nil {
+					return fmt.Errorf("column %s: constraint violation: NOT NULL", c.name)
+				}
+
+				continue
+			}
+
+			// Constraint is an expression
+			cval, err := expr.eval(ctx, m, ctx.arg)
+			if err != nil {
+				return err
+			}
+
+			if cval == nil {
+				return fmt.Errorf("column %s: constraint violation: %s", c.name, expr)
+			}
+
+			bval, ok := cval.(bool)
+			if !ok {
+				return fmt.Errorf("column %s: non bool constraint expression: %s", c.name, expr)
+			}
+
+			if !bval {
+				return fmt.Errorf("column %s: constraint violation: %s", c.name, expr)
+			}
+		}
+	}
+
+	return nil
+}
+
 func (t *table) clone() *table {
 	r := &table{}
 	*r = *t
+	r.constraints = append([]*constraint(nil), t.constraints...)
+	r.defaults = append([]expression(nil), t.defaults...)
 	r.indices2 = nil
 	if n := len(t.indices2); n != 0 {
 		r.indices2 = make(map[string]*index2, n)

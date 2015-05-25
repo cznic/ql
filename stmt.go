@@ -86,11 +86,6 @@ func (s *updateStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 		tcols[i] = col
 	}
 
-	constraints, defaults, err := constraintsAndDefaults(ctx, s.tableName)
-	if err != nil {
-		return nil, err
-	}
-
 	m := map[interface{}]interface{}{}
 	var nh int64
 	expr := s.where
@@ -163,10 +158,8 @@ func (s *updateStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 			return nil, err
 		}
 
-		if len(constraints) != 0 { // => len(defaults) != 0 as well
-			if err = checkConstraintsAndDefaults(ctx, data[2:], t.cols, m, constraints, defaults); err != nil {
-				return nil, err
-			}
+		if err = t.checkConstraintsAndDefaults(ctx, data[2:], m); err != nil {
+			return nil, err
 		}
 
 		for i, v := range t.indices {
@@ -502,6 +495,10 @@ func (s *alterTableDropColumnStmt) exec(ctx *execCtx) (Recordset, error) {
 					}
 				}
 			}
+			if err := t.constraintsAndDefaults(ctx); err != nil {
+				return nil, err
+			}
+
 			return nil, t.updated()
 		}
 	}
@@ -582,6 +579,10 @@ func (s *alterTableAddStmt) exec(ctx *execCtx) (Recordset, error) {
 	}
 
 	t.cols0 = append(t.cols0, s.c)
+	if err := t.constraintsAndDefaults(ctx); err != nil {
+		return nil, err
+	}
+
 	return nil, t.updated()
 }
 
@@ -797,7 +798,7 @@ func (s *insertIntoStmt) String() string {
 	}
 }
 
-func (s *insertIntoStmt) execSelect(t *table, cols []*col, ctx *execCtx, constraints []*constraint, defaults []expression) (_ Recordset, err error) {
+func (s *insertIntoStmt) execSelect(t *table, cols []*col, ctx *execCtx) (_ Recordset, err error) {
 	r := s.sel.exec0()
 	ok := false
 	h := t.head
@@ -813,10 +814,8 @@ func (s *insertIntoStmt) execSelect(t *table, cols []*col, ctx *execCtx, constra
 				return
 			}
 
-			if len(constraints) != 0 { // => len(defaults) != 0 as well
-				if err = checkConstraintsAndDefaults(ctx, data0[2:], t.cols, m, constraints, defaults); err != nil {
-					return false, err
-				}
+			if err = t.checkConstraintsAndDefaults(ctx, data0[2:], m); err != nil {
+				return false, err
 			}
 
 			id, err := t.store.ID()
@@ -885,153 +884,6 @@ var (
 	`)
 )
 
-func constraintsAndDefaults(ctx *execCtx, table string) (constraints []*constraint, defaults []expression, _ error) {
-	if isSystemName[table] {
-		return nil, nil, nil
-	}
-
-	_, ok := ctx.db.root.tables["__Column2"]
-	if !ok {
-		return nil, nil, nil
-	}
-
-	t, ok := ctx.db.root.tables[table]
-	if !ok {
-		return nil, nil, fmt.Errorf("table %q does not exist", table)
-	}
-
-	cols := t.cols
-	constraints = make([]*constraint, len(cols))
-	defaults = make([]expression, len(cols))
-	arg := []interface{}{table}
-	rs, err := selectColumn2.l[0].exec(&execCtx{db: ctx.db})
-	if err != nil {
-		return nil, nil, err
-	}
-
-	var rows [][]interface{}
-	ok = false
-	if err := rs.(recordset).do(
-		&execCtx{db: ctx.db, arg: arg},
-		false,
-		func(id interface{}, data []interface{}) (more bool, err error) {
-			if ok {
-				rows = append(rows, data)
-				return true, nil
-			}
-
-			ok = true
-			return true, nil
-		},
-	); err != nil {
-		return nil, nil, err
-	}
-
-	for _, row := range rows {
-		nm := row[0].(string)
-		nonNull := row[1].(bool)
-		cexpr := row[2].(string)
-		dexpr := row[3].(string)
-		for i, c := range cols {
-			if c.name == nm {
-				var co *constraint
-				if nonNull || cexpr != "" {
-					co = &constraint{}
-					if cexpr != "" {
-						if co.expr, err = ctx.db.str2expr(cexpr); err != nil {
-							return nil, nil, fmt.Errorf("constraint %q: %v", cexpr, err)
-						}
-					}
-				}
-				constraints[i] = co
-				if dexpr != "" {
-					if defaults[i], err = ctx.db.str2expr(dexpr); err != nil {
-						return nil, nil, fmt.Errorf("constraint %q: %v", dexpr, err)
-					}
-				}
-			}
-		}
-	}
-	return constraints, defaults, nil
-}
-
-func checkConstraintsAndDefaults(
-	ctx *execCtx,
-	row []interface{},
-	cols []*col,
-	m map[interface{}]interface{},
-	constraints []*constraint,
-	defaults []expression) error {
-
-	// 1.
-	for _, c := range cols {
-		m[c.name] = row[c.index]
-	}
-
-	// 2.
-	for i, c := range cols {
-		val := row[c.index]
-		expr := defaults[i]
-		if val != nil || expr == nil {
-			continue
-		}
-
-		dval, err := expr.eval(ctx, m, ctx.arg)
-		if err != nil {
-			return err
-		}
-
-		row[c.index] = dval
-		if err = typeCheck(row, []*col{c}); err != nil {
-			return err
-		}
-	}
-
-	// 3.
-	for _, c := range cols {
-		m[c.name] = row[c.index]
-	}
-
-	// 4.
-	for i, c := range cols {
-		constraint := constraints[i]
-		if constraint == nil {
-			continue
-		}
-
-		val := row[c.index]
-		expr := constraint.expr
-		if expr == nil { // Constraint: NOT NULL
-			if val == nil {
-				return fmt.Errorf("column %s: constraint violation: NOT NULL", c.name)
-			}
-
-			continue
-		}
-
-		// Constraint is an expression
-		cval, err := expr.eval(ctx, m, ctx.arg)
-		if err != nil {
-			return err
-		}
-
-		if cval == nil {
-			return fmt.Errorf("column %s: constraint violation: %s", c.name, expr)
-		}
-
-		bval, ok := cval.(bool)
-		if !ok {
-			return fmt.Errorf("column %s: non bool constraint expression: %s", c.name, expr)
-		}
-
-		if !bval {
-			return fmt.Errorf("column %s: constraint violation: %s", c.name, expr)
-		}
-	}
-
-	return nil
-}
-
 func (s *insertIntoStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 	t, ok := ctx.db.root.tables[s.tableName]
 	if !ok {
@@ -1053,13 +905,8 @@ func (s *insertIntoStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 		}
 	}
 
-	constraints, defaults, err := constraintsAndDefaults(ctx, s.tableName)
-	if err != nil {
-		return nil, err
-	}
-
 	if s.sel != nil {
-		return s.execSelect(t, cols, ctx, constraints, defaults)
+		return s.execSelect(t, cols, ctx)
 	}
 
 	for _, list := range s.lists {
@@ -1086,10 +933,8 @@ func (s *insertIntoStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 			return
 		}
 
-		if len(constraints) != 0 { // => len(defaults) != 0 as well
-			if err = checkConstraintsAndDefaults(ctx, r, t.cols, m, constraints, defaults); err != nil {
-				return nil, err
-			}
+		if err = t.checkConstraintsAndDefaults(ctx, r, m); err != nil {
+			return nil, err
 		}
 
 		id, err := t.addRecord(ctx, r)
@@ -1351,8 +1196,12 @@ func (s *createTableStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 			}
 		}
 	}
-	_, err = root.createTable(s.tableName, s.cols)
-	return
+	t, err := root.createTable(s.tableName, s.cols)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, t.constraintsAndDefaults(ctx)
 }
 
 func (s *createTableStmt) isUpdating() bool { return true }
