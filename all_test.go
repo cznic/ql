@@ -20,6 +20,7 @@ import (
 	"runtime"
 	"runtime/debug"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"testing"
@@ -2956,4 +2957,331 @@ func testMentionedColumns(s stmt) (err error) {
 		panic("internal error 056")
 	}
 	return nil
+}
+
+const (
+	issue99RowsToInsert = 100
+	issue99Cycles       = 100
+)
+
+var (
+	fieldsIssue99 = []string{
+		"Datacenter",
+		"Name",
+		"Address",
+		"Health",
+		"C0",
+		"C1",
+		"C2",
+		"C3",
+		"C4",
+		"C5",
+		"C6",
+		"C7",
+		"C8",
+		"C9",
+		"C10",
+		"C11",
+		"C12",
+		"C13",
+		"C14",
+		"C15",
+		"C16",
+		"C17",
+		"C18",
+		"C19",
+		"C20",
+		"C21",
+		"C22",
+		"C23",
+		"C24",
+		"C25",
+		"C26",
+		"C27",
+		"C28",
+		"C29",
+		"C30",
+		"C31",
+		"C32",
+		"C33",
+		"C34",
+		"C35",
+		"C36",
+		"C37",
+		"C38",
+		"C39",
+		"C40",
+		"C41",
+		"C42",
+		"C43",
+		"C44",
+		"C45",
+		"C46",
+		"C47",
+		"C48",
+		"C49",
+		"C50",
+		"C51",
+		"C52",
+		"C53",
+		"C54",
+		"C55",
+		"C56",
+		"C57",
+		"C58",
+		"C59",
+		"C60",
+		"C61",
+		"C62",
+		"C63",
+		"C64",
+		"C65",
+		"C66",
+		"C67",
+		"C68",
+		"C69",
+		"C70",
+		"C71",
+		"C72",
+		"C73",
+		"C74",
+		"C75",
+		"C76",
+		"C77",
+		"C78",
+		"C79",
+		"C80",
+		"C81",
+		"C82",
+		"C83",
+		"C84",
+		"C85",
+		"C86",
+		"C87",
+		"C88",
+		"C89",
+		"C90",
+		"C91",
+		"C92",
+		"C93",
+		"C94",
+		"C95",
+		"C96",
+		"C97",
+		"C98",
+		"C99",
+	}
+
+	valuesIssue99 = make([]interface{}, len(fieldsIssue99))
+)
+
+func init() {
+	for i := range valuesIssue99 {
+		s := ""
+		for _, v := range rand.Perm(32) {
+			s += string('0' + v)
+		}
+		valuesIssue99[i] = s
+	}
+	valuesIssue99[3] = true
+}
+
+func createTablesIssue99(db *sql.DB) error {
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+
+	if _, err = tx.Exec(`
+		DROP TABLE IF EXISTS Node;
+		CREATE TABLE Node (
+			Datacenter string,
+			Name string,
+			Address string,
+			Health bool,
+			C0 string DEFAULT "",
+			C1 string DEFAULT "",
+			C2 string DEFAULT "",
+			C3 string DEFAULT "",
+			C4 string DEFAULT "",
+			C5 string DEFAULT "",
+			C6 string DEFAULT "",
+			C7 string DEFAULT "",
+			C8 string DEFAULT "",
+			C9 string DEFAULT "",
+			C10 string DEFAULT "",
+			C11 string DEFAULT "",
+			C12 string DEFAULT "",
+			C13 string DEFAULT "",
+			C14 string DEFAULT "",
+			C15 string DEFAULT "",
+			C16 string DEFAULT "",
+			C17 string DEFAULT "",
+			C18 string DEFAULT "",
+			C19 string DEFAULT "",
+			C20 string DEFAULT "",
+			C21 string DEFAULT "",
+			C22 string DEFAULT "",
+			C23 string DEFAULT "",
+			C24 string DEFAULT "",
+			C25 string DEFAULT "",
+			C26 string DEFAULT "",
+			C27 string DEFAULT "",
+			C28 string DEFAULT "",
+			C29 string DEFAULT "",
+			C30 string DEFAULT "",
+			C31 string DEFAULT "",
+			C32 string DEFAULT "",
+			C33 string DEFAULT "",
+			C34 string DEFAULT "",
+			C35 string DEFAULT "",
+			C36 string DEFAULT "",
+			C37 string DEFAULT "",
+			C38 string DEFAULT "",
+			C39 string DEFAULT "",
+			C40 string DEFAULT "",
+			C41 string DEFAULT "",
+			C42 string DEFAULT "",
+			C43 string DEFAULT "",
+			C44 string DEFAULT "",
+			C45 string DEFAULT "",
+			C46 string DEFAULT "",
+			C47 string DEFAULT "",
+			C48 string DEFAULT "",
+			C49 string DEFAULT "",
+			C50 string DEFAULT "",
+			C51 string DEFAULT "",
+			C52 string DEFAULT "",
+			C53 string DEFAULT "",
+			C54 string DEFAULT "",
+			C55 string DEFAULT "",
+			C56 string DEFAULT "",
+			C57 string DEFAULT "",
+			C58 string DEFAULT "",
+			C59 string DEFAULT "",
+			C60 string DEFAULT "",
+			C61 string DEFAULT "",
+			C62 string DEFAULT "",
+			C63 string DEFAULT "",
+			C64 string DEFAULT "",
+			C65 string DEFAULT "",
+			C66 string DEFAULT "",
+			C67 string DEFAULT "",
+			C68 string DEFAULT "",
+			C69 string DEFAULT "",
+			C70 string DEFAULT "",
+			C71 string DEFAULT "",
+			C72 string DEFAULT "",
+			C73 string DEFAULT "",
+			C74 string DEFAULT "",
+			C75 string DEFAULT "",
+			C76 string DEFAULT "",
+			C77 string DEFAULT "",
+			C78 string DEFAULT "",
+			C79 string DEFAULT "",
+			C80 string DEFAULT "",
+			C81 string DEFAULT "",
+			C82 string DEFAULT "",
+			C83 string DEFAULT "",
+			C84 string DEFAULT "",
+			C85 string DEFAULT "",
+			C86 string DEFAULT "",
+			C87 string DEFAULT "",
+			C88 string DEFAULT "",
+			C89 string DEFAULT "",
+			C90 string DEFAULT "",
+			C91 string DEFAULT "",
+			C92 string DEFAULT "",
+			C93 string DEFAULT "",
+			C94 string DEFAULT "",
+			C95 string DEFAULT "",
+			C96 string DEFAULT "",
+			C97 string DEFAULT "",
+			C98 string DEFAULT "",
+			C99 string DEFAULT "",
+    		);`); err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
+func issue99Fill(db *sql.DB) (int, error) {
+	tx, err := db.Begin()
+	if err != nil {
+		return -1, err
+	}
+
+	sql := "INSERT INTO Node (" + strings.Join(fieldsIssue99, ",") + ") VALUES ($1, $2, $3, $4"
+	for i, _ := range valuesIssue99 {
+		if i > 3 {
+			sql += ", $" + strconv.Itoa(i+1)
+		}
+	}
+	sql += ")"
+
+	stmt, err := tx.Prepare(sql)
+	if err != nil {
+		return 0, err
+	}
+
+	for i := 0; i < issue99RowsToInsert; i++ {
+		if _, err = stmt.Exec(valuesIssue99...); err != nil {
+			return 0, err
+		}
+	}
+
+	return issue99RowsToInsert, tx.Commit()
+}
+
+func testIssue99(tb testing.TB, db *sql.DB) int {
+	sum := 0
+	for i := 0; i < issue99Cycles; i++ {
+		if err := createTablesIssue99(db); err != nil {
+			tb.Fatal(err)
+		}
+
+		n2, err := issue99Fill(db)
+		if err != nil {
+			tb.Fatal(err)
+		}
+
+		sum += n2
+	}
+	return sum
+}
+
+func TestIssue99(t *testing.T) {
+	RegisterMemDriver()
+	db, err := sql.Open("ql-mem", "issue99")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Logf("Total rows inserted %v", testIssue99(t, db))
+}
+
+var benchmarkIssue99 sync.Once
+
+func BenchmarkIssue99(b *testing.B) {
+	if testing.Verbose() {
+		benchProlog(b)
+		benchmarkIssue99.Do(func() {
+			b.Logf(`1 op == (Re)create a 100+ column table, fill it with %d records. Repeat %d times.
+
+`, issue99RowsToInsert, issue99Cycles)
+		})
+	}
+	RegisterMemDriver()
+	db, err := sql.Open("ql-mem", "issue99")
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	b.ResetTimer()
+	recs := 0
+	for i := 0; i < b.N; i++ {
+		recs = testIssue99(b, db)
+	}
+	b.SetBytes(int64(recs) * benchScale)
 }
