@@ -752,9 +752,7 @@ func (s *file) ID() (int64, error) {
 }
 
 func (s *file) free(h int64, blobCols []*col) (err error) {
-	s.mu.Lock()
 	b, err := s.a.Get(nil, h) //LATER +bufs
-	s.mu.Unlock()
 	if err != nil {
 		return
 	}
@@ -786,9 +784,7 @@ func (s *file) free(h int64, blobCols []*col) (err error) {
 }
 
 func (s *file) Read(dst []interface{}, h int64, cols ...*col) (data []interface{}, err error) { //NTYPE
-	s.mu.Lock()
 	b, err := s.a.Get(nil, h) //LATER +bufs
-	s.mu.Unlock()
 	if err != nil {
 		return
 	}
@@ -871,9 +867,7 @@ func (s *file) freeChunks(enc []byte) (err error) {
 	}
 
 	for next != 0 {
-		s.mu.Lock()
 		b, err := s.a.Get(nil, next)
-		s.mu.Unlock()
 		if err != nil {
 			return err
 		}
@@ -938,9 +932,7 @@ func (s *file) loadChunks(enc []byte) (v interface{}, err error) {
 	}
 
 	for next != 0 {
-		s.mu.Lock()
 		b, err := s.a.Get(nil, next)
-		s.mu.Unlock()
 		if err != nil {
 			return nil, err
 		}
