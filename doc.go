@@ -16,10 +16,10 @@
 //
 // 2015-05-29: The execution planner was rewritten from scratch. It should use
 // indices in all places where they were used before plus in some additional
-// situations more.  It is possible to investigate the plan using the newly
-// added EXPLAIN statement.  The QL tool is handy for such analysis. If the
-// planner would have used an index, but no such exists, the plan includes
-// hints in form of copy/paste ready CREATE INDEX statements.
+// situations.  It is possible to investigate the plan using the newly added
+// EXPLAIN statement.  The QL tool is handy for such analysis. If the planner
+// would have used an index, but no such exists, the plan includes hints in
+// form of copy/paste ready CREATE INDEX statements.
 //
 // The planner is still quite simple and a lot of work on it is yet ahead. You
 // can help this process by filling an issue with a schema and query which
