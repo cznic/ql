@@ -10,7 +10,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"log"
 	"math/big"
 	"time"
 )
@@ -258,7 +257,7 @@ func newMemStorage() (s *mem, err error) {
 
 	h, err := s.Create()
 	if h != 1 {
-		log.Panic("internal error 048")
+		panic("internal error 048")
 	}
 
 	if err = s.Commit(); err != nil {
@@ -424,7 +423,7 @@ func (s *mem) clone(data ...interface{}) []interface{} {
 		case map[string]interface{}: // map of ids of a cross join
 			r[i] = x
 		default:
-			log.Panic("internal error 050")
+			panic("internal error 050")
 		}
 	}
 	return r
@@ -536,7 +535,7 @@ func (s *mem) Rollback() (err error) {
 			x, v := data[0].(*memIndex), data[1].(memIndex)
 			*x = v
 		default:
-			log.Panic("internal error 051")
+			panic("internal error 051")
 		}
 	}
 

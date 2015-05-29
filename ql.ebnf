@@ -82,6 +82,7 @@ DeleteFromStmt = "DELETE" "FROM" TableName [ WhereClause ] .
 DropIndexStmt = "DROP" "INDEX" [ "IF" "EXISTS" ] IndexName .
 DropTableStmt = "DROP" "TABLE" [ "IF" "EXISTS" ] TableName .
 EmptyStmt = .
+ExplainStmt = "EXPLAIN" Statement .
 Expression = Term {
 		 ( oror | "OR" ) Term
 	  } .
@@ -179,7 +180,8 @@ Statement = EmptyStmt
 	| RollbackStmt
 	| SelectStmt
 	| TruncateTableStmt
-	| UpdateStmt .
+	| UpdateStmt
+	| ExplainStmt .
 StatementList = Statement { ";" Statement } .
 TableName = identifier .
 Term = Factor {

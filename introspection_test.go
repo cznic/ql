@@ -228,7 +228,7 @@ func TestSchema(t *testing.T) {
 
 		s, err := Compile(test.s)
 		if err != nil {
-			panic("internal error 070")
+			panic("internal error 055")
 		}
 
 		if g, e := l.String(), s.String(); g != e {

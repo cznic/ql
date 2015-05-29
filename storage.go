@@ -6,7 +6,6 @@ package ql
 
 import (
 	"fmt"
-	"log"
 	"strings"
 )
 
@@ -70,6 +69,7 @@ type index2 struct { // Expression list index.
 	unique   bool
 	x        btreeIndex
 	xroot    int64
+	sources  []string
 	exprList []expression
 }
 
@@ -92,7 +92,7 @@ func (x *index2) eval(ctx *execCtx, cols []*col, id int64, r []interface{}) ([]i
 		m[col.name] = v
 	}
 	for i, e := range x.exprList {
-		v, err := e.eval(ctx, m, nil)
+		v, err := e.eval(ctx, m)
 		if err != nil {
 			return nil, err
 		}
@@ -154,7 +154,7 @@ func (t *table) constraintsAndDefaults(ctx *execCtx) error {
 	constraints := make([]*constraint, len(cols))
 	defaults := make([]expression, len(cols))
 	arg := []interface{}{t.name}
-	rs, err := selectColumn2.l[0].exec(&execCtx{db: ctx.db})
+	rs, err := selectColumn2.l[0].exec(&execCtx{db: ctx.db, arg: arg})
 	if err != nil {
 		return err
 	}
@@ -163,22 +163,14 @@ func (t *table) constraintsAndDefaults(ctx *execCtx) error {
 	ok = false
 	if err := rs.(recordset).do(
 		&execCtx{db: ctx.db, arg: arg},
-		false,
 		func(id interface{}, data []interface{}) (more bool, err error) {
-			if ok {
-				rows = append(rows, data)
-				return true, nil
-			}
-
-			ok = true
+			rows = append(rows, data)
 			return true, nil
 		},
 	); err != nil {
 		return err
 	}
 
-	hasConstraints := false
-	hasDefauls := false
 	for _, row := range rows {
 		nm := row[0].(string)
 		nonNull := row[1].(bool)
@@ -189,30 +181,24 @@ func (t *table) constraintsAndDefaults(ctx *execCtx) error {
 				var co *constraint
 				if nonNull || cexpr != "" {
 					co = &constraint{}
+					constraints[i] = co
 					if cexpr != "" {
 						if co.expr, err = ctx.db.str2expr(cexpr); err != nil {
 							return fmt.Errorf("constraint %q: %v", cexpr, err)
 						}
 					}
+
+					t.constraints = constraints
 				}
-				if co != nil {
-					hasConstraints = true
-				}
-				constraints[i] = co
 				if dexpr != "" {
-					hasDefauls = true
 					if defaults[i], err = ctx.db.str2expr(dexpr); err != nil {
 						return fmt.Errorf("constraint %q: %v", dexpr, err)
 					}
+
+					t.defaults = defaults
 				}
 			}
 		}
-	}
-	if hasConstraints {
-		t.constraints = constraints
-	}
-	if hasDefauls {
-		t.defaults = defaults
 	}
 	return nil
 }
@@ -234,7 +220,7 @@ func (t *table) checkConstraintsAndDefaults(ctx *execCtx, row []interface{}, m m
 				continue
 			}
 
-			dval, err := expr.eval(ctx, m, ctx.arg)
+			dval, err := expr.eval(ctx, m)
 			if err != nil {
 				return err
 			}
@@ -270,7 +256,7 @@ func (t *table) checkConstraintsAndDefaults(ctx *execCtx, row []interface{}, m m
 			}
 
 			// Constraint is an expression
-			cval, err := expr.eval(ctx, m, ctx.arg)
+			cval, err := expr.eval(ctx, m)
 			if err != nil {
 				return err
 			}
@@ -329,6 +315,28 @@ func (t *table) clone() *table {
 	copy(r.xroots, t.xroots)
 	r.tnext, r.tprev = nil, nil
 	return r
+}
+
+func (t *table) findIndexByColName(name string) (*col, *indexedCol) {
+	for i, v := range t.indices {
+		if v == nil {
+			continue
+		}
+
+		if i == 0 {
+			if name == "id()" {
+				return idCol, v
+			}
+
+			continue
+		}
+
+		if c := t.cols[i-1]; c.name == name {
+			return c, v
+		}
+	}
+
+	return nil, nil
 }
 
 func (t *table) findIndexByName(name string) interface{} {
@@ -613,15 +621,18 @@ func (t *table) addIndex(unique bool, indexName string, colIndex int) (int64, er
 
 func (t *table) addIndex2(execCtx *execCtx, unique bool, indexName string, exprList []expression) (int64, error) {
 	if _, ok := t.indices2[indexName]; ok {
-		panic("internal error 077")
+		panic("internal error 009")
 	}
 
 	hx, x, err := t.store.CreateIndex(unique)
-	//dbg("addIndex2: %s, exprlist %v, root %v", indexName, exprList, hx)
 	if err != nil {
 		return -1, err
 	}
-	x2 := &index2{unique, x, hx, exprList}
+	var a []string
+	for _, v := range exprList {
+		a = append(a, v.String())
+	}
+	x2 := &index2{unique, x, hx, a, exprList}
 	if t.indices2 == nil {
 		t.indices2 = map[string]*index2{}
 	}
@@ -744,6 +755,14 @@ func (t *table) flds() (r []*fld) {
 	return
 }
 
+func (t *table) fieldNames() []string {
+	r := make([]string, len(t.cols))
+	for i, v := range t.cols {
+		r[i] = v.name
+	}
+	return r
+}
+
 func (t *table) updateCols() *table {
 	t.cols = t.cols[:0]
 	for i, c := range t.cols0 {
@@ -753,6 +772,28 @@ func (t *table) updateCols() *table {
 		}
 	}
 	return t
+}
+
+func (t *table) row0(ctx *execCtx, h int64) ([]interface{}, error) {
+	rec, err := ctx.db.store.Read(nil, h, t.cols...)
+	if err != nil {
+		return nil, err
+	}
+
+	if d := len(t.cols) - (len(rec) - 2); d > 0 {
+		rec = append(rec, make([]interface{}, d)...)
+	}
+
+	return rec, nil
+}
+
+func (t *table) row(ctx *execCtx, h int64) (int64, []interface{}, error) {
+	rec, err := t.row0(ctx, h)
+	if err != nil {
+		return -1, nil, err
+	}
+
+	return rec[1].(int64), rec[2:], nil
 }
 
 // storage fields
@@ -857,7 +898,7 @@ func (r *root) updated() (err error) {
 
 func (r *root) createTable(name string, cols []*col) (t *table, err error) {
 	if _, ok := r.tables[name]; ok {
-		log.Panic("internal error 065")
+		panic("internal error 065")
 	}
 
 	if t, err = newTable(r.store, name, r.head, cols, nil, r.thead); err != nil {

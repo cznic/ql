@@ -19,7 +19,6 @@ import (
 	"path/filepath"
 	"runtime"
 	"runtime/debug"
-	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -832,8 +831,7 @@ func Example_recordsetFields() {
 		panic(err)
 	}
 
-	ctx := NewRWCtx()
-	rs, _, err := db.Run(ctx, `
+	rs, _, err := db.Run(NewRWCtx(), `
 		BEGIN TRANSACTION;
 			CREATE TABLE t (s string, i int);
 			CREATE TABLE u (s string, i int);
@@ -851,29 +849,20 @@ func Example_recordsetFields() {
 			;
 		COMMIT;
 		
-		// [0]: Fields are not computable.
-		SELECT * FROM noTable;
-		
-		// [1]: Fields are computable even when Do will fail (table noTable does not exist).
-		SELECT X AS Y FROM noTable;
-		
-		// [2]: Both Fields and Do are okay.
 		SELECT t.s+u.s as a, t.i+u.i as b, "noName", "name" as Named FROM t, u;
 		
-		// [3]: Filds are computable even when Do will fail (uknown column a).
 		SELECT DISTINCT s as S, sum(i) as I FROM (
 			SELECT t.s+u.s as s, t.i+u.i, 3 as i FROM t, u;
 		)
-		GROUP BY a
-		ORDER BY d;
+		GROUP BY s
+		ORDER BY I;
 		
-		// [4]: Fields are computable even when Do will fail on missing $1.
 		SELECT DISTINCT * FROM (
 			SELECT t.s+u.s as S, t.i+u.i, 3 as I FROM t, u;
 		)
 		WHERE I < $1
 		ORDER BY S;
-		` /* , 42 */) // <-- $1 missing
+		`, 42)
 	if err != nil {
 		panic(err)
 	}
@@ -886,27 +875,11 @@ func Example_recordsetFields() {
 		default:
 			fmt.Printf("Fields[%d]: %#v\n", i, fields)
 		}
-		if err = v.Do(
-			true,
-			func(data []interface{}) (more bool, err error) {
-				fmt.Printf("    Do[%d]: %#v\n", i, data)
-				return false, nil
-			},
-		); err != nil {
-			fmt.Printf("    Do[%d]: error: %s\n", i, err)
-		}
 	}
 	// Output:
-	// Fields[0]: error: table noTable does not exist
-	//     Do[0]: error: table noTable does not exist
-	// Fields[1]: []string{"Y"}
-	//     Do[1]: error: table noTable does not exist
-	// Fields[2]: []string{"a", "b", "", "Named"}
-	//     Do[2]: []interface {}{"a", "b", "", "Named"}
-	// Fields[3]: []string{"S", "I"}
-	//     Do[3]: error: unknown column a
-	// Fields[4]: []string{"S", "", "I"}
-	//     Do[4]: error: missing $1
+	// Fields[0]: []string{"a", "b", "", "Named"}
+	// Fields[1]: []string{"S", "I"}
+	// Fields[2]: []string{"S", "", "I"}
 }
 
 func TestRowsAffected(t *testing.T) {
@@ -1050,14 +1023,6 @@ func dumpDB(db *DB, tag string) (string, error) {
 	}
 
 	return buf.String(), nil
-}
-
-func dumpTables4(db *DB) {
-	dbg("---- db.root.head is %v", db.root.head)
-	for t := db.root.thead; t != nil; t = t.tnext {
-		dbg("\ttable @ %v: %q, next %v", t.h, t.name, t.next)
-	}
-	dbg("----")
 }
 
 func testIndices(db *DB, t *testing.T) {
@@ -2093,97 +2058,6 @@ func TestIssue28(t *testing.T) {
 	}
 }
 
-func TestIsPossiblyRewriteableCrossJoinWhereExpression(t *testing.T) {
-	db, err := OpenMem()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	table := []struct {
-		q     string
-		e     bool
-		slist string
-	}{
-		// 0
-		{"SELECT * FROM t WHERE !c", false, ""},
-		{"SELECT * FROM t WHERE !t.c && 4 < !u.c", true, "!c|4<!c"},
-		{"SELECT * FROM t WHERE !t.c && 4 < u.c", true, "!c|4<c"},
-		{"SELECT * FROM t WHERE !t.c", true, "!c"},
-		{"SELECT * FROM t WHERE 3 < c", false, ""},
-		// 5
-		{"SELECT * FROM t WHERE 3 < t.c", true, "3<c"},
-		{"SELECT * FROM t WHERE c && c", false, ""},
-		{"SELECT * FROM t WHERE c && u.c", false, ""},
-		{"SELECT * FROM t WHERE c == 42", false, ""},
-		{"SELECT * FROM t WHERE c > 3", false, ""},
-		// 10
-		{"SELECT * FROM t WHERE c", false, ""},
-		{"SELECT * FROM t WHERE false == !t.c", true, "false==!c"}, //TODO(indices) support !c relOp fixedValue (rewrite false==!c -> !c, true==c -> c, true != c -> !c, etc.)
-		{"SELECT * FROM t WHERE false == ^t.c", false, ""},
-		{"SELECT * FROM t WHERE false == t.c", true, "false==c"},
-		{"SELECT * FROM t WHERE t.c && 4 < u.c", true, "c|4<c"},
-		// 15
-		{"SELECT * FROM t WHERE t.c && c", false, ""},
-		{"SELECT * FROM t WHERE t.c && u.c && v.c > 0", true, "c|c|c>0"},
-		{"SELECT * FROM t WHERE t.c && u.c && v.c", true, "c|c|c"},
-		{"SELECT * FROM t WHERE t.c && u.c > 0 && v.c > 0", true, "c|c>0|c>0"},
-		{"SELECT * FROM t WHERE t.c && u.c", true, "c|c"},
-		// 20
-		{"SELECT * FROM t WHERE t.c < 3 && u.c > 2 && v.c != 42", true, "c<3|c>2|c!=42"},
-		{"SELECT * FROM t WHERE t.c > 0 && u.c && v.c", true, "c>0|c|c"},
-		{"SELECT * FROM t WHERE t.c > 0 && u.c > 0 && v.c > 0", true, "c>0|c>0|c>0"},
-		{"SELECT * FROM t WHERE t.c > 3 && 4 < u.c", true, "c>3|4<c"},
-		{"SELECT * FROM t WHERE t.c > 3 && u.c", true, "c>3|c"},
-		// 25
-		{"SELECT * FROM t WHERE t.c > 3", true, "c>3"},
-		{"SELECT * FROM t WHERE t.c", true, "c"},
-		{"SELECT * FROM t WHERE u.c == !t.c", false, ""},
-		{"SELECT * FROM t WHERE u.c == 42", true, "c==42"},
-		{"SELECT * FROM t WHERE u.c == ^t.c", false, ""},
-	}
-
-	for i, test := range table {
-		q, e, list := test.q, test.e, strings.Split(test.slist, "|")
-		sort.Strings(list)
-		l, err := Compile(q)
-		if err != nil {
-			t.Fatalf("%s\n%v", q, err)
-		}
-
-		rs, _, err := db.Execute(nil, l)
-		if err != nil {
-			t.Fatalf("%s\n%v", q, err)
-		}
-
-		r := rs[0].(recordset)
-		sel := r.rset.(*selectRset)
-		where := sel.src.(*whereRset)
-		g, glist := isPossiblyRewriteableCrossJoinWhereExpression(where.expr)
-		if g != e {
-			t.Fatalf("%d: %sg: %v e: %v", i, l, g, e)
-		}
-
-		if !g {
-			continue
-		}
-
-		a := []string{}
-		for _, v := range glist {
-			a = append(a, v.expr.String())
-		}
-		sort.Strings(a)
-		if g, e := len(glist), len(list); g != e {
-			t.Fatalf("%d: g: %v, e: %v", i, glist, list)
-		}
-
-		for j, g := range a {
-			if e := list[j]; g != e {
-				t.Fatalf("%d[%d]: g: %v e: %v", i, j, g, e)
-			}
-		}
-	}
-}
-
 func dumpFields(f []*fld) string {
 	a := []string{}
 	for _, v := range f {
@@ -2907,6 +2781,7 @@ func testMentionedColumns(s stmt) (err error) {
 		commitStmt,
 		*dropIndexStmt,
 		*dropTableStmt,
+		*explainStmt,
 		rollbackStmt,
 		*truncateTableStmt:
 		// nop
@@ -2927,9 +2802,6 @@ func testMentionedColumns(s stmt) (err error) {
 	case *selectStmt:
 		for _, f := range x.flds {
 			mentionedColumns(f.expr)
-		}
-		if o := x.outer; o != nil {
-			mentionedColumns(o.on)
 		}
 		if l := x.limit; l != nil {
 			mentionedColumns(l.expr)
@@ -2953,7 +2825,6 @@ func testMentionedColumns(s stmt) (err error) {
 			mentionedColumns(e)
 		}
 	default:
-		dbg("%T", x)
 		panic("internal error 056")
 	}
 	return nil
@@ -3213,7 +3084,7 @@ func issue99Fill(db *sql.DB) (int, error) {
 	}
 
 	sql := "INSERT INTO Node (" + strings.Join(fieldsIssue99, ",") + ") VALUES ($1, $2, $3, $4"
-	for i, _ := range valuesIssue99 {
+	for i := range valuesIssue99 {
 		if i > 3 {
 			sql += ", $" + strconv.Itoa(i+1)
 		}
@@ -3249,16 +3120,6 @@ func testIssue99(tb testing.TB, db *sql.DB) int {
 		sum += n2
 	}
 	return sum
-}
-
-func TestIssue99(t *testing.T) {
-	RegisterMemDriver()
-	db, err := sql.Open("ql-mem", "issue99")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	t.Logf("Total rows inserted %v", testIssue99(t, db))
 }
 
 var benchmarkIssue99 sync.Once

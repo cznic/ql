@@ -153,6 +153,7 @@ desc            {d}{e}{s}{c}
 distinct        {d}{i}{s}{t}{i}{n}{c}{t}
 drop            {d}{r}{o}{p}
 exists          {e}{x}{i}{s}{t}{s}
+explain		{e}{x}{p}{l}{a}{i}{n}
 from            {f}{r}{o}{m}
 full            {f}{u}{l}{l}
 group           {g}{r}{o}{u}{p}
@@ -267,6 +268,7 @@ ident           {idchar0}{idchars}*
 {distinct}              return distinct
 {drop}                  return drop
 {exists}                return exists
+{explain}               return explain
 {from}                  return from
 {full}                  return full
 {group}                 return group

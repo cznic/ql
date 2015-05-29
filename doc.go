@@ -14,6 +14,18 @@
 //
 // Change list
 //
+// 2015-05-29: The execution planner was rewritten from scratch. It should use
+// indices in all places where they were used before plus in some additional
+// situations more.  It is possible to investigate the plan using the newly
+// added EXPLAIN statement.  The QL tool is handy for such analysis. If the
+// planner would have used an index, but no such exists, the plan includes
+// hints in form of copy/paste ready CREATE INDEX statements.
+//
+// The planner is still quite simple and a lot of work on it is yet ahead. You
+// can help this process by filling an issue with a schema and query which
+// fails to use an index or indices when it should, in your opinion. Bonus
+// points for including output of `ql 'explain <query>'`.
+//
 // 2015-05-09: The grammar of the CREATE INDEX statement now accepts an
 // expression list instead of a single expression, which was further limited to
 // just a column name or the built-in id().  As a side effect, composite
@@ -237,18 +249,18 @@
 //
 // The following keywords are reserved and may not be used as identifiers.
 //
-//	ADD      COLUMN      float     int64   OUTER     uint32
-//	ALTER    complex128  float3    int8    RIGHT     uint64
-//	AND      complex64   float6    INTO    SELECT    uint8
-//	AS       CREATE      FROM  2   JOIN    SET       UNIQUE
-//	ASC      DEFAULT     GROUP 4   LEFT    string    UPDATE
-//	BETWEEN  DELETE      IF        LIMIT   TABLE     VALUES
-//	bigint   DESC        IN        LIKE    time      WHERE
-//	bigrat   DISTINCT    INDEX     NOT     true
-//	blob     DROP        INSERT    NULL    OR
-//	bool     duration    int       OFFSET  TRUNCATE
-//	BY       EXISTS      int16     ON      uint
-//	byte     false       int32     ORDER   uint16
+//	ADD      COLUMN      false     int32   ORDER     uint16
+//	ALTER    complex128  float     int64   OUTER     uint32
+//	AND      complex64   float32   int8    RIGHT     uint64
+//	AS       CREATE      float64   INTO    SELECT    uint8
+//	ASC      DEFAULT     FROM      JOIN    SET       UNIQUE
+//	BETWEEN  DELETE      GROUP     LEFT    string    UPDATE
+//	bigint   DESC        IF        LIMIT   TABLE     VALUES
+//	bigrat   DISTINCT    IN        LIKE    time      WHERE
+//	blob     DROP        INDEX     NOT     true
+//	bool     duration    INSERT    NULL    OR
+//	BY       EXISTS      int       OFFSET  TRUNCATE
+//	byte     EXPLAIN     int16     ON      uint
 //
 // Keywords are not case sensitive.
 //
@@ -1252,7 +1264,7 @@
 //  Statement =  EmptyStmt | AlterTableStmt | BeginTransactionStmt | CommitStmt
 //  	| CreateIndexStmt | CreateTableStmt | DeleteFromStmt | DropIndexStmt
 //  	| DropTableStmt | InsertIntoStmt | RollbackStmt | SelectStmt
-//  	| TruncateTableStmt | UpdateStmt .
+//  	| TruncateTableStmt | UpdateStmt | ExplainStmt.
 //
 //  StatementList = Statement { ";" Statement } .
 //
@@ -1397,9 +1409,7 @@
 //  CreateTableStmt = "CREATE" "TABLE" [ "IF" "NOT" "EXISTS" ] TableName
 //  	"(" ColumnDef { "," ColumnDef } [ "," ] ")" .
 //
-//  ColumnDef = ColumnName Type
-//  	[ "NOT" "NULL" | Expression ]
-//  	[ "DEFAULT" Expression ] .
+//  ColumnDef = ColumnName Type [ "NOT" "NULL" | Expression ] [ "DEFAULT" Expression ] .
 //  ColumnName = identifier .
 //  TableName = identifier .
 //
@@ -1590,6 +1600,68 @@
 // constraints clause or the optional defaults clause then those are processed
 // on a per row basis. The details are discussed in the "Constraints and
 // defaults" chapter below the CREATE TABLE statement documentation.
+//
+// Explain statement
+//
+// Explain statement produces a recordset consisting of lines of text which
+// describe the execution plan of a statement, if any.
+//
+//  ExplainStmt = "EXPLAIN" Statement .
+//
+// For example, the QL tool treats the explain statement specially and outputs
+// the joined lines:
+//
+//	$ ql 'create table t(i int); create table u(j int)'
+//	$ ql 'explain select * from t, u where t.i > 42 && u.j < 314'
+//	┌Compute Cartesian product of
+//	│   ┌Iterate all rows of table "t"
+//	│   └Output field names ["i"]
+//	│   ┌Iterate all rows of table "u"
+//	│   └Output field names ["j"]
+//	└Output field names ["t.i" "u.j"]
+//	┌Filter on t.i > 42 && u.j < 314
+//	│Possibly useful indices
+//	│CREATE INDEX xt_i ON t(i);
+//	│CREATE INDEX xu_j ON u(j);
+//	└Output field names ["t.i" "u.j"]
+//	$ ql 'CREATE INDEX xt_i ON t(i); CREATE INDEX xu_j ON u(j);'
+//	$ ql 'explain select * from t, u where t.i > 42 && u.j < 314'
+//	┌Compute Cartesian product of
+//	│   ┌Iterate all rows of table "t" using index "xt_i" where i > 42
+//	│   └Output field names ["i"]
+//	│   ┌Iterate all rows of table "u" using index "xu_j" where j < 314
+//	│   └Output field names ["j"]
+//	└Output field names ["t.i" "u.j"]
+//	$ ql 'explain select * from t where i > 12 and i between 10 and 20 and i < 42'
+//	┌Iterate all rows of table "t" using index "xt_i" where i > 12 && <= 20
+//	└Output field names ["i"]
+//	$
+//
+// The explanation may aid in uderstanding how a statement/query would be
+// executed and if indices are used as expected - or which indices may possibly
+// improve the statement performance.  The create index statements above were
+// directly copy/pasted in the terminal from the suggestions provided by the
+// filter recordset pipeline part returned by the explain statement.
+//
+// If the statement has nothing special in its plan, the result is the original
+// statement.
+//
+//	$ ql 'explain delete from t where 42 < i'
+//	DELETE FROM t WHERE i > 42;
+//	$
+//
+// To get an explanation of the select statement of the IN predicate, use the EXPLAIN
+// statement with that particular select statement.
+//
+//	$ ql 'explain select * from t where i in (select j from u where j > 0)'
+//	┌Iterate all rows of table "t"
+//	└Output field names ["i"]
+//	┌Filter on i IN (SELECT j FROM u WHERE j > 0;)
+//	└Output field names ["i"]
+//	$ ql 'explain select j from u where j > 0'
+//	┌Iterate all rows of table "u" using index "xu_j" where j > 0
+//	└Output field names ["j"]
+//	$
 //
 // ROLLBACK
 //

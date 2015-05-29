@@ -8,7 +8,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"log"
 	"math"
 	"math/big"
 	"strings"
@@ -325,7 +324,7 @@ func indexExpr(s *string, x interface{}) (i uint64, err error) {
 
 		return uint64(x), nil
 	default:
-		return 0, fmt.Errorf("non-integer string index %v", x)
+		return 0, fmt.Errorf("non-integer string index %v (value of type %T)", x, x)
 	}
 }
 
@@ -484,16 +483,16 @@ func ideal(v interface{}) interface{} {
 	}
 }
 
-func eval(v expression, execCtx *execCtx, ctx map[interface{}]interface{}, arg []interface{}) (y interface{}) {
-	y, err := expand1(v.eval(execCtx, ctx, arg))
+func eval(v expression, execCtx *execCtx, ctx map[interface{}]interface{}) (y interface{}) {
+	y, err := expand1(v.eval(execCtx, ctx))
 	if err != nil {
 		panic(err) // panic ok here
 	}
 	return
 }
 
-func eval2(a, b expression, execCtx *execCtx, ctx map[interface{}]interface{}, arg []interface{}) (x, y interface{}) {
-	return eval(a, execCtx, ctx, arg), eval(b, execCtx, ctx, arg)
+func eval2(a, b expression, execCtx *execCtx, ctx map[interface{}]interface{}) (x, y interface{}) {
+	return eval(a, execCtx, ctx), eval(b, execCtx, ctx)
 }
 
 func invOp2(x, y interface{}, o int) (interface{}, error) {
@@ -1327,10 +1326,8 @@ func convert(val interface{}, typ int) (v interface{}, err error) { //NTYPE
 			return invConv(val, typ)
 		}
 	default:
-		log.Panic("internal error 006")
+		panic("internal error 006")
 	}
-	//dbg("%T(%v) %s", val, val, typeStr(typ))
-	panic("unreachable")
 }
 
 func invShiftRHS(lhs, rhs interface{}) (interface{}, error) {
@@ -1343,6 +1340,17 @@ func invTruncInt(v interface{}) error {
 
 func overflow(v interface{}, typ int) error {
 	return fmt.Errorf("constant %v overflows %s", v, typeStr(typ))
+}
+
+func typeCheck1(val interface{}, c *col) (interface{}, error) {
+	rec := []interface{}{val}
+	c = c.clone()
+	c.index = 0
+	if err := typeCheck(rec, []*col{c}); err != nil {
+		return nil, err
+	}
+
+	return rec[0], nil
 }
 
 func typeCheck(rec []interface{}, cols []*col) (err error) {
@@ -2666,12 +2674,12 @@ func collate1(a, b interface{}) int {
 		case chunk:
 			a, err := x.expand()
 			if err != nil {
-				log.Panic(err)
+				panic(err)
 			}
 
 			b, err := y.expand()
 			if err != nil {
-				log.Panic(err)
+				panic(err)
 			}
 
 			return collate1(a, b)
@@ -2782,8 +2790,16 @@ func selector(s string) string {
 func mustSelector(s string) string {
 	q := selector(s)
 	if q == s {
-		panic("internal error 069")
+		panic("internal error 053")
 	}
 
 	return q
+}
+
+func qnames(l []string) []string {
+	r := make([]string, len(l))
+	for i, v := range l {
+		r[i] = fmt.Sprintf("%q", v)
+	}
+	return r
 }

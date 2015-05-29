@@ -13,7 +13,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"math/big"
 	"os"
 	"path/filepath"
@@ -261,22 +260,22 @@ func infer(from []interface{}, to *[]*col) {
 			case chunk:
 				vals, err := lldb.DecodeScalars([]byte(x.b))
 				if err != nil {
-					log.Panic("err")
+					panic(err)
 				}
 
 				if len(vals) == 0 {
-					log.Panic("internal error 040")
+					panic("internal error 040")
 				}
 
 				i, ok := vals[0].(int64)
 				if !ok {
-					log.Panic("internal error 041")
+					panic("internal error 041")
 				}
 
 				c.typ = int(i)
 			case map[string]interface{}: // map of ids of a cross join
 			default:
-				log.Panic("internal error 042")
+				panic("internal error 042")
 			}
 		}
 	}
@@ -484,7 +483,7 @@ func newFileFromOSFile(f lldb.OSFile) (fi *file, err error) {
 		}
 
 		if h != 1 { // root
-			log.Panic("internal error 043")
+			panic("internal error 043")
 		}
 
 		if h, err = s.a.Alloc(make([]byte, 8)); err != nil {
@@ -492,7 +491,7 @@ func newFileFromOSFile(f lldb.OSFile) (fi *file, err error) {
 		}
 
 		if h != 2 { // id
-			log.Panic("internal error 044")
+			panic("internal error 044")
 		}
 
 		close, closew = false, false
@@ -629,20 +628,20 @@ func (s *file) expandBytes(d []interface{}) (err error) {
 func (s *file) collate(a, b []byte) int { //TODO w/ error return
 	da, err := lldb.DecodeScalars(a)
 	if err != nil {
-		log.Panic(err)
+		panic(err)
 	}
 
 	if err = s.expandBytes(da); err != nil {
-		log.Panic(err)
+		panic(err)
 	}
 
 	db, err := lldb.DecodeScalars(b)
 	if err != nil {
-		log.Panic(err)
+		panic(err)
 	}
 
 	if err = s.expandBytes(db); err != nil {
-		log.Panic(err)
+		panic(err)
 	}
 
 	//dbg("da: %v, db: %v", da, db)
@@ -834,7 +833,7 @@ func (s *file) Read(dst []interface{}, h int64, cols ...*col) (data []interface{
 				return nil, fmt.Errorf("(file-006) corrupted DB: non nil chunk type is not []byte")
 			}
 		default:
-			log.Panic("internal error 045")
+			panic("internal error 045")
 		}
 	}
 
