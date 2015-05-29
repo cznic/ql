@@ -193,8 +193,16 @@ func do() (err error) {
 		return
 	}
 
-	return rs[len(rs)-1].Do(*oFlds, func(data []interface{}) (bool, error) {
-		fmt.Println(str(data))
-		return true, nil
-	})
+	switch {
+	case l.IsExplainStmt():
+		return rs[len(rs)-1].Do(*oFlds, func(data []interface{}) (bool, error) {
+			fmt.Println(data[0])
+			return true, nil
+		})
+	default:
+		return rs[len(rs)-1].Do(*oFlds, func(data []interface{}) (bool, error) {
+			fmt.Println(str(data))
+			return true, nil
+		})
+	}
 }
