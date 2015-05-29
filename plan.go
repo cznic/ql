@@ -632,13 +632,13 @@ func (r *indexPlan) explain(w strutil.Formatter) {
 	case indexFalse, indexTrue:
 		// nop
 	case indexIntervalOO:
-		w.Format(" > %v && < %v", value{r.lval}, value{r.hval})
+		w.Format(" > %v && %s < %v", value{r.lval}, r.cname, value{r.hval})
 	case indexIntervalCC:
-		w.Format(" >= %v && <= %v", value{r.lval}, value{r.hval})
+		w.Format(" >= %v && %s <= %v", value{r.lval}, r.cname, value{r.hval})
 	case indexIntervalCO:
-		w.Format(" >= %v && < %v", value{r.lval}, value{r.hval})
+		w.Format(" >= %v && %s < %v", value{r.lval}, r.cname, value{r.hval})
 	case indexIntervalOC:
-		w.Format(" > %v && <= %v", value{r.lval}, value{r.hval})
+		w.Format(" > %v && %s <= %v", value{r.lval}, r.cname, value{r.hval})
 	default:
 		//dbg("", r.kind)
 		panic("internal error 073")

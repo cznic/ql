@@ -1633,7 +1633,7 @@
 //	│   └Output field names ["j"]
 //	└Output field names ["t.i" "u.j"]
 //	$ ql 'explain select * from t where i > 12 and i between 10 and 20 and i < 42'
-//	┌Iterate all rows of table "t" using index "xt_i" where i > 12 && <= 20
+//	┌Iterate all rows of table "t" using index "xt_i" where i > 12 && i <= 20
 //	└Output field names ["i"]
 //	$
 //

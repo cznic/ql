@@ -6860,12 +6860,12 @@ SELECT i FROM t WHERE i >= 0 && i <= 0;
 
 ---- 1063
 SELECT i FROM t WHERE i >= 0 && i <= 1;
-┌Iterate all rows of table "t" using index "x" where i >= 0 && <= 1
+┌Iterate all rows of table "t" using index "x" where i >= 0 && i <= 1
 └Output field names ["i"]
 
 ---- 1064
 SELECT i FROM t WHERE i >= 0 && i <= 2;
-┌Iterate all rows of table "t" using index "x" where i >= 0 && <= 2
+┌Iterate all rows of table "t" using index "x" where i >= 0 && i <= 2
 └Output field names ["i"]
 
 ---- 1065
@@ -6885,12 +6885,12 @@ SELECT i FROM t WHERE i >= 0 && i < 0;
 
 ---- 1068
 SELECT i FROM t WHERE i >= 0 && i < 1;
-┌Iterate all rows of table "t" using index "x" where i >= 0 && < 1
+┌Iterate all rows of table "t" using index "x" where i >= 0 && i < 1
 └Output field names ["i"]
 
 ---- 1069
 SELECT i FROM t WHERE i >= 0 && i < 2;
-┌Iterate all rows of table "t" using index "x" where i >= 0 && < 2
+┌Iterate all rows of table "t" using index "x" where i >= 0 && i < 2
 └Output field names ["i"]
 
 ---- 1070
@@ -7014,12 +7014,12 @@ SELECT i FROM t WHERE i > 0 && i <= 0;
 
 ---- 1093
 SELECT i FROM t WHERE i > 0 && i <= 1;
-┌Iterate all rows of table "t" using index "x" where i > 0 && <= 1
+┌Iterate all rows of table "t" using index "x" where i > 0 && i <= 1
 └Output field names ["i"]
 
 ---- 1094
 SELECT i FROM t WHERE i > 0 && i <= 2;
-┌Iterate all rows of table "t" using index "x" where i > 0 && <= 2
+┌Iterate all rows of table "t" using index "x" where i > 0 && i <= 2
 └Output field names ["i"]
 
 ---- 1095
@@ -7039,12 +7039,12 @@ SELECT i FROM t WHERE i > 0 && i < 0;
 
 ---- 1098
 SELECT i FROM t WHERE i > 0 && i < 1;
-┌Iterate all rows of table "t" using index "x" where i > 0 && < 1
+┌Iterate all rows of table "t" using index "x" where i > 0 && i < 1
 └Output field names ["i"]
 
 ---- 1099
 SELECT i FROM t WHERE i > 0 && i < 2;
-┌Iterate all rows of table "t" using index "x" where i > 0 && < 2
+┌Iterate all rows of table "t" using index "x" where i > 0 && i < 2
 └Output field names ["i"]
 
 ---- 1100
@@ -7103,12 +7103,12 @@ SELECT i FROM t WHERE i <= 0 && i == 2;
 
 ---- 1110
 SELECT i FROM t WHERE i <= 0 && i >= -2;
-┌Iterate all rows of table "t" using index "x" where i >= -2 && <= 0
+┌Iterate all rows of table "t" using index "x" where i >= -2 && i <= 0
 └Output field names ["i"]
 
 ---- 1111
 SELECT i FROM t WHERE i <= 0 && i >= -1;
-┌Iterate all rows of table "t" using index "x" where i >= -1 && <= 0
+┌Iterate all rows of table "t" using index "x" where i >= -1 && i <= 0
 └Output field names ["i"]
 
 ---- 1112
@@ -7128,12 +7128,12 @@ SELECT i FROM t WHERE i <= 0 && i >= 2;
 
 ---- 1115
 SELECT i FROM t WHERE i <= 0 && i > -2;
-┌Iterate all rows of table "t" using index "x" where i > -2 && <= 0
+┌Iterate all rows of table "t" using index "x" where i > -2 && i <= 0
 └Output field names ["i"]
 
 ---- 1116
 SELECT i FROM t WHERE i <= 0 && i > -1;
-┌Iterate all rows of table "t" using index "x" where i > -1 && <= 0
+┌Iterate all rows of table "t" using index "x" where i > -1 && i <= 0
 └Output field names ["i"]
 
 ---- 1117
@@ -7257,12 +7257,12 @@ SELECT i FROM t WHERE i < 0 && i == 2;
 
 ---- 1140
 SELECT i FROM t WHERE i < 0 && i >= -2;
-┌Iterate all rows of table "t" using index "x" where i >= -2 && < 0
+┌Iterate all rows of table "t" using index "x" where i >= -2 && i < 0
 └Output field names ["i"]
 
 ---- 1141
 SELECT i FROM t WHERE i < 0 && i >= -1;
-┌Iterate all rows of table "t" using index "x" where i >= -1 && < 0
+┌Iterate all rows of table "t" using index "x" where i >= -1 && i < 0
 └Output field names ["i"]
 
 ---- 1142
@@ -7282,12 +7282,12 @@ SELECT i FROM t WHERE i < 0 && i >= 2;
 
 ---- 1145
 SELECT i FROM t WHERE i < 0 && i > -2;
-┌Iterate all rows of table "t" using index "x" where i > -2 && < 0
+┌Iterate all rows of table "t" using index "x" where i > -2 && i < 0
 └Output field names ["i"]
 
 ---- 1146
 SELECT i FROM t WHERE i < 0 && i > -1;
-┌Iterate all rows of table "t" using index "x" where i > -1 && < 0
+┌Iterate all rows of table "t" using index "x" where i > -1 && i < 0
 └Output field names ["i"]
 
 ---- 1147
@@ -7411,17 +7411,17 @@ SELECT i FROM t WHERE i >= -1 && i <= 1 && i == 2;
 
 ---- 1170
 SELECT i FROM t WHERE i >= -1 && i <= 1 && i >= -2;
-┌Iterate all rows of table "t" using index "x" where i >= -1 && <= 1
+┌Iterate all rows of table "t" using index "x" where i >= -1 && i <= 1
 └Output field names ["i"]
 
 ---- 1171
 SELECT i FROM t WHERE i >= -1 && i <= 1 && i >= -1;
-┌Iterate all rows of table "t" using index "x" where i >= -1 && <= 1
+┌Iterate all rows of table "t" using index "x" where i >= -1 && i <= 1
 └Output field names ["i"]
 
 ---- 1172
 SELECT i FROM t WHERE i >= -1 && i <= 1 && i >= 0;
-┌Iterate all rows of table "t" using index "x" where i >= 0 && <= 1
+┌Iterate all rows of table "t" using index "x" where i >= 0 && i <= 1
 └Output field names ["i"]
 
 ---- 1173
@@ -7436,17 +7436,17 @@ SELECT i FROM t WHERE i >= -1 && i <= 1 && i >= 2;
 
 ---- 1175
 SELECT i FROM t WHERE i >= -1 && i <= 1 && i > -2;
-┌Iterate all rows of table "t" using index "x" where i >= -1 && <= 1
+┌Iterate all rows of table "t" using index "x" where i >= -1 && i <= 1
 └Output field names ["i"]
 
 ---- 1176
 SELECT i FROM t WHERE i >= -1 && i <= 1 && i > -1;
-┌Iterate all rows of table "t" using index "x" where i > -1 && <= 1
+┌Iterate all rows of table "t" using index "x" where i > -1 && i <= 1
 └Output field names ["i"]
 
 ---- 1177
 SELECT i FROM t WHERE i >= -1 && i <= 1 && i > 0;
-┌Iterate all rows of table "t" using index "x" where i > 0 && <= 1
+┌Iterate all rows of table "t" using index "x" where i > 0 && i <= 1
 └Output field names ["i"]
 
 ---- 1178
@@ -7471,17 +7471,17 @@ SELECT i FROM t WHERE i >= -1 && i <= 1 && i <= -1;
 
 ---- 1182
 SELECT i FROM t WHERE i >= -1 && i <= 1 && i <= 0;
-┌Iterate all rows of table "t" using index "x" where i >= -1 && <= 0
+┌Iterate all rows of table "t" using index "x" where i >= -1 && i <= 0
 └Output field names ["i"]
 
 ---- 1183
 SELECT i FROM t WHERE i >= -1 && i <= 1 && i <= 1;
-┌Iterate all rows of table "t" using index "x" where i >= -1 && <= 1
+┌Iterate all rows of table "t" using index "x" where i >= -1 && i <= 1
 └Output field names ["i"]
 
 ---- 1184
 SELECT i FROM t WHERE i >= -1 && i <= 1 && i <= 2;
-┌Iterate all rows of table "t" using index "x" where i >= -1 && <= 1
+┌Iterate all rows of table "t" using index "x" where i >= -1 && i <= 1
 └Output field names ["i"]
 
 ---- 1185
@@ -7496,44 +7496,44 @@ SELECT i FROM t WHERE i >= -1 && i <= 1 && i < -1;
 
 ---- 1187
 SELECT i FROM t WHERE i >= -1 && i <= 1 && i < 0;
-┌Iterate all rows of table "t" using index "x" where i >= -1 && < 0
+┌Iterate all rows of table "t" using index "x" where i >= -1 && i < 0
 └Output field names ["i"]
 
 ---- 1188
 SELECT i FROM t WHERE i >= -1 && i <= 1 && i < 1;
-┌Iterate all rows of table "t" using index "x" where i >= -1 && < 1
+┌Iterate all rows of table "t" using index "x" where i >= -1 && i < 1
 └Output field names ["i"]
 
 ---- 1189
 SELECT i FROM t WHERE i >= -1 && i <= 1 && i < 2;
-┌Iterate all rows of table "t" using index "x" where i >= -1 && <= 1
+┌Iterate all rows of table "t" using index "x" where i >= -1 && i <= 1
 └Output field names ["i"]
 
 ---- 1190
 SELECT i FROM t WHERE i >= -1 && i <= 1 && i != -2;
-┌Iterate all rows of table "t" using index "x" where i >= -1 && <= 1
+┌Iterate all rows of table "t" using index "x" where i >= -1 && i <= 1
 └Output field names ["i"]
 
 ---- 1191
 SELECT i FROM t WHERE i >= -1 && i <= 1 && i != -1;
-┌Iterate all rows of table "t" using index "x" where i > -1 && <= 1
+┌Iterate all rows of table "t" using index "x" where i > -1 && i <= 1
 └Output field names ["i"]
 
 ---- 1192
 SELECT i FROM t WHERE i >= -1 && i <= 1 && i != 0;
-┌Iterate all rows of table "t" using index "x" where i >= -1 && <= 1
+┌Iterate all rows of table "t" using index "x" where i >= -1 && i <= 1
 └Output field names ["i"]
 ┌Filter on i != 0
 └Output field names ["i"]
 
 ---- 1193
 SELECT i FROM t WHERE i >= -1 && i <= 1 && i != 1;
-┌Iterate all rows of table "t" using index "x" where i >= -1 && < 1
+┌Iterate all rows of table "t" using index "x" where i >= -1 && i < 1
 └Output field names ["i"]
 
 ---- 1194
 SELECT i FROM t WHERE i >= -1 && i <= 1 && i != 2;
-┌Iterate all rows of table "t" using index "x" where i >= -1 && <= 1
+┌Iterate all rows of table "t" using index "x" where i >= -1 && i <= 1
 └Output field names ["i"]
 
 ---- 1195
@@ -7563,17 +7563,17 @@ SELECT i FROM t WHERE i > -1 && i <= 1 && i == 2;
 
 ---- 1200
 SELECT i FROM t WHERE i > -1 && i <= 1 && i >= -2;
-┌Iterate all rows of table "t" using index "x" where i > -1 && <= 1
+┌Iterate all rows of table "t" using index "x" where i > -1 && i <= 1
 └Output field names ["i"]
 
 ---- 1201
 SELECT i FROM t WHERE i > -1 && i <= 1 && i >= -1;
-┌Iterate all rows of table "t" using index "x" where i > -1 && <= 1
+┌Iterate all rows of table "t" using index "x" where i > -1 && i <= 1
 └Output field names ["i"]
 
 ---- 1202
 SELECT i FROM t WHERE i > -1 && i <= 1 && i >= 0;
-┌Iterate all rows of table "t" using index "x" where i >= 0 && <= 1
+┌Iterate all rows of table "t" using index "x" where i >= 0 && i <= 1
 └Output field names ["i"]
 
 ---- 1203
@@ -7588,17 +7588,17 @@ SELECT i FROM t WHERE i > -1 && i <= 1 && i >= 2;
 
 ---- 1205
 SELECT i FROM t WHERE i > -1 && i <= 1 && i > -2;
-┌Iterate all rows of table "t" using index "x" where i > -1 && <= 1
+┌Iterate all rows of table "t" using index "x" where i > -1 && i <= 1
 └Output field names ["i"]
 
 ---- 1206
 SELECT i FROM t WHERE i > -1 && i <= 1 && i > -1;
-┌Iterate all rows of table "t" using index "x" where i > -1 && <= 1
+┌Iterate all rows of table "t" using index "x" where i > -1 && i <= 1
 └Output field names ["i"]
 
 ---- 1207
 SELECT i FROM t WHERE i > -1 && i <= 1 && i > 0;
-┌Iterate all rows of table "t" using index "x" where i > 0 && <= 1
+┌Iterate all rows of table "t" using index "x" where i > 0 && i <= 1
 └Output field names ["i"]
 
 ---- 1208
@@ -7623,17 +7623,17 @@ SELECT i FROM t WHERE i > -1 && i <= 1 && i <= -1;
 
 ---- 1212
 SELECT i FROM t WHERE i > -1 && i <= 1 && i <= 0;
-┌Iterate all rows of table "t" using index "x" where i > -1 && <= 0
+┌Iterate all rows of table "t" using index "x" where i > -1 && i <= 0
 └Output field names ["i"]
 
 ---- 1213
 SELECT i FROM t WHERE i > -1 && i <= 1 && i <= 1;
-┌Iterate all rows of table "t" using index "x" where i > -1 && <= 1
+┌Iterate all rows of table "t" using index "x" where i > -1 && i <= 1
 └Output field names ["i"]
 
 ---- 1214
 SELECT i FROM t WHERE i > -1 && i <= 1 && i <= 2;
-┌Iterate all rows of table "t" using index "x" where i > -1 && <= 1
+┌Iterate all rows of table "t" using index "x" where i > -1 && i <= 1
 └Output field names ["i"]
 
 ---- 1215
@@ -7648,44 +7648,44 @@ SELECT i FROM t WHERE i > -1 && i <= 1 && i < -1;
 
 ---- 1217
 SELECT i FROM t WHERE i > -1 && i <= 1 && i < 0;
-┌Iterate all rows of table "t" using index "x" where i > -1 && < 0
+┌Iterate all rows of table "t" using index "x" where i > -1 && i < 0
 └Output field names ["i"]
 
 ---- 1218
 SELECT i FROM t WHERE i > -1 && i <= 1 && i < 1;
-┌Iterate all rows of table "t" using index "x" where i > -1 && < 1
+┌Iterate all rows of table "t" using index "x" where i > -1 && i < 1
 └Output field names ["i"]
 
 ---- 1219
 SELECT i FROM t WHERE i > -1 && i <= 1 && i < 2;
-┌Iterate all rows of table "t" using index "x" where i > -1 && <= 1
+┌Iterate all rows of table "t" using index "x" where i > -1 && i <= 1
 └Output field names ["i"]
 
 ---- 1220
 SELECT i FROM t WHERE i > -1 && i <= 1 && i != -2;
-┌Iterate all rows of table "t" using index "x" where i > -1 && <= 1
+┌Iterate all rows of table "t" using index "x" where i > -1 && i <= 1
 └Output field names ["i"]
 
 ---- 1221
 SELECT i FROM t WHERE i > -1 && i <= 1 && i != -1;
-┌Iterate all rows of table "t" using index "x" where i > -1 && <= 1
+┌Iterate all rows of table "t" using index "x" where i > -1 && i <= 1
 └Output field names ["i"]
 
 ---- 1222
 SELECT i FROM t WHERE i > -1 && i <= 1 && i != 0;
-┌Iterate all rows of table "t" using index "x" where i > -1 && <= 1
+┌Iterate all rows of table "t" using index "x" where i > -1 && i <= 1
 └Output field names ["i"]
 ┌Filter on i != 0
 └Output field names ["i"]
 
 ---- 1223
 SELECT i FROM t WHERE i > -1 && i <= 1 && i != 1;
-┌Iterate all rows of table "t" using index "x" where i > -1 && < 1
+┌Iterate all rows of table "t" using index "x" where i > -1 && i < 1
 └Output field names ["i"]
 
 ---- 1224
 SELECT i FROM t WHERE i > -1 && i <= 1 && i != 2;
-┌Iterate all rows of table "t" using index "x" where i > -1 && <= 1
+┌Iterate all rows of table "t" using index "x" where i > -1 && i <= 1
 └Output field names ["i"]
 
 ---- 1225
@@ -7715,17 +7715,17 @@ SELECT i FROM t WHERE i > -1 && i < 1 && i == 2;
 
 ---- 1230
 SELECT i FROM t WHERE i > -1 && i < 1 && i >= -2;
-┌Iterate all rows of table "t" using index "x" where i > -1 && < 1
+┌Iterate all rows of table "t" using index "x" where i > -1 && i < 1
 └Output field names ["i"]
 
 ---- 1231
 SELECT i FROM t WHERE i > -1 && i < 1 && i >= -1;
-┌Iterate all rows of table "t" using index "x" where i > -1 && < 1
+┌Iterate all rows of table "t" using index "x" where i > -1 && i < 1
 └Output field names ["i"]
 
 ---- 1232
 SELECT i FROM t WHERE i > -1 && i < 1 && i >= 0;
-┌Iterate all rows of table "t" using index "x" where i >= 0 && < 1
+┌Iterate all rows of table "t" using index "x" where i >= 0 && i < 1
 └Output field names ["i"]
 
 ---- 1233
@@ -7740,17 +7740,17 @@ SELECT i FROM t WHERE i > -1 && i < 1 && i >= 2;
 
 ---- 1235
 SELECT i FROM t WHERE i > -1 && i < 1 && i > -2;
-┌Iterate all rows of table "t" using index "x" where i > -1 && < 1
+┌Iterate all rows of table "t" using index "x" where i > -1 && i < 1
 └Output field names ["i"]
 
 ---- 1236
 SELECT i FROM t WHERE i > -1 && i < 1 && i > -1;
-┌Iterate all rows of table "t" using index "x" where i > -1 && < 1
+┌Iterate all rows of table "t" using index "x" where i > -1 && i < 1
 └Output field names ["i"]
 
 ---- 1237
 SELECT i FROM t WHERE i > -1 && i < 1 && i > 0;
-┌Iterate all rows of table "t" using index "x" where i > 0 && < 1
+┌Iterate all rows of table "t" using index "x" where i > 0 && i < 1
 └Output field names ["i"]
 
 ---- 1238
@@ -7775,17 +7775,17 @@ SELECT i FROM t WHERE i > -1 && i < 1 && i <= -1;
 
 ---- 1242
 SELECT i FROM t WHERE i > -1 && i < 1 && i <= 0;
-┌Iterate all rows of table "t" using index "x" where i > -1 && <= 0
+┌Iterate all rows of table "t" using index "x" where i > -1 && i <= 0
 └Output field names ["i"]
 
 ---- 1243
 SELECT i FROM t WHERE i > -1 && i < 1 && i <= 1;
-┌Iterate all rows of table "t" using index "x" where i > -1 && < 1
+┌Iterate all rows of table "t" using index "x" where i > -1 && i < 1
 └Output field names ["i"]
 
 ---- 1244
 SELECT i FROM t WHERE i > -1 && i < 1 && i <= 2;
-┌Iterate all rows of table "t" using index "x" where i > -1 && < 1
+┌Iterate all rows of table "t" using index "x" where i > -1 && i < 1
 └Output field names ["i"]
 
 ---- 1245
@@ -7800,44 +7800,44 @@ SELECT i FROM t WHERE i > -1 && i < 1 && i < -1;
 
 ---- 1247
 SELECT i FROM t WHERE i > -1 && i < 1 && i < 0;
-┌Iterate all rows of table "t" using index "x" where i > -1 && < 0
+┌Iterate all rows of table "t" using index "x" where i > -1 && i < 0
 └Output field names ["i"]
 
 ---- 1248
 SELECT i FROM t WHERE i > -1 && i < 1 && i < 1;
-┌Iterate all rows of table "t" using index "x" where i > -1 && < 1
+┌Iterate all rows of table "t" using index "x" where i > -1 && i < 1
 └Output field names ["i"]
 
 ---- 1249
 SELECT i FROM t WHERE i > -1 && i < 1 && i < 2;
-┌Iterate all rows of table "t" using index "x" where i > -1 && < 1
+┌Iterate all rows of table "t" using index "x" where i > -1 && i < 1
 └Output field names ["i"]
 
 ---- 1250
 SELECT i FROM t WHERE i > -1 && i < 1 && i != -2;
-┌Iterate all rows of table "t" using index "x" where i > -1 && < 1
+┌Iterate all rows of table "t" using index "x" where i > -1 && i < 1
 └Output field names ["i"]
 
 ---- 1251
 SELECT i FROM t WHERE i > -1 && i < 1 && i != -1;
-┌Iterate all rows of table "t" using index "x" where i > -1 && < 1
+┌Iterate all rows of table "t" using index "x" where i > -1 && i < 1
 └Output field names ["i"]
 
 ---- 1252
 SELECT i FROM t WHERE i > -1 && i < 1 && i != 0;
-┌Iterate all rows of table "t" using index "x" where i > -1 && < 1
+┌Iterate all rows of table "t" using index "x" where i > -1 && i < 1
 └Output field names ["i"]
 ┌Filter on i != 0
 └Output field names ["i"]
 
 ---- 1253
 SELECT i FROM t WHERE i > -1 && i < 1 && i != 1;
-┌Iterate all rows of table "t" using index "x" where i > -1 && < 1
+┌Iterate all rows of table "t" using index "x" where i > -1 && i < 1
 └Output field names ["i"]
 
 ---- 1254
 SELECT i FROM t WHERE i > -1 && i < 1 && i != 2;
-┌Iterate all rows of table "t" using index "x" where i > -1 && < 1
+┌Iterate all rows of table "t" using index "x" where i > -1 && i < 1
 └Output field names ["i"]
 
 ---- 1255
@@ -7892,17 +7892,17 @@ SELECT i FROM t WHERE i >= -1 && i < 1 && i == 2;
 
 ---- 1265
 SELECT i FROM t WHERE i >= -1 && i < 1 && i >= -2;
-┌Iterate all rows of table "t" using index "x" where i >= -1 && < 1
+┌Iterate all rows of table "t" using index "x" where i >= -1 && i < 1
 └Output field names ["i"]
 
 ---- 1266
 SELECT i FROM t WHERE i >= -1 && i < 1 && i >= -1;
-┌Iterate all rows of table "t" using index "x" where i >= -1 && < 1
+┌Iterate all rows of table "t" using index "x" where i >= -1 && i < 1
 └Output field names ["i"]
 
 ---- 1267
 SELECT i FROM t WHERE i >= -1 && i < 1 && i >= 0;
-┌Iterate all rows of table "t" using index "x" where i >= 0 && < 1
+┌Iterate all rows of table "t" using index "x" where i >= 0 && i < 1
 └Output field names ["i"]
 
 ---- 1268
@@ -7917,17 +7917,17 @@ SELECT i FROM t WHERE i >= -1 && i < 1 && i >= 2;
 
 ---- 1270
 SELECT i FROM t WHERE i >= -1 && i < 1 && i > -2;
-┌Iterate all rows of table "t" using index "x" where i >= -1 && < 1
+┌Iterate all rows of table "t" using index "x" where i >= -1 && i < 1
 └Output field names ["i"]
 
 ---- 1271
 SELECT i FROM t WHERE i >= -1 && i < 1 && i > -1;
-┌Iterate all rows of table "t" using index "x" where i > -1 && < 1
+┌Iterate all rows of table "t" using index "x" where i > -1 && i < 1
 └Output field names ["i"]
 
 ---- 1272
 SELECT i FROM t WHERE i >= -1 && i < 1 && i > 0;
-┌Iterate all rows of table "t" using index "x" where i > 0 && < 1
+┌Iterate all rows of table "t" using index "x" where i > 0 && i < 1
 └Output field names ["i"]
 
 ---- 1273
@@ -7952,17 +7952,17 @@ SELECT i FROM t WHERE i >= -1 && i < 1 && i <= -1;
 
 ---- 1277
 SELECT i FROM t WHERE i >= -1 && i < 1 && i <= 0;
-┌Iterate all rows of table "t" using index "x" where i >= -1 && <= 0
+┌Iterate all rows of table "t" using index "x" where i >= -1 && i <= 0
 └Output field names ["i"]
 
 ---- 1278
 SELECT i FROM t WHERE i >= -1 && i < 1 && i <= 1;
-┌Iterate all rows of table "t" using index "x" where i >= -1 && < 1
+┌Iterate all rows of table "t" using index "x" where i >= -1 && i < 1
 └Output field names ["i"]
 
 ---- 1279
 SELECT i FROM t WHERE i >= -1 && i < 1 && i <= 2;
-┌Iterate all rows of table "t" using index "x" where i >= -1 && < 1
+┌Iterate all rows of table "t" using index "x" where i >= -1 && i < 1
 └Output field names ["i"]
 
 ---- 1280
@@ -7977,44 +7977,44 @@ SELECT i FROM t WHERE i >= -1 && i < 1 && i < -1;
 
 ---- 1282
 SELECT i FROM t WHERE i >= -1 && i < 1 && i < 0;
-┌Iterate all rows of table "t" using index "x" where i >= -1 && < 0
+┌Iterate all rows of table "t" using index "x" where i >= -1 && i < 0
 └Output field names ["i"]
 
 ---- 1283
 SELECT i FROM t WHERE i >= -1 && i < 1 && i < 1;
-┌Iterate all rows of table "t" using index "x" where i >= -1 && < 1
+┌Iterate all rows of table "t" using index "x" where i >= -1 && i < 1
 └Output field names ["i"]
 
 ---- 1284
 SELECT i FROM t WHERE i >= -1 && i < 1 && i < 2;
-┌Iterate all rows of table "t" using index "x" where i >= -1 && < 1
+┌Iterate all rows of table "t" using index "x" where i >= -1 && i < 1
 └Output field names ["i"]
 
 ---- 1285
 SELECT i FROM t WHERE i >= -1 && i < 1 && i != -2;
-┌Iterate all rows of table "t" using index "x" where i >= -1 && < 1
+┌Iterate all rows of table "t" using index "x" where i >= -1 && i < 1
 └Output field names ["i"]
 
 ---- 1286
 SELECT i FROM t WHERE i >= -1 && i < 1 && i != -1;
-┌Iterate all rows of table "t" using index "x" where i > -1 && < 1
+┌Iterate all rows of table "t" using index "x" where i > -1 && i < 1
 └Output field names ["i"]
 
 ---- 1287
 SELECT i FROM t WHERE i >= -1 && i < 1 && i != 0;
-┌Iterate all rows of table "t" using index "x" where i >= -1 && < 1
+┌Iterate all rows of table "t" using index "x" where i >= -1 && i < 1
 └Output field names ["i"]
 ┌Filter on i != 0
 └Output field names ["i"]
 
 ---- 1288
 SELECT i FROM t WHERE i >= -1 && i < 1 && i != 1;
-┌Iterate all rows of table "t" using index "x" where i >= -1 && < 1
+┌Iterate all rows of table "t" using index "x" where i >= -1 && i < 1
 └Output field names ["i"]
 
 ---- 1289
 SELECT i FROM t WHERE i >= -1 && i < 1 && i != 2;
-┌Iterate all rows of table "t" using index "x" where i >= -1 && < 1
+┌Iterate all rows of table "t" using index "x" where i >= -1 && i < 1
 └Output field names ["i"]
 
 ---- 1290
@@ -8340,6 +8340,6 @@ SELECT * FROM t WHERE i > 12 && i >= 10 && i <= 20 && i < 15 ORDER BY i;
 
 ---- 1335
 SELECT * FROM t WHERE i > 12 && i >= 10 && i <= 20 && i < 42;
-┌Iterate all rows of table "t" using index "xt_i" where i > 12 && <= 20
+┌Iterate all rows of table "t" using index "xt_i" where i > 12 && i <= 20
 └Output field names ["i"]
 
