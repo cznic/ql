@@ -7,10 +7,10 @@
 
 //TODO verify there's a graceful failure for a 2G+ blob on a 32 bit machine.
 
-// Package ql is a pure Go embedded (S)QL database.
+// Package ql implements a pure Go embedded SQL database engine.
 //
-// QL is a SQL-like language. It is less complex and less powerful than SQL
-// (whichever specification SQL is considered to be).
+// QL is a member of the SQL family of languages. It is less complex and less
+// powerful than SQL (whichever specification SQL is considered to be).
 //
 // Change list
 //
