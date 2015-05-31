@@ -344,7 +344,12 @@ func (r *indexPlan) doLe(ctx *execCtx, f func(interface{}, []interface{}) (bool,
 			continue
 		}
 
-		if collate1(k[0], r.hval) > 0 {
+		val, err := expand1(k[0], nil)
+		if err != nil {
+			return err
+		}
+
+		if collate1(val, r.hval) > 0 {
 			return nil
 		}
 
@@ -378,7 +383,12 @@ func (r *indexPlan) doLt(ctx *execCtx, f func(interface{}, []interface{}) (bool,
 			continue
 		}
 
-		if collate1(k[0], r.hval) >= 0 {
+		val, err := expand1(k[0], nil)
+		if err != nil {
+			return err
+		}
+
+		if collate1(val, r.hval) >= 0 {
 			return nil
 		}
 
@@ -408,7 +418,12 @@ func (r *indexPlan) doEq(ctx *execCtx, f func(interface{}, []interface{}) (bool,
 			return noEOF(err)
 		}
 
-		if collate1(k[0], r.lval) != 0 {
+		val, err := expand1(k[0], nil)
+		if err != nil {
+			return err
+		}
+
+		if collate1(val, r.lval) != 0 {
 			return nil
 		}
 
@@ -442,7 +457,12 @@ func (r *indexPlan) doNe(ctx *execCtx, f func(interface{}, []interface{}) (bool,
 			continue
 		}
 
-		if collate1(k[0], r.hval) == 0 {
+		val, err := expand1(k[0], nil)
+		if err != nil {
+			return err
+		}
+
+		if collate1(val, r.hval) == 0 {
 			continue
 		}
 
