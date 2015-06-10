@@ -795,7 +795,7 @@ func (s *file) Read(dst []interface{}, h int64, cols ...*col) (data []interface{
 
 	for _, col := range cols {
 		i := col.index + 2
-		if i >= len(rec) {
+		if i >= len(rec) || rec[i] == nil {
 			continue
 		}
 
@@ -825,8 +825,6 @@ func (s *file) Read(dst []interface{}, h int64, cols ...*col) (data []interface{
 		case qUint64:
 		case qBlob, qBigInt, qBigRat, qTime, qDuration:
 			switch x := rec[i].(type) {
-			case nil:
-				rec[i] = nil
 			case []byte:
 				rec[i] = chunk{f: s, b: x}
 			default:
