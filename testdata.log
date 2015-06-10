@@ -8343,3 +8343,8 @@ SELECT * FROM t WHERE i > 12 && i >= 10 && i <= 20 && i < 42;
 ┌Iterate all rows of table "t" using index "xt_i" where i > 12 && i <= 20
 └Output field names ["i"]
 
+---- 1336
+SELECT * FROM t;
+┌Iterate all rows of table "t"
+└Output field names ["i"]
+
