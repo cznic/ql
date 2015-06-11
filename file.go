@@ -795,7 +795,7 @@ func (s *file) Read(dst []interface{}, h int64, cols ...*col) (data []interface{
 
 	for _, col := range cols {
 		i := col.index + 2
-		if i >= len(rec) {
+		if i >= len(rec) || rec[i] == nil {
 			continue
 		}
 
@@ -825,8 +825,6 @@ func (s *file) Read(dst []interface{}, h int64, cols ...*col) (data []interface{
 		case qUint64:
 		case qBlob, qBigInt, qBigRat, qTime, qDuration:
 			switch x := rec[i].(type) {
-			case nil:
-				rec[i] = nil
 			case []byte:
 				rec[i] = chunk{f: s, b: x}
 			default:
@@ -1125,6 +1123,13 @@ func isIndexNull(data []interface{}) bool {
 // The []byte version of the key in the BTree shares chunks, if any, with
 // the value stored in the record.
 func (x *fileIndex) Create(indexedValues []interface{}, h int64) error {
+	for i, indexedValue := range indexedValues {
+		chunk, ok := indexedValue.(chunk)
+		if ok {
+			indexedValues[i] = chunk.b
+		}
+	}
+
 	t := x.t
 	switch {
 	case !x.unique:

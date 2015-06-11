@@ -15572,3 +15572,22 @@ SELECT * FROM t WHERE i > 12 && i BETWEEN 10 AND 20 AND i < 42;
 [14]
 [15]
 [16]
+
+-- 1336 // https://github.com/cznic/ql/issues/102
+BEGIN TRANSACTION;
+	CREATE TABLE t (i byte);
+	INSERT INTO t VALUES (NULL);
+COMMIT;
+SELECT * FROM t;
+|"i"
+[<nil>]
+
+-- 1337 // https://github.com/cznic/ql/issues/103
+BEGIN TRANSACTION;
+	CREATE TABLE t (t time);
+	INSERT INTO t VALUES (date(2015, 6, 11, 11, 7, 50, 0, "UTC"));
+	CREATE INDEX x ON t(t);
+COMMIT;
+SELECT * FROM t;
+|"t"
+[2015-06-11 11:07:50 +0000 UTC]
