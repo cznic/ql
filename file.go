@@ -1123,6 +1123,13 @@ func isIndexNull(data []interface{}) bool {
 // The []byte version of the key in the BTree shares chunks, if any, with
 // the value stored in the record.
 func (x *fileIndex) Create(indexedValues []interface{}, h int64) error {
+	for i, indexedValue := range indexedValues {
+		chunk, ok := indexedValue.(chunk)
+		if ok {
+			indexedValues[i] = chunk.b
+		}
+	}
+
 	t := x.t
 	switch {
 	case !x.unique:

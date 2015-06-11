@@ -8348,3 +8348,8 @@ SELECT * FROM t;
 ┌Iterate all rows of table "t"
 └Output field names ["i"]
 
+---- 1337
+SELECT * FROM t;
+┌Iterate all rows of table "t"
+└Output field names ["t"]
+
