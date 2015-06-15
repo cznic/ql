@@ -14,6 +14,9 @@
 //
 // Change list
 //
+// 2015-06-15: To improve compatibility with other SQL implementations, the
+// count built-in aggregate function now accepts * as its argument.
+//
 // 2015-05-29: The execution planner was rewritten from scratch. It should use
 // indices in all places where they were used before plus in some additional
 // situations.  It is possible to investigate the plan using the newly added
@@ -665,7 +668,7 @@
 //              | PrimaryExpression Slice
 //              | PrimaryExpression Call .
 //
-//  Call  = "(" [ ExpressionList ] ")" .
+//  Call  = "(" [ "*" | ExpressionList ] ")" . // * only in count(*).
 //  Index = "[" Expression "]" .
 //  Slice = "[" [ Expression ] ":" [ Expression ] "]" .
 //
@@ -2062,11 +2065,14 @@
 // returns 0 for an empty record set.
 //
 //	func count() int             // The number of rows in a record set.
+//	func count(*) int            // Equivalent to count().
 // 	func count(e expression) int // The number of cases where the expression value is not NULL.
 //
 // For example
 //
 //	SELECT count() FROM department; // # of rows
+//
+//	SELECT count(*) FROM department; // # of rows
 //
 //	SELECT count(DepartmentID) FROM department; // # of records with non NULL field DepartmentID
 //

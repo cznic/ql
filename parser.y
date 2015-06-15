@@ -260,6 +260,10 @@ Call:
 	{
 		$$ = $2
 	}
+|	'(' '*' ')'
+	{
+		$<item>$ = '*'
+	}
 
 Call1:
 	/* EMPTY */
@@ -829,6 +833,15 @@ PrimaryExpression:
 		if !ok {
 			x.err("expected identifier or qualified identifier")
 			return 1
+		}
+
+		if r, ok := $2.(rune); ok {
+			if f.isQualified() || f.s != "count" || r != '*' {
+				x.err(fmt.Sprintf("invalid expression %s(%c)", f, r))
+				return 1
+			}
+
+			$2 = []expression(nil)
 		}
 
 		var err error

@@ -63,7 +63,7 @@ AlterTableStmt = "ALTER" "TABLE" TableName (
 Assignment = ColumnName "=" Expression .
 AssignmentList = Assignment { "," Assignment } [ "," ] .
 BeginTransactionStmt = "BEGIN" "TRANSACTION" .
-Call = "(" [ ExpressionList ] ")" .
+Call = "(" [ "*" | ExpressionList ] ")" .
 ColumnDef = ColumnName Type [
 		  "NOT" "NULL"
 		| Expression

@@ -15591,3 +15591,43 @@ COMMIT;
 SELECT * FROM t;
 |"t"
 [2015-06-11 11:07:50 +0000 UTC]
+
+-- 1338
+BEGIN TRANSACTION;
+	CREATE TABLE t (t time);
+COMMIT;
+SELECT len(*) FROM t;
+||invalid expression
+
+-- 1339
+BEGIN TRANSACTION;
+	CREATE TABLE t (t time);
+COMMIT;
+SELECT t.count(*) FROM t;
+||invalid expression
+
+-- 1339
+BEGIN TRANSACTION;
+	CREATE TABLE t (t time);
+COMMIT;
+SELECT count(*) FROM t;
+|""
+[0]
+
+-- 1340
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES (1), (NULL), (3);
+COMMIT;
+SELECT count(*) FROM t;
+|""
+[3]
+
+-- 1341
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES (1), (NULL), (3);
+COMMIT;
+SELECT count() FROM t;
+|""
+[3]

@@ -8353,3 +8353,30 @@ SELECT * FROM t;
 ┌Iterate all rows of table "t"
 └Output field names ["t"]
 
+---- 1340
+SELECT count() FROM t;
+┌Iterate all rows of table "t"
+└Output field names ["t"]
+┌Group by distinct rows
+└Output field names ["t"]
+┌Evaluate count() as "",
+└Output field names [""]
+
+---- 1341
+SELECT count() FROM t;
+┌Iterate all rows of table "t"
+└Output field names ["i"]
+┌Group by distinct rows
+└Output field names ["i"]
+┌Evaluate count() as "",
+└Output field names [""]
+
+---- 1342
+SELECT count() FROM t;
+┌Iterate all rows of table "t"
+└Output field names ["i"]
+┌Group by distinct rows
+└Output field names ["i"]
+┌Evaluate count() as "",
+└Output field names [""]
+
