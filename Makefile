@@ -49,7 +49,7 @@ nuke:
 parser.go: parser.y
 	a=$(shell tempfile) ; \
 	  goyacc -o /dev/null -xegen $$a $< ; \
-	  goyacc -o $@ -xe $$a $< ; \
+	  goyacc -cr -o $@ -xe $$a $< ; \
 	  rm -f $$a
 	sed -i -e 's|//line.*||' -e 's/yyEofCode/yyEOFCode/' $@
 
@@ -58,7 +58,7 @@ ql.test: all
 ql.y: doc.go
 	sed -n '1,/^package/ s/^\/\/  //p' < $< \
 		| ebnf2y -o $@ -oe $*.ebnf -start StatementList -pkg $* -p _
-	goyacc -o /dev/null $@
+	goyacc -cr -o /dev/null $@
 
 scanner.go: scanner.l parser.go
 	golex -o $@ $<
