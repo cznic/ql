@@ -1205,6 +1205,10 @@ func (db *DB) Execute(ctx *TCtx, l List, arg ...interface{}) (rs []Recordset, in
 		}
 
 		if r != nil {
+			if x, ok := r.(recordset); ok {
+				x.tx = ctx
+				r = x
+			}
 			rs = append(rs, r)
 		}
 	}

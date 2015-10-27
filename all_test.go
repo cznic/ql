@@ -3146,3 +3146,40 @@ func BenchmarkIssue99(b *testing.B) {
 	}
 	b.SetBytes(int64(recs) * benchScale)
 }
+
+func TestIssue108(t *testing.T) {
+	db, err := OpenMem()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	setup := `BEGIN TRANSACTION;
+CREATE TABLE people (name string NOT NULL);
+INSERT INTO people VALUES ("alice"), ("bob");
+`
+	ctx := NewRWCtx()
+	_, _, err = db.Run(ctx, setup)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rs, _, err := db.Run(ctx, "SELECT count() FROM people;")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	row, err := rs[0].FirstRow() // Used to block forever.
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	n, ok := row[0].(int64)
+	if !ok || n != 2 {
+		t.Fatal(n, 2)
+	}
+
+	_, _, err = db.Run(ctx, "COMMIT;")
+	if err != nil {
+		t.Fatal(err)
+	}
+}
