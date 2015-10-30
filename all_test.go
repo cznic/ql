@@ -3328,7 +3328,7 @@ func (t issue109) countFullJoin(personID int64) int {
 	}
 
 	for i, v := range rows {
-		t.Logf("%v/%v: %v", i, len(rows), v)	
+		t.Logf("%v/%v: %v", i, len(rows), v)
 	}
 	t.Log("----")
 	return len(rows)
