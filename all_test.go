@@ -3256,6 +3256,7 @@ func (t issue109) createBuggyIndex() {
 	`); err != nil {
 		t.Fatal(err)
 	}
+	t.Log("CREATE INDEX people_awards_person_id ON people_awards (person_id);")
 }
 
 func (t issue109) createPerson(name string) int64 {
@@ -3270,6 +3271,7 @@ func (t issue109) createPerson(name string) int64 {
 		t.Fatal(err)
 	}
 
+	t.Logf("INSERT INTO people(name) VALUES (%q); -> ID %v", name, ctx.LastInsertID)
 	return ctx.LastInsertID
 }
 
@@ -3285,13 +3287,14 @@ func (t issue109) createAward(name string) int64 {
 		t.Fatal(err)
 	}
 
+	t.Logf("INSERT INTO awards(name) VALUES (%q); -> ID %v", name, ctx.LastInsertID)
 	return ctx.LastInsertID
 }
 
 func (t issue109) countFullJoin(personID int64) int {
-	rs, _, err := t.db.Run(nil, `
+	stmt := `
 		SELECT
-			id(awards), awards.name
+			*
 		FROM
 			awards
 		FULL JOIN
@@ -3300,7 +3303,8 @@ func (t issue109) countFullJoin(personID int64) int {
 			id(awards) == people_awards.award_id
 		WHERE
 			people_awards.person_id == $1
-	`, personID)
+	`
+	rs, _, err := t.db.Run(nil, "explain "+stmt, personID)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -3310,6 +3314,23 @@ func (t issue109) countFullJoin(personID int64) int {
 		t.Fatal(err)
 	}
 
+	t.Log("----")
+	for _, v := range rows {
+		t.Log(v)
+	}
+
+	if rs, _, err = t.db.Run(nil, stmt, personID); err != nil {
+		t.Fatal(err)
+	}
+
+	if rows, err = rs[0].Rows(-1, 0); err != nil {
+		t.Fatal(err)
+	}
+
+	for i, v := range rows {
+		t.Logf("%v/%v: %v", i, len(rows), v)	
+	}
+	t.Log("----")
 	return len(rows)
 }
 
@@ -3324,6 +3345,7 @@ func (t issue109) insertPersonAward(personID, awardID int64) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	t.Logf("INSERT INTO people_awards(person_id, award_id) VALUES (%v, %v);", personID, awardID)
 }
 
 func (t issue109) countJoinRecords() int64 {
@@ -3360,6 +3382,7 @@ func (t issue109) deletePersonAwards(personID int64) {
 	if ctx.RowsAffected != 2 {
 		t.Fatal("Did not delete rows as expected")
 	}
+	t.Logf("DELETE FROM people_awards WHERE person_id == %v;", personID)
 }
 
 func TestIssue109(t *testing.T) {
