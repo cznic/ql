@@ -519,6 +519,11 @@ func (r *whereRset) plan(ctx *execCtx) (plan, error) {
 		return nil, err
 	}
 
+	switch r.src.(type) {
+	case *leftJoinDefaultPlan, *rightJoinDefaultPlan, *fullJoinDefaultPlan:
+		return &filterDefaultPlan{r.src, expr, nil}, nil
+	}
+
 	switch x := expr.(type) {
 	case *binaryOperation:
 		return r.planBinOp(x)

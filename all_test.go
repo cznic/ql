@@ -3183,3 +3183,209 @@ INSERT INTO people VALUES ("alice"), ("bob");
 		t.Fatal(err)
 	}
 }
+
+type issue109 struct {
+	*testing.T
+	db *DB
+}
+
+func (t issue109) test(doIndex bool) {
+	t.Logf("Use index: %v", doIndex)
+	var err error
+	if t.db, err = OpenMem(); err != nil {
+		t.Fatal(err)
+	}
+
+	if _, _, err := t.db.Run(NewRWCtx(), `
+		BEGIN TRANSACTION;
+			CREATE TABLE people (name string NOT NULL);
+			CREATE TABLE awards (name string NOT NULL);
+			CREATE TABLE people_awards (person_id int NOT NULL, award_id int NOT NULL);
+		COMMIT;
+	`); err != nil {
+		t.Fatal(err)
+	}
+
+	if doIndex {
+		t.createBuggyIndex()
+	}
+
+	pid1 := t.createPerson("alice")
+
+	aid1 := t.createAward("awesome")
+	aid2 := t.createAward("best")
+
+	zeroFullJoinCount := t.countFullJoin(pid1)
+	if zeroFullJoinCount != 0 {
+		t.Fatal(zeroFullJoinCount, "Incorrect full join count before creating records")
+	}
+
+	t.insertPersonAward(pid1, aid1)
+	t.insertPersonAward(pid1, aid2)
+
+	initialFullJoinCount := t.countFullJoin(pid1)
+	if initialFullJoinCount != 2 {
+		t.Fatal(initialFullJoinCount, "Incorrect full join count before deleting records")
+	}
+
+	initialNumJoinRecords := t.countJoinRecords()
+	if initialNumJoinRecords != 2 {
+		t.Fatal(initialNumJoinRecords, "Incorrect number of join records before deleting records")
+	}
+
+	t.deletePersonAwards(pid1)
+
+	afterNumJoinRecords := t.countJoinRecords()
+	if afterNumJoinRecords != 0 {
+		t.Fatal(afterNumJoinRecords, "Incorrect number of join records after deleting records")
+	}
+
+	afterFullJoinCount := t.countFullJoin(pid1)
+	if afterFullJoinCount != 0 {
+		t.Fatal(afterFullJoinCount, "Incorrect full join count after deleting records")
+	}
+
+	t.Logf("OK")
+}
+
+func (t issue109) createBuggyIndex() {
+	if _, _, err := t.db.Run(NewRWCtx(), `
+		BEGIN TRANSACTION;
+			CREATE INDEX people_awards_person_id ON people_awards (person_id);
+		COMMIT;
+	`); err != nil {
+		t.Fatal(err)
+	}
+	t.Log("CREATE INDEX people_awards_person_id ON people_awards (person_id);")
+}
+
+func (t issue109) createPerson(name string) int64 {
+	ctx := NewRWCtx()
+	_, _, err := t.db.Run(ctx, `
+		BEGIN TRANSACTION;
+			INSERT INTO people(name) VALUES ($1);
+		COMMIT;`,
+		name,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Logf("INSERT INTO people(name) VALUES (%q); -> ID %v", name, ctx.LastInsertID)
+	return ctx.LastInsertID
+}
+
+func (t issue109) createAward(name string) int64 {
+	ctx := NewRWCtx()
+	_, _, err := t.db.Run(ctx, `
+		BEGIN TRANSACTION;
+			INSERT INTO awards(name) VALUES ($1);
+		COMMIT`,
+		name,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Logf("INSERT INTO awards(name) VALUES (%q); -> ID %v", name, ctx.LastInsertID)
+	return ctx.LastInsertID
+}
+
+func (t issue109) countFullJoin(personID int64) int {
+	stmt := `
+		SELECT
+			*
+		FROM
+			awards
+		FULL JOIN
+			people_awards 
+		ON
+			id(awards) == people_awards.award_id
+		WHERE
+			people_awards.person_id == $1
+	`
+	rs, _, err := t.db.Run(nil, "explain "+stmt, personID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rows, err := rs[0].Rows(-1, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Log("----")
+	for _, v := range rows {
+		t.Log(v)
+	}
+
+	if rs, _, err = t.db.Run(nil, stmt, personID); err != nil {
+		t.Fatal(err)
+	}
+
+	if rows, err = rs[0].Rows(-1, 0); err != nil {
+		t.Fatal(err)
+	}
+
+	for i, v := range rows {
+		t.Logf("%v/%v: %v", i, len(rows), v)
+	}
+	t.Log("----")
+	return len(rows)
+}
+
+func (t issue109) insertPersonAward(personID, awardID int64) {
+	ctx := NewRWCtx()
+	_, _, err := t.db.Run(ctx, `
+		BEGIN TRANSACTION;
+			INSERT INTO people_awards(person_id, award_id) VALUES ($1, $2);
+		COMMIT;`,
+		personID, awardID,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Logf("INSERT INTO people_awards(person_id, award_id) VALUES (%v, %v);", personID, awardID)
+}
+
+func (t issue109) countJoinRecords() int64 {
+	rs, _, err := t.db.Run(nil, `
+		SELECT
+			count()
+		FROM
+			people_awards;	
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	row, err := rs[0].FirstRow()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return row[0].(int64)
+}
+
+func (t issue109) deletePersonAwards(personID int64) {
+	ctx := NewRWCtx()
+	_, _, err := t.db.Run(ctx, `
+		BEGIN TRANSACTION;
+			DELETE FROM people_awards WHERE person_id == $1;
+		COMMIT`,
+		personID,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if ctx.RowsAffected != 2 {
+		t.Fatal("Did not delete rows as expected")
+	}
+	t.Logf("DELETE FROM people_awards WHERE person_id == %v;", personID)
+}
+
+func TestIssue109(t *testing.T) {
+	(issue109{T: t}).test(false)
+	(issue109{T: t}).test(true)
+}
