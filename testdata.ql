@@ -15606,7 +15606,7 @@ COMMIT;
 SELECT t.count(*) FROM t;
 ||invalid expression
 
--- 1339
+-- 1340
 BEGIN TRANSACTION;
 	CREATE TABLE t (t time);
 COMMIT;
@@ -15614,7 +15614,7 @@ SELECT count(*) FROM t;
 |""
 [0]
 
--- 1340
+-- 1341
 BEGIN TRANSACTION;
 	CREATE TABLE t (i int);
 	INSERT INTO t VALUES (1), (NULL), (3);
@@ -15623,7 +15623,7 @@ SELECT count(*) FROM t;
 |""
 [3]
 
--- 1341
+-- 1342
 BEGIN TRANSACTION;
 	CREATE TABLE t (i int);
 	INSERT INTO t VALUES (1), (NULL), (3);
@@ -15631,3 +15631,32 @@ COMMIT;
 SELECT count() FROM t;
 |""
 [3]
+
+-- 1343 // https://github.com/cznic/ql/issues/118
+BEGIN TRANSACTION;
+	CREATE TABLE foo (bar int, when time);
+	INSERT INTO foo VALUES (1, parseTime("2006-01-02", "3016-02-01"));
+	CREATE INDEX FooWhen ON foo (when);
+COMMIT;
+SELECT * FROM foo WHERE when > now();
+|"bar", "when"
+[1 3016-02-01 00:00:00 +0000 UTC]
+
+-- 1344 // https://github.com/cznic/ql/issues/118
+BEGIN TRANSACTION;
+	CREATE TABLE foo (bar int, when time);
+	INSERT INTO foo VALUES (1, parseTime("2006-01-02", "2017-02-01"));
+	CREATE INDEX FooWhen ON foo (when);
+COMMIT;
+SELECT * FROM foo WHERE when > date(2017, 1, 31, 23, 59, 59, 999999999, "UTC");
+|"bar", "when"
+[1 2017-02-01 00:00:00 +0000 UTC]
+
+-- 1345 // https://github.com/cznic/ql/issues/118
+BEGIN TRANSACTION;
+	CREATE TABLE foo (bar int, when time);
+	INSERT INTO foo VALUES (1, parseTime("2006-01-02", "2017-02-01"));
+	CREATE INDEX FooWhen ON foo (when);
+COMMIT;
+SELECT * FROM foo WHERE when > date(2017, 2, 1, 0, 0, 0, 0, "UTC");
+|"bar", "when"

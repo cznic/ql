@@ -8380,3 +8380,10 @@ SELECT count() FROM t;
 ┌Evaluate count() as "",
 └Output field names [""]
 
+---- 1343
+SELECT * FROM foo WHERE when > now();
+┌Iterate all rows of table "foo"
+└Output field names ["bar" "when"]
+┌Filter on when > now()
+└Output field names ["bar" "when"]
+
