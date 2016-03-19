@@ -19,9 +19,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/camlistore/go4/lock"
 	"github.com/cznic/exp/lldb"
 	"github.com/cznic/mathutil"
+	"go4.org/lock"
 )
 
 const (
