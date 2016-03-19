@@ -14,6 +14,12 @@
 //
 // Change list
 //
+// 2016-03-17: Release v1.0.1 adjusts for latest goyacc. Parser error messages
+// are improved and changed, but their exact form is not considered a API
+// change.
+//
+// 2016-03-05: The current version has been tagged v1.0.0.
+//
 // 2015-06-15: To improve compatibility with other SQL implementations, the
 // count built-in aggregate function now accepts * as its argument.
 //
