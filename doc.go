@@ -14,6 +14,10 @@
 //
 // Change list
 //
+// 2016-04-03: Release v1.0.3 fixes a data race.
+//
+//  https://github.com/cznic/ql/issues/126
+//
 // 2016-03-23: Release v1.0.2 vendors github.com/cznic/exp/lldb and
 // github.com/camlistore/go4/lock.
 //
