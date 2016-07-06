@@ -409,7 +409,7 @@ func newFileFromOSFile(f lldb.OSFile) (fi *file, err error) {
 	w, err = os.OpenFile(wn, os.O_CREATE|os.O_EXCL|os.O_RDWR, 0666)
 	closew = true
 	defer func() {
-		if closew {
+		if w != nil && closew {
 			nm := w.Name()
 			w.Close()
 			os.Remove(nm)
