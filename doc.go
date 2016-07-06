@@ -14,6 +14,10 @@
 //
 // Change list
 //
+// 2016-07-06: Release v1.0.4 fixes a panic when closing the WAL file.
+//
+//	https://github.com/cznic/ql/pull/127
+//
 // 2016-04-03: Release v1.0.3 fixes a data race.
 //
 //	https://github.com/cznic/ql/issues/126
