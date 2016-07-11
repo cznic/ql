@@ -144,8 +144,8 @@ func (l List) String() string {
 	return b.String()
 }
 
-// IsExplainStmt reports whether l is a single EXPLAIN statment or a single EXPLAIN
-// statment enclosed in a transaction.
+// IsExplainStmt reports whether l is a single EXPLAIN statement or a single EXPLAIN
+// statement enclosed in a transaction.
 func (l List) IsExplainStmt() bool {
 	switch len(l.l) {
 	case 1:
@@ -212,7 +212,7 @@ type TCtx struct {
 // unique conext.
 func NewRWCtx() *TCtx { return &TCtx{} }
 
-// Recordset is a result of a select statment. It can call a user function for
+// Recordset is a result of a select statement. It can call a user function for
 // every row (record) in the set using the Do method.
 //
 // Recordsets can be safely reused. Evaluation of the rows is performed lazily.
@@ -670,16 +670,6 @@ func (r tableRset) plan(ctx *execCtx) (plan, error) {
 		rs.fields = append(rs.fields, col.name)
 	}
 	return rs, nil
-}
-
-func findFldIndex(fields []*fld, name string) int {
-	for i, f := range fields {
-		if f.name == name {
-			return i
-		}
-	}
-
-	return -1
 }
 
 func findFld(fields []*fld, name string) (f *fld) {
@@ -1276,7 +1266,7 @@ func (db *DB) run1(pc *TCtx, s stmt, arg ...interface{}) (rs Recordset, tnla, tn
 			}
 
 			if pc != db.cc {
-				for db.rw == true {
+				for db.rw {
 					db.mu.Unlock() // Transaction isolation
 					db.mu.Lock()
 				}
@@ -1501,7 +1491,7 @@ type IndexInfo struct {
 	Name           string   // Index name
 	Table          string   // Table name.
 	Column         string   // Column name.
-	Unique         bool     // Wheter the index is unique.
+	Unique         bool     // Whether the index is unique.
 	ExpressionList []string // Index expression list.
 }
 

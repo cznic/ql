@@ -14,6 +14,11 @@
 //
 // Change list
 //
+// 2016-07-11: Release v1.0.5 undoes vendoring of lldb. QL now uses stable lldb
+// (github.com/cznic/lldb).
+//
+// 	https://github.com/cznic/ql/issues/128
+//
 // 2016-07-06: Release v1.0.4 fixes a panic when closing the WAL file.
 //
 //	https://github.com/cznic/ql/pull/127
@@ -804,7 +809,7 @@
 //
 //	expr1 LIKE expr2
 //
-// yeild a boolean value true if expr2, a regular expression, matches expr1
+// yield a boolean value true if expr2, a regular expression, matches expr1
 // (see also [6]).  Both expression must be of type string. If any one of the
 // expressions is NULL the result is NULL.
 //
@@ -891,7 +896,7 @@
 //
 //	expr IS NOT NULL	// case B
 //
-// yeild a boolean value true if expr does not have a specific type (case A) or
+// yield a boolean value true if expr does not have a specific type (case A) or
 // if expr has a specific type (case B). In other cases the result is a boolean
 // value false.
 //

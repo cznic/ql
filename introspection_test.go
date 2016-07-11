@@ -684,7 +684,7 @@ func TestMarshal(t *testing.T) {
 			case []byte:
 				switch y := e.(type) {
 				case []byte:
-					if bytes.Compare(x, y) != 0 {
+					if !bytes.Equal(x, y) {
 						t.Fatal(iTest, x, y)
 					}
 				default:

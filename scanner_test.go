@@ -10,8 +10,6 @@ import (
 	"unicode"
 )
 
-var bad = int(unicode.ReplacementChar)
-
 func tok2name(i int) string {
 	if i == unicode.ReplacementChar {
 		return "<?>"

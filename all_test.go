@@ -34,6 +34,7 @@ const benchScale = 1e6
 func init() {
 	log.SetFlags(log.Flags() | log.Lshortfile)
 	isTesting = true
+	use(dieHard, caller, dumpTables2, dumpTables3, dumpFields, dumpFlds, dumpCols, typeof, stypeof)
 }
 
 func dieHard(exitValue int) {
@@ -319,7 +320,7 @@ func rnds16(rng *rand.Rand, n int) string {
 
 var (
 	benchmarkScaleOnce  sync.Once
-	benchmarkSelectOnce = map[string]sync.Once{}
+	benchmarkSelectOnce = map[string]bool{}
 )
 
 func benchProlog(b *testing.B) {
@@ -335,13 +336,12 @@ func benchmarkSelect(b *testing.B, n int, sel List, ts testDB) {
 	if testing.Verbose() {
 		benchProlog(b)
 		id := fmt.Sprintf("%T|%d", ts, n)
-		once := benchmarkSelectOnce[id]
-		once.Do(func() {
+		if !benchmarkSelectOnce[id] {
 			b.Logf(`Having a table of %d records, each of size 1kB, measure the performance of
 %s
 `, n, sel)
-		})
-		benchmarkSelectOnce[id] = once
+		}
+		benchmarkSelectOnce[id] = true
 	}
 
 	db, err := ts.setup()
@@ -463,19 +463,18 @@ func TestString(t *testing.T) {
 	}
 }
 
-var benchmarkInsertOnce = map[string]sync.Once{}
+var benchmarkInsertOnce = map[string]bool{}
 
 func benchmarkInsert(b *testing.B, batch, total int, ts testDB) {
 	if testing.Verbose() {
 		benchProlog(b)
 		id := fmt.Sprintf("%T|%d|%d", ts, batch, total)
-		once := benchmarkInsertOnce[id]
-		once.Do(func() {
+		if !benchmarkInsertOnce[id] {
 			b.Logf(`In batches of %d record(s), insert a total of %d records, each of size 1kB, into a table.
 
 `, batch, total)
-		})
-		benchmarkInsertOnce[id] = once
+		}
+		benchmarkInsertOnce[id] = true
 	}
 
 	if total%batch != 0 {
@@ -1221,14 +1220,13 @@ func TestIndices(t *testing.T) {
 	testIndices(db, t)
 }
 
-var benchmarkInsertBoolOnce = map[string]sync.Once{}
+var benchmarkInsertBoolOnce = map[string]bool{}
 
 func benchmarkInsertBool(b *testing.B, db *DB, size int, selectivity float64, index bool, teardown func()) {
 	if testing.Verbose() {
 		benchProlog(b)
 		id := fmt.Sprintf("%t|%d|%g|%t", db.isMem, size, selectivity, index)
-		once := benchmarkInsertBoolOnce[id]
-		once.Do(func() {
+		if !benchmarkInsertBoolOnce[id] {
 			s := "INDEXED"
 			if !index {
 				s = "NON " + s
@@ -1236,8 +1234,8 @@ func benchmarkInsertBool(b *testing.B, db *DB, size int, selectivity float64, in
 			b.Logf(`Insert %d records into a table having a single bool %s column. Batch size: 1 record.
 
 `, size, s)
-		})
-		benchmarkInsertBoolOnce[id] = once
+		}
+		benchmarkInsertBoolOnce[id] = true
 	}
 
 	if teardown != nil {
@@ -1401,7 +1399,7 @@ func BenchmarkInsertBoolFileX1e3(b *testing.B) {
 	benchmarkInsertBoolFile(b, 1e3, 0.5, true)
 }
 
-var benchmarkSelectBoolOnce = map[string]sync.Once{}
+var benchmarkSelectBoolOnce = map[string]bool{}
 
 func benchmarkSelectBool(b *testing.B, db *DB, size int, selectivity float64, index bool, teardown func()) {
 	sel, err := Compile("SELECT * FROM t WHERE b;")
@@ -1412,8 +1410,7 @@ func benchmarkSelectBool(b *testing.B, db *DB, size int, selectivity float64, in
 	if testing.Verbose() {
 		benchProlog(b)
 		id := fmt.Sprintf("%t|%d|%g|%t", db.isMem, size, selectivity, index)
-		once := benchmarkSelectBoolOnce[id]
-		once.Do(func() {
+		if !benchmarkSelectBoolOnce[id] {
 			s := "INDEXED"
 			if !index {
 				s = "NON " + s
@@ -1422,8 +1419,8 @@ func benchmarkSelectBool(b *testing.B, db *DB, size int, selectivity float64, in
 %.0f%% of them are true. Measure the performance of
 %s
 `, s, size, 100*selectivity, sel)
-		})
-		benchmarkSelectBoolOnce[id] = once
+		}
+		benchmarkSelectBoolOnce[id] = true
 	}
 
 	if teardown != nil {
@@ -1743,14 +1740,13 @@ func TestIndex(t *testing.T) {
 	}
 }
 
-var benchmarkCrossJoinOnce = map[string]sync.Once{}
+var benchmarkCrossJoinOnce = map[string]bool{}
 
 func benchmarkCrossJoin(b *testing.B, db *DB, create, sel List, size1, size2 int, index bool, teardown func()) {
 	if testing.Verbose() {
 		benchProlog(b)
 		id := fmt.Sprintf("%t|%d|%d|%t", db.isMem, size1, size2, index)
-		once := benchmarkCrossJoinOnce[id]
-		once.Do(func() {
+		if !benchmarkCrossJoinOnce[id] {
 			s := "INDEXED "
 			if !index {
 				s = "NON " + s
@@ -1758,8 +1754,8 @@ func benchmarkCrossJoin(b *testing.B, db *DB, create, sel List, size1, size2 int
 			b.Logf(`Fill two %stables with %d and %d records of random numbers [0, 1). Measure the performance of
 %s
 `, s, size1, size2, sel)
-		})
-		benchmarkCrossJoinOnce[id] = once
+		}
+		benchmarkCrossJoinOnce[id] = true
 	}
 
 	if teardown != nil {
@@ -2064,15 +2060,6 @@ func dumpFields(f []*fld) string {
 		a = append(a, fmt.Sprintf("%p: %q", v, v.name))
 	}
 	return strings.Join(a, ", ")
-}
-
-func rndBytes(n int, seed int64) []byte {
-	rng := rand.New(rand.NewSource(seed))
-	b := make([]byte, n)
-	for i := range b {
-		b[i] = byte(rng.Int())
-	}
-	return b
 }
 
 func TestIssue50(t *testing.T) { // https://github.com/cznic/ql/issues/50
