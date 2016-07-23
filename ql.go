@@ -209,7 +209,7 @@ type TCtx struct {
 
 // NewRWCtx returns a new read/write transaction context.  NewRWCtx is safe for
 // concurrent use by multiple goroutines, every one of them will get a new,
-// unique conext.
+// unique context.
 func NewRWCtx() *TCtx { return &TCtx{} }
 
 // Recordset is a result of a select statement. It can call a user function for
