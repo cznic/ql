@@ -35,7 +35,7 @@ cpu: clean
 	go tool pprof -lines *.test cpu.out
 
 edit:
-	gvim -p Makefile *.l *.y *.go
+	@ 1>/dev/null 2>/dev/null gvim -p Makefile *.l *.y *.go testdata.ql testdata.log
 
 editor: ql.y scanner.go parser.go coerce.go
 	gofmt -s -l -w *.go

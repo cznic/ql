@@ -14,6 +14,11 @@
 //
 // Change list
 //
+// 2016-07-29: Release v1.0.6 enables alternatively using = instead of == for
+// equality oparation.
+//
+// 	https://github.com/cznic/ql/issues/131
+//
 // 2016-07-11: Release v1.0.5 undoes vendoring of lldb. QL now uses stable lldb
 // (github.com/cznic/lldb).
 //
@@ -308,7 +313,7 @@
 //  andnot = "&^" .
 //  lsh    = "<<" .
 //  le     = "<=" .
-//  eq     = "==" .
+//  eq     = "==" | "=" .
 //  ge     = ">=" .
 //  neq    = "!=" .
 //  oror   = "||" .

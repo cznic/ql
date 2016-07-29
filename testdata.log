@@ -8387,3 +8387,12 @@ SELECT * FROM foo WHERE when > now();
 ┌Filter on when > now()
 └Output field names ["bar" "when"]
 
+---- 1346
+SELECT * FROM t WHERE c1 == 1;
+┌Iterate all rows of table "t"
+└Output field names ["c1" "c2"]
+┌Filter on c1 == 1
+│Possibly useful indices
+│CREATE INDEX xt_c1 ON t(c1);
+└Output field names ["c1" "c2"]
+

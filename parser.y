@@ -546,6 +546,10 @@ logOr:
 	{
 	}
 
+Eq:
+	"=="
+|	'='
+
 ExpressionList:
 	Expression ExpressionList1 CommaOpt
 	{
@@ -647,7 +651,7 @@ Factor1:
 			return 1
 		}
         }
-|       Factor1 "==" PrimaryFactor
+|       Factor1 Eq PrimaryFactor
         {
 		var err error
 		if $$, err = newBinaryOperation(eq, $1, $3); err != nil {

@@ -6,7 +6,7 @@ byte_value = octal_byte_value | hex_byte_value .
 decimal_digit = "0" … "9" .
 decimal_lit = ( "1" … "9" ) { decimal_digit } .
 decimals = decimal_digit { decimal_digit } .
-eq = "==" .
+eq = "==" | "=" .
 escaped_char = "\\" (
 		  "a"
 		| "b"

@@ -15660,3 +15660,13 @@ BEGIN TRANSACTION;
 COMMIT;
 SELECT * FROM foo WHERE when > date(2017, 2, 1, 0, 0, 0, 0, "UTC");
 |"bar", "when"
+
+-- 1346 // https://github.com/cznic/ql/issues/131
+BEGIN TRANSACTION;
+	CREATE TABLE t (c1 int, c2 string);
+	INSERT INTO t VALUES (1, "a");
+	INSERT INTO t VALUES (2, "b");
+COMMIT;
+SELECT * FROM t WHERE c1 = 1;
+|"c1", "c2"
+[1 a]
