@@ -40,7 +40,7 @@ edit:
 editor: ql.y scanner.go parser.go coerce.go
 	gofmt -s -l -w *.go
 	go test -i
-	go test
+	go test 2>&1 | tee log
 
 internalError:
 	egrep -ho '"internal error.*"' *.go | sort | cat -n
