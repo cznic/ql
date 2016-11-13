@@ -178,7 +178,7 @@ func (d *sqlDriver) Open(name string) (driver.Conn, error) {
 		return nil, fmt.Errorf("open: unexpected/unsupported scheme: %s", uri.Scheme)
 	}
 
-	name = filepath.Clean(uri.Path)
+	name = filepath.Clean(filepath.Join(uri.Host, uri.Path))
 	if d == fileDriver && (name == "" || name == "." || name == string(os.PathSeparator)) {
 		return nil, fmt.Errorf("invalid DB name %q", name)
 	}

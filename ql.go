@@ -1086,7 +1086,7 @@ func mustCompile(src string) List {
 	return list
 }
 
-// Execute executes statements in a list while substituting QL paramaters from
+// Execute executes statements in a list while substituting QL parameters from
 // arg.
 //
 // The resulting []Recordset corresponds to the SELECT FROM statements in the
