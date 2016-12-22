@@ -101,6 +101,8 @@ func OpenFile(name string, opt *Options) (db *DB, err error) {
 		}
 	}
 
+	fi.removeEmptyWAL = opt.RemoveEmptyWAL
+
 	return newDB(fi)
 }
 
@@ -129,16 +131,22 @@ func OpenFile(name string, opt *Options) (db *DB, err error) {
 //
 // Headroom
 //
-// Headroom selecst the minimum size a WAL file will have. The "extra"
+// Headroom selects the minimum size a WAL file will have. The "extra"
 // allocated file space serves as a headroom. Commits that fit into the
 // headroom should not fail due to 'not enough space on the volume' errors. The
 // headroom parameter is first rounded-up to a non negative multiple of the
 // size of the lldb.Allocator atom.
+//
+// RemoveEmptyWAL
+//
+// RemoveEmptyWAL controls whether empty WAL files should be deleted on
+// clean exit.
 type Options struct {
-	CanCreate bool
-	OSFile    lldb.OSFile
-	TempFile  func(dir, prefix string) (f lldb.OSFile, err error)
-	Headroom  int64
+	CanCreate      bool
+	OSFile         lldb.OSFile
+	TempFile       func(dir, prefix string) (f lldb.OSFile, err error)
+	Headroom       int64
+	RemoveEmptyWAL bool
 }
 
 type fileBTreeIterator struct {
@@ -383,16 +391,17 @@ func (t *fileTemp) Set(k, v []interface{}) (err error) {
 }
 
 type file struct {
-	a        *lldb.Allocator
-	codec    *gobCoder
-	f        lldb.Filer
-	f0       lldb.OSFile
-	id       int64
-	lck      io.Closer
-	mu       sync.Mutex
-	name     string
-	tempFile func(dir, prefix string) (f lldb.OSFile, err error)
-	wal      *os.File
+	a              *lldb.Allocator
+	codec          *gobCoder
+	f              lldb.Filer
+	f0             lldb.OSFile
+	id             int64
+	lck            io.Closer
+	mu             sync.Mutex
+	name           string
+	tempFile       func(dir, prefix string) (f lldb.OSFile, err error)
+	wal            *os.File
+	removeEmptyWAL bool // Whether empty WAL files should be removed on close
 }
 
 func newFileFromOSFile(f lldb.OSFile, headroom int64) (fi *file, err error) {
@@ -596,12 +605,22 @@ func (s *file) Close() (err error) {
 
 	es := s.f0.Sync()
 	ef := s.f0.Close()
-	var ew error
+	var ew, estat, eremove error
 	if s.wal != nil {
+		remove := false
+		wn := s.wal.Name()
+		if s.removeEmptyWAL {
+			var stat os.FileInfo
+			stat, estat = s.wal.Stat()
+			remove = stat.Size() == 0
+		}
 		ew = s.wal.Close()
+		if remove {
+			eremove = os.Remove(wn)
+		}
 	}
 	el := s.lck.Close()
-	return errSet(&err, es, ef, ew, el)
+	return errSet(&err, es, ef, ew, el, estat, eremove)
 }
 
 func (s *file) Name() string { return s.name }
