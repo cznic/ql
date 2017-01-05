@@ -164,6 +164,7 @@ func (d *sqlDriver) Open(name string) (driver.Conn, error) {
 		return nil, fmt.Errorf("open: unexpected/unsupported instance of driver.Driver: %p", d)
 	}
 
+	name = filepath.ToSlash(name) // Ensure / separated URLs on Windows
 	uri, err := url.Parse(name)
 	if err != nil {
 		return nil, err
