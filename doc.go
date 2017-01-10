@@ -14,7 +14,7 @@
 //
 // Change list
 //
-// 2017-01-10: Release v1.1.0 fixes some bugsand adds a configurable WAL
+// 2017-01-10: Release v1.1.0 fixes some bugs and adds a configurable WAL
 // headroom.
 //
 //	https://github.com/cznic/ql/issues/140
