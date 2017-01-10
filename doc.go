@@ -14,8 +14,13 @@
 //
 // Change list
 //
+// 2017-01-10: Release v1.1.0 fixes some bugsand adds a configurable WAL
+// headroom.
+//
+//	https://github.com/cznic/ql/issues/140
+//
 // 2016-07-29: Release v1.0.6 enables alternatively using = instead of == for
-// equality oparation.
+// equality operation.
 //
 // 	https://github.com/cznic/ql/issues/131
 //
