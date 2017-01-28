@@ -14,6 +14,7 @@ all: editor scanner.go parser.go
 	unused . || true
 	misspell *.go
 	gosimple || true
+	unconvert -apply
 	go install ./...
 
 bench: all
