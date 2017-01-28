@@ -275,7 +275,7 @@ func infer(from []interface{}, to *[]*col) {
 			case time.Duration:
 				c.typ = qDuration
 			case chunk:
-				vals, err := lldb.DecodeScalars([]byte(x.b))
+				vals, err := lldb.DecodeScalars(x.b)
 				if err != nil {
 					panic(err)
 				}
