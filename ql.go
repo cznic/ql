@@ -1616,6 +1616,9 @@ type joinRset struct {
 }
 
 func (r *joinRset) String() string {
+	if len(r.sources) == 0 {
+		return ""
+	}
 	a := make([]string, len(r.sources))
 	for i, pair0 := range r.sources {
 		pair := pair0.([]interface{})
@@ -1658,6 +1661,9 @@ func (r *joinRset) String() string {
 }
 
 func (r *joinRset) plan(ctx *execCtx) (plan, error) {
+	if len(r.sources) == 0 {
+		return nil, nil
+	}
 	rsets := make([]plan, len(r.sources))
 	names := make([]string, len(r.sources))
 	var err error

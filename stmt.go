@@ -750,8 +750,14 @@ func (s *selectStmt) String() string {
 		}
 		b.WriteString(" " + strings.Join(a, ", "))
 	}
-	b.WriteString(" FROM ")
-	b.WriteString(s.from.String())
+	if s.from != nil {
+		j := s.from.String()
+		if strings.TrimSpace(j) != "" {
+			b.WriteString(" FROM ")
+			b.WriteString(j)
+		}
+	}
+
 	if s.where != nil {
 		b.WriteString(" WHERE ")
 		b.WriteString(s.where.expr.String())
