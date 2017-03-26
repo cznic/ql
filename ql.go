@@ -330,8 +330,10 @@ func (r *orderByRset) plan(ctx *execCtx) (plan, error) {
 }
 
 type whereRset struct {
-	expr expression
-	src  plan
+	expr   expression
+	src    plan
+	sel    *selectStmt
+	exists bool
 }
 
 func (r *whereRset) planBinOp(x *binaryOperation) (plan, error) {
@@ -567,6 +569,10 @@ type selectRset struct {
 }
 
 func (r *selectRset) plan(ctx *execCtx) (plan, error) {
+	if r.src == nil {
+		return nil, nil
+	}
+
 	var flds2 []*fld
 	if len(r.flds) != 0 {
 		m := map[string]struct{}{}
@@ -1710,6 +1716,10 @@ func (r *joinRset) plan(ctx *execCtx) (plan, error) {
 
 	if len(rsets) == 1 {
 		return rsets[0], nil
+	}
+
+	if len(rsets) == 0 {
+		return nil, nil
 	}
 
 	right := len(rsets[len(rsets)-1].fieldNames())

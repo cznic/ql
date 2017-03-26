@@ -187,11 +187,11 @@ import (
 	SelectStmt		"SELECT statement"
 	SelectStmtDistinct	"SELECT statement optional DISTINCT clause"
 	SelectStmtFieldList	"SELECT statement field list"
-	SelectStmtLimit		"SELECT statement optional LIMIT clause"
-	SelectStmtWhere		"SELECT statement optional WHERE clause"
 	SelectStmtGroup		"SELECT statement optional GROUP BY clause"
+	SelectStmtLimit		"SELECT statement optional LIMIT clause"
 	SelectStmtOffset	"SELECT statement optional OFFSET clause"
 	SelectStmtOrder		"SELECT statement optional ORDER BY clause"
+	SelectStmtWhere		"SELECT statement optional WHERE clause"
 	Slice			"string slice"
 	Statement		"statement"
 	StatementList		"statement list"
@@ -204,7 +204,9 @@ import (
 	UpdateStmt1		"UPDATE statement optional WHERE clause"
 	WhereClause		"WHERE clause"
 
-%type	<list>	RecordSetList
+%type	<list>
+	RecordSetList
+	SelectStmtFrom		"SELECT statement optional FROM clause"
 
 %start	Start
 
@@ -1044,14 +1046,14 @@ JoinClauseOpt:
 |	JoinClause
 
 SelectStmt:
-	"SELECT" SelectStmtDistinct SelectStmtFieldList "FROM" RecordSetList
-	CommaOpt JoinClauseOpt SelectStmtWhere SelectStmtGroup SelectStmtOrder
+	"SELECT" SelectStmtDistinct SelectStmtFieldList SelectStmtFrom
+	JoinClauseOpt SelectStmtWhere SelectStmtGroup SelectStmtOrder
 	SelectStmtLimit SelectStmtOffset
 	{
 		x := yylex.(*lexer)
 		n := len(x.agg)
-		join := &joinRset{sources: $5}
-		if o := $7; o != nil {
+		join := &joinRset{sources: $4}
+		if o := $5; o != nil {
 			o := o.([]interface{})
 			join.typ = o[0].(int)
 			join.sources = append(join.sources, o[1].([]interface{}))
@@ -1062,13 +1064,22 @@ SelectStmt:
 			flds:          $3.([]*fld),
 			from:          join,
 			hasAggregates: x.agg[n-1],
-			where:         $8.(*whereRset),
-			group:         $9.(*groupByRset),
-			order:         $10.(*orderByRset),
-			limit:         $11.(*limitRset),
-			offset:        $12.(*offsetRset),
+			where:         $6.(*whereRset),
+			group:         $7.(*groupByRset),
+			order:         $8.(*orderByRset),
+			limit:         $9.(*limitRset),
+			offset:        $10.(*offsetRset),
 		}
 		x.agg = x.agg[:n-1]
+	}
+
+SelectStmtFrom:
+	{
+		$$ = nil
+	}
+|	"FROM" RecordSetList CommaOpt
+	{
+		$$ = $2
 	}
 
 SelectStmtLimit:
@@ -1310,6 +1321,14 @@ WhereClause:
 	"WHERE" Expression
 	{
 		$$ = &whereRset{expr: expr($2)}
+	}
+|	"WHERE" "EXISTS" '(' SelectStmt ')'
+	{
+		$$ = &whereRset{exists: true, sel:($4.(*selectStmt))}
+	}
+|	"WHERE" "NOT" "EXISTS" '(' SelectStmt ')'
+	{
+		$$ = &whereRset{sel:($5.(*selectStmt))}
 	}
 
 

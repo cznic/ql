@@ -15670,3 +15670,27 @@ COMMIT;
 SELECT * FROM t WHERE c1 = 1;
 |"c1", "c2"
 [1 a]
+
+-- 1347 // https://github.com/cznic/ql/issues/155
+SELECT 42;
+|""
+[42]
+
+-- 1348 // https://github.com/cznic/ql/issues/155
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+	INSERT INTO t VALUES (1);
+	INSERT INTO t VALUES (2);
+	INSERT INTO t VALUES (3);
+COMMIT;
+SELECT * FROM t WHERE EXISTS (SELECT * FROM t WHERE i == 2);
+|"i"
+[2]
+
+-- 1349 // https://github.com/cznic/ql/issues/155
+BEGIN TRANSACTION;
+	CREATE TABLE t (i int);
+COMMIT;
+SELECT * FROM t WHERE EXISTS (SELECT * FROM t WHERE i == 2);
+|"i"
+[]

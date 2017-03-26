@@ -1738,7 +1738,7 @@
 // The result can be filtered using a WhereClause and orderd by the OrderBy
 // clause.
 //
-//  SelectStmt = "SELECT" [ "DISTINCT" ] ( "*" | FieldList ) "FROM" RecordSetList
+//  SelectStmt = "SELECT" [ "DISTINCT" ] ( "*" | FieldList ) [ "FROM" RecordSetList ]
 //  	[ JoinClause ] [ WhereClause ] [ GroupByClause ] [ OrderBy ] [ Limit ] [ Offset ].
 //
 //  JoinClause = ( "LEFT" | "RIGHT" | "FULL" ) [ "OUTER" ] "JOIN" RecordSet "ON" Expression .

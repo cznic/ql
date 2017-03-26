@@ -165,7 +165,7 @@ RecordSet = (
 	  ) [ "AS" identifier ] .
 RecordSetList = RecordSet { "," RecordSet } [ "," ] .
 RollbackStmt = "ROLLBACK" .
-SelectStmt = "SELECT" [ "DISTINCT" ] ( "*" | FieldList ) "FROM" RecordSetList [ JoinClause ] [ WhereClause ] [ GroupByClause ] [ OrderBy ] [ Limit ] [ Offset ] .
+SelectStmt = "SELECT" [ "DISTINCT" ] ( "*" | FieldList ) [ "FROM" RecordSetList ] [ JoinClause ] [ WhereClause ] [ GroupByClause ] [ OrderBy ] [ Limit ] [ Offset ] .
 Slice = "[" [ Expression ] ":" [ Expression ] "]" .
 Statement = EmptyStmt
 	| AlterTableStmt
