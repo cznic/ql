@@ -49,6 +49,7 @@ var (
 	_ plan = (*selectFieldsDefaultPlan)(nil)
 	_ plan = (*selectFieldsGroupPlan)(nil)
 	_ plan = (*selectIndexDefaultPlan)(nil)
+	_ plan = (*selectDummyPlan)(nil)
 	_ plan = (*sysColumnDefaultPlan)(nil)
 	_ plan = (*sysIndexDefaultPlan)(nil)
 	_ plan = (*sysTableDefaultPlan)(nil)
@@ -2797,4 +2798,25 @@ func (r *fullJoinDefaultPlan) do(ctx *execCtx, f func(id interface{}, data []int
 			return err
 		}
 	}
+}
+
+type selectDummyPlan struct {
+	fields []interface{}
+}
+
+func (r *selectDummyPlan) hasID() bool { return true }
+
+func (r *selectDummyPlan) explain(w strutil.Formatter) {
+	// w.Format("┌Iterate all rows of table %q\n└Output field names %v\n", r.t.name, qnames(r.fieldNames()))
+}
+
+func (r *selectDummyPlan) fieldNames() []string { return make([]string, len(r.fields)) }
+
+func (r *selectDummyPlan) filter(expr expression) (plan, []string, error) {
+	return nil, nil, nil
+}
+
+func (r *selectDummyPlan) do(ctx *execCtx, f func(id interface{}, data []interface{}) (bool, error)) (err error) {
+	_, err = f(nil, r.fields)
+	return
 }

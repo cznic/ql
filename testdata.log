@@ -8396,3 +8396,8 @@ SELECT * FROM t WHERE c1 == 1;
 │CREATE INDEX xt_c1 ON t(c1);
 └Output field names ["c1" "c2"]
 
+---- 1347
+SELECT 42;
+┌Evaluate 42 as "",
+└Output field names [""]
+
