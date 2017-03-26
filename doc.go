@@ -1738,7 +1738,7 @@
 // The result can be filtered using a WhereClause and orderd by the OrderBy
 // clause.
 //
-//  SelectStmt = "SELECT" [ "DISTINCT" ] ( "*" | FieldList ) [ "FROM" RecordSetList ]
+//  SelectStmt = "SELECT" [ "DISTINCT" ] ( "*" | FieldList ) [ "FROM" RecordSetList ] //TODO document missing FROM clause semantics
 //  	[ JoinClause ] [ WhereClause ] [ GroupByClause ] [ OrderBy ] [ Limit ] [ Offset ].
 //
 //  JoinClause = ( "LEFT" | "RIGHT" | "FULL" ) [ "OUTER" ] "JOIN" RecordSet "ON" Expression .
@@ -1878,7 +1878,9 @@
 // It is an error if the expression evaluates to a non null value of non bool
 // type.
 //
-//  WhereClause = "WHERE" Expression .
+//  WhereClause = "WHERE" Expression
+//  		| "WHERE" "EXISTS" "(" SelectStmt ")"         //TODO document semantics
+//  		| "WHERE" "NOT" "EXISTS" "(" SelectStmt ")" . //TODO document semantics
 //
 // Recordset grouping
 //
