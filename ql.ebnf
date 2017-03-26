@@ -222,4 +222,6 @@ UpdateStmt = "UPDATE" TableName [ "SET" ] AssignmentList [ WhereClause ] .
 Values = "VALUES" "(" ExpressionList ")" {
 		 "," "(" ExpressionList ")"
 	  } [ "," ] .
-WhereClause = "WHERE" Expression .
+WhereClause = "WHERE" Expression
+	| "WHERE" "EXISTS" "(" SelectStmt ")"
+	| "WHERE" "NOT" "EXISTS" "(" SelectStmt ")" .
