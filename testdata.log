@@ -8398,6 +8398,8 @@ SELECT * FROM t WHERE c1 == 1;
 
 ---- 1347
 SELECT 42;
+┌Iselects values from dummy table
+└Output field names [""]
 ┌Evaluate 42 as "",
 └Output field names [""]
 
