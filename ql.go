@@ -1616,7 +1616,7 @@ type joinRset struct {
 }
 
 func (r *joinRset) isZero() bool {
-	return len(r.sources) == 0 && r.typ == 0 && !valid(r.on)
+	return len(r.sources) == 0 && r.typ == 0 && r.on == nil
 
 }
 

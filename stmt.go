@@ -9,8 +9,6 @@ import (
 	"fmt"
 	"strings"
 
-	"reflect"
-
 	"github.com/cznic/strutil"
 )
 
@@ -781,10 +779,6 @@ func (s *selectStmt) String() string {
 	}
 	b.WriteRune(';')
 	return b.String()
-}
-
-func valid(v interface{}) bool {
-	return reflect.ValueOf(v).IsValid()
 }
 
 func (s *selectStmt) plan(ctx *execCtx) (plan, error) { //LATER overlapping goroutines/pipelines
