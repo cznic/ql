@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"strings"
 
+	"reflect"
+
 	"github.com/cznic/strutil"
 )
 
@@ -751,10 +753,9 @@ func (s *selectStmt) String() string {
 		b.WriteString(" " + strings.Join(a, ", "))
 	}
 	if s.from != nil {
-		j := s.from.String()
-		if strings.TrimSpace(j) != "" {
+		if !s.from.isZero() {
 			b.WriteString(" FROM ")
-			b.WriteString(j)
+			b.WriteString(s.from.String())
 		}
 	}
 
@@ -782,10 +783,18 @@ func (s *selectStmt) String() string {
 	return b.String()
 }
 
+func valid(v interface{}) bool {
+	return reflect.ValueOf(v).IsValid()
+}
+
 func (s *selectStmt) plan(ctx *execCtx) (plan, error) { //LATER overlapping goroutines/pipelines
-	r, err := s.from.plan(ctx)
-	if err != nil {
-		return nil, err
+	var r plan
+	var err error
+	if s.from != nil {
+		r, err = s.from.plan(ctx)
+		if err != nil {
+			return nil, err
+		}
 	}
 	if r == nil {
 		var fds []interface{}

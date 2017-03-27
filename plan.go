@@ -2807,7 +2807,7 @@ type selectDummyPlan struct {
 func (r *selectDummyPlan) hasID() bool { return true }
 
 func (r *selectDummyPlan) explain(w strutil.Formatter) {
-	w.Format("┌Iselects values from dummy table\n└Output field names %v\n", qnames(r.fieldNames()))
+	w.Format("┌Selects values from dummy table\n└Output field names %v\n", qnames(r.fieldNames()))
 }
 
 func (r *selectDummyPlan) fieldNames() []string { return make([]string, len(r.fields)) }

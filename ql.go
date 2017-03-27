@@ -1615,8 +1615,13 @@ type joinRset struct {
 	on      expression
 }
 
+func (r *joinRset) isZero() bool {
+	return len(r.sources) == 0 && r.typ == 0 && !valid(r.on)
+
+}
+
 func (r *joinRset) String() string {
-	if len(r.sources) == 0 {
+	if r.isZero() {
 		return ""
 	}
 	a := make([]string, len(r.sources))
@@ -1661,7 +1666,7 @@ func (r *joinRset) String() string {
 }
 
 func (r *joinRset) plan(ctx *execCtx) (plan, error) {
-	if len(r.sources) == 0 {
+	if r.isZero() {
 		return nil, nil
 	}
 	rsets := make([]plan, len(r.sources))
