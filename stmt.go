@@ -759,7 +759,7 @@ func (s *selectStmt) String() string {
 
 	if s.where != nil {
 		b.WriteString(" WHERE ")
-		b.WriteString(s.where.expr.String())
+		b.WriteString(s.where.String())
 	}
 	if s.group != nil {
 		b.WriteString(" GROUP BY ")
@@ -800,7 +800,7 @@ func (s *selectStmt) plan(ctx *execCtx) (plan, error) { //LATER overlapping goro
 		r = &selectDummyPlan{fields: fds}
 	}
 	if w := s.where; w != nil {
-		if r, err = (&whereRset{expr: w.expr, src: r}).plan(ctx); err != nil {
+		if r, err = (&whereRset{expr: w.expr, src: r, sel: w.sel, exists: w.exists}).plan(ctx); err != nil {
 			return nil, err
 		}
 	}

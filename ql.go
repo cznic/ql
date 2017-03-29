@@ -336,6 +336,18 @@ type whereRset struct {
 	exists bool
 }
 
+func (r *whereRset) String() string {
+	s := ""
+	if r.sel != nil {
+		if r.exists {
+			s += " EXISTS "
+		}
+		s += "(" + strings.TrimSuffix(r.sel.String(), ";") + ")"
+		return s
+	}
+	return r.expr.String()
+}
+
 func (r *whereRset) planBinOp(x *binaryOperation) (plan, error) {
 	p := r.src
 	ok, cn := isColumnExpression(x.l)
@@ -516,6 +528,33 @@ func (r *whereRset) planUnaryOp(x *unaryOperation) (plan, error) {
 }
 
 func (r *whereRset) plan(ctx *execCtx) (plan, error) {
+	if r.sel != nil {
+		var exists bool
+		p, err := r.sel.plan(ctx)
+		if err != nil {
+			return nil, err
+		}
+		err = p.do(ctx, func(i interface{}, data []interface{}) (bool, error) {
+			if len(data) > 0 {
+				exists = true
+			}
+			return true, nil
+		})
+		if err != nil {
+			return nil, err
+		}
+		if r.exists && exists {
+			return p, nil
+		}
+		np := &nullPlan{fields: p.fieldNames()}
+		return &emptyFieldsPlan{nullPlan: np}, nil
+	}
+	return r.planExpr(ctx)
+}
+func (r *whereRset) planExpr(ctx *execCtx) (plan, error) {
+	if r.expr == nil {
+		return &nullPlan{}, nil
+	}
 	expr, err := r.expr.clone(ctx.arg)
 	if err != nil {
 		return nil, err
