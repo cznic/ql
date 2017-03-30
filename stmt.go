@@ -750,11 +750,16 @@ func (s *selectStmt) String() string {
 		}
 		b.WriteString(" " + strings.Join(a, ", "))
 	}
-	b.WriteString(" FROM ")
-	b.WriteString(s.from.String())
+	if s.from != nil {
+		if !s.from.isZero() {
+			b.WriteString(" FROM ")
+			b.WriteString(s.from.String())
+		}
+	}
+
 	if s.where != nil {
 		b.WriteString(" WHERE ")
-		b.WriteString(s.where.expr.String())
+		b.WriteString(s.where.String())
 	}
 	if s.group != nil {
 		b.WriteString(" GROUP BY ")
@@ -777,13 +782,25 @@ func (s *selectStmt) String() string {
 }
 
 func (s *selectStmt) plan(ctx *execCtx) (plan, error) { //LATER overlapping goroutines/pipelines
-	r, err := s.from.plan(ctx)
-	if err != nil {
-		return nil, err
+	var r plan
+	var err error
+	if s.from != nil {
+		r, err = s.from.plan(ctx)
+		if err != nil {
+			return nil, err
+		}
 	}
-
+	if r == nil {
+		var fds []interface{}
+		for _, v := range s.flds {
+			if val, ok := v.expr.(value); ok {
+				fds = append(fds, val)
+			}
+		}
+		r = &selectDummyPlan{fields: fds}
+	}
 	if w := s.where; w != nil {
-		if r, err = (&whereRset{expr: w.expr, src: r}).plan(ctx); err != nil {
+		if r, err = (&whereRset{expr: w.expr, src: r, sel: w.sel, exists: w.exists}).plan(ctx); err != nil {
 			return nil, err
 		}
 	}

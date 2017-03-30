@@ -35,6 +35,7 @@ const (
 var (
 	_ plan = (*crossJoinDefaultPlan)(nil)
 	_ plan = (*distinctDefaultPlan)(nil)
+	_ plan = (*emptyFieldsPlan)(nil)
 	_ plan = (*explainDefaultPlan)(nil)
 	_ plan = (*filterDefaultPlan)(nil)
 	_ plan = (*fullJoinDefaultPlan)(nil)
@@ -49,6 +50,7 @@ var (
 	_ plan = (*selectFieldsDefaultPlan)(nil)
 	_ plan = (*selectFieldsGroupPlan)(nil)
 	_ plan = (*selectIndexDefaultPlan)(nil)
+	_ plan = (*selectDummyPlan)(nil)
 	_ plan = (*sysColumnDefaultPlan)(nil)
 	_ plan = (*sysIndexDefaultPlan)(nil)
 	_ plan = (*sysTableDefaultPlan)(nil)
@@ -2797,4 +2799,38 @@ func (r *fullJoinDefaultPlan) do(ctx *execCtx, f func(id interface{}, data []int
 			return err
 		}
 	}
+}
+
+type selectDummyPlan struct {
+	fields []interface{}
+}
+
+func (r *selectDummyPlan) hasID() bool { return true }
+
+func (r *selectDummyPlan) explain(w strutil.Formatter) {
+	w.Format("┌Selects values from dummy table\n└Output field names %v\n", qnames(r.fieldNames()))
+}
+
+func (r *selectDummyPlan) fieldNames() []string { return make([]string, len(r.fields)) }
+
+func (r *selectDummyPlan) filter(expr expression) (plan, []string, error) {
+	return nil, nil, nil
+}
+
+func (r *selectDummyPlan) do(ctx *execCtx, f func(id interface{}, data []interface{}) (bool, error)) (err error) {
+	_, err = f(nil, r.fields)
+	return
+}
+
+type emptyFieldsPlan struct {
+	*nullPlan
+}
+
+func (r *emptyFieldsPlan) do(ctx *execCtx, f func(id interface{}, data []interface{}) (bool, error)) (err error) {
+	v := make([]interface{}, len(r.fields))
+	for i := range v {
+		v[i] = ""
+	}
+	_, err = f(nil, v)
+	return
 }

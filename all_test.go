@@ -2802,7 +2802,14 @@ func testMentionedColumns(s stmt) (err error) {
 			}
 		}
 		if w := x.where; w != nil {
-			mentionedColumns(w.expr)
+			if e := w.expr; e != nil {
+				mentionedColumns(w.expr)
+			}
+			if s := w.sel; s != nil {
+				if err := testMentionedColumns(s); err != nil {
+					return err
+				}
+			}
 		}
 	case *updateStmt:
 		for _, v := range x.list {

@@ -336,6 +336,17 @@ type whereRset struct {
 	exists bool
 }
 
+func (r *whereRset) String() string {
+	if r.sel != nil {
+		s := ""
+		if !r.exists {
+			s += " NOT "
+		}
+		return fmt.Sprintf("%s EXISTS ( %s )", s, strings.TrimSuffix(r.sel.String(), ";"))
+	}
+	return r.expr.String()
+}
+
 func (r *whereRset) planBinOp(x *binaryOperation) (plan, error) {
 	p := r.src
 	ok, cn := isColumnExpression(x.l)
@@ -516,6 +527,34 @@ func (r *whereRset) planUnaryOp(x *unaryOperation) (plan, error) {
 }
 
 func (r *whereRset) plan(ctx *execCtx) (plan, error) {
+	if r.sel != nil {
+		var exists bool
+		p, err := r.sel.plan(ctx)
+		if err != nil {
+			return nil, err
+		}
+		err = p.do(ctx, func(i interface{}, data []interface{}) (bool, error) {
+			if len(data) > 0 {
+				exists = true
+			}
+			return false, nil
+		})
+		if err != nil {
+			return nil, err
+		}
+		if r.exists && exists {
+			return p, nil
+		}
+		np := &nullPlan{fields: p.fieldNames()}
+		return &emptyFieldsPlan{nullPlan: np}, nil
+	}
+	return r.planExpr(ctx)
+}
+
+func (r *whereRset) planExpr(ctx *execCtx) (plan, error) {
+	if r.expr == nil {
+		return &nullPlan{}, nil
+	}
 	expr, err := r.expr.clone(ctx.arg)
 	if err != nil {
 		return nil, err
@@ -1615,7 +1654,15 @@ type joinRset struct {
 	on      expression
 }
 
+func (r *joinRset) isZero() bool {
+	return len(r.sources) == 0 && r.typ == 0 && r.on == nil
+
+}
+
 func (r *joinRset) String() string {
+	if r.isZero() {
+		return ""
+	}
 	a := make([]string, len(r.sources))
 	for i, pair0 := range r.sources {
 		pair := pair0.([]interface{})
@@ -1658,6 +1705,9 @@ func (r *joinRset) String() string {
 }
 
 func (r *joinRset) plan(ctx *execCtx) (plan, error) {
+	if r.isZero() {
+		return nil, nil
+	}
 	rsets := make([]plan, len(r.sources))
 	names := make([]string, len(r.sources))
 	var err error
