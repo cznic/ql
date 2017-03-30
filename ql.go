@@ -550,6 +550,7 @@ func (r *whereRset) plan(ctx *execCtx) (plan, error) {
 	}
 	return r.planExpr(ctx)
 }
+
 func (r *whereRset) planExpr(ctx *execCtx) (plan, error) {
 	if r.expr == nil {
 		return &nullPlan{}, nil
