@@ -537,7 +537,7 @@ func (r *whereRset) plan(ctx *execCtx) (plan, error) {
 			if len(data) > 0 {
 				exists = true
 			}
-			return true, nil
+			return false, nil
 		})
 		if err != nil {
 			return nil, err
