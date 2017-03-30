@@ -26,7 +26,6 @@ import (
 	"time"
 
 	"github.com/cznic/strutil"
-	"github.com/kr/pretty"
 )
 
 // Note: All benchmarks report MB/s equal to record/s.
@@ -2755,7 +2754,7 @@ func testMentionedColumns(s stmt) (err error) {
 			case error:
 				err = x
 			default:
-				err = fmt.Errorf("error: %v\n%s", e, pretty.Sprint(s))
+				err = fmt.Errorf("error: %v", e)
 			}
 		}
 	}()
