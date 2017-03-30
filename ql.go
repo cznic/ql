@@ -337,13 +337,12 @@ type whereRset struct {
 }
 
 func (r *whereRset) String() string {
-	s := ""
 	if r.sel != nil {
-		if r.exists {
-			s += " EXISTS "
+		s := ""
+		if !r.exists {
+			s += " NOT "
 		}
-		s += "(" + strings.TrimSuffix(r.sel.String(), ";") + ")"
-		return s
+		return fmt.Sprintf("%s EXISTS ( %s )", s, strings.TrimSuffix(r.sel.String(), ";"))
 	}
 	return r.expr.String()
 }
