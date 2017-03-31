@@ -8417,3 +8417,25 @@ SELECT * FROM t WHERE  EXISTS ( SELECT * FROM t WHERE i == 2 );
 ┌Iterate no rows
 └Output field names ["i"]
 
+---- 1350
+SELECT * FROM t WHERE  EXISTS ( SELECT * FROM t WHERE i == 4 );
+┌Iterate no rows
+└Output field names ["i"]
+
+---- 1351
+SELECT * FROM t WHERE  NOT  EXISTS ( SELECT * FROM t WHERE i == 2 );
+┌Iterate no rows
+└Output field names ["i"]
+
+---- 1352
+SELECT * FROM t WHERE  NOT  EXISTS ( SELECT * FROM t WHERE i == 4 );
+┌Iterate no rows
+└Output field names ["i"]
+
+---- 1353
+SELECT * FROM t WHERE true;
+┌Iterate all rows of table "t"
+└Output field names ["i"]
+┌Filter on true
+└Output field names ["i"]
+
