@@ -527,6 +527,7 @@ func (r *whereRset) planUnaryOp(x *unaryOperation) (plan, error) {
 }
 
 func (r *whereRset) plan(ctx *execCtx) (plan, error) {
+	o := r.src
 	if r.sel != nil {
 		var exists bool
 		p, err := r.sel.plan(ctx)
@@ -542,11 +543,12 @@ func (r *whereRset) plan(ctx *execCtx) (plan, error) {
 		if err != nil {
 			return nil, err
 		}
-		if r.exists && exists {
-			return p, nil
+		if r.exists && exists || !r.exists && !exists {
+			return o, nil
 		}
-		np := &nullPlan{fields: p.fieldNames()}
-		return &emptyFieldsPlan{nullPlan: np}, nil
+		x := value{val: false}
+		return &wrapFilterPlan{&filterDefaultPlan{o, x, nil}}, nil
+
 	}
 	return r.planExpr(ctx)
 }

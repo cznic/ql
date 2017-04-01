@@ -8404,38 +8404,46 @@ SELECT 42;
 └Output field names [""]
 
 ---- 1348
-SELECT * FROM t WHERE  EXISTS ( SELECT * FROM t WHERE i == 2 );
+SELECT * FROM t WHERE  EXISTS ( SELECT * FROM t WHERE i == 2 ) ORDER BY i;
 ┌Iterate all rows of table "t"
 └Output field names ["i"]
-┌Filter on i == 2
-│Possibly useful indices
-│CREATE INDEX xt_i ON t(i);
+┌Order by i,
 └Output field names ["i"]
 
 ---- 1349
 SELECT * FROM t WHERE  EXISTS ( SELECT * FROM t WHERE i == 2 );
-┌Iterate no rows
+┌Iterate all rows of table "t"
+└Output field names ["i"]
+┌Filter on false
 └Output field names ["i"]
 
 ---- 1350
 SELECT * FROM t WHERE  EXISTS ( SELECT * FROM t WHERE i == 4 );
-┌Iterate no rows
+┌Iterate all rows of table "t"
+└Output field names ["i"]
+┌Filter on false
 └Output field names ["i"]
 
 ---- 1351
 SELECT * FROM t WHERE  NOT  EXISTS ( SELECT * FROM t WHERE i == 2 );
-┌Iterate no rows
+┌Iterate all rows of table "t"
+└Output field names ["i"]
+┌Filter on false
 └Output field names ["i"]
 
 ---- 1352
-SELECT * FROM t WHERE  NOT  EXISTS ( SELECT * FROM t WHERE i == 4 );
-┌Iterate no rows
+SELECT * FROM t WHERE  NOT  EXISTS ( SELECT * FROM t WHERE i == 4 ) ORDER BY i;
+┌Iterate all rows of table "t"
+└Output field names ["i"]
+┌Order by i,
 └Output field names ["i"]
 
 ---- 1353
-SELECT * FROM t WHERE true;
+SELECT * FROM t WHERE true ORDER BY i;
 ┌Iterate all rows of table "t"
 └Output field names ["i"]
 ┌Filter on true
+└Output field names ["i"]
+┌Order by i,
 └Output field names ["i"]
 

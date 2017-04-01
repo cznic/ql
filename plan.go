@@ -2834,3 +2834,26 @@ func (r *emptyFieldsPlan) do(ctx *execCtx, f func(id interface{}, data []interfa
 	_, err = f(nil, v)
 	return
 }
+
+type wrapFilterPlan struct {
+	*filterDefaultPlan
+}
+
+func (r *wrapFilterPlan) do(ctx *execCtx, f func(id interface{}, data []interface{}) (bool, error)) (err error) {
+	var match bool
+	err = r.filterDefaultPlan.do(ctx, func(id interface{}, data []interface{}) (bool, error) {
+		if len(data) > 0 {
+			match = true
+		}
+		return false, nil
+	})
+	if match {
+		return r.filterDefaultPlan.do(ctx, f)
+	}
+	v := make([]interface{}, len(r.fieldNames()))
+	for i := range v {
+		v[i] = ""
+	}
+	_, err = f(nil, v)
+	return
+}
