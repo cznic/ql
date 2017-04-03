@@ -543,7 +543,7 @@ func (r *whereRset) plan(ctx *execCtx) (plan, error) {
 		if err != nil {
 			return nil, err
 		}
-		if r.exists && exists || !r.exists && !exists {
+		if r.exists == exists {
 			return o, nil
 		}
 		x := value{val: false}
