@@ -1738,7 +1738,7 @@
 // The result can be filtered using a WhereClause and orderd by the OrderBy
 // clause.
 //
-//  SelectStmt = "SELECT" [ "DISTINCT" ] ( "*" | FieldList ) [ "FROM" RecordSetList ] //TODO document missing FROM clause semantics
+//  SelectStmt = "SELECT" [ "DISTINCT" ] ( "*" | FieldList ) [ "FROM" RecordSetList ]
 //  	[ JoinClause ] [ WhereClause ] [ GroupByClause ] [ OrderBy ] [ Limit ] [ Offset ].
 //
 //  JoinClause = ( "LEFT" | "RIGHT" | "FULL" ) [ "OUTER" ] "JOIN" RecordSet "ON" Expression .
@@ -1878,9 +1878,16 @@
 // It is an error if the expression evaluates to a non null value of non bool
 // type.
 //
+// Another form of the WHERE clause is an existence predicate of a
+// parenthesized select statement. The EXISTS form evaluates to true if the
+// parenthesized SELECT statement produces a non empty record set. The NOT
+// EXISTS form evaluates to true if the parenthesized SELECT statement produces
+// an empty record set. The parenthesized SELECT statement is evaluated only
+// once (TODO issue #159).
+//
 //  WhereClause = "WHERE" Expression
-//  		| "WHERE" "EXISTS" "(" SelectStmt ")"         //TODO document semantics
-//  		| "WHERE" "NOT" "EXISTS" "(" SelectStmt ")" . //TODO document semantics
+//  		| "WHERE" "EXISTS" "(" SelectStmt ")"
+//  		| "WHERE" "NOT" "EXISTS" "(" SelectStmt ")" .
 //
 // Recordset grouping
 //
