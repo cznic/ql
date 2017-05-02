@@ -121,8 +121,9 @@ type stmt interface {
 }
 
 type execCtx struct { //LATER +shared temp
-	db  *DB
-	arg []interface{}
+	db    *DB
+	arg   []interface{}
+	cache map[*selectStmt]bool
 }
 
 type explainStmt struct {

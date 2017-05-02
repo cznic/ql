@@ -2823,16 +2823,25 @@ func (r *selectDummyPlan) do(ctx *execCtx, f func(id interface{}, data []interfa
 
 type wrapFilterPlan struct {
 	*filterDefaultPlan
+	sel *selectStmt
 }
 
 func (r *wrapFilterPlan) do(ctx *execCtx, f func(id interface{}, data []interface{}) (bool, error)) (err error) {
+	if ctx.cache == nil {
+		ctx.cache = make(map[*selectStmt]bool)
+	}
 	var match bool
-	err = r.filterDefaultPlan.do(ctx, func(id interface{}, data []interface{}) (bool, error) {
-		if len(data) > 0 {
-			match = true
-		}
-		return false, nil
-	})
+	if m, ok := ctx.cache[r.sel]; ok {
+		match = m
+	} else {
+		err = r.filterDefaultPlan.do(ctx, func(id interface{}, data []interface{}) (bool, error) {
+			if len(data) > 0 {
+				match = true
+			}
+			return false, nil
+		})
+		ctx.cache[r.sel] = match
+	}
 	if match {
 		return r.filterDefaultPlan.do(ctx, f)
 	}
