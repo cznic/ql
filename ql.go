@@ -547,8 +547,9 @@ func (r *whereRset) plan(ctx *execCtx) (plan, error) {
 			return o, nil
 		}
 		x := value{val: false}
-		return &wrapFilterPlan{&filterDefaultPlan{o, x, nil}}, nil
-
+		return &wrapFilterPlan{
+			filterDefaultPlan: &filterDefaultPlan{o, x, nil},
+		}, nil
 	}
 	return r.planExpr(ctx)
 }
