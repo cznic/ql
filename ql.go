@@ -548,6 +548,7 @@ func (r *whereRset) plan(ctx *execCtx) (plan, error) {
 		}
 		x := value{val: false}
 		return &wrapFilterPlan{
+			sel:               r.sel,
 			filterDefaultPlan: &filterDefaultPlan{o, x, nil},
 		}, nil
 	}
@@ -1311,7 +1312,7 @@ func (db *DB) run1(pc *TCtx, s stmt, arg ...interface{}) (rs Recordset, tnla, tn
 			db.rwmu.RLock() // can safely grab before Unlock
 			db.muUnlock()
 			defer db.rwmu.RUnlock()
-			rs, err = s.exec(&execCtx{db, arg}) // R/O tctx
+			rs, err = s.exec(&execCtx{db: db, arg: arg}) // R/O tctx
 			return rs, tnla, tnlb, err
 		}
 	default: // case true:
@@ -1393,7 +1394,7 @@ func (db *DB) run1(pc *TCtx, s stmt, arg ...interface{}) (rs Recordset, tnla, tn
 				db.muUnlock() // must Unlock before RLock
 				db.rwmu.RLock()
 				defer db.rwmu.RUnlock()
-				rs, err = s.exec(&execCtx{db, arg})
+				rs, err = s.exec(&execCtx{db: db, arg: arg})
 				return rs, tnla, tnlb, err
 			}
 
@@ -1403,7 +1404,7 @@ func (db *DB) run1(pc *TCtx, s stmt, arg ...interface{}) (rs Recordset, tnla, tn
 				return nil, tnla, tnlb, fmt.Errorf("invalid passed transaction context")
 			}
 
-			rs, err = s.exec(&execCtx{db, arg})
+			rs, err = s.exec(&execCtx{db: db, arg: arg})
 			return rs, tnla, tnlb, err
 		}
 	}

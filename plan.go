@@ -9,8 +9,6 @@ import (
 	"fmt"
 	"strings"
 
-	"sync"
-
 	"github.com/cznic/b"
 	"github.com/cznic/strutil"
 )
@@ -2839,20 +2837,26 @@ func (r *emptyFieldsPlan) do(ctx *execCtx, f func(id interface{}, data []interfa
 
 type wrapFilterPlan struct {
 	*filterDefaultPlan
-	once  sync.Once
-	match bool
+	sel *selectStmt
 }
 
 func (r *wrapFilterPlan) do(ctx *execCtx, f func(id interface{}, data []interface{}) (bool, error)) (err error) {
-	r.once.Do(func() {
+	if ctx.cache == nil {
+		ctx.cache = make(map[*selectStmt]bool)
+	}
+	var match bool
+	if m, ok := ctx.cache[r.sel]; ok {
+		match = m
+	} else {
 		err = r.filterDefaultPlan.do(ctx, func(id interface{}, data []interface{}) (bool, error) {
 			if len(data) > 0 {
-				r.match = true
+				match = true
 			}
 			return false, nil
 		})
-	})
-	if r.match {
+		ctx.cache[r.sel] = match
+	}
+	if match {
 		return r.filterDefaultPlan.do(ctx, f)
 	}
 	v := make([]interface{}, len(r.fieldNames()))
