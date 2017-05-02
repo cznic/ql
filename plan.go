@@ -35,7 +35,6 @@ const (
 var (
 	_ plan = (*crossJoinDefaultPlan)(nil)
 	_ plan = (*distinctDefaultPlan)(nil)
-	_ plan = (*emptyFieldsPlan)(nil)
 	_ plan = (*explainDefaultPlan)(nil)
 	_ plan = (*filterDefaultPlan)(nil)
 	_ plan = (*fullJoinDefaultPlan)(nil)
@@ -2819,19 +2818,6 @@ func (r *selectDummyPlan) filter(expr expression) (plan, []string, error) {
 
 func (r *selectDummyPlan) do(ctx *execCtx, f func(id interface{}, data []interface{}) (bool, error)) (err error) {
 	_, err = f(nil, r.fields)
-	return
-}
-
-type emptyFieldsPlan struct {
-	*nullPlan
-}
-
-func (r *emptyFieldsPlan) do(ctx *execCtx, f func(id interface{}, data []interface{}) (bool, error)) (err error) {
-	v := make([]interface{}, len(r.fields))
-	for i := range v {
-		v[i] = ""
-	}
-	_, err = f(nil, v)
 	return
 }
 
