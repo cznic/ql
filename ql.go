@@ -546,9 +546,7 @@ func (r *whereRset) plan(ctx *execCtx) (plan, error) {
 		if r.exists == exists {
 			return o, nil
 		}
-		x := value{val: false}
-		return &wrapFilterPlan{&filterDefaultPlan{o, x, nil}}, nil
-
+		return &nullPlan{fields: o.fieldNames()}, nil
 	}
 	return r.planExpr(ctx)
 }
