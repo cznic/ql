@@ -15695,7 +15695,6 @@ BEGIN TRANSACTION;
 COMMIT;
 SELECT * FROM t WHERE EXISTS (SELECT * FROM t WHERE i == 2);
 |"i"
-[]
 
 -- 1350 // https://github.com/cznic/ql/issues/155
 BEGIN TRANSACTION;
@@ -15706,7 +15705,6 @@ BEGIN TRANSACTION;
 COMMIT;
 SELECT * FROM t WHERE EXISTS (SELECT * FROM t WHERE i == 4);
 |"i"
-[]
 
 -- 1351 // https://github.com/cznic/ql/issues/155
 BEGIN TRANSACTION;
@@ -15717,7 +15715,6 @@ BEGIN TRANSACTION;
 COMMIT;
 SELECT * FROM t WHERE NOT EXISTS (SELECT * FROM t WHERE i == 2);
 |"i"
-[]
 
 -- 1352 // https://github.com/cznic/ql/issues/155
 BEGIN TRANSACTION;
