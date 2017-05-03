@@ -530,18 +530,28 @@ func (r *whereRset) plan(ctx *execCtx) (plan, error) {
 	o := r.src
 	if r.sel != nil {
 		var exists bool
-		p, err := r.sel.plan(ctx)
-		if err != nil {
-			return nil, err
-		}
-		err = p.do(ctx, func(i interface{}, data []interface{}) (bool, error) {
-			if len(data) > 0 {
-				exists = true
+		ctx.mu.RLock()
+		m, ok := ctx.cache[r.sel]
+		ctx.mu.RUnlock()
+		if ok {
+			exists = m.(bool)
+		} else {
+			p, err := r.sel.plan(ctx)
+			if err != nil {
+				return nil, err
 			}
-			return false, nil
-		})
-		if err != nil {
-			return nil, err
+			err = p.do(ctx, func(i interface{}, data []interface{}) (bool, error) {
+				if len(data) > 0 {
+					exists = true
+				}
+				return false, nil
+			})
+			if err != nil {
+				return nil, err
+			}
+			ctx.mu.Lock()
+			ctx.cache[r.sel] = true
+			ctx.mu.Unlock()
 		}
 		if r.exists == exists {
 			return o, nil
