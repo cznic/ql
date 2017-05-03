@@ -3441,3 +3441,63 @@ func TestIssue142(t *testing.T) {
 		}
 	}
 }
+
+func TestWhereExists(t *testing.T) {
+	RegisterMemDriver()
+	db, err := sql.Open("ql-mem", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	tx, err := db.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	tx.Exec(`
+BEGIN TRANSACTION;
+ 	CREATE TABLE t (i int);
+ 	CREATE TABLE s (i int);
+	 INSERT INTO t VALUES (0);
+	 INSERT INTO t VALUES (1);
+	 INSERT INTO t VALUES (2);
+	 INSERT INTO t VALUES (3);
+	 INSERT INTO t VALUES (4);
+	 INSERT INTO t VALUES (5);
+	 
+	 INSERT INTO s VALUES (2);
+COMMIT;
+	`)
+	err = tx.Commit()
+	if err != nil {
+		t.Fatal(err)
+	}
+	s, err := db.Prepare(`
+	select * from t  where  exists (select * from s where i==$1);
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer s.Close()
+	var wg sync.WaitGroup
+	for i := 0; i < 5; i++ {
+		go func(id int, wait *sync.WaitGroup) {
+			var c int
+			err := s.QueryRow(id).Scan(&c)
+			if id == 2 {
+				if err != nil {
+					t.Error(err)
+				}
+				if id == 2 && c != 5 {
+					t.Errorf("expected %d got %d", id, c)
+				}
+			} else {
+				if err != sql.ErrNoRows {
+					t.Errorf("expected %v got %v", sql.ErrNoRows, err)
+				}
+			}
+			wait.Done()
+		}(i, &wg)
+		wg.Add(1)
+	}
+	wg.Wait()
+}

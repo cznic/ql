@@ -530,18 +530,28 @@ func (r *whereRset) plan(ctx *execCtx) (plan, error) {
 	o := r.src
 	if r.sel != nil {
 		var exists bool
-		p, err := r.sel.plan(ctx)
-		if err != nil {
-			return nil, err
-		}
-		err = p.do(ctx, func(i interface{}, data []interface{}) (bool, error) {
-			if len(data) > 0 {
-				exists = true
+		ctx.mu.RLock()
+		m, ok := ctx.cache[r.sel]
+		ctx.mu.RUnlock()
+		if ok {
+			exists = m.(bool)
+		} else {
+			p, err := r.sel.plan(ctx)
+			if err != nil {
+				return nil, err
 			}
-			return false, nil
-		})
-		if err != nil {
-			return nil, err
+			err = p.do(ctx, func(i interface{}, data []interface{}) (bool, error) {
+				if len(data) > 0 {
+					exists = true
+				}
+				return false, nil
+			})
+			if err != nil {
+				return nil, err
+			}
+			ctx.mu.Lock()
+			ctx.cache[r.sel] = true
+			ctx.mu.Unlock()
 		}
 		if r.exists == exists {
 			return o, nil
@@ -840,7 +850,7 @@ func newDB(store storage) (db *DB, err error) {
 		return
 	}
 
-	ctx := &execCtx{db: db0}
+	ctx := newExecCtx(db0, nil)
 	for _, t := range db0.root.tables {
 		if err := t.constraintsAndDefaults(ctx); err != nil {
 			return nil, err
@@ -938,7 +948,7 @@ func newDB(store storage) (db *DB, err error) {
 
 func (db *DB) deleteIndex2ByIndexName(nm string) error {
 	for _, s := range deleteIndex2ByIndexName.l {
-		if _, err := s.exec(&execCtx{db: db, arg: []interface{}{nm}}); err != nil {
+		if _, err := s.exec(newExecCtx(db, []interface{}{nm})); err != nil {
 			return err
 		}
 	}
@@ -947,7 +957,7 @@ func (db *DB) deleteIndex2ByIndexName(nm string) error {
 
 func (db *DB) deleteIndex2ByTableName(nm string) error {
 	for _, s := range deleteIndex2ByTableName.l {
-		if _, err := s.exec(&execCtx{db: db, arg: []interface{}{nm}}); err != nil {
+		if _, err := s.exec(newExecCtx(db, []interface{}{nm})); err != nil {
 			return err
 		}
 	}
@@ -1308,7 +1318,7 @@ func (db *DB) run1(pc *TCtx, s stmt, arg ...interface{}) (rs Recordset, tnla, tn
 			db.rwmu.RLock() // can safely grab before Unlock
 			db.muUnlock()
 			defer db.rwmu.RUnlock()
-			rs, err = s.exec(&execCtx{db, arg}) // R/O tctx
+			rs, err = s.exec(newExecCtx(db, arg)) // R/O tctx
 			return rs, tnla, tnlb, err
 		}
 	default: // case true:
@@ -1390,7 +1400,7 @@ func (db *DB) run1(pc *TCtx, s stmt, arg ...interface{}) (rs Recordset, tnla, tn
 				db.muUnlock() // must Unlock before RLock
 				db.rwmu.RLock()
 				defer db.rwmu.RUnlock()
-				rs, err = s.exec(&execCtx{db, arg})
+				rs, err = s.exec(newExecCtx(db, arg))
 				return rs, tnla, tnlb, err
 			}
 
@@ -1400,7 +1410,7 @@ func (db *DB) run1(pc *TCtx, s stmt, arg ...interface{}) (rs Recordset, tnla, tn
 				return nil, tnla, tnlb, fmt.Errorf("invalid passed transaction context")
 			}
 
-			rs, err = s.exec(&execCtx{db, arg})
+			rs, err = s.exec(newExecCtx(db, arg))
 			return rs, tnla, tnlb, err
 		}
 	}
@@ -1568,13 +1578,13 @@ func (db *DB) info() (r *DbInfo, err error) {
 		ti := TableInfo{Name: nm}
 		m := map[string]*ColumnInfo{}
 		if hasColumn2 {
-			rs, err := selectColumn2.l[0].exec(&execCtx{db: db, arg: []interface{}{nm}})
+			rs, err := selectColumn2.l[0].exec(newExecCtx(db, []interface{}{nm}))
 			if err != nil {
 				return nil, err
 			}
 
 			if err := rs.(recordset).do(
-				&execCtx{db: db, arg: []interface{}{nm}},
+				newExecCtx(db, []interface{}{nm}),
 				func(id interface{}, data []interface{}) (bool, error) {
 					ci := &ColumnInfo{NotNull: data[1].(bool), Constraint: data[2].(string), Default: data[3].(string)}
 					m[data[0].(string)] = ci

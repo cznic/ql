@@ -153,7 +153,7 @@ func (t *table) constraintsAndDefaults(ctx *execCtx) error {
 	constraints := make([]*constraint, len(cols))
 	defaults := make([]expression, len(cols))
 	arg := []interface{}{t.name}
-	rs, err := selectColumn2.l[0].exec(&execCtx{db: ctx.db, arg: arg})
+	rs, err := selectColumn2.l[0].exec(newExecCtx(ctx.db, arg))
 	if err != nil {
 		return err
 	}
@@ -161,7 +161,7 @@ func (t *table) constraintsAndDefaults(ctx *execCtx) error {
 	var rows [][]interface{}
 	ok = false
 	if err := rs.(recordset).do(
-		&execCtx{db: ctx.db, arg: arg},
+		newExecCtx(ctx.db, arg),
 		func(id interface{}, data []interface{}) (more bool, err error) {
 			rows = append(rows, data)
 			return true, nil
