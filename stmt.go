@@ -9,6 +9,8 @@ import (
 	"fmt"
 	"strings"
 
+	"sync"
+
 	"github.com/cznic/strutil"
 )
 
@@ -121,8 +123,18 @@ type stmt interface {
 }
 
 type execCtx struct { //LATER +shared temp
-	db  *DB
-	arg []interface{}
+	db    *DB
+	arg   []interface{}
+	cache map[interface{}]interface{}
+	mu    sync.RWMutex
+}
+
+func newExecCtx(db *DB, arg []interface{}) *execCtx {
+	return &execCtx{
+		db:    db,
+		arg:   arg,
+		cache: make(map[interface{}]interface{}),
+	}
 }
 
 type explainStmt struct {
@@ -571,7 +583,7 @@ func (s *alterTableDropColumnStmt) exec(ctx *execCtx) (Recordset, error) {
 			}
 
 			if _, ok := ctx.db.root.tables["__Column2"]; ok {
-				if _, err := deleteColumn2.l[0].exec(&execCtx{db: ctx.db, arg: []interface{}{s.tableName, c.name}}); err != nil {
+				if _, err := deleteColumn2.l[0].exec(newExecCtx(ctx.db, []interface{}{s.tableName, c.name})); err != nil {
 					return nil, err
 				}
 			}
@@ -680,7 +692,7 @@ func (s *alterTableAddStmt) exec(ctx *execCtx) (Recordset, error) {
 
 	if c.constraint != nil || c.dflt != nil {
 		for _, s := range createColumn2.l {
-			_, err := s.exec(&execCtx{db: ctx.db})
+			_, err := s.exec(newExecCtx(ctx.db, nil))
 			if err != nil {
 				return nil, err
 			}
@@ -693,7 +705,7 @@ func (s *alterTableAddStmt) exec(ctx *execCtx) (Recordset, error) {
 		if e := c.dflt; e != nil {
 			d = e.String()
 		}
-		if _, err := insertColumn2.l[0].exec(&execCtx{db: ctx.db, arg: []interface{}{s.tableName, c.name, notNull, co, d}}); err != nil {
+		if _, err := insertColumn2.l[0].exec(newExecCtx(ctx.db, []interface{}{s.tableName, c.name, notNull, co, d})); err != nil {
 			return nil, err
 		}
 	}
@@ -1251,7 +1263,7 @@ func (s *createTableStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 		if c.constraint != nil || c.dflt != nil {
 			if mustCreateColumn2 {
 				for _, stmt := range createColumn2.l {
-					_, err := stmt.exec(&execCtx{db: ctx.db})
+					_, err := stmt.exec(newExecCtx(ctx.db, nil))
 					if err != nil {
 						return nil, err
 					}
@@ -1267,7 +1279,7 @@ func (s *createTableStmt) exec(ctx *execCtx) (_ Recordset, err error) {
 			if e := c.dflt; e != nil {
 				d = e.String()
 			}
-			if _, err := insertColumn2.l[0].exec(&execCtx{db: ctx.db, arg: []interface{}{s.tableName, c.name, notNull, co, d}}); err != nil {
+			if _, err := insertColumn2.l[0].exec(newExecCtx(ctx.db, []interface{}{s.tableName, c.name, notNull, co, d})); err != nil {
 				return nil, err
 			}
 		}
