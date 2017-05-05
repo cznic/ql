@@ -469,7 +469,7 @@ func (r *driverRows) Next(dest []driver.Value) error {
 				switch v := xi.(type) {
 				case nil, int64, float64, bool, []byte, time.Time:
 					dest[i] = v
-				case complex64, complex128, *big.Int, *big.Rat:
+				case complex64, complex128, *big.Int, *big.Rat, idealComplex:
 					var buf bytes.Buffer
 					fmt.Fprintf(&buf, "%v", v)
 					dest[i] = buf.Bytes()
@@ -495,6 +495,12 @@ func (r *driverRows) Next(dest []driver.Value) error {
 					dest[i] = int64(v)
 				case string:
 					dest[i] = []byte(v)
+				case idealInt:
+					dest[i] = int64(v)
+				case idealUint:
+					dest[i] = int64(v)
+				case idealFloat:
+					dest[i] = float64(v)
 				default:
 					return fmt.Errorf("internal error 004")
 				}

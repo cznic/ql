@@ -3501,3 +3501,70 @@ COMMIT;
 	}
 	wg.Wait()
 }
+
+func TestSelectDummy(t *testing.T) {
+	RegisterMemDriver()
+	db, err := sql.Open("ql-mem", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	//int
+	var i int
+	err = db.QueryRow("select 1").Scan(&i)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if i != 1 {
+		t.Fatalf("expected 1 got %d", i)
+	}
+
+	i = 0
+	err = db.QueryRow("select $1", 1).Scan(&i)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if i != 1 {
+		t.Fatalf("expected 1 got %d", i)
+	}
+
+	//float
+	var f float64
+	err = db.QueryRow("select 1.5").Scan(&f)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if f != 1.5 {
+		t.Fatalf("expected 1.0 got %f", f)
+	}
+
+	f = 0.0
+	err = db.QueryRow("select $1", 1.5).Scan(&f)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if f != 1.5 {
+		t.Fatalf("expected 1.5 got %f", f)
+	}
+
+	//string
+	var s string
+	msg := "foo"
+	err = db.QueryRow(`select "foo"`).Scan(&s)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if s != msg {
+		t.Fatalf("expected %s got %s", msg, s)
+	}
+
+	s = ""
+	err = db.QueryRow("select $1", msg).Scan(&s)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if s != msg {
+		t.Fatalf("expected %s got %s", msg, s)
+	}
+}
