@@ -17,6 +17,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"reflect"
 	"runtime"
 	"runtime/debug"
 	"strconv"
@@ -3566,5 +3567,70 @@ func TestSelectDummy(t *testing.T) {
 	}
 	if s != msg {
 		t.Fatalf("expected %s got %s", msg, s)
+	}
+}
+
+func TestIssue136(t *testing.T) {
+	RegisterMemDriver()
+	db, err := sql.Open("ql-mem", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	tx, err := db.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = tx.Exec(`
+create table category (key int, name string);
+create table condition (key int, name string);
+create table product (key int, catkey int, condkey int);
+
+insert into category values (1, "foo"), (2, "hello");
+insert into condition values (1, "bar"), (2, "baz");
+insert into product values (1, 1, 1), (2, 2, null), (3, null, 2), (4, null, null);
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = tx.Commit()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rows, err := db.Query(`
+select *
+from
+  (select
+   product.key as product_key,
+   category.name as category_name,
+   product.condkey as product_condkey
+   from
+     product
+   left join category on category.key == product.catkey)
+left join condition on condition.key == product_condkey;
+	`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer rows.Close()
+	c, _ := rows.Columns()
+	e := []string{
+		"product_key",
+		"category_name",
+		"product_condkey",
+		"condition.key",
+		"condition.name"}
+	if !reflect.DeepEqual(e, c) {
+		t.Errorf("expected %v got %v", e, c)
+	}
+	for rows.Next() {
+		var pk, pck, ck sql.NullInt64
+		var cn, cndn sql.NullString
+		err = rows.Scan(&pk, &cn, &pck, &ck, &cndn)
+		if err != nil {
+			t.Error(err)
+		}
 	}
 }
