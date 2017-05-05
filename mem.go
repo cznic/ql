@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"io"
 	"math/big"
+	"sync"
 	"time"
 )
 
@@ -247,6 +248,7 @@ type mem struct {
 	recycler []int
 	tnl      int
 	rollback *undos
+	mu       sync.RWMutex
 }
 
 func newMemStorage() (s *mem, err error) {
@@ -278,10 +280,13 @@ func (s *mem) newUndo(tag int, h int64, data []interface{}) {
 func (s *mem) Acid() bool { return false }
 
 func (s *mem) Close() (err error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	if s.tnl != 0 {
 		return fmt.Errorf("cannot close DB while open transaction exist")
 	}
-	*s = mem{}
+	s.data, s.recycler, s.rollback = nil, nil, nil
+	s.id, s.tnl = 0, 0
 	return
 }
 
@@ -453,6 +458,8 @@ func (s *mem) Create(data ...interface{}) (h int64, err error) {
 }
 
 func (s *mem) Read(dst []interface{}, h int64, cols ...*col) (data []interface{}, err error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 	if i := int(h); i != 0 && i < len(s.data) {
 		d := s.clone(s.data[h]...)
 		if cols == nil {
