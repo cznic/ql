@@ -404,7 +404,7 @@ SELECT * FROM (SELECT * FROM employee;), (SELECT * FROM department;);
 │   └Output field names ["LastName" "DepartmentID"]
 │   ┌Iterate all rows of table "department"
 │   └Output field names ["DepartmentID" "DepartmentName"]
-└Output field names ["" "" "" ""]
+└Output field names ["LastName" "DepartmentID" "DepartmentID" "DepartmentName"]
 
 ---- 75
 SELECT * FROM (SELECT * FROM employee;) AS e, (SELECT * FROM department;) ORDER BY e.LastName, e.DepartmentID;
@@ -413,9 +413,9 @@ SELECT * FROM (SELECT * FROM employee;) AS e, (SELECT * FROM department;) ORDER 
 │   └Output field names ["LastName" "DepartmentID"]
 │   ┌Iterate all rows of table "department"
 │   └Output field names ["DepartmentID" "DepartmentName"]
-└Output field names ["e.LastName" "e.DepartmentID" "" ""]
+└Output field names ["e.LastName" "e.DepartmentID" "DepartmentID" "DepartmentName"]
 ┌Order by e.LastName, e.DepartmentID,
-└Output field names ["e.LastName" "e.DepartmentID" "" ""]
+└Output field names ["e.LastName" "e.DepartmentID" "DepartmentID" "DepartmentName"]
 
 ---- 76
 SELECT * FROM (SELECT * FROM employee;), (SELECT * FROM department;) AS d ORDER BY d.DepartmentID DESC;
@@ -424,9 +424,9 @@ SELECT * FROM (SELECT * FROM employee;), (SELECT * FROM department;) AS d ORDER 
 │   └Output field names ["LastName" "DepartmentID"]
 │   ┌Iterate all rows of table "department"
 │   └Output field names ["DepartmentID" "DepartmentName"]
-└Output field names ["" "" "d.DepartmentID" "d.DepartmentName"]
+└Output field names ["LastName" "DepartmentID" "d.DepartmentID" "d.DepartmentName"]
 ┌Order descending by d.DepartmentID,
-└Output field names ["" "" "d.DepartmentID" "d.DepartmentName"]
+└Output field names ["LastName" "DepartmentID" "d.DepartmentID" "d.DepartmentName"]
 
 ---- 77
 SELECT * FROM employee, (SELECT * FROM department;) ORDER BY employee.LastName;
@@ -435,9 +435,9 @@ SELECT * FROM employee, (SELECT * FROM department;) ORDER BY employee.LastName;
 │   └Output field names ["LastName" "DepartmentID"]
 │   ┌Iterate all rows of table "department"
 │   └Output field names ["DepartmentID" "DepartmentName"]
-└Output field names ["employee.LastName" "employee.DepartmentID" "" ""]
+└Output field names ["employee.LastName" "employee.DepartmentID" "DepartmentID" "DepartmentName"]
 ┌Order by employee.LastName,
-└Output field names ["employee.LastName" "employee.DepartmentID" "" ""]
+└Output field names ["employee.LastName" "employee.DepartmentID" "DepartmentID" "DepartmentName"]
 
 ---- 78
 SELECT * FROM (SELECT * FROM employee;) AS e, (SELECT * FROM department;) AS d WHERE e.DepartmentID == d.DepartmentID ORDER BY d.DepartmentName, e.LastName;
@@ -879,9 +879,9 @@ SELECT * FROM employee AS e, (SELECT * FROM department;) ORDER BY e.LastName;
 │   └Output field names ["LastName" "DepartmentID"]
 │   ┌Iterate all rows of table "department"
 │   └Output field names ["DepartmentID" "DepartmentName"]
-└Output field names ["e.LastName" "e.DepartmentID" "" ""]
+└Output field names ["e.LastName" "e.DepartmentID" "DepartmentID" "DepartmentName"]
 ┌Order by e.LastName,
-└Output field names ["e.LastName" "e.DepartmentID" "" ""]
+└Output field names ["e.LastName" "e.DepartmentID" "DepartmentID" "DepartmentName"]
 
 ---- 155
 SELECT * FROM employee AS e, (SELECT * FROM department;) AS d ORDER BY e.LastName;

@@ -811,7 +811,7 @@ FROM
 	SELECT *
 	FROM department
 );
-|"", "", "", ""
+|"LastName", "DepartmentID", "DepartmentID", "DepartmentName"
 [Williams <nil> 35 Marketing]
 [Williams <nil> 34 Clerical]
 [Williams <nil> 33 Engineering]
@@ -849,7 +849,7 @@ FROM
 	FROM department
 )
 ORDER BY e.LastName, e.DepartmentID;
-|"e.LastName", "e.DepartmentID", "", ""
+|"e.LastName", "e.DepartmentID", "DepartmentID", "DepartmentName"
 [Heisenberg 33 35 Marketing]
 [Heisenberg 33 34 Clerical]
 [Heisenberg 33 33 Engineering]
@@ -887,7 +887,7 @@ FROM
 	FROM department
 ) AS d
 ORDER BY d.DepartmentID DESC;
-|"", "", "d.DepartmentID", "d.DepartmentName"
+|"LastName", "DepartmentID", "d.DepartmentID", "d.DepartmentName"
 [Rafferty 31 35 Marketing]
 [Jones 33 35 Marketing]
 [Heisenberg 33 35 Marketing]
@@ -922,7 +922,7 @@ FROM
 		FROM department
 	)
 ORDER BY employee.LastName;
-|"employee.LastName", "employee.DepartmentID", "", ""
+|"employee.LastName", "employee.DepartmentID", "DepartmentID", "DepartmentName"
 [Heisenberg 33 35 Marketing]
 [Heisenberg 33 34 Clerical]
 [Heisenberg 33 33 Engineering]
@@ -1654,7 +1654,7 @@ FROM
 	employee AS e,
 	( SELECT * FROM department)
 ORDER BY e.LastName;
-|"e.LastName", "e.DepartmentID", "", ""
+|"e.LastName", "e.DepartmentID", "DepartmentID", "DepartmentName"
 [Heisenberg 33 35 Marketing]
 [Heisenberg 33 34 Clerical]
 [Heisenberg 33 33 Engineering]

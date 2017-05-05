@@ -1765,23 +1765,18 @@ func (r *joinRset) plan(ctx *execCtx) (plan, error) {
 				if f != "" && nm != "" {
 					f = fmt.Sprintf("%s.%s", nm, f)
 				}
-				if nm == "" {
-					f = ""
-				}
 				fields = append(fields, f)
 			}
 		}
 		rsets[i] = q
 	}
 
-	if len(rsets) == 1 {
+	switch len(rsets) {
+	case 0:
+		return nil, nil
+	case 1:
 		return rsets[0], nil
 	}
-
-	if len(rsets) == 0 {
-		return nil, nil
-	}
-
 	right := len(rsets[len(rsets)-1].fieldNames())
 	switch r.typ {
 	case crossJoin:
