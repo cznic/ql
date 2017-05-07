@@ -84,22 +84,40 @@ func main() {
 	}
 }
 
-func do() (err error) {
-	oDB := flag.String("db", "ql.db", "The DB file to open. It'll be created if missing.")
-	oFlds := flag.Bool("fld", false, "Show recordset's field names.")
-	oSchema := flag.String("schema", "", "If non empty, show the CREATE statements of matching tables and exit.")
-	oTables := flag.String("tables", "", "If non empty, list matching table names and exit.")
-	oTime := flag.Bool("t", false, "Measure and report time to execute the statement(s) including DB create/open/close.")
-	flag.Parse()
+type config struct {
+	db     string
+	flds   bool
+	schema string
+	tables string
+	time   bool
+	help   bool
+}
 
+func (c *config) parse() {
+	c.db = *flag.String("db", "ql.db", "The DB file to open. It'll be created if missing.")
+	c.flds = *flag.Bool("fld", false, "Show recordset's field names.")
+	c.schema = *flag.String("schema", "", "If non empty, show the CREATE statements of matching tables and exit.")
+	c.tables = *flag.String("tables", "", "If non empty, list matching table names and exit.")
+	c.time = *flag.Bool("t", false, "Measure and report time to execute the statement(s) including DB create/open/close.")
+	c.help = *flag.Bool("h", false, "Shows this help text.")
+	flag.Parse()
+}
+
+func do() (err error) {
+	cfg := &config{}
+	cfg.parse()
+	if flag.NArg() == 0 || cfg.help {
+		flag.PrintDefaults()
+		return nil
+	}
 	t0 := time.Now()
-	if *oTime {
+	if cfg.time {
 		defer func() {
 			fmt.Fprintf(os.Stderr, "%s\n", time.Since(t0))
 		}()
 	}
 
-	db, err := ql.OpenFile(*oDB, &ql.Options{CanCreate: true})
+	db, err := ql.OpenFile(cfg.db, &ql.Options{CanCreate: true})
 	if err != nil {
 		return err
 	}
@@ -114,7 +132,7 @@ func do() (err error) {
 		}
 	}()
 
-	if pat := *oSchema; pat != "" {
+	if pat := cfg.schema; pat != "" {
 		re, err := regexp.Compile(pat)
 		if err != nil {
 			return err
@@ -144,7 +162,7 @@ func do() (err error) {
 		return nil
 	}
 
-	if pat := *oTables; pat != "" {
+	if pat := cfg.tables; pat != "" {
 		re, err := regexp.Compile(pat)
 		if err != nil {
 			return err
@@ -206,12 +224,12 @@ func do() (err error) {
 
 	switch {
 	case l.IsExplainStmt():
-		return rs[len(rs)-1].Do(*oFlds, func(data []interface{}) (bool, error) {
+		return rs[len(rs)-1].Do(cfg.flds, func(data []interface{}) (bool, error) {
 			fmt.Println(data[0])
 			return true, nil
 		})
 	default:
-		return rs[len(rs)-1].Do(*oFlds, func(data []interface{}) (bool, error) {
+		return rs[len(rs)-1].Do(cfg.flds, func(data []interface{}) (bool, error) {
 			fmt.Println(str(data))
 			return true, nil
 		})
