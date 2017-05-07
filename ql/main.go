@@ -58,6 +58,7 @@ import (
 	"log"
 	"os"
 	"regexp"
+	"runtime"
 	"sort"
 	"strings"
 	"time"
@@ -85,38 +86,40 @@ func main() {
 }
 
 type config struct {
-	db     string
-	flds   bool
-	schema string
-	tables string
-	time   bool
-	help   bool
+	db          string
+	flds        bool
+	schema      string
+	tables      string
+	time        bool
+	help        bool
+	interactive bool
 }
 
 func (c *config) parse() {
-	c.db = *flag.String("db", "ql.db", "The DB file to open. It'll be created if missing.")
-	c.flds = *flag.Bool("fld", false, "Show recordset's field names.")
-	c.schema = *flag.String("schema", "", "If non empty, show the CREATE statements of matching tables and exit.")
-	c.tables = *flag.String("tables", "", "If non empty, list matching table names and exit.")
-	c.time = *flag.Bool("t", false, "Measure and report time to execute the statement(s) including DB create/open/close.")
-	c.help = *flag.Bool("h", false, "Shows this help text.")
+	db := flag.String("db", "ql.db", "The DB file to open. It'll be created if missing.")
+	flds := flag.Bool("fld", false, "Show recordset's field names.")
+	schema := flag.String("schema", "", "If non empty, show the CREATE statements of matching tables and exit.")
+	tables := flag.String("tables", "", "If non empty, list matching table names and exit.")
+	time := flag.Bool("t", false, "Measure and report time to execute the statement(s) including DB create/open/close.")
+	help := flag.Bool("h", false, "Shows this help text.")
+	interactive := flag.Bool("i", false, "runs in interactive mode")
 	flag.Parse()
+	c.flds = *flds
+	c.db = *db
+	c.schema = *schema
+	c.tables = *tables
+	c.time = *time
+	c.help = *help
+	c.interactive = *interactive
 }
 
 func do() (err error) {
 	cfg := &config{}
 	cfg.parse()
-	if flag.NArg() == 0 || cfg.help {
+	if cfg.help || flag.NArg() == 0 && !cfg.interactive {
 		flag.PrintDefaults()
 		return nil
 	}
-	t0 := time.Now()
-	if cfg.time {
-		defer func() {
-			fmt.Fprintf(os.Stderr, "%s\n", time.Since(t0))
-		}()
-	}
-
 	db, err := ql.OpenFile(cfg.db, &ql.Options{CanCreate: true})
 	if err != nil {
 		return err
@@ -131,7 +134,83 @@ func do() (err error) {
 			err = ec
 		}
 	}()
+	r := bufio.NewReader(os.Stdin)
+	o := bufio.NewWriter(os.Stdout)
+	if cfg.interactive {
+		for {
+			o.WriteString("ql> ")
+			o.Flush()
+			src, err := readSrc(cfg.interactive, r)
+			if err != nil {
+				return err
+			}
+			err = run(cfg, o, src, db)
+			if err != nil {
+				fmt.Fprintln(o, err)
+				o.Flush()
+			}
+		}
+		return nil
+	}
+	src, err := readSrc(cfg.interactive, r)
+	if err != nil {
+		return err
+	}
+	return run(cfg, o, src, db)
+}
 
+func readSrc(i bool, in *bufio.Reader) (string, error) {
+	if i {
+		return in.ReadString('\n')
+	}
+	var src string
+	switch n := flag.NArg(); n {
+	case 0:
+		b, err := ioutil.ReadAll(in)
+		if err != nil {
+			return "", err
+		}
+
+		src = string(b)
+	default:
+		a := make([]string, n)
+		for i := range a {
+			a[i] = flag.Arg(i)
+		}
+		src = strings.Join(a, " ")
+	}
+	return src, nil
+}
+
+func run(cfg *config, o *bufio.Writer, src string, db *ql.DB) (err error) {
+	defer o.Flush()
+	if cfg.interactive {
+		src = strings.TrimSpace(src)
+		if strings.HasPrefix(src, "\\") {
+			switch src {
+			case "\\clear":
+				switch runtime.GOOS {
+				case "darwin", "linux":
+					fmt.Fprintln(o, "\033[H\033[2J")
+				default:
+					fmt.Fprintln(o, "clear not supported in this system")
+				}
+				return nil
+			case "\\q", "\\exit":
+				// we make sure to close the database before exiting
+				db.Close()
+				os.Exit(1)
+			}
+		}
+
+	}
+
+	t0 := time.Now()
+	if cfg.time {
+		defer func() {
+			fmt.Fprintf(os.Stderr, "%s\n", time.Since(t0))
+		}()
+	}
 	if pat := cfg.schema; pat != "" {
 		re, err := regexp.Compile(pat)
 		if err != nil {
@@ -157,7 +236,7 @@ func do() (err error) {
 		}
 		sort.Strings(r)
 		if len(r) != 0 {
-			fmt.Println(strings.Join(r, "\n"))
+			fmt.Fprintln(o, strings.Join(r, "\n"))
 		}
 		return nil
 	}
@@ -183,26 +262,9 @@ func do() (err error) {
 		}
 		sort.Strings(r)
 		if len(r) != 0 {
-			fmt.Println(strings.Join(r, "\n"))
+			fmt.Fprintln(o, strings.Join(r, "\n"))
 		}
 		return nil
-	}
-
-	var src string
-	switch n := flag.NArg(); n {
-	case 0:
-		b, err := ioutil.ReadAll(bufio.NewReader(os.Stdin))
-		if err != nil {
-			return err
-		}
-
-		src = string(b)
-	default:
-		a := make([]string, n)
-		for i := range a {
-			a[i] = flag.Arg(i)
-		}
-		src = strings.Join(a, " ")
 	}
 
 	src = "BEGIN TRANSACTION; " + src + "; COMMIT;"
@@ -225,12 +287,12 @@ func do() (err error) {
 	switch {
 	case l.IsExplainStmt():
 		return rs[len(rs)-1].Do(cfg.flds, func(data []interface{}) (bool, error) {
-			fmt.Println(data[0])
+			fmt.Fprintln(o, data[0])
 			return true, nil
 		})
 	default:
 		return rs[len(rs)-1].Do(cfg.flds, func(data []interface{}) (bool, error) {
-			fmt.Println(str(data))
+			fmt.Fprintln(o, str(data))
 			return true, nil
 		})
 	}
