@@ -186,9 +186,10 @@ func run(cfg *config, o *bufio.Writer, src string, db *ql.DB) (err error) {
 	defer o.Flush()
 	if cfg.interactive {
 		src = strings.TrimSpace(src)
-		if strings.HasPrefix(src, "\\") {
+		if strings.HasPrefix(src, "\\") ||
+			strings.HasPrefix(src, ".") {
 			switch src {
-			case "\\clear":
+			case "\\clear", ".clear":
 				switch runtime.GOOS {
 				case "darwin", "linux":
 					fmt.Fprintln(o, "\033[H\033[2J")
@@ -196,7 +197,7 @@ func run(cfg *config, o *bufio.Writer, src string, db *ql.DB) (err error) {
 					fmt.Fprintln(o, "clear not supported in this system")
 				}
 				return nil
-			case "\\q", "\\exit":
+			case "\\q", "\\exit", ".q", ".exit":
 				// we make sure to close the database before exiting
 				db.Close()
 				os.Exit(1)
