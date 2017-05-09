@@ -3,6 +3,7 @@
 package ql
 
 import (
+	"context"
 	"database/sql"
 	"testing"
 )
@@ -70,5 +71,82 @@ func TestMultiResultSet(t *testing.T) {
 	}
 	if rows.NextResultSet() {
 		t.Fatal("unexpected result set")
+	}
+}
+
+func TestNamedArgs(t *testing.T) {
+	RegisterMemDriver()
+	db, err := sql.Open("ql-mem", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	rows, err := db.QueryContext(
+		context.Background(),
+		`select $one;select $two;select $three;`,
+		sql.Named("one", 1),
+		sql.Named("two", 2),
+		sql.Named("three", 3),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer rows.Close()
+
+	var i int
+	for rows.Next() {
+		if err := rows.Scan(&i); err != nil {
+			t.Fatal(err)
+		}
+		if i != 1 {
+			t.Fatalf("expected 1, got %d", i)
+		}
+	}
+	if !rows.NextResultSet() {
+		t.Fatal("expected more result sets", rows.Err())
+	}
+	for rows.Next() {
+		if err := rows.Scan(&i); err != nil {
+			t.Fatal(err)
+		}
+		if i != 2 {
+			t.Fatalf("expected 2, got %d", i)
+		}
+	}
+	samples := []struct {
+		src, exp string
+	}{
+		{
+			`select $one;select $two;select $three;`,
+			`select $1;select $2;select $3;`,
+		},
+		{
+			`select * from foo where t=$1`,
+			`select * from foo where t=$1`,
+		},
+		{
+			`select * from foo where t=$1&&name=$name`,
+			`select * from foo where t=$1&&name=$2`,
+		},
+	}
+	for _, s := range samples {
+		e := filterNamedArgs(s.src)
+		if e != s.exp {
+			t.Errorf("expected %s got %s", s.exp, e)
+		}
+	}
+
+	stmt, err := db.PrepareContext(context.Background(), `select $number`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var n int
+	err = stmt.QueryRowContext(context.Background(), sql.Named("number", 1)).Scan(&n)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if n != 1 {
+		t.Errorf("expected 1 got %d", n)
 	}
 }
