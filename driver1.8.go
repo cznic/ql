@@ -22,10 +22,8 @@ func replaceNamed(query string, args []driver.NamedValue) (string, []driver.Valu
 	for k, v := range args {
 		if v.Name != "" {
 			query = strings.Replace(query, prefix+v.Name, fmt.Sprintf("%s%d", prefix, v.Ordinal), -1)
-			a[k] = v.Value
-		} else {
-			a[k] = v.Value
 		}
+		a[k] = v.Value
 	}
 	return query, a
 }
