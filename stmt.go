@@ -803,13 +803,7 @@ func (s *selectStmt) plan(ctx *execCtx) (plan, error) { //LATER overlapping goro
 		}
 	}
 	if r == nil {
-		var fds []interface{}
-		for _, v := range s.flds {
-			if val, ok := v.expr.(value); ok {
-				fds = append(fds, val)
-			}
-		}
-		r = &selectDummyPlan{fields: fds}
+		r = &selectDummyPlan{flds: s.flds}
 	}
 	if w := s.where; w != nil {
 		if r, err = (&whereRset{expr: w.expr, src: r, sel: w.sel, exists: w.exists}).plan(ctx); err != nil {
