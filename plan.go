@@ -2801,7 +2801,7 @@ func (r *fullJoinDefaultPlan) do(ctx *execCtx, f func(id interface{}, data []int
 }
 
 type selectDummyPlan struct {
-	fields []interface{}
+	flds []*fld
 }
 
 func (r *selectDummyPlan) hasID() bool { return true }
@@ -2810,13 +2810,22 @@ func (r *selectDummyPlan) explain(w strutil.Formatter) {
 	w.Format("┌Selects values from dummy table\n└Output field names %v\n", qnames(r.fieldNames()))
 }
 
-func (r *selectDummyPlan) fieldNames() []string { return make([]string, len(r.fields)) }
+func (r *selectDummyPlan) fieldNames() []string { return make([]string, len(r.flds)) }
 
 func (r *selectDummyPlan) filter(expr expression) (plan, []string, error) {
 	return nil, nil, nil
 }
 
 func (r *selectDummyPlan) do(ctx *execCtx, f func(id interface{}, data []interface{}) (bool, error)) (err error) {
-	_, err = f(nil, r.fields)
+	m := map[interface{}]interface{}{}
+	data := []interface{}{}
+	for _, v := range r.flds {
+		rst, err := v.expr.eval(ctx, m)
+		if err != nil {
+			return err
+		}
+		data = append(data, rst)
+	}
+	_, err = f(nil, data)
 	return
 }

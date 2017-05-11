@@ -3504,69 +3504,117 @@ COMMIT;
 }
 
 func TestSelectDummy(t *testing.T) {
-	RegisterMemDriver()
-	db, err := sql.Open("ql-mem", "")
+	db, err := OpenMem()
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer db.Close()
 
-	//int
-	var i int
-	err = db.QueryRow("select 1").Scan(&i)
-	if err != nil {
-		t.Fatal(err)
+	sample := []struct {
+		src string
+		exp []interface{}
+	}{
+		{"select 10", []interface{}{10}},
+		{"select 10,20", []interface{}{10, 20}},
 	}
-	if i != 1 {
-		t.Fatalf("expected 1 got %d", i)
-	}
-
-	i = 0
-	err = db.QueryRow("select $1", 1).Scan(&i)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if i != 1 {
-		t.Fatalf("expected 1 got %d", i)
-	}
-
-	//float
-	var f float64
-	err = db.QueryRow("select 1.5").Scan(&f)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if f != 1.5 {
-		t.Fatalf("expected 1.0 got %f", f)
+	for _, s := range sample {
+		rst, _, err := db.run(nil, s.src)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, rs := range rst {
+			d, err := rs.FirstRow()
+			if err != nil {
+				t.Fatal(err)
+			}
+			for k, val := range d {
+				if int(val.(idealInt)) != s.exp[k].(int) {
+					t.Errorf("expected %v got %v", s.exp[k], val)
+				}
+			}
+		}
 	}
 
-	f = 0.0
-	err = db.QueryRow("select $1", 1.5).Scan(&f)
-	if err != nil {
-		t.Fatal(err)
+	// //float
+	sample = []struct {
+		src string
+		exp []interface{}
+	}{
+		{"select 1.5", []interface{}{1.5}},
+		{"select 1.5,2.5", []interface{}{1.5, 2.5}},
 	}
-	if f != 1.5 {
-		t.Fatalf("expected 1.5 got %f", f)
+	for _, s := range sample {
+		rst, _, err := db.run(nil, s.src)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, rs := range rst {
+			d, err := rs.FirstRow()
+			if err != nil {
+				t.Fatal(err)
+			}
+			for k, val := range d {
+				if float64(val.(idealFloat)) != s.exp[k].(float64) {
+					t.Errorf("expected %v got %v", s.exp[k], val)
+				}
+			}
+		}
 	}
 
-	//string
-	var s string
-	msg := "foo"
-	err = db.QueryRow(`select "foo"`).Scan(&s)
-	if err != nil {
-		t.Fatal(err)
+	// //string
+	sample = []struct {
+		src string
+		exp []interface{}
+	}{
+		{`select "foo"`, []interface{}{"foo"}},
+		{`select "foo","bar"`, []interface{}{"foo", "bar"}},
 	}
-	if s != msg {
-		t.Fatalf("expected %s got %s", msg, s)
+	for _, s := range sample {
+		rst, _, err := db.run(nil, s.src)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, rs := range rst {
+			d, err := rs.FirstRow()
+			if err != nil {
+				t.Fatal(err)
+			}
+			for k, val := range d {
+				if val.(string) != s.exp[k].(string) {
+					t.Errorf("expected %v got %v", s.exp[k], val)
+				}
+			}
+		}
 	}
 
-	s = ""
-	err = db.QueryRow("select $1", msg).Scan(&s)
-	if err != nil {
-		t.Fatal(err)
+	sample = []struct {
+		src string
+		exp []interface{}
+	}{
+		{`select "foo",now()`, []interface{}{"foo"}},
 	}
-	if s != msg {
-		t.Fatalf("expected %s got %s", msg, s)
+	for _, s := range sample {
+		rst, _, err := db.run(nil, s.src)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, rs := range rst {
+			d, err := rs.FirstRow()
+			if err != nil {
+				t.Fatal(err)
+			}
+			for k, val := range d {
+				if k == 1 {
+					if _, ok := val.(time.Time); !ok {
+						t.Fatal("expected time object")
+					}
+					continue
+				}
+				if val.(string) != s.exp[k].(string) {
+					t.Errorf("expected %v got %v", s.exp[k], val)
+				}
+			}
+		}
 	}
 }
 
