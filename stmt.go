@@ -803,7 +803,7 @@ func (s *selectStmt) plan(ctx *execCtx) (plan, error) { //LATER overlapping goro
 		}
 	}
 	if r == nil {
-		r = &selectDummyPlan{flds: s.flds}
+		return &selectDummyPlan{flds: s.flds}, nil
 	}
 	if w := s.where; w != nil {
 		if r, err = (&whereRset{expr: w.expr, src: r, sel: w.sel, exists: w.exists}).plan(ctx); err != nil {
