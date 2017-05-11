@@ -268,7 +268,13 @@ func run(cfg *config, o *bufio.Writer, src string, db *ql.DB) (err error) {
 		return nil
 	}
 
-	src = "BEGIN TRANSACTION; " + src + "; COMMIT;"
+	src = strings.TrimSpace(src)
+
+	commit := "COMMIT;"
+	if !strings.HasSuffix(src, ";") {
+		commit = "; " + commit
+	}
+	src = "BEGIN TRANSACTION; " + src + commit
 	l, err := ql.Compile(src)
 	if err != nil {
 		log.Println(src)
@@ -292,9 +298,16 @@ func run(cfg *config, o *bufio.Writer, src string, db *ql.DB) (err error) {
 			return true, nil
 		})
 	default:
-		return rs[len(rs)-1].Do(cfg.flds, func(data []interface{}) (bool, error) {
-			fmt.Fprintln(o, str(data))
-			return true, nil
-		})
+		for _, rst := range rs {
+			err = rst.Do(cfg.flds, func(data []interface{}) (bool, error) {
+				fmt.Fprintln(o, str(data))
+				return true, nil
+			})
+			o.Flush()
+			if err != nil {
+				return
+			}
+		}
+		return
 	}
 }
