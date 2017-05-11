@@ -8400,8 +8400,6 @@ SELECT * FROM t WHERE c1 == 1;
 SELECT 42;
 ┌Selects values from dummy table
 └Output field names [""]
-┌Evaluate 42 as "",
-└Output field names [""]
 
 ---- 1348
 SELECT * FROM t WHERE  EXISTS ( SELECT * FROM t WHERE i == 2 ) ORDER BY i;

@@ -3682,3 +3682,43 @@ left join condition on condition.key == product_condkey;
 		}
 	}
 }
+
+func TestSleep(t *testing.T) {
+	db, err := OpenMem()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	// sleep with duration
+	rst, _, err := db.run(nil, "select sleep($1);", time.Second)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, rs := range rst {
+		_, err = rs.FirstRow()
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	// sleep with an int
+	rst, _, err = db.run(nil, "select sleep(5);")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, rs := range rst {
+		start := time.Now()
+		_, err := rs.FirstRow()
+		if err != nil {
+			t.Fatal(err)
+		}
+		end := time.Now().Sub(start)
+
+		// The duration should be 5 seconds
+		e := end.String()
+		if !strings.HasPrefix(e, "5.") {
+			t.Errorf("expected 5s got %s", e)
+		}
+	}
+}
