@@ -116,9 +116,33 @@ func (c *config) parse() {
 func do() (err error) {
 	cfg := &config{}
 	cfg.parse()
-	if cfg.help || flag.NArg() == 0 && !cfg.interactive {
+	if cfg.help {
 		flag.PrintDefaults()
 		return nil
+	}
+	if flag.NArg() == 0 && !cfg.interactive {
+
+		// Somehow we expect input to the ql tool.
+		// This will block trying to read input from stdin
+		b, err := ioutil.ReadAll(os.Stdin)
+		if err != nil || len(b) == 0 {
+			flag.PrintDefaults()
+			return nil
+		}
+		db, err := ql.OpenFile(cfg.db, &ql.Options{CanCreate: true})
+		if err != nil {
+			return err
+		}
+		defer func() {
+			ec := db.Close()
+			switch {
+			case ec != nil && err != nil:
+				log.Println(ec)
+			case ec != nil:
+				err = ec
+			}
+		}()
+		return run(cfg, bufio.NewWriter(os.Stdout), string(b), db)
 	}
 	db, err := ql.OpenFile(cfg.db, &ql.Options{CanCreate: true})
 	if err != nil {
