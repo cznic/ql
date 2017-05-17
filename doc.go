@@ -1089,7 +1089,7 @@
 //
 // - Rational values are comparable and ordered, in the usual way.
 //
-// - String values are comparable and ordered, lexically byte-wise.
+// - String and Blob values are comparable and ordered, lexically byte-wise.
 //
 // - Time values are comparable and ordered.
 //

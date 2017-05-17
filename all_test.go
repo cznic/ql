@@ -3722,3 +3722,77 @@ func TestSleep(t *testing.T) {
 		}
 	}
 }
+
+func testBlobSize(t *testing.T, size int) {
+	db, err := sql.Open("ql-mem", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+
+	tx, err := db.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// create a table with the blob we want to compare
+	a := bytes.Repeat([]byte{'A'}, size)
+	b := bytes.Repeat([]byte{'B'}, size)
+	tableName := fmt.Sprintf("b%d", size)
+	_, err = tx.Exec(strings.Replace(`
+			BEGIN TRANSACTION;
+			CREATE TABLE tbl (a blob, b blob);
+			INSERT INTO tbl VALUES ($1, $2);
+			COMMIT;`, "tbl", tableName, -1), a, b)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err := tx.Commit(); err != nil {
+		t.Fatal(err)
+	}
+
+	// the operators we want to test, one if true, zero if false
+	stmts := `select count(*) from tbl where a = b;
+			select count(*) from tbl where a < b;
+			select count(*) from tbl where a > b;
+			select count(*) from tbl where a <= b;
+			select count(*) from tbl where a >= b;
+			select count(*) from tbl where a != b;`
+	stmts = strings.Replace(stmts, "tbl", tableName, -1)
+
+	var expected = []int{0, 1, 0, 1, 0, 1}
+	var result []int
+
+	// execute statements one by one and append the result
+	for _, q := range strings.Split(stmts, "\n") {
+		rows, err := db.Query(q)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		for rows.Next() {
+			var rv int
+			err = rows.Scan(&rv)
+			if err != nil {
+				t.Error(err)
+			}
+			result = append(result, rv)
+		}
+	}
+
+	// compare the result to what we expected
+	if reflect.DeepEqual(result, expected) == false {
+		t.Errorf("expected: %v, result: %v", expected, result)
+	}
+}
+
+func TestBlobCompare(t *testing.T) {
+	RegisterMemDriver()
+
+	// check the operators for the given sizes
+	sizes := []int{4, 128, 1024, 16384}
+	for _, size := range sizes {
+		testBlobSize(t, size)
+	}
+}
