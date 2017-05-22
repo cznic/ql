@@ -29,14 +29,20 @@ hex_digit = "0" … "9"
 	| "A" … "F"
 	| "a" … "f" .
 hex_lit = "0" ( "x" | "X" ) hex_digit { hex_digit } .
-identifier = letter { letter | decimal_digit } .
+identifier = letter {
+		  letter
+		| decimal_digit
+		| unicode_digit
+	  } .
 imaginary_lit = ( decimals | float_lit ) "i" .
 int_lit = decimal_lit
 	| octal_lit
 	| hex_lit .
 interpreted_string_lit = "\"" { unicode_value | byte_value } "\"" .
 le = "<=" .
-letter = ascii_letter | "_" .
+letter = ascii_letter
+	| unicode_letter
+	| "_" .
 little_u_value = "\\" "u" hex_digit hex_digit hex_digit hex_digit .
 lsh = "<<" .
 neq = "!=" .
@@ -51,6 +57,8 @@ rsh = ">>" .
 rune_lit = "'" ( unicode_value | byte_value ) "'" .
 string_lit = raw_string_lit | interpreted_string_lit .
 unicode_char = .
+unicode_digit = .
+unicode_letter = .
 unicode_value = unicode_char
 	| little_u_value
 	| big_u_value

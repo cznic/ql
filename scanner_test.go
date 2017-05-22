@@ -22,7 +22,7 @@ func tok2name(i int) string {
 	return fmt.Sprintf("tok-%d", i)
 }
 
-func TestScaner0(t *testing.T) {
+func TestScanner0(t *testing.T) {
 	table := []struct {
 		src                         string
 		tok, line, col, nline, ncol int
@@ -63,14 +63,20 @@ func TestScaner0(t *testing.T) {
 		{"2", intLit, 1, 1, 1, 2, "2"},
 		{"2.", floatLit, 1, 1, 1, 3, "2."},
 		{"2.3", floatLit, 1, 1, 1, 4, "2.3"},
+
+		{"ááá ", identifier, 1, 1, 1, 7, "ááá"},
 	}
 
 	lval := &yySymType{}
 	for i, test := range table {
-		l := newLexer(test.src)
+		l, err := newLexer(test.src)
+		if err != nil {
+			t.Fatal(err)
+		}
+
 		tok := l.Lex(lval)
 		nline, ncol := l.npos()
-		val := string(l.val)
+		val := string(l.TokenBytes(nil))
 		if tok != test.tok || l.line != test.line || l.col != test.col ||
 			nline != test.nline || ncol != test.ncol ||
 			val != test.val {

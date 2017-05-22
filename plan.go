@@ -1380,9 +1380,7 @@ func (r *explainDefaultPlan) do(ctx *execCtx, f func(id interface{}, data []inte
 	return nil
 }
 
-func (r *explainDefaultPlan) explain(w strutil.Formatter) {
-	return
-}
+func (r *explainDefaultPlan) explain(w strutil.Formatter) {}
 
 func (r *explainDefaultPlan) fieldNames() []string {
 	return []string{""}

@@ -829,7 +829,6 @@ func (t *xtree) extract(q *xd, i int) { // (r int64) {
 	}
 	q.xd[q.c] = zxde // GC
 	t.c--
-	return
 }
 
 func (t *xtree) find(q interface{}, k indexKey) (i int, ok bool) {
@@ -1050,7 +1049,6 @@ func (t *xtree) Set(k indexKey, v int) {
 
 	z := t.insert(&xd{}, 0, k, v)
 	t.r, t.first, t.last = z, z, z
-	return
 }
 
 func (t *xtree) split(p *xx, q *xd, pi, i int, k indexKey, v int) {

@@ -213,12 +213,14 @@
 //  newline        = . // the Unicode code point U+000A
 //  unicode_char   = . // an arbitrary Unicode code point except newline
 //  ascii_letter   = "a" … "z" | "A" … "Z" .
+//  unicode_letter = . // Unicode category L.
+//  unicode_digit  = . // Unocode category D.
 //
 // Letters and digits
 //
 // The underscore character _ (U+005F) is considered a letter.
 //
-//  letter        = ascii_letter | "_" .
+//  letter        = ascii_letter | unicode_letter | "_" .
 //  decimal_digit = "0" … "9" .
 //  octal_digit   = "0" … "7" .
 //  hex_digit     = "0" … "9" | "A" … "F" | "a" … "f" .
@@ -262,7 +264,7 @@
 // identifier is a sequence of one or more letters and digits. The first
 // character in an identifier must be a letter.
 //
-//  identifier = letter { letter | decimal_digit } .
+//  identifier = letter { letter | decimal_digit | unicode_digit } .
 //
 // For example
 //

@@ -169,7 +169,11 @@ func TestParser0(t *testing.T) {
 
 	for i, test := range table {
 		//dbg("%d ----\n%q\n----\n", i, test.src)
-		l := newLexer(test.src)
+		l, err := newLexer(test.src)
+		if err != nil {
+			t.Fatal(err)
+		}
+
 		ok := yyParse(l) == 0
 		if g, e := ok, test.ok; g != e {
 			if !ok {

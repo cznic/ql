@@ -758,8 +758,7 @@ func findCol(cols []*col, name string) (c *col) {
 }
 
 func (f *col) clone() *col {
-	var r col
-	r = *f
+	r := *f
 	r.constraint = f.constraint.clone()
 	if f.dflt != nil {
 		r.dflt, _ = r.dflt.clone(nil)
@@ -1091,29 +1090,41 @@ func (db *DB) run(ctx *TCtx, ql string, arg ...interface{}) (rs []Recordset, ind
 //
 // Compile is safe for concurrent use by multiple goroutines.
 func Compile(src string) (List, error) {
-	l := newLexer(src)
+	l, err := newLexer(src)
+	if err != nil {
+		return List{}, err
+	}
+
 	if yyParse(l) != 0 {
-		return List{}, l.errs[0]
+		return List{}, l.errs
 	}
 
 	return List{l.list, l.params}, nil
 }
 
 func compileExpr(src string) (expression, error) {
-	l := newLexer(src)
+	l, err := newLexer(src)
+	if err != nil {
+		return nil, err
+	}
+
 	l.inj = parseExpression
 	if yyParse(l) != 0 {
-		return nil, l.errs[0]
+		return nil, l.errs
 	}
 
 	return l.expr, nil
 }
 
 func compile(src string) (List, error) {
-	l := newLexer(src)
+	l, err := newLexer(src)
+	if err != nil {
+		return List{}, err
+	}
+
 	l.root = true
 	if yyParse(l) != 0 {
-		return List{}, l.errs[0]
+		return List{}, l.errs
 	}
 
 	return List{l.list, l.params}, nil

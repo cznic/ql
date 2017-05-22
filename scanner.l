@@ -1,100 +1,43 @@
-/*
-Copyright (c) 2014 The ql Authors. All rights reserved.
-Use of this source code is governed by a BSD-style
-license that can be found in the LICENSE file.
-*/
+%{
+// Copyright (c) 2014 The ql Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+%}
+
+%option case-insensitive
+%x S1 S2
+%yyc c
+%yym l.Mark()
+%yyn c = l.Next()
+%yyt l.sc
 
 %{
-
 package ql
 
 import (
-        "fmt"
-        "math"
-        "strconv"
-        "unicode"
+	"fmt"
+	"strconv"
 )
 
-type lexer struct {
-        agg    []bool
-        c      int
-        col    int
-        errs   []error
-	expr   expression
-        i      int
-	inj    int
-        lcol   int
-        line   int
-        list   []stmt
-        ncol   int
-        nline  int
-        params int
-        sc     int
-        src    string
-        val    []byte
-	root   bool
-}
-
-func newLexer(src string) (l *lexer) {
-        l = &lexer{
-                src:    src,
-                nline:  1,
-                ncol:   0,
-        }
-        l.next()
-        return
-}
-
-func (l *lexer) next() int {
-        if l.c != 0 {
-                l.val = append(l.val, byte(l.c))
-        }
-        l.c = 0
-        if l.i < len(l.src) {
-                l.c = int(l.src[l.i])
-                l.i++
-        }
-        switch l.c {
-        case '\n':
-                l.lcol = l.ncol
-                l.nline++
-                l.ncol = 0
-        default:
-                l.ncol++
-        }
-        return l.c
-}
-
-func (l *lexer) err0(ln, c int, s string, arg ...interface{}) {
-        err := fmt.Errorf(fmt.Sprintf("%d:%d ", ln, c)+s, arg...)
-        l.errs = append(l.errs, err)
-}
-
-func (l *lexer) err(s string, arg ...interface{}) {
-        l.err0(l.line, l.col, s, arg...)
-}
-
-func (l *lexer) Error(s string) {
-        l.err(s)
-}
-
+// Implements yyLexer.
 func (l *lexer) Lex(lval *yySymType) (r int) {
-        //defer func() { dbg("Lex -> %d(%#x)", r, r) }()
-        defer func() {
-                lval.line, lval.col = l.line, l.col
-        }()
-        const (
+	const (
                 INITIAL = iota
                 S1
                 S2
         )
-
 	if n := l.inj; n != 0 {
 		l.inj = 0
 		return n
 	}
 
-        c0, c := 0, l.c
+	defer func() {
+		pos := l.file.Position(l.First.Pos())
+		l.line = pos.Line
+		l.col = pos.Column
+		lval.line, lval.col = l.line, l.col
+	}()
+	c := l.Enter()
 %}
 
 int_lit         {decimal_lit}|{octal_lit}|{hex_lit}
@@ -103,8 +46,8 @@ octal_lit       0[0-7]*
 hex_lit         0[xX][0-9a-fA-F]+
 
 float_lit       {D}"."{D}?{E}?|{D}{E}|"."{D}{E}?
-D                [0-9]+
-E                [eE][-+]?[0-9]+
+D               [0-9]+
+E               [eE][-+]?[0-9]+
 
 imaginary_ilit  {D}i
 imaginary_lit   {float_lit}i
@@ -203,21 +146,14 @@ string          {s}{t}{r}{i}{n}{g}
 time            {t}{i}{m}{e}
 uint            {u}{i}{n}{t}
 
-idchar0         [a-zA-Z_]
-idchars         {idchar0}|[0-9]
+idchar0         [a-zA-Z_\x81]
+idchars         {idchar0}|[0-9\x82]
 ident           {idchar0}{idchars}*
 
-%yyc c
-%yyn c = l.next()
-%yyt l.sc
-
-%x S1 S2
-
 %%
-                        l.val = l.val[:0]
-                        c0, l.line, l.col = l.c, l.nline, l.ncol
+			c = l.Rule0()
                         
-<*>\0                   return 0
+<*>\x80                 return 0
 
 [ \t\n\r]+
 --.*
@@ -241,15 +177,15 @@ ident           {idchar0}{idchars}*
 <S1>(\\.|[^\"])*\"      return l.str(lval, "\"")
 <S2>([^`]|\n)*`         return l.str(lval, "`")
 
+"!="                    return neq
 "&&"                    return andand
 "&^"                    return andnot
 "<<"                    return lsh
 "<="                    return le
 "=="                    return eq
 ">="                    return ge
-"!="                    return neq
-"||"                    return oror
 ">>"                    return rsh
+"||"                    return oror
 
 {add}                   return add
 {alter}                 return alter
@@ -385,78 +321,17 @@ ident           {idchar0}{idchars}*
 {uint}8                 lval.item = qUint8
                         return uint8Type
 
-{ident}                 lval.item = string(l.val)
+{ident}                 lval.item = string(l.TokenBytes(nil))
                         return identifier
 
-($|\?){D}               lval.item, _ = strconv.Atoi(string(l.val[1:]))
-                        return qlParam
-
-.                       return c0
+($|\?){D}               lval.item, _ = strconv.Atoi(string(l.TokenBytes(nil)[1:]))
+			return qlParam
 
 %%
-                        return int(unicode.ReplacementChar)
+	if c, ok := l.Abort(); ok {
+		return c
+	}
+
+	goto yyAction
 }
 
-func (l *lexer) npos() (line, col int) {
-        if line, col = l.nline, l.ncol; col == 0 {
-                line--
-                col = l.lcol+1
-        }
-        return
-} 
-
-func (l *lexer) str(lval *yySymType, pref string) int {
-        l.sc = 0
-        s := pref + string(l.val)
-        s, err := strconv.Unquote(s)
-        if err != nil {
-                l.err("string literal: %v", err)
-                return int(unicode.ReplacementChar)
-        }
-
-        lval.item = s
-        return stringLit
-}
-
-func (l *lexer) int(lval *yySymType, im bool) int {
-        if im {
-                l.val = l.val[:len(l.val)-1]
-        }
-        n, err := strconv.ParseUint(string(l.val), 0, 64)
-        if err != nil {
-                l.err("integer literal: %v", err)
-                return int(unicode.ReplacementChar)
-        }
-
-        if im {
-                lval.item = idealComplex(complex(0, float64(n)))
-                return imaginaryLit
-        }
-
-        switch {
-        case n < math.MaxInt64:
-                lval.item = idealInt(n)
-        default:
-                lval.item = idealUint(n)
-        }
-        return intLit
-}
-
-func (l *lexer) float(lval *yySymType, im bool) int {
-        if im {
-                l.val = l.val[:len(l.val)-1]
-        }
-        n, err := strconv.ParseFloat(string(l.val), 64)
-        if err != nil {
-                l.err("float literal: %v", err)
-                return int(unicode.ReplacementChar)
-        }
-
-        if im {
-                lval.item = idealComplex(complex(0, n))
-                return imaginaryLit
-        }
-
-        lval.item = idealFloat(n)
-        return floatLit
-}

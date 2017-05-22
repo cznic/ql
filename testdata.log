@@ -8439,3 +8439,10 @@ SELECT * FROM t WHERE true ORDER BY i;
 ┌Order by i,
 └Output field names ["i"]
 
+---- 1354
+SELECT * FROM t ORDER BY á;
+┌Iterate all rows of table "t"
+└Output field names ["á"]
+┌Order by á,
+└Output field names ["á"]
+

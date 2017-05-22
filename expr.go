@@ -783,7 +783,7 @@ func (o *binaryOperation) eval(execCtx *execCtx, ctx map[interface{}]interface{}
 		case []byte:
 			switch y := b.(type) {
 			case []byte:
-				return bytes.Compare(x, y) == 0, nil
+				return bytes.Equal(x, y), nil
 			default:
 				return invOp2(x, y, op)
 			}
@@ -1435,7 +1435,7 @@ func (o *binaryOperation) eval(execCtx *execCtx, ctx map[interface{}]interface{}
 		case []byte:
 			switch y := b.(type) {
 			case []byte:
-				return bytes.Compare(x, y) != 0, nil
+				return !bytes.Equal(x, y), nil
 			default:
 				return invOp2(x, y, op)
 			}
@@ -1613,7 +1613,7 @@ func (o *binaryOperation) eval(execCtx *execCtx, ctx map[interface{}]interface{}
 		case []byte:
 			switch y := b.(type) {
 			case []byte:
-				return bytes.Compare(x, y) == 0, nil
+				return bytes.Equal(x, y), nil
 			default:
 				return invOp2(x, y, op)
 			}

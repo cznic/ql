@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"crypto/md5"
 	"database/sql"
+	"flag"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -35,7 +36,8 @@ const benchScale = 1e6
 func init() {
 	log.SetFlags(log.Flags() | log.Lshortfile)
 	isTesting = true
-	use(dieHard, caller, dumpTables2, dumpTables3, dumpFields, dumpFlds, dumpCols, typeof, stypeof)
+	use(dieHard, caller, (*DB).dumpTables, dumpTables2, dumpTables3, dumpFields, dumpFlds, dumpCols, fldsString, typeof, stypeof)
+	flag.IntVar(&yyDebug, "yydebug", 0, "")
 }
 
 func dieHard(exitValue int) {
@@ -2273,7 +2275,6 @@ CREATE INDEX IF NOT EXISTS bIdx ON Test (B);
 	}
 
 	tx.Rollback()
-	return
 }
 
 func TestRecordSetRows(t *testing.T) {
@@ -3713,7 +3714,7 @@ func TestSleep(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		end := time.Now().Sub(start)
+		end := time.Since(start)
 
 		// The duration should be 5 seconds
 		e := end.String()
@@ -3782,7 +3783,7 @@ func testBlobSize(t *testing.T, size int) {
 	}
 
 	// compare the result to what we expected
-	if reflect.DeepEqual(result, expected) == false {
+	if !reflect.DeepEqual(result, expected) {
 		t.Errorf("expected: %v, result: %v", expected, result)
 	}
 }

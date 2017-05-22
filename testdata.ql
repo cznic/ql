@@ -15741,3 +15741,16 @@ SELECT * FROM t WHERE true ORDER BY i
 [1]
 [2]
 [3]
+
+-- 1354 // https://github.com/cznic/ql/issues/176
+BEGIN TRANSACTION;
+	CREATE TABLE t (á int);
+	INSERT INTO t VALUES (1);
+	INSERT INTO t VALUES (2);
+	INSERT INTO t VALUES (3);
+COMMIT;
+SELECT * FROM t ORDER BY á
+|"á"
+[1]
+[2]
+[3]
