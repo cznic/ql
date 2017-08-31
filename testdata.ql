@@ -15754,3 +15754,12 @@ SELECT * FROM t ORDER BY á
 [1]
 [2]
 [3]
+
+-- 1355 // https://github.com/cznic/ql/issues/187
+BEGIN TRANSACTION;
+	CREATE TABLE t (b string, c string);
+	ALTER TABLE t DROP COLUMN b;
+	CREATE INDEX d ON t (c);
+COMMIT;
+SELECT * FROM t;
+|"c"
