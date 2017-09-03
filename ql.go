@@ -985,7 +985,7 @@ func (db *DB) createIndex2() error {
 
 			expr := "id()"
 			if i != 0 {
-				expr = t.cols[i-1].name
+				expr = t.cols0[i-1].name
 			}
 
 			if err := db.insertIndex2(t.name, index.name, []string{expr}, index.unique, true, index.xroot); err != nil {

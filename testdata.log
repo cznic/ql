@@ -8446,3 +8446,8 @@ SELECT * FROM t ORDER BY á;
 ┌Order by á,
 └Output field names ["á"]
 
+---- 1355
+SELECT * FROM t;
+┌Iterate all rows of table "t"
+└Output field names ["c"]
+
