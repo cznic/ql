@@ -15754,3 +15754,24 @@ SELECT * FROM t ORDER BY á
 [1]
 [2]
 [3]
+
+-- 1355 // https://github.com/cznic/ql/issues/187
+BEGIN TRANSACTION;
+	CREATE TABLE t (b string, c string);
+	ALTER TABLE t DROP COLUMN b;
+	CREATE INDEX d ON t (c);
+COMMIT;
+SELECT * FROM t;
+|"c"
+
+-- 1356 // https://github.com/cznic/ql/issues/188
+BEGIN TRANSACTION;
+    CREATE TABLE t (b string, c string);
+    CREATE INDEX bx ON t (b);
+    ALTER TABLE t DROP COLUMN b;
+    CREATE INDEX cx ON t (c);
+    INSERT INTO t (c) VALUES ("abc");
+COMMIT;
+SELECT c FROM t WHERE c = "abc";
+|"c"
+[abc]

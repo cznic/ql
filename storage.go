@@ -330,7 +330,7 @@ func (t *table) findIndexByColName(name string) (*col, *indexedCol) {
 			continue
 		}
 
-		if c := t.cols[i-1]; c.name == name {
+		if c := t.cols0[i-1]; c.name == name {
 			return c, v
 		}
 	}
@@ -784,7 +784,11 @@ func (t *table) row(ctx *execCtx, h int64) (int64, []interface{}, error) {
 		return -1, nil, err
 	}
 
-	return rec[1].(int64), rec[2:], nil
+	id := rec[1].(int64)
+	for i, c := range t.cols {
+		rec[i] = rec[c.index+2]
+	}
+	return id, rec[:len(t.cols)], nil
 }
 
 // storage fields
