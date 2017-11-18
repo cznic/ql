@@ -2,7 +2,6 @@ package driver
 
 import (
 	"database/sql"
-	"fmt"
 	"testing"
 )
 
@@ -48,16 +47,10 @@ type position struct {
 	Comment     string
 }
 
+// Both of the UPDATEs _should_ work but the 2nd one results in a _type missmatch_ error at the time of writing.
 func TestArgumentOrder(t *testing.T) {
 	db, err := sql.Open("ql-mem", "mem.test")
 	check(err, t)
-
-	var pos position
-	pos.Y = 0.1
-	pos.Z = 0.2
-	pos.Alpha = 0.3
-	pos.Beta = 0.4
-	pos.Comment = "small"
 
 	// prepare db
 	tx, err := db.Begin()
@@ -67,11 +60,10 @@ func TestArgumentOrder(t *testing.T) {
 	insStmt, err := tx.Prepare(dbPositionInsert)
 	check(err, t)
 	defer insStmt.Close()
-	res, err := insStmt.Exec(pos.Y, pos.Z, pos.Alpha, pos.Beta, pos.Comment)
+	res, err := insStmt.Exec(0.1, 0.2, 0.3, 0.4, "hello ql")
 	check(err, t)
 	pid, err := res.LastInsertId()
 	check(err, t)
-	pos.ID = pid
 	err = tx.Commit()
 	check(err, t)
 
@@ -81,14 +73,14 @@ func TestArgumentOrder(t *testing.T) {
 	stmt, err := tx.Prepare(dbPositionUpdate)
 	check(err, t)
 	defer stmt.Close()
-	res, err = stmt.Exec(pos.Y, pos.Z, pos.Alpha, pos.Beta, pos.Comment, pos.ID)
+	res, err = stmt.Exec(0.01, 0.02, 0.03, 0.04, "hello QL", pid)
 	check(err, t)
 	cnt, err := res.RowsAffected()
 	check(err, t)
 	err = tx.Commit()
 	check(err, t)
 	if cnt != 1 {
-		fmt.Printf("affected: %d\n", cnt)
+		t.Logf("affected: %d\n", cnt)
 	}
 
 	// confusing
@@ -97,14 +89,14 @@ func TestArgumentOrder(t *testing.T) {
 	stmt, err = tx.Prepare(dbPositionUpdateTypeMissmatch)
 	check(err, t)
 	defer stmt.Close()
-	res, err = stmt.Exec(pos.ID, pos.Comment, pos.Y, pos.Z, pos.Alpha, pos.Beta)
+	res, err = stmt.Exec(pid, "HELLO ql", 1.05, 2.05, 3.05, 4.05)
 	check(err, t)
 	cnt, err = res.RowsAffected()
 	check(err, t)
 	err = tx.Commit()
 	check(err, t)
 	if cnt != 1 {
-		fmt.Printf("affected: %d\n", cnt)
+		t.Logf("affected: %d\n", cnt)
 	}
 
 	check(db.Close(), t)
