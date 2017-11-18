@@ -7,10 +7,7 @@ import (
 
 const (
 	dbPositionCreateTable = `CREATE TABLE Positions (
-	Y float64,
-	Z float64,
-	Alpha float64,
-	Beta float64,
+	Number float64,
 	Comment string
 );
 CREATE INDEX PositionId on Positions (id());`
@@ -18,20 +15,18 @@ CREATE INDEX PositionId on Positions (id());`
 	dbPositionUpdate = `
 		UPDATE Positions
 		SET
-			Y = $1, Z = $2,
-			Alpha = $3,	Beta = $4,
-			Comment = $5
-		WHERE id() == $6;`
+			Number = $1,
+			Comment = $2
+		WHERE id() == $3;`
 
 	dbPositionUpdateTypeMissmatch = `
 		UPDATE Positions
 		SET
 			Comment = $2,
-			Y = $3, Z = $4,
-			Alpha = $5,	Beta = $6
+			Number = $3
 		WHERE id() == $1;`
 
-	dbPositionInsert = `INSERT INTO Positions (Y,Z,Alpha,Beta,Comment) VALUES($1,$2,$3,$4,$5);`
+	dbPositionInsert = `INSERT INTO Positions (Number,Comment) VALUES($1,$2);`
 )
 
 // Both of the UPDATEs _should_ work but the 2nd one results in a _type missmatch_ error at the time of writing.
@@ -55,7 +50,7 @@ func TestArgumentOrder(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer insStmt.Close()
-	res, err := insStmt.Exec(0.1, 0.2, 0.3, 0.4, "hello ql")
+	res, err := insStmt.Exec(0.1, "hello ql")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -78,7 +73,7 @@ func TestArgumentOrder(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer stmt.Close()
-	res, err = stmt.Exec(0.01, 0.02, 0.03, 0.04, "hello QL", pid)
+	res, err = stmt.Exec(0.01, "hello QL", pid)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -104,7 +99,7 @@ func TestArgumentOrder(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer stmt.Close()
-	res, err = stmt.Exec(pid, "HELLO ql", 1.05, 2.05, 3.05, 4.05)
+	res, err = stmt.Exec(pid, "HELLO ql", 4.05)
 	if err != nil {
 		t.Fatal(err)
 	}
