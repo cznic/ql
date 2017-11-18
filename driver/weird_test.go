@@ -5,32 +5,9 @@ import (
 	"testing"
 )
 
-const (
-	dbPositionCreateTable = `CREATE TABLE Positions (
-	Number float64,
-	Comment string
-);
-CREATE INDEX PositionId on Positions (id());`
-
-	dbPositionUpdate = `
-		UPDATE Positions
-		SET
-			Number = $1,
-			Comment = $2
-		WHERE id() == $3;`
-
-	dbPositionUpdateTypeMissmatch = `
-		UPDATE Positions
-		SET
-			Comment = $2,
-			Number = $3
-		WHERE id() == $1;`
-
-	dbPositionInsert = `INSERT INTO Positions (Number,Comment) VALUES($1,$2);`
-)
-
 // Both of the UPDATEs _should_ work but the 2nd one results in a _type missmatch_ error at the time of writing.
-func TestArgumentOrder(t *testing.T) {
+// see https://github.com/cznic/ql/issues/190
+func TestIssue190(t *testing.T) {
 	db, err := sql.Open("ql-mem", "mem.test")
 	if err != nil {
 		t.Fatal(err)
@@ -41,11 +18,16 @@ func TestArgumentOrder(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, err = tx.Exec(dbPositionCreateTable)
+	const createStmt = `CREATE TABLE issue190 (
+	Number float64,
+	Comment string
+); `
+	_, err = tx.Exec(createStmt)
 	if err != nil {
 		t.Fatal(err)
 	}
-	insStmt, err := tx.Prepare(dbPositionInsert)
+	const insertStmt = `INSERT INTO issue190 (Number,Comment) VALUES($1,$2);`
+	insStmt, err := tx.Prepare(insertStmt)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -68,7 +50,13 @@ func TestArgumentOrder(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	stmt, err := tx.Prepare(dbPositionUpdate)
+	const updateWorks = `
+		UPDATE issue190
+		SET
+			Number = $1,
+			Comment = $2
+		WHERE id() == $3;`
+	stmt, err := tx.Prepare(updateWorks)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -86,7 +74,7 @@ func TestArgumentOrder(t *testing.T) {
 		t.Fatal(err)
 	}
 	if cnt != 1 {
-		t.Logf("affected: %d\n", cnt)
+		t.Errorf("affected: %d\n", cnt)
 	}
 
 	// confusing
@@ -94,7 +82,13 @@ func TestArgumentOrder(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	stmt, err = tx.Prepare(dbPositionUpdateTypeMissmatch)
+	const updateWithTypeMissmatch = `
+		UPDATE issue190
+		SET
+			Comment = $2,
+			Number = $3
+		WHERE id() == $1;`
+	stmt, err = tx.Prepare(updateWithTypeMissmatch)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -112,10 +106,10 @@ func TestArgumentOrder(t *testing.T) {
 		t.Fatal(err)
 	}
 	if cnt != 1 {
-		t.Logf("affected: %d\n", cnt)
+		t.Errorf("affected: %d\n", cnt)
 	}
 
-	if err != nil {
+	if err := db.Close(); err != nil {
 		t.Fatal(err)
 	}
 }
