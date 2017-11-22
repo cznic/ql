@@ -324,7 +324,11 @@ ident           {idchar0}{idchars}*
 {ident}                 lval.item = string(l.TokenBytes(nil))
                         return identifier
 
-($|\?){D}               lval.item, _ = strconv.Atoi(string(l.TokenBytes(nil)[1:]))
+($|\?)({D}|{ident})     s := string(l.TokenBytes(nil)[1:])
+			lval.item, _ = strconv.Atoi(s)
+			if s != "" && s[0] < '1' || s[0] > '9' {
+				l.err("parameter number must be non zero")
+			}
 			return qlParam
 
 %%

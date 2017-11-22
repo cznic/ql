@@ -84,9 +84,9 @@ func TestNamedArgs(t *testing.T) {
 
 	rows, err := db.QueryContext(
 		context.Background(),
-		`select $one;select $two;select $three;`,
-		sql.Named("one", 1),
-		sql.Named("two", 2),
+		`select $two;select $one;select $three;`,
+		sql.Named("one", 2),
+		sql.Named("two", 1),
 		sql.Named("three", 3),
 	)
 	if err != nil {
@@ -119,21 +119,25 @@ func TestNamedArgs(t *testing.T) {
 	}{
 		{
 			`select $one;select $two;select $three;`,
-			`select $1;select $2;select $3;`,
+			`select $1 ; select $2 ; select $3 ;`,
 		},
 		{
 			`select * from foo where t=$1`,
-			`select * from foo where t=$1`,
+			`select * from foo where t = $1`,
 		},
 		{
 			`select * from foo where t=$1&&name=$name`,
-			`select * from foo where t=$1&&name=$2`,
+			`select * from foo where t = $1 && name = $2`,
 		},
 	}
 	for _, s := range samples {
-		e := filterNamedArgs(s.src)
+		e, err := filterNamedArgs(s.src)
+		if err != nil {
+			t.Fatal(err)
+		}
+
 		if e != s.exp {
-			t.Errorf("expected %s got %s", s.exp, e)
+			t.Errorf("\nexpected %q\n     got %q", s.exp, e)
 		}
 	}
 

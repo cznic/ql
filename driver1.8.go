@@ -6,53 +6,99 @@ import (
 	"context"
 	"database/sql/driver"
 	"fmt"
+	"strconv"
 	"strings"
-
-	"regexp"
 )
 
 const prefix = "$"
 
 func (c *driverConn) ExecContext(ctx context.Context, query string, args []driver.NamedValue) (driver.Result, error) {
-	return c.Exec(replaceNamed(query, args))
+	query, vals, err := replaceNamed(query, args)
+	if err != nil {
+		return nil, err
+	}
+
+	return c.Exec(query, vals)
 }
 
-func replaceNamed(query string, args []driver.NamedValue) (string, []driver.Value) {
-	a := make([]driver.Value, len(args))
-	for k, v := range args {
-		if v.Name != "" {
-			query = strings.Replace(query, prefix+v.Name, fmt.Sprintf("%s%d", prefix, v.Ordinal), -1)
-		}
-		a[k] = v.Value
+func replaceNamed(query string, args []driver.NamedValue) (string, []driver.Value, error) {
+	toks, err := tokenize(query)
+	if err != nil {
+		return "", nil, err
 	}
-	return query, a
+
+	a := make([]driver.Value, len(args))
+	m := map[string]int{}
+	for _, v := range args {
+		m[v.Name] = v.Ordinal
+		a[v.Ordinal-1] = v.Value
+	}
+	for i, v := range toks {
+		if len(v) > 1 && strings.HasPrefix(v, prefix) {
+			if v[1] >= '1' && v[1] <= '9' {
+				continue
+			}
+
+			nm := v[1:]
+			k, ok := m[nm]
+			if !ok {
+				return query, nil, fmt.Errorf("unknown named parameter %s", nm)
+			}
+
+			toks[i] = fmt.Sprintf("$%d", k)
+		}
+	}
+	return strings.Join(toks, " "), a, nil
 }
 
 func (c *driverConn) QueryContext(ctx context.Context, query string, args []driver.NamedValue) (driver.Rows, error) {
-	return c.Query(replaceNamed(query, args))
+	query, vals, err := replaceNamed(query, args)
+	if err != nil {
+		return nil, err
+	}
+
+	return c.Query(query, vals)
 }
 
 func (c *driverConn) PrepareContext(ctx context.Context, query string) (driver.Stmt, error) {
-	return c.Prepare(filterNamedArgs(query))
+	query, err := filterNamedArgs(query)
+	if err != nil {
+		return nil, err
+	}
+
+	return c.Prepare(query)
 }
 
-var re = regexp.MustCompile(`^\w+`)
+func filterNamedArgs(query string) (string, error) {
+	toks, err := tokenize(query)
+	if err != nil {
+		return "", err
+	}
 
-func filterNamedArgs(q string) string {
-	c := strings.Count(q, prefix)
-	if c == 0 || c == len(q) {
-		return q
-	}
-	pc := strings.Split(q, prefix)
-	for k, v := range pc {
-		if k == 0 {
-			continue
+	n := 0
+	for _, v := range toks {
+		if len(v) > 1 && strings.HasPrefix(v, prefix) && v[1] >= '1' && v[1] <= '9' {
+			m, err := strconv.ParseUint(v[1:], 10, 31)
+			if err != nil {
+				return "", err
+			}
+
+			if int(m) > n {
+				n = int(m)
+			}
 		}
-		if v != "" {
-			pc[k] = re.ReplaceAllString(v, fmt.Sprint(k))
+	}
+	for i, v := range toks {
+		if len(v) > 1 && strings.HasPrefix(v, prefix) {
+			if v[1] >= '1' && v[1] <= '9' {
+				continue
+			}
+
+			n++
+			toks[i] = fmt.Sprintf("$%d", n)
 		}
 	}
-	return strings.Join(pc, prefix)
+	return strings.Join(toks, " "), nil
 }
 
 func (s *driverStmt) ExecContext(ctx context.Context, args []driver.NamedValue) (driver.Result, error) {
@@ -69,4 +115,26 @@ func (s *driverStmt) QueryContext(ctx context.Context, args []driver.NamedValue)
 		a[k] = v.Value
 	}
 	return s.Query(a)
+}
+
+func tokenize(s string) (r []string, _ error) {
+	lx, err := newLexer(s)
+	if err != nil {
+		return nil, err
+	}
+
+	var lval yySymType
+	for lx.Lex(&lval) != 0 {
+		s := string(lx.TokenBytes(nil))
+		if s != "" {
+			switch s[len(s)-1] {
+			case '"':
+				s = "\"" + s
+			case '`':
+				s = "`" + s
+			}
+		}
+		r = append(r, s)
+	}
+	return r, nil
 }

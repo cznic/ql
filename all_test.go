@@ -3444,6 +3444,23 @@ func TestIssue142(t *testing.T) {
 	}
 }
 
+func TestTokenize(t *testing.T) {
+	toks, err := tokenize("\"a$1\" `a$2` $3 $x $x_Yřa 'z' 3+6 -- foo\nbar")
+	if err != nil {
+		t.Fatal(err)
+	}
+	exp := []string{"\"a$1\"", "`a$2`", "$3", "$x", "$x_Yřa", "'z'", "3", "+", "6", "bar"}
+	if g, e := len(toks), len(exp); g != e {
+		t.Fatalf("\ngot %q\nexp %q", toks, exp)
+	}
+
+	for i, g := range toks {
+		if e := exp[i]; g != e {
+			t.Fatalf("\not %q\nexp %q", toks, exp)
+		}
+	}
+}
+
 // Both of the UPDATEs _should_ work but the 2nd one results in a _type missmatch_ error at the time of writing.
 // see https://github.com/cznic/ql/issues/190
 func TestIssue190(t *testing.T) {

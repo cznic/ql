@@ -134,6 +134,8 @@ const (
 )
 
 var (
+	yyPrec = map[int]int{}
+
 	yyXLAT = map[int]int{
 		59:    0,   // ';' (204x)
 		57344: 1,   // $end (203x)
@@ -1700,7 +1702,7 @@ func yySymName(c int) (s string) {
 	}
 
 	if c < 0x7f {
-		return __yyfmt__.Sprintf("'%c'", c)
+		return __yyfmt__.Sprintf("%q", c)
 	}
 
 	return __yyfmt__.Sprintf("%d", c)
