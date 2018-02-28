@@ -213,6 +213,10 @@ func (t *table) checkConstraintsAndDefaults(ctx *execCtx, row []interface{}, m m
 
 		// 2.
 		for i, c := range cols {
+			if i >= len(t.defaults) {
+				break
+			}
+
 			val := row[c.index]
 			expr := t.defaults[i]
 			if val != nil || expr == nil {
@@ -239,6 +243,10 @@ func (t *table) checkConstraintsAndDefaults(ctx *execCtx, row []interface{}, m m
 
 		// 4.
 		for i, c := range cols {
+			if i >= len(t.constraints) {
+				break
+			}
+
 			constraint := t.constraints[i]
 			if constraint == nil {
 				continue

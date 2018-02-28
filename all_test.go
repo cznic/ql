@@ -3925,3 +3925,27 @@ func TestBlobCompare(t *testing.T) {
 		testBlobSize(t, size)
 	}
 }
+
+// https://github.com/cznic/ql/issues/195
+func TestIssue195(t *testing.T) {
+	db, err := OpenMem()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	ctx := NewRWCtx()
+	_, index, err := db.Run(ctx, `
+		BEGIN TRANSACTION;
+		CREATE TABLE users(
+			firstname string NOT NULL,
+			lastname string NOT NULL,
+			createdAt time NOT NULL DEFAULT now(),
+		);
+		ALTER TABLE users ADD username string;
+		INSERT INTO users(username,firstname,lastname) values("john_doe","john","doe");
+		COMMIT;
+	`)
+	if err != nil {
+		t.Fatal(err, " index :", index)
+	}
+}
