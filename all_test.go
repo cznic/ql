@@ -3990,4 +3990,35 @@ func TestBuilder(t *testing.T) {
 		t.Fatalf("\ngot: %v\nexp: %v", g, e)
 	}
 
+	for i, v := range []struct {
+		email, name, age interface{}
+		e                string
+	}{
+		{"e", "n", 16, `SELECT * FROM users WHERE email == "e" && name == "n" && age == 16;`},
+		{"e", "n", nil, `SELECT * FROM users WHERE email == "e" && name == "n";`},
+		{"e", nil, 16, `SELECT * FROM users WHERE email == "e" && age == 16;`},
+		{"e", nil, nil, `SELECT * FROM users WHERE email == "e";`},
+		{nil, "n", 16, `SELECT * FROM users WHERE name == "n" && age == 16;`},
+		{nil, "n", nil, `SELECT * FROM users WHERE name == "n";`},
+		{nil, nil, 16, `SELECT * FROM users WHERE age == 16;`},
+		{nil, nil, nil, `SELECT * FROM users;`},
+	} {
+		var e *Expression
+		if v.email != nil {
+			e = e.And(NewExpression("email").Equal(v.email))
+		}
+		if v.name != nil {
+			e = e.And(NewExpression("name").Equal(v.name))
+		}
+		if v.age != nil {
+			e = e.And(NewExpression("age").Equal(v.age))
+		}
+		if query, err = users.Where(e).Compile(); err != nil {
+			t.Fatal(i, v)
+		}
+
+		if g, e := strings.TrimSpace(query.String()), v.e; g != e {
+			t.Fatalf("#%v\ngot: %v\nexp: %v", i, g, e)
+		}
+	}
 }

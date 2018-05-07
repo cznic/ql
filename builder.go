@@ -95,6 +95,10 @@ func (e *Expression) Shr(f interface{}) *Expression    { return e.binop(">>", f)
 func (e *Expression) Sub(f interface{}) *Expression    { return e.binop("-", f) }
 
 func (e *Expression) str(b *bytes.Buffer) {
+	if e == nil {
+		return
+	}
+
 	for _, v := range e.s {
 		b.WriteString(v)
 		b.WriteByte(' ')
@@ -102,6 +106,10 @@ func (e *Expression) str(b *bytes.Buffer) {
 }
 
 func (e *Expression) binop(op string, f interface{}) *Expression {
+	if e == nil {
+		return newExpression(f)
+	}
+
 	e.s = append(e.s, op)
 	switch x := f.(type) {
 	case *Expression:
@@ -118,8 +126,8 @@ type Field struct {
 	as   string
 }
 
-func NewField(expr *Expression, as string) *Field {
-	return &Field{expr: expr, as: as}
+func NewField(expr interface{}, as string) *Field {
+	return &Field{expr: newExpression(expr), as: as}
 }
 
 func (f *Field) str(b *bytes.Buffer) {
@@ -148,10 +156,26 @@ type SelectStmt struct {
 	whereNotExists bool
 }
 
-func NewSelectStmt(fields ...*Field) *SelectStmt {
+func NewSelectStmt(fields ...interface{}) *SelectStmt {
 	//  SelectStmt = "SELECT" [ "DISTINCT" ] ( "*" | FieldList ) [ "FROM" RecordSetList ]
 	//  	[ JoinClause ] [ WhereClause ] [ GroupByClause ] [ OrderBy ] [ Limit ] [ Offset ].
-	return &SelectStmt{fields: fields}
+	r := &SelectStmt{}
+	for _, v := range fields {
+		switch x := v.(type) {
+		case *Field:
+			r.fields = append(r.fields, x)
+		default:
+			r.fields = append(r.fields, NewField(v, ""))
+		}
+	}
+	return r
+}
+
+func newSelectStmt(fields []*Field) *SelectStmt {
+	//  SelectStmt = "SELECT" [ "DISTINCT" ] ( "*" | FieldList ) [ "FROM" RecordSetList ]
+	//  	[ JoinClause ] [ WhereClause ] [ GroupByClause ] [ OrderBy ] [ Limit ] [ Offset ].
+	r := &SelectStmt{fields: append([]*Field(nil), fields...)}
+	return r
 }
 
 func (s *SelectStmt) str(b *bytes.Buffer) {
@@ -260,14 +284,15 @@ func (s *SelectStmt) Compile() (List, error) {
 
 func (s *SelectStmt) Distinct() *SelectStmt {
 	//  [ "FROM" RecordSetList ]
-	t := NewSelectStmt(append([]*Field(nil), s.fields...)...)
+
+	t := newSelectStmt(s.fields)
 	t.distinct = true
 	return t
 }
 
 func (s *SelectStmt) From(list ...interface{}) *SelectStmt {
 	//  [ "FROM" RecordSetList ]
-	t := NewSelectStmt(append([]*Field(nil), s.fields...)...)
+	t := newSelectStmt(s.fields)
 	t.distinct = s.distinct
 	for _, v := range list {
 		var w RecordSet
@@ -284,7 +309,7 @@ func (s *SelectStmt) From(list ...interface{}) *SelectStmt {
 
 func (s *SelectStmt) Join(typ JoinType, outer bool, rs RecordSet, on interface{}) *SelectStmt {
 	//  JoinClause = ( "LEFT" | "RIGHT" | "FULL" ) [ "OUTER" ] "JOIN" RecordSet "ON" Expression .
-	t := NewSelectStmt(append([]*Field(nil), s.fields...)...)
+	t := newSelectStmt(s.fields)
 	t.distinct = s.distinct
 	t.from = append([]RecordSet(nil), s.from...)
 	t.joinType = typ
@@ -298,7 +323,7 @@ func (s *SelectStmt) Where(expr *Expression) *SelectStmt {
 	//  WhereClause = "WHERE" Expression
 	//  		| "WHERE" "EXISTS" "(" SelectStmt ")"
 	//  		| "WHERE" "NOT" "EXISTS" "(" SelectStmt ")" .
-	t := NewSelectStmt(append([]*Field(nil), s.fields...)...)
+	t := newSelectStmt(s.fields)
 	t.distinct = s.distinct
 	t.from = append([]RecordSet(nil), s.from...)
 	t.joinType = s.joinType
@@ -313,7 +338,7 @@ func (s *SelectStmt) WhereExists(not bool, sel *SelectStmt) *SelectStmt {
 	//  WhereClause = "WHERE" Expression
 	//  		| "WHERE" "EXISTS" "(" SelectStmt ")"
 	//  		| "WHERE" "NOT" "EXISTS" "(" SelectStmt ")" .
-	t := NewSelectStmt(append([]*Field(nil), s.fields...)...)
+	t := newSelectStmt(s.fields)
 	t.distinct = s.distinct
 	t.from = append([]RecordSet(nil), s.from...)
 	t.joinType = s.joinType
@@ -327,7 +352,7 @@ func (s *SelectStmt) WhereExists(not bool, sel *SelectStmt) *SelectStmt {
 
 func (s *SelectStmt) GroupBy(columns ...string) *SelectStmt {
 	//  GroupByClause = "GROUP BY" ColumnNameList .
-	t := NewSelectStmt(append([]*Field(nil), s.fields...)...)
+	t := newSelectStmt(s.fields)
 	t.distinct = s.distinct
 	t.from = append([]RecordSet(nil), s.from...)
 	t.joinType = s.joinType
@@ -343,7 +368,7 @@ func (s *SelectStmt) GroupBy(columns ...string) *SelectStmt {
 
 func (s *SelectStmt) OrderBy(descending bool, list ...*Expression) *SelectStmt {
 	//  OrderBy = "ORDER" "BY" ExpressionList [ "ASC" | "DESC" ] .
-	t := NewSelectStmt(append([]*Field(nil), s.fields...)...)
+	t := newSelectStmt(s.fields)
 	t.distinct = s.distinct
 	t.from = append([]RecordSet(nil), s.from...)
 	t.joinType = s.joinType
@@ -361,7 +386,7 @@ func (s *SelectStmt) OrderBy(descending bool, list ...*Expression) *SelectStmt {
 
 func (s *SelectStmt) Limit(expr interface{}) *SelectStmt {
 	//  Limit = "Limit" Expression .
-	t := NewSelectStmt(append([]*Field(nil), s.fields...)...)
+	t := newSelectStmt(s.fields)
 	t.distinct = s.distinct
 	t.from = append([]RecordSet(nil), s.from...)
 	t.joinType = s.joinType
@@ -380,7 +405,7 @@ func (s *SelectStmt) Limit(expr interface{}) *SelectStmt {
 
 func (s *SelectStmt) Offset(expr interface{}) *SelectStmt {
 	//  Offset = "OFFSET" Expression .
-	t := NewSelectStmt(append([]*Field(nil), s.fields...)...)
+	t := newSelectStmt(s.fields)
 	t.distinct = s.distinct
 	t.from = append([]RecordSet(nil), s.from...)
 	t.joinType = s.joinType
