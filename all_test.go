@@ -3949,3 +3949,45 @@ func TestIssue195(t *testing.T) {
 		t.Fatal(err, " index :", index)
 	}
 }
+
+// https://github.com/cznic/ql/issues/198
+func TestBuilder(t *testing.T) {
+	email := "jdoe@example.com"
+	name := "John"
+
+	users := NewSelectStmt().From("users")
+
+	query, err := users.Where(NewExpression("email").Equal(email).And(NewExpression("name").Equal(name))).Compile()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if g, e := strings.TrimSpace(query.String()), `SELECT * FROM users WHERE email == "jdoe@example.com" && name == "John";`; g != e {
+		t.Fatalf("\ngot: %v\nexp: %v", g, e)
+	}
+
+	if query, err = users.Where(NewExpression("name").Equal(name)).Compile(); err != nil {
+		t.Fatal(err)
+	}
+
+	if g, e := strings.TrimSpace(query.String()), `SELECT * FROM users WHERE name == "John";`; g != e {
+		t.Fatalf("\ngot: %v\nexp: %v", g, e)
+	}
+
+	if query, err = users.Compile(); err != nil {
+		t.Fatal(err)
+	}
+
+	if g, e := strings.TrimSpace(query.String()), `SELECT * FROM users;`; g != e {
+		t.Fatalf("\ngot: %v\nexp: %v", g, e)
+	}
+
+	if query, err = users.Where(NewExpression("email").Equal(email).And(NewExpression("name").Equal("Mary"))).Compile(); err != nil {
+		t.Fatal(err)
+	}
+
+	if g, e := strings.TrimSpace(query.String()), `SELECT * FROM users WHERE email == "jdoe@example.com" && name == "Mary";`; g != e {
+		t.Fatalf("\ngot: %v\nexp: %v", g, e)
+	}
+
+}
