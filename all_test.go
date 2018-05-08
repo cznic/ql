@@ -4006,6 +4006,14 @@ func TestBuilder(t *testing.T) {
 		t.Fatalf("\ngot: %v\nexp: %v", g, e)
 	}
 
+	if query, err = NewSelectStmt().From(NewSelectStmt().From("a"), NewSelectStmt().From("b")).Compile(); err != nil {
+		t.Fatal(err)
+	}
+
+	if g, e := strings.TrimSpace(query.String()), `SELECT * FROM (SELECT * FROM a;), (SELECT * FROM b;);`; g != e {
+		t.Fatalf("\ngot: %v\nexp: %v", g, e)
+	}
+
 	for i, v := range []struct {
 		email, name, age interface{}
 		e                string

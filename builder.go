@@ -11,11 +11,11 @@ import (
 )
 
 var (
-	_ RecordSet = (*SelectStmt)(nil)
-	_ RecordSet = (*Table)(nil)
+	_ RecordSetSource = (*SelectStmt)(nil)
+	_ RecordSetSource = (*Table)(nil)
 )
 
-type RecordSet interface {
+type RecordSetSource interface {
 	str(*bytes.Buffer)
 }
 
@@ -148,11 +148,11 @@ type SelectStmt struct {
 	distinct       bool
 	err            error
 	fields         []*Field
-	from           []RecordSet
+	from           []RecordSetSource
 	groupBy        []string
 	joinOn         *Expression
 	joinOuter      bool
-	joinRS         RecordSet
+	joinRS         RecordSetSource
 	joinType       JoinType
 	limit          *Expression
 	offset         *Expression
@@ -202,7 +202,16 @@ func (s *SelectStmt) str(b *bytes.Buffer) {
 	if len(s.from) != 0 {
 		b.WriteString("from ")
 		for _, v := range s.from {
-			v.str(b)
+			switch x := v.(type) {
+			case *Table:
+				x.str(b)
+			case *SelectStmt:
+				b.WriteString("(select ")
+				x.str(b)
+				b.WriteByte(')')
+			default:
+				panic(fmt.Errorf("%T(%v)", x, x))
+			}
 			b.WriteString(", ")
 		}
 	}
@@ -303,11 +312,11 @@ func (s *SelectStmt) From(list ...interface{}) *SelectStmt {
 	t := newSelectStmt(s.fields)
 	t.distinct = s.distinct
 	for _, v := range list {
-		var w RecordSet
+		var w RecordSetSource
 		switch x := v.(type) {
 		case string:
 			w = NewTable(x)
-		case RecordSet:
+		case RecordSetSource:
 			w = x
 		}
 		t.from = append(t.from, w)
@@ -315,11 +324,11 @@ func (s *SelectStmt) From(list ...interface{}) *SelectStmt {
 	return t
 }
 
-func (s *SelectStmt) Join(typ JoinType, outer bool, rs RecordSet, on interface{}) *SelectStmt {
+func (s *SelectStmt) Join(typ JoinType, outer bool, rs RecordSetSource, on interface{}) *SelectStmt {
 	//  JoinClause = ( "LEFT" | "RIGHT" | "FULL" ) [ "OUTER" ] "JOIN" RecordSet "ON" Expression .
 	t := newSelectStmt(s.fields)
 	t.distinct = s.distinct
-	t.from = append([]RecordSet(nil), s.from...)
+	t.from = append([]RecordSetSource(nil), s.from...)
 	t.joinType = typ
 	t.joinOuter = outer
 	t.joinRS = rs
@@ -333,7 +342,7 @@ func (s *SelectStmt) Where(expr *Expression) *SelectStmt {
 	//  		| "WHERE" "NOT" "EXISTS" "(" SelectStmt ")" .
 	t := newSelectStmt(s.fields)
 	t.distinct = s.distinct
-	t.from = append([]RecordSet(nil), s.from...)
+	t.from = append([]RecordSetSource(nil), s.from...)
 	t.joinType = s.joinType
 	t.joinOuter = s.joinOuter
 	t.joinRS = s.joinRS
@@ -348,7 +357,7 @@ func (s *SelectStmt) WhereExists(not bool, sel *SelectStmt) *SelectStmt {
 	//  		| "WHERE" "NOT" "EXISTS" "(" SelectStmt ")" .
 	t := newSelectStmt(s.fields)
 	t.distinct = s.distinct
-	t.from = append([]RecordSet(nil), s.from...)
+	t.from = append([]RecordSetSource(nil), s.from...)
 	t.joinType = s.joinType
 	t.joinOuter = s.joinOuter
 	t.joinRS = s.joinRS
@@ -362,7 +371,7 @@ func (s *SelectStmt) GroupBy(columns ...string) *SelectStmt {
 	//  GroupByClause = "GROUP BY" ColumnNameList .
 	t := newSelectStmt(s.fields)
 	t.distinct = s.distinct
-	t.from = append([]RecordSet(nil), s.from...)
+	t.from = append([]RecordSetSource(nil), s.from...)
 	t.joinType = s.joinType
 	t.joinOuter = s.joinOuter
 	t.joinRS = s.joinRS
@@ -378,7 +387,7 @@ func (s *SelectStmt) OrderBy(descending bool, list ...*Expression) *SelectStmt {
 	//  OrderBy = "ORDER" "BY" ExpressionList [ "ASC" | "DESC" ] .
 	t := newSelectStmt(s.fields)
 	t.distinct = s.distinct
-	t.from = append([]RecordSet(nil), s.from...)
+	t.from = append([]RecordSetSource(nil), s.from...)
 	t.joinType = s.joinType
 	t.joinOuter = s.joinOuter
 	t.joinRS = s.joinRS
@@ -396,7 +405,7 @@ func (s *SelectStmt) Limit(expr interface{}) *SelectStmt {
 	//  Limit = "Limit" Expression .
 	t := newSelectStmt(s.fields)
 	t.distinct = s.distinct
-	t.from = append([]RecordSet(nil), s.from...)
+	t.from = append([]RecordSetSource(nil), s.from...)
 	t.joinType = s.joinType
 	t.joinOuter = s.joinOuter
 	t.joinRS = s.joinRS
@@ -415,7 +424,7 @@ func (s *SelectStmt) Offset(expr interface{}) *SelectStmt {
 	//  Offset = "OFFSET" Expression .
 	t := newSelectStmt(s.fields)
 	t.distinct = s.distinct
-	t.from = append([]RecordSet(nil), s.from...)
+	t.from = append([]RecordSetSource(nil), s.from...)
 	t.joinType = s.joinType
 	t.joinOuter = s.joinOuter
 	t.joinRS = s.joinRS
