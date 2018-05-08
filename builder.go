@@ -127,7 +127,14 @@ type Field struct {
 }
 
 func NewField(expr interface{}, as string) *Field {
-	return &Field{expr: newExpression(expr), as: as}
+	switch x := expr.(type) {
+	case *Expression:
+		return &Field{expr: x, as: as}
+	case string:
+		return &Field{expr: NewExpression(x), as: as}
+	default:
+		panic("invalid field expression")
+	}
 }
 
 func (f *Field) str(b *bytes.Buffer) {
@@ -188,6 +195,7 @@ func (s *SelectStmt) str(b *bytes.Buffer) {
 	default:
 		for _, v := range s.fields {
 			v.str(b)
+			b.WriteString(", ")
 		}
 	}
 

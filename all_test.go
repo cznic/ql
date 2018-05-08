@@ -3990,6 +3990,22 @@ func TestBuilder(t *testing.T) {
 		t.Fatalf("\ngot: %v\nexp: %v", g, e)
 	}
 
+	if query, err = NewSelectStmt("id", "name").Where(NewExpression("email").Equal(email).And(NewExpression("name").Equal("Mary"))).Compile(); err != nil {
+		t.Fatal(err)
+	}
+
+	if g, e := strings.TrimSpace(query.String()), `SELECT id, name WHERE email == "jdoe@example.com" && name == "Mary";`; g != e {
+		t.Fatalf("\ngot: %v\nexp: %v", g, e)
+	}
+
+	if query, err = NewSelectStmt("id", NewField("name", "surname")).Where(NewExpression("email").Equal(email).And(NewExpression("name").Equal("Mary"))).Compile(); err != nil {
+		t.Fatal(err)
+	}
+
+	if g, e := strings.TrimSpace(query.String()), `SELECT id, name AS surname WHERE email == "jdoe@example.com" && name == "Mary";`; g != e {
+		t.Fatalf("\ngot: %v\nexp: %v", g, e)
+	}
+
 	for i, v := range []struct {
 		email, name, age interface{}
 		e                string
