@@ -15,22 +15,29 @@ var (
 	_ RecordSetSource = (*Table)(nil)
 )
 
+// RecordSetSource represents a Table or a SelectStmt.
 type RecordSetSource interface {
 	str(*bytes.Buffer)
 }
 
+// JoinType is the kind of the JOIN clause argument of the select statement.
 type JoinType int
 
+// Values of type JoinType.
 const (
 	JoinLeft JoinType = iota
 	JoinRight
 	JoinFull
 )
 
+// Table represents a simple record set source. *Table implements
+// RecordSetSource and can be used as an argument of (*SelectStmt).From.
 type Table struct {
 	name string
 }
 
+// NewTable returns a newly create Table representing a database table named
+// name.
 func NewTable(name string) *Table { return &Table{name: name} }
 
 func (t *Table) str(b *bytes.Buffer) {
@@ -38,10 +45,16 @@ func (t *Table) str(b *bytes.Buffer) {
 	b.WriteByte(' ')
 }
 
+// Expression represents an expression appearing in a QL statement.
 type Expression struct {
 	s []string
 }
 
+// NewExpression returns a newly created expression consisting of the text in s.
+//
+// Example
+//
+//	NewExpression("a+b*c")
 func NewExpression(s string) *Expression { return &Expression{s: []string{s}} }
 
 func newExpression(v interface{}) *Expression {
@@ -53,6 +66,12 @@ func newExpression(v interface{}) *Expression {
 	}
 }
 
+// NewLiteral returns a newly created expression representing the literal value
+// v. The function panics on invalid literal types.
+//
+// Example
+//
+//	NewLiteral(42)
 func NewLiteral(v interface{}) *Expression {
 	switch k := reflect.TypeOf(v).Kind(); k {
 	case
@@ -81,18 +100,56 @@ func NewLiteral(v interface{}) *Expression {
 	}
 }
 
-func (e *Expression) Add(f interface{}) *Expression    { return e.binop("+", f) }
-func (e *Expression) And(f interface{}) *Expression    { return e.binop("&&", f) }
+// Add produces the binary expression e+f or f is e is nil.
+func (e *Expression) Add(f interface{}) *Expression { return e.binop("+", f) }
+
+// And produces the binary expression e&&f or f is e is nil.
+func (e *Expression) And(f interface{}) *Expression { return e.binop("&&", f) }
+
+// BitAnd produces the binary expression e&f or f is e is nil.
 func (e *Expression) BitAnd(f interface{}) *Expression { return e.binop("&", f) }
-func (e *Expression) BitOr(f interface{}) *Expression  { return e.binop("|", f) }
-func (e *Expression) Div(f interface{}) *Expression    { return e.binop("/", f) }
-func (e *Expression) Equal(f interface{}) *Expression  { return e.binop("==", f) }
-func (e *Expression) Mod(f interface{}) *Expression    { return e.binop("%", f) }
-func (e *Expression) Mul(f interface{}) *Expression    { return e.binop("*", f) }
-func (e *Expression) Or(f interface{}) *Expression     { return e.binop("||", f) }
-func (e *Expression) Shl(f interface{}) *Expression    { return e.binop("<<", f) }
-func (e *Expression) Shr(f interface{}) *Expression    { return e.binop(">>", f) }
-func (e *Expression) Sub(f interface{}) *Expression    { return e.binop("-", f) }
+
+// BitOr produces the binary expression e|f or f is e is nil.
+func (e *Expression) BitOr(f interface{}) *Expression { return e.binop("|", f) }
+
+// Div produces the binary expression e/f or f is e is nil.
+func (e *Expression) Div(f interface{}) *Expression { return e.binop("/", f) }
+
+// Equal produces the binary expression e==f or f is e is nil.
+func (e *Expression) Equal(f interface{}) *Expression { return e.binop("==", f) }
+
+// Mod produces the binary expression e%f or f is e is nil.
+func (e *Expression) Mod(f interface{}) *Expression { return e.binop("%", f) }
+
+// Mul produces the binary expression e*f or f is e is nil.
+func (e *Expression) Mul(f interface{}) *Expression { return e.binop("*", f) }
+
+// Or produces the binary expression e||f or f is e is nil.
+func (e *Expression) Or(f interface{}) *Expression { return e.binop("||", f) }
+
+// Shl produces the binary expression e<<f. f must not be nil.
+func (e *Expression) Shl(f interface{}) *Expression { return e.binop("<<", f) }
+
+// Shr produces the binary expression e>>f. f must not be nil.
+func (e *Expression) Shr(f interface{}) *Expression { return e.binop(">>", f) }
+
+// Sub produces the binary expression e-f or f is e is nil.
+func (e *Expression) Sub(f interface{}) *Expression { return e.binop("-", f) }
+
+// Lt produces the binary expression e<f. f must not be nil.
+func (e *Expression) Lt(f interface{}) *Expression { return e.binop("<", f) }
+
+// Le produces the binary expression e<=f. f must not be nil.
+func (e *Expression) Le(f interface{}) *Expression { return e.binop("<=", f) }
+
+// Gt produces the binary expression e>f. f must not be nil.
+func (e *Expression) Gt(f interface{}) *Expression { return e.binop(">", f) }
+
+// Ge produces the binary expression e>=f. f must not be nil.
+func (e *Expression) Ge(f interface{}) *Expression { return e.binop(">=", f) }
+
+// Ne produces the binary expression e!=f. f must not be nil.
+func (e *Expression) Ne(f interface{}) *Expression { return e.binop("!=", f) }
 
 func (e *Expression) str(b *bytes.Buffer) {
 	if e == nil {
@@ -121,11 +178,14 @@ func (e *Expression) binop(op string, f interface{}) *Expression {
 	return e
 }
 
+// Field represents a column of a record set.
 type Field struct {
 	expr *Expression
 	as   string
 }
 
+// NewField returns a newly created Field. expr must be either a string
+// interpreted as a field name or a *Field.
 func NewField(expr interface{}, as string) *Field {
 	switch x := expr.(type) {
 	case *Expression:
@@ -144,9 +204,11 @@ func (f *Field) str(b *bytes.Buffer) {
 	}
 }
 
+// SelectStmt represents a record set source produced by a select statement.
+// *SelectStmt implements RecordSetSource and can be used as an argument of
+// (*SelectStmt).From.
 type SelectStmt struct {
 	distinct       bool
-	err            error
 	fields         []*Field
 	from           []RecordSetSource
 	groupBy        []string
@@ -163,6 +225,8 @@ type SelectStmt struct {
 	whereNotExists bool
 }
 
+// NewSelectStmt returns a newly create SelectStmt. fields must be either of
+// type string, interpreted as a field name or of type *Field.
 func NewSelectStmt(fields ...interface{}) *SelectStmt {
 	//  SelectStmt = "SELECT" [ "DISTINCT" ] ( "*" | FieldList ) [ "FROM" RecordSetList ]
 	//  	[ JoinClause ] [ WhereClause ] [ GroupByClause ] [ OrderBy ] [ Limit ] [ Offset ].
@@ -210,7 +274,7 @@ func (s *SelectStmt) str(b *bytes.Buffer) {
 				x.str(b)
 				b.WriteByte(')')
 			default:
-				panic(fmt.Errorf("%T(%v)", x, x))
+				panic("internal error")
 			}
 			b.WriteString(", ")
 		}
@@ -278,27 +342,18 @@ func (s *SelectStmt) str(b *bytes.Buffer) {
 	}
 }
 
+// String implements fmt.Stringer.
 func (s *SelectStmt) String() string {
 	b := bytes.NewBufferString("select ")
 	s.str(b)
 	return b.String()
 }
 
-func (s *SelectStmt) setError(err error) *SelectStmt {
-	if s.err == nil {
-		s.err = err
-	}
-	return s
-}
+// Compile method runs the Compile function using the text representation of s.
+func (s *SelectStmt) Compile() (List, error) { return Compile(s.String()) }
 
-func (s *SelectStmt) Compile() (List, error) {
-	if s.err != nil {
-		return List{}, s.err
-	}
-
-	return Compile(s.String())
-}
-
+// Distinct returns s trimmed up to an including any fields clause and adds the
+// DISTINCT modifier.
 func (s *SelectStmt) Distinct() *SelectStmt {
 	//  [ "FROM" RecordSetList ]
 
@@ -307,6 +362,9 @@ func (s *SelectStmt) Distinct() *SelectStmt {
 	return t
 }
 
+// From returns s trimmed up to and including any DISTINCT modifier and adds
+// the arguments of the FROM clause.  Values in list should be of type string,
+// interpreted as a table name, or of type RecordSetSource.
 func (s *SelectStmt) From(list ...interface{}) *SelectStmt {
 	//  [ "FROM" RecordSetList ]
 	t := newSelectStmt(s.fields)
@@ -324,6 +382,8 @@ func (s *SelectStmt) From(list ...interface{}) *SelectStmt {
 	return t
 }
 
+// Join returns s trimmed up to and including any FROM clause and adds the
+// arguments of the JOIN clause.
 func (s *SelectStmt) Join(typ JoinType, outer bool, rs RecordSetSource, on interface{}) *SelectStmt {
 	//  JoinClause = ( "LEFT" | "RIGHT" | "FULL" ) [ "OUTER" ] "JOIN" RecordSet "ON" Expression .
 	t := newSelectStmt(s.fields)
@@ -336,7 +396,10 @@ func (s *SelectStmt) Join(typ JoinType, outer bool, rs RecordSetSource, on inter
 	return t
 }
 
-func (s *SelectStmt) Where(expr *Expression) *SelectStmt {
+// Where returns s trimmed up to and including any JOIN clause and adds the
+// argument of the WHERE clause. The expr argument should be either of type
+// *Expression or a literal value or it may be nil.
+func (s *SelectStmt) Where(expr interface{}) *SelectStmt {
 	//  WhereClause = "WHERE" Expression
 	//  		| "WHERE" "EXISTS" "(" SelectStmt ")"
 	//  		| "WHERE" "NOT" "EXISTS" "(" SelectStmt ")" .
@@ -347,10 +410,14 @@ func (s *SelectStmt) Where(expr *Expression) *SelectStmt {
 	t.joinOuter = s.joinOuter
 	t.joinRS = s.joinRS
 	t.joinOn = s.joinOn
-	t.where = expr
+	if expr != nil && expr != (*Expression)(nil) {
+		t.where = newExpression(expr)
+	}
 	return t
 }
 
+// WhereExists returns s trimmed up to and including any JOIN clause and adds
+// the argument of the WHERE [NOT] EXISTS clause.
 func (s *SelectStmt) WhereExists(not bool, sel *SelectStmt) *SelectStmt {
 	//  WhereClause = "WHERE" Expression
 	//  		| "WHERE" "EXISTS" "(" SelectStmt ")"
@@ -367,6 +434,8 @@ func (s *SelectStmt) WhereExists(not bool, sel *SelectStmt) *SelectStmt {
 	return t
 }
 
+// GroupBy returns s trimmed up to and including any WHERE/WHERE [NOT] EXISTS
+// clause and adds the arguments of the GROUP BY clause.
 func (s *SelectStmt) GroupBy(columns ...string) *SelectStmt {
 	//  GroupByClause = "GROUP BY" ColumnNameList .
 	t := newSelectStmt(s.fields)
@@ -383,6 +452,8 @@ func (s *SelectStmt) GroupBy(columns ...string) *SelectStmt {
 	return t
 }
 
+// OrderBy returns s trimmed up to and including any GROUP BY clause and adds
+// the arguments of the ORDER BY clause.
 func (s *SelectStmt) OrderBy(descending bool, list ...*Expression) *SelectStmt {
 	//  OrderBy = "ORDER" "BY" ExpressionList [ "ASC" | "DESC" ] .
 	t := newSelectStmt(s.fields)
@@ -401,6 +472,8 @@ func (s *SelectStmt) OrderBy(descending bool, list ...*Expression) *SelectStmt {
 	return t
 }
 
+// Limit returns s trimmed up to and including any ORDER BY clause and adds the
+// arguments of the LIMIT clause.
 func (s *SelectStmt) Limit(expr interface{}) *SelectStmt {
 	//  Limit = "Limit" Expression .
 	t := newSelectStmt(s.fields)
@@ -420,6 +493,8 @@ func (s *SelectStmt) Limit(expr interface{}) *SelectStmt {
 	return t
 }
 
+// Offset returns s trimmed up to and including any LIMIT clause and adds the
+// arguments of the OFFSET clause.
 func (s *SelectStmt) Offset(expr interface{}) *SelectStmt {
 	//  Offset = "OFFSET" Expression .
 	t := newSelectStmt(s.fields)

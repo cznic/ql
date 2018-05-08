@@ -3990,6 +3990,14 @@ func TestBuilder(t *testing.T) {
 		t.Fatalf("\ngot: %v\nexp: %v", g, e)
 	}
 
+	if query, err = users.Where(42).Compile(); err != nil {
+		t.Fatal(err)
+	}
+
+	if g, e := strings.TrimSpace(query.String()), `SELECT * FROM users WHERE 42;`; g != e {
+		t.Fatalf("\ngot: %v\nexp: %v", g, e)
+	}
+
 	if query, err = NewSelectStmt("id", "name").Where(NewExpression("email").Equal(email).And(NewExpression("name").Equal("Mary"))).Compile(); err != nil {
 		t.Fatal(err)
 	}
