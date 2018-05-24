@@ -4014,6 +4014,14 @@ func TestBuilder(t *testing.T) {
 		t.Fatalf("\ngot: %v\nexp: %v", g, e)
 	}
 
+	if query, err = NewSelectStmt(NewExpression("count(*)")).From("users").Where(42).Compile(); err != nil {
+		t.Fatal(err)
+	}
+
+	if g, e := strings.TrimSpace(query.String()), `SELECT count() FROM users WHERE 42;`; g != e {
+		t.Fatalf("\ngot: %v\nexp: %v", g, e)
+	}
+
 	if query, err = NewSelectStmt().From(NewSelectStmt().From("a"), NewSelectStmt().From("b")).Compile(); err != nil {
 		t.Fatal(err)
 	}
