@@ -14,6 +14,8 @@
 //
 // Change list
 //
+// 2018-08-02: Release v1.2.0 adds initial support for Go modules.
+//
 // 2017-01-10: Release v1.1.0 fixes some bugs and adds a configurable WAL
 // headroom.
 //
