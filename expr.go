@@ -3260,6 +3260,10 @@ func (n *pIn) eval(execCtx *execCtx, ctx map[interface{}]interface{}) (v interfa
 		ev = ev0.(*pInEval)
 	}
 
+	if len(ev.m) == 0 {
+		return n.not, nil
+	}
+
 	if ev.sample == nil {
 		return nil, nil
 	}

@@ -15775,3 +15775,13 @@ COMMIT;
 SELECT c FROM t WHERE c = "abc";
 |"c"
 [abc]
+
+-- 1357 // https://github.com/cznic/ql/issues/208
+BEGIN TRANSACTION;
+	CREATE TABLE t (a int not null, b int not null);
+	INSERT INTO t (a, b) VALUES (0, 4), (1, 5);
+COMMIT;
+SELECT DISTINCT a FROM t WHERE a NOT IN (SELECT a FROM t WHERE b = 9)
+|"a"
+[0]
+[1]

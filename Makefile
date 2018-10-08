@@ -65,9 +65,9 @@ parser.go: parser.y
 	sed -i -e 's|//line.*||' -e 's/yyEofCode/yyEOFCode/' $@
 
 ql.y: doc.go
-	sed -n '1,/^package/ s/^\/\/  //p' < $< \
-		| ebnf2y -o $@ -oe $*.ebnf -start StatementList -pkg $* -p _
-	goyacc -cr -o /dev/null $@
+	#TODO sed -n '1,/^package/ s/^\/\/  //p' < $< \
+	#TODO 	| ebnf2y -o $@ -oe $*.ebnf -start StatementList -pkg $* -p _
+	#TODO goyacc -cr -o /dev/null $@
 
 scanner.go: scanner.l parser.go
 	golex -o $@ $<

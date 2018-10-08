@@ -8456,3 +8456,14 @@ SELECT c FROM t WHERE c == "abc";
 ┌Iterate all rows of table "t" using index "cx" where c == "abc"
 └Output field names ["c"]
 
+---- 1357
+SELECT DISTINCT a FROM t WHERE a NOT IN (SELECT a FROM t WHERE b == 9;);
+┌Iterate all rows of table "t"
+└Output field names ["a" "b"]
+┌Filter on a NOT IN (SELECT a FROM t WHERE b == 9;)
+└Output field names ["a" "b"]
+┌Evaluate a as "a",
+└Output field names ["a"]
+┌Compute distinct rows
+└Output field names [a]
+
