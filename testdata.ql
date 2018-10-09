@@ -15785,3 +15785,12 @@ SELECT DISTINCT a FROM t WHERE a NOT IN (SELECT a FROM t WHERE b = 9)
 |"a"
 [0]
 [1]
+
+-- 1358 // https://github.com/cznic/ql/issues/207
+BEGIN TRANSACTION;
+	CREATE TABLE t (a int not null, b int not null, c int not null);
+	CREATE INDEX t_a_b on t (a, b);
+	CREATE INDEX t_a_b_c on t (a, b, c);
+COMMIT;
+SELECT * FROM t;
+|"a", "b", "c"

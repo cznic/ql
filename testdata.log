@@ -8467,3 +8467,8 @@ SELECT DISTINCT a FROM t WHERE a NOT IN (SELECT a FROM t WHERE b == 9;);
 ┌Compute distinct rows
 └Output field names [a]
 
+---- 1358
+SELECT * FROM t;
+┌Iterate all rows of table "t"
+└Output field names ["a" "b" "c"]
+

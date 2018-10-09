@@ -1635,6 +1635,10 @@ func (db *DB) info() (r *DbInfo, err error) {
 		}
 		for _, k := range a {
 			x := t.indices2[k]
+			if x == nil {
+				continue
+			}
+
 			a = a[:0]
 			for _, e := range x.exprList {
 				a = append(a, e.String())
