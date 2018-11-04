@@ -2362,6 +2362,36 @@ func collate1(a, b interface{}) int {
 		default:
 			panic("internal error 023")
 		}
+	case int:
+		switch y := b.(type) {
+		case nil:
+			return 1
+		case int64:
+			if int64(x) < y {
+				return -1
+			}
+
+			if int64(x) == y {
+				return 0
+			}
+
+			return 1
+		case idealInt:
+			{
+				x, y := int64(x), int64(y)
+				if x < y {
+					return -1
+				}
+
+				if x == y {
+					return 0
+				}
+
+				return 1
+			}
+		default:
+			panic("internal error 024")
+		}
 	case int64:
 		switch y := b.(type) {
 		case nil:

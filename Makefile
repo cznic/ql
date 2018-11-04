@@ -32,11 +32,15 @@ cover:
 	t=$(shell mktemp) ; go test -coverprofile $$t && go tool cover -html $$t && unlink $$t
 
 cpu: clean
-	go test -run @ -bench . -cpuprofile cpu.out
+	go test -run @ -bench BenchmarkInsertBoolFileNoX1e2 -cpuprofile cpu.out -benchmem -benchtime 4s
 	go tool pprof -lines *.test cpu.out
 
 edit:
 	@ 1>/dev/null 2>/dev/null gvim -p Makefile *.l *.y *.go testdata.ql testdata.log
+
+edit2:
+	touch log
+	@ 1>/dev/null 2>/dev/null gvim -p Makefile all_test.go log driver*.go encode2.go file*.go mem.go ql.go storage*.go testdata.ql testdata.log
 
 editor: ql.y scanner.go parser.go coerce.go
 	gofmt -s -l -w *.go
@@ -51,7 +55,7 @@ later:
 	@grep -n $(grep) MAYBE * || true
 
 mem: clean
-	go test -run @ -bench . -memprofile mem.out -memprofilerate 1 -timeout 24h
+	go test -run @ -bench BenchmarkInsertBoolFileNoX1e2 -memprofile mem.out -memprofilerate 1 -timeout 24h -benchmem -benchtime 4s
 	go tool pprof -lines -web -alloc_space *.test mem.out
 
 nuke: clean

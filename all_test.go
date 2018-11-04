@@ -38,6 +38,7 @@ func init() {
 	isTesting = true
 	use(dieHard, caller, (*DB).dumpTables, dumpTables2, dumpTables3, dumpFields, dumpFlds, dumpCols, fldsString, typeof, stypeof)
 	flag.IntVar(&yyDebug, "yydebug", 0, "")
+	use(dbg)
 }
 
 func dieHard(exitValue int) {
@@ -223,6 +224,66 @@ func (m *fileTestDB) teardown(ctx *TCtx) (err error) {
 	return err
 }
 
+type file2TestDB struct {
+	db   *DB
+	gmp0 int
+	m0   int64
+}
+
+func (m *file2TestDB) setup() (db *DB, err error) {
+	m.gmp0 = runtime.GOMAXPROCS(0)
+	f, err := ioutil.TempFile("", "ql-test-")
+	if err != nil {
+		return
+	}
+
+	if m.db, err = OpenFile(f.Name(), &Options{FileFormat: 2}); err != nil {
+		return
+	}
+
+	return m.db, nil
+}
+
+func (m *file2TestDB) mark() (err error) {
+	m.m0, err = m.db.store.Verify()
+	if err != nil {
+		m.m0 = -1
+	}
+	return
+}
+
+func (m *file2TestDB) teardown(ctx *TCtx) (err error) {
+	runtime.GOMAXPROCS(m.gmp0)
+	defer func() {
+		f := m.db.store.(*storage2)
+		errSet(&err, m.db.Close())
+		os.Remove(f.Name())
+		if f.walName != "" {
+			os.Remove(f.walName)
+		}
+	}()
+
+	if m.m0 < 0 {
+		return
+	}
+
+	n, err := m.db.store.Verify()
+	if err != nil {
+		return
+	}
+
+	if g, e := n, m.m0; g != e {
+		return fmt.Errorf("STORAGE LEAK: allocs: got %d, exp %d", g, e)
+	}
+
+	if ctx == nil {
+		return nil
+	}
+
+	_, _, err = m.db.Execute(ctx, txCommit)
+	return err
+}
+
 type osFileTestDB struct {
 	db   *DB
 	gmp0 int
@@ -292,7 +353,7 @@ func TestFileStorage(t *testing.T) {
 		t.Skip("skipping test in short mode.")
 	}
 
-	test(t, &fileTestDB{})
+	test(t, &file2TestDB{})
 }
 
 func TestOSFileStorage(t *testing.T) {
@@ -301,6 +362,14 @@ func TestOSFileStorage(t *testing.T) {
 	}
 
 	test(t, &osFileTestDB{})
+}
+
+func TestFile2Storage(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping test in short mode.")
+	}
+
+	test(t, &file2TestDB{})
 }
 
 var (
@@ -413,16 +482,32 @@ func BenchmarkSelectFile1kBx1e2(b *testing.B) {
 	benchmarkSelect(b, 1e2, compiledSelect, &fileTestDB{})
 }
 
+func BenchmarkSelectFileV21kBx1e2(b *testing.B) {
+	benchmarkSelect(b, 1e2, compiledSelect, &file2TestDB{})
+}
+
 func BenchmarkSelectFile1kBx1e3(b *testing.B) {
 	benchmarkSelect(b, 1e3, compiledSelect, &fileTestDB{})
+}
+
+func BenchmarkSelectFileV21kBx1e3(b *testing.B) {
+	benchmarkSelect(b, 1e3, compiledSelect, &file2TestDB{})
 }
 
 func BenchmarkSelectFile1kBx1e4(b *testing.B) {
 	benchmarkSelect(b, 1e4, compiledSelect, &fileTestDB{})
 }
 
+func BenchmarkSelectFileV21kBx1e4(b *testing.B) {
+	benchmarkSelect(b, 1e4, compiledSelect, &file2TestDB{})
+}
+
 func BenchmarkSelectFile1kBx1e5(b *testing.B) {
 	benchmarkSelect(b, 1e5, compiledSelect, &fileTestDB{})
+}
+
+func BenchmarkSelectFileV21kBx1e5(b *testing.B) {
+	benchmarkSelect(b, 1e5, compiledSelect, &file2TestDB{})
 }
 
 func BenchmarkSelectOrderedMem1kBx1e2(b *testing.B) {
@@ -441,12 +526,24 @@ func BenchmarkSelectOrderedFile1kBx1e2(b *testing.B) {
 	benchmarkSelect(b, 1e2, compiledSelectOrderBy, &fileTestDB{})
 }
 
+func BenchmarkSelectOrderedFileV21kBx1e2(b *testing.B) {
+	benchmarkSelect(b, 1e2, compiledSelectOrderBy, &file2TestDB{})
+}
+
 func BenchmarkSelectOrderedFile1kBx1e3(b *testing.B) {
 	benchmarkSelect(b, 1e3, compiledSelectOrderBy, &fileTestDB{})
 }
 
+func BenchmarkSelectOrderedFileV21kBx1e3(b *testing.B) {
+	benchmarkSelect(b, 1e3, compiledSelectOrderBy, &file2TestDB{})
+}
+
 func BenchmarkSelectOrderedFile1kBx1e4(b *testing.B) {
 	benchmarkSelect(b, 1e4, compiledSelectOrderBy, &fileTestDB{})
+}
+
+func BenchmarkSelectOrderedFileV21kBx1e4(b *testing.B) {
+	benchmarkSelect(b, 1e4, compiledSelectOrderBy, &file2TestDB{})
 }
 
 func TestString(t *testing.T) {
@@ -538,6 +635,10 @@ func BenchmarkInsertFile1kBn1e0t1e2(b *testing.B) {
 	benchmarkInsert(b, 1e0, 1e2, &fileTestDB{})
 }
 
+func BenchmarkInsertFileV21kBn1e0t1e2(b *testing.B) {
+	benchmarkInsert(b, 1e0, 1e2, &file2TestDB{})
+}
+
 //=============================================================================
 
 func BenchmarkInsertMem1kBn1e1t1e2(b *testing.B) {
@@ -548,12 +649,20 @@ func BenchmarkInsertFile1kBn1e1t1e2(b *testing.B) {
 	benchmarkInsert(b, 1e1, 1e2, &fileTestDB{})
 }
 
+func BenchmarkInsertFileV21kBn1e1t1e2(b *testing.B) {
+	benchmarkInsert(b, 1e1, 1e2, &file2TestDB{})
+}
+
 func BenchmarkInsertMem1kBn1e1t1e3(b *testing.B) {
 	benchmarkInsert(b, 1e1, 1e3, &memTestDB{})
 }
 
 func BenchmarkInsertFile1kBn1e1t1e3(b *testing.B) {
 	benchmarkInsert(b, 1e1, 1e3, &fileTestDB{})
+}
+
+func BenchmarkInsertFileV21kBn1e1t1e3(b *testing.B) {
+	benchmarkInsert(b, 1e1, 1e3, &file2TestDB{})
 }
 
 //=============================================================================
@@ -566,6 +675,10 @@ func BenchmarkInsertFile1kBn1e2t1e2(b *testing.B) {
 	benchmarkInsert(b, 1e2, 1e2, &fileTestDB{})
 }
 
+func BenchmarkInsertFileV21kBn1e2t1e2(b *testing.B) {
+	benchmarkInsert(b, 1e2, 1e2, &file2TestDB{})
+}
+
 func BenchmarkInsertMem1kBn1e2t1e3(b *testing.B) {
 	benchmarkInsert(b, 1e2, 1e3, &memTestDB{})
 }
@@ -574,12 +687,20 @@ func BenchmarkInsertFile1kBn1e2t1e3(b *testing.B) {
 	benchmarkInsert(b, 1e2, 1e3, &fileTestDB{})
 }
 
+func BenchmarkInsertFileV21kBn1e2t1e3(b *testing.B) {
+	benchmarkInsert(b, 1e2, 1e3, &file2TestDB{})
+}
+
 func BenchmarkInsertMem1kBn1e2t1e4(b *testing.B) {
 	benchmarkInsert(b, 1e2, 1e4, &memTestDB{})
 }
 
 func BenchmarkInsertFile1kBn1e2t1e4(b *testing.B) {
 	benchmarkInsert(b, 1e2, 1e4, &fileTestDB{})
+}
+
+func BenchmarkInsertFileV21kBn1e2t1e4(b *testing.B) {
+	benchmarkInsert(b, 1e2, 1e4, &file2TestDB{})
 }
 
 //=============================================================================
@@ -592,12 +713,20 @@ func BenchmarkInsertFile1kBn1e3t1e3(b *testing.B) {
 	benchmarkInsert(b, 1e3, 1e3, &fileTestDB{})
 }
 
+func BenchmarkInsertFileV21kBn1e3t1e3(b *testing.B) {
+	benchmarkInsert(b, 1e3, 1e3, &file2TestDB{})
+}
+
 func BenchmarkInsertMem1kBn1e3t1e4(b *testing.B) {
 	benchmarkInsert(b, 1e3, 1e4, &memTestDB{})
 }
 
 func BenchmarkInsertFile1kBn1e3t1e4(b *testing.B) {
 	benchmarkInsert(b, 1e3, 1e4, &fileTestDB{})
+}
+
+func BenchmarkInsertFileV21kBn1e3t1e4(b *testing.B) {
+	benchmarkInsert(b, 1e3, 1e4, &file2TestDB{})
 }
 
 func BenchmarkInsertMem1kBn1e3t1e5(b *testing.B) {
@@ -608,7 +737,14 @@ func BenchmarkInsertFile1kBn1e3t1e5(b *testing.B) {
 	benchmarkInsert(b, 1e3, 1e5, &fileTestDB{})
 }
 
-func TestReopen(t *testing.T) {
+func BenchmarkInsertFileV21kBn1e3t1e5(b *testing.B) {
+	benchmarkInsert(b, 1e3, 1e5, &file2TestDB{})
+}
+
+func TestReopen(t *testing.T)  { testReopen(t, 0) }
+func TestReopen2(t *testing.T) { testReopen(t, 2) }
+
+func testReopen(t *testing.T, ff int) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
 	}
@@ -629,7 +765,7 @@ func TestReopen(t *testing.T) {
 		}
 	}()
 
-	db, err := OpenFile(nm, &Options{})
+	db, err := OpenFile(nm, &Options{FileFormat: ff})
 	if err != nil {
 		t.Error(err)
 		return
@@ -1359,14 +1495,14 @@ func BenchmarkInsertBoolMemX1e5(b *testing.B) {
 	benchmarkInsertBoolMem(b, 1e5, 0.5, true)
 }
 
-func benchmarkInsertBoolFile(b *testing.B, size int, sel float64, index bool) {
+func benchmarkInsertBoolFile(b *testing.B, size int, sel float64, index bool, ver int) {
 	dir, err := ioutil.TempDir("", "ql-bench-")
 	if err != nil {
 		b.Fatal(err)
 	}
 
 	n := runtime.GOMAXPROCS(0)
-	db, err := OpenFile(filepath.Join(dir, "ql.db"), &Options{CanCreate: true})
+	db, err := OpenFile(filepath.Join(dir, "ql.db"), &Options{CanCreate: true, FileFormat: ver})
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -1379,27 +1515,51 @@ func benchmarkInsertBoolFile(b *testing.B, size int, sel float64, index bool) {
 }
 
 func BenchmarkInsertBoolFileNoX1e1(b *testing.B) {
-	benchmarkInsertBoolFile(b, 1e1, 0.5, false)
+	benchmarkInsertBoolFile(b, 1e1, 0.5, false, 0)
+}
+
+func BenchmarkInsertBoolFileV2NoX1e1(b *testing.B) {
+	benchmarkInsertBoolFile(b, 1e1, 0.5, false, 2)
 }
 
 func BenchmarkInsertBoolFileX1e1(b *testing.B) {
-	benchmarkInsertBoolFile(b, 1e1, 0.5, true)
+	benchmarkInsertBoolFile(b, 1e1, 0.5, true, 0)
+}
+
+func BenchmarkInsertBoolFileV2X1e1(b *testing.B) {
+	benchmarkInsertBoolFile(b, 1e1, 0.5, true, 2)
 }
 
 func BenchmarkInsertBoolFileNoX1e2(b *testing.B) {
-	benchmarkInsertBoolFile(b, 1e2, 0.5, false)
+	benchmarkInsertBoolFile(b, 1e2, 0.5, false, 0)
+}
+
+func BenchmarkInsertBoolFileV2NoX1e2(b *testing.B) {
+	benchmarkInsertBoolFile(b, 1e2, 0.5, false, 2)
 }
 
 func BenchmarkInsertBoolFileX1e2(b *testing.B) {
-	benchmarkInsertBoolFile(b, 1e2, 0.5, true)
+	benchmarkInsertBoolFile(b, 1e2, 0.5, true, 0)
+}
+
+func BenchmarkInsertBoolFileV2X1e2(b *testing.B) {
+	benchmarkInsertBoolFile(b, 1e2, 0.5, true, 2)
 }
 
 func BenchmarkInsertBoolFileNoX1e3(b *testing.B) {
-	benchmarkInsertBoolFile(b, 1e3, 0.5, false)
+	benchmarkInsertBoolFile(b, 1e3, 0.5, false, 0)
+}
+
+func BenchmarkInsertBoolFileV2NoX1e3(b *testing.B) {
+	benchmarkInsertBoolFile(b, 1e3, 0.5, false, 2)
 }
 
 func BenchmarkInsertBoolFileX1e3(b *testing.B) {
-	benchmarkInsertBoolFile(b, 1e3, 0.5, true)
+	benchmarkInsertBoolFile(b, 1e3, 0.5, true, 0)
+}
+
+func BenchmarkInsertBoolFileV2X1e3(b *testing.B) {
+	benchmarkInsertBoolFile(b, 1e3, 0.5, true, 2)
 }
 
 var benchmarkSelectBoolOnce = map[string]bool{}
@@ -1583,14 +1743,14 @@ func BenchmarkSelectBoolMemX1e5Perc5(b *testing.B) {
 	benchmarkSelectBoolMem(b, 1e5, 0.05, true)
 }
 
-func benchmarkSelectBoolFile(b *testing.B, size int, sel float64, index bool) {
+func benchmarkSelectBoolFile(b *testing.B, size int, sel float64, index bool, ver int) {
 	dir, err := ioutil.TempDir("", "ql-bench-")
 	if err != nil {
 		b.Fatal(err)
 	}
 
 	n := runtime.GOMAXPROCS(0)
-	db, err := OpenFile(filepath.Join(dir, "ql.db"), &Options{CanCreate: true})
+	db, err := OpenFile(filepath.Join(dir, "ql.db"), &Options{CanCreate: true, FileFormat: ver})
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -1605,69 +1765,133 @@ func benchmarkSelectBoolFile(b *testing.B, size int, sel float64, index bool) {
 // ----
 
 func BenchmarkSelectBoolFileNoX1e1Perc50(b *testing.B) {
-	benchmarkSelectBoolFile(b, 1e1, 0.5, false)
+	benchmarkSelectBoolFile(b, 1e1, 0.5, false, 0)
+}
+
+func BenchmarkSelectBoolFileV2NoX1e1Perc50(b *testing.B) {
+	benchmarkSelectBoolFile(b, 1e1, 0.5, false, 2)
 }
 
 func BenchmarkSelectBoolFileX1e1Perc50(b *testing.B) {
-	benchmarkSelectBoolFile(b, 1e1, 0.5, true)
+	benchmarkSelectBoolFile(b, 1e1, 0.5, true, 0)
+}
+
+func BenchmarkSelectBoolFileV2X1e1Perc50(b *testing.B) {
+	benchmarkSelectBoolFile(b, 1e1, 0.5, true, 2)
 }
 
 func BenchmarkSelectBoolFileNoX1e2Perc50(b *testing.B) {
-	benchmarkSelectBoolFile(b, 1e2, 0.5, false)
+	benchmarkSelectBoolFile(b, 1e2, 0.5, false, 0)
+}
+
+func BenchmarkSelectBoolFileV2NoX1e2Perc50(b *testing.B) {
+	benchmarkSelectBoolFile(b, 1e2, 0.5, false, 2)
 }
 
 func BenchmarkSelectBoolFileX1e2Perc50(b *testing.B) {
-	benchmarkSelectBoolFile(b, 1e2, 0.5, true)
+	benchmarkSelectBoolFile(b, 1e2, 0.5, true, 0)
+}
+
+func BenchmarkSelectBoolFileV2X1e2Perc50(b *testing.B) {
+	benchmarkSelectBoolFile(b, 1e2, 0.5, true, 2)
 }
 
 func BenchmarkSelectBoolFileNoX1e3Perc50(b *testing.B) {
-	benchmarkSelectBoolFile(b, 1e3, 0.5, false)
+	benchmarkSelectBoolFile(b, 1e3, 0.5, false, 0)
+}
+
+func BenchmarkSelectBoolFileV2NoX1e3Perc50(b *testing.B) {
+	benchmarkSelectBoolFile(b, 1e3, 0.5, false, 2)
 }
 
 func BenchmarkSelectBoolFileX1e3Perc50(b *testing.B) {
-	benchmarkSelectBoolFile(b, 1e3, 0.5, true)
+	benchmarkSelectBoolFile(b, 1e3, 0.5, true, 0)
+}
+
+func BenchmarkSelectBoolFileV2X1e3Perc50(b *testing.B) {
+	benchmarkSelectBoolFile(b, 1e3, 0.5, true, 2)
 }
 
 func BenchmarkSelectBoolFileNoX1e4Perc50(b *testing.B) {
-	benchmarkSelectBoolFile(b, 1e4, 0.5, false)
+	benchmarkSelectBoolFile(b, 1e4, 0.5, false, 0)
+}
+
+func BenchmarkSelectBoolFileV2NoX1e4Perc50(b *testing.B) {
+	benchmarkSelectBoolFile(b, 1e4, 0.5, false, 2)
 }
 
 func BenchmarkSelectBoolFileX1e4Perc50(b *testing.B) {
-	benchmarkSelectBoolFile(b, 1e4, 0.5, true)
+	benchmarkSelectBoolFile(b, 1e4, 0.5, true, 0)
+}
+
+func BenchmarkSelectBoolFileV2X1e4Perc50(b *testing.B) {
+	benchmarkSelectBoolFile(b, 1e4, 0.5, true, 2)
 }
 
 // ----
 
 func BenchmarkSelectBoolFileNoX1e1Perc5(b *testing.B) {
-	benchmarkSelectBoolFile(b, 1e1, 0.05, false)
+	benchmarkSelectBoolFile(b, 1e1, 0.05, false, 0)
+}
+
+func BenchmarkSelectBoolFileV2NoX1e1Perc5(b *testing.B) {
+	benchmarkSelectBoolFile(b, 1e1, 0.05, false, 2)
 }
 
 func BenchmarkSelectBoolFileX1e1Perc5(b *testing.B) {
-	benchmarkSelectBoolFile(b, 1e1, 0.05, true)
+	benchmarkSelectBoolFile(b, 1e1, 0.05, true, 0)
+}
+
+func BenchmarkSelectBoolFileV2X1e1Perc5(b *testing.B) {
+	benchmarkSelectBoolFile(b, 1e1, 0.05, true, 2)
 }
 
 func BenchmarkSelectBoolFileNoX1e2Perc5(b *testing.B) {
-	benchmarkSelectBoolFile(b, 1e2, 0.05, false)
+	benchmarkSelectBoolFile(b, 1e2, 0.05, false, 0)
+}
+
+func BenchmarkSelectBoolFileV2NoX1e2Perc5(b *testing.B) {
+	benchmarkSelectBoolFile(b, 1e2, 0.05, false, 2)
 }
 
 func BenchmarkSelectBoolFileX1e2Perc5(b *testing.B) {
-	benchmarkSelectBoolFile(b, 1e2, 0.05, true)
+	benchmarkSelectBoolFile(b, 1e2, 0.05, true, 0)
+}
+
+func BenchmarkSelectBoolFileV2X1e2Perc5(b *testing.B) {
+	benchmarkSelectBoolFile(b, 1e2, 0.05, true, 2)
 }
 
 func BenchmarkSelectBoolFileNoX1e3Perc5(b *testing.B) {
-	benchmarkSelectBoolFile(b, 1e3, 0.05, false)
+	benchmarkSelectBoolFile(b, 1e3, 0.05, false, 0)
+}
+
+func BenchmarkSelectBoolFileV2NoX1e3Perc5(b *testing.B) {
+	benchmarkSelectBoolFile(b, 1e3, 0.05, false, 2)
 }
 
 func BenchmarkSelectBoolFileX1e3Perc5(b *testing.B) {
-	benchmarkSelectBoolFile(b, 1e3, 0.05, true)
+	benchmarkSelectBoolFile(b, 1e3, 0.05, true, 0)
+}
+
+func BenchmarkSelectBoolFileV2X1e3Perc5(b *testing.B) {
+	benchmarkSelectBoolFile(b, 1e3, 0.05, true, 2)
 }
 
 func BenchmarkSelectBoolFileNoX1e4Perc5(b *testing.B) {
-	benchmarkSelectBoolFile(b, 1e4, 0.05, false)
+	benchmarkSelectBoolFile(b, 1e4, 0.05, false, 0)
+}
+
+func BenchmarkSelectBoolFileV2NoX1e4Perc5(b *testing.B) {
+	benchmarkSelectBoolFile(b, 1e4, 0.05, false, 2)
 }
 
 func BenchmarkSelectBoolFileX1e4Perc5(b *testing.B) {
-	benchmarkSelectBoolFile(b, 1e4, 0.05, true)
+	benchmarkSelectBoolFile(b, 1e4, 0.05, true, 0)
+}
+
+func BenchmarkSelectBoolFileV2X1e4Perc5(b *testing.B) {
+	benchmarkSelectBoolFile(b, 1e4, 0.05, true, 2)
 }
 
 func TestIndex(t *testing.T) {
@@ -1832,14 +2056,14 @@ func benchmarkCrossJoinMem(b *testing.B, size1, size2 int, index bool) {
 	benchmarkCrossJoin(b, db, xjoinCreate, xjoinSel, size1, size2, index, nil)
 }
 
-func benchmarkCrossJoinFile(b *testing.B, size1, size2 int, index bool) {
+func benchmarkCrossJoinFile(b *testing.B, size1, size2 int, index bool, ver int) {
 	dir, err := ioutil.TempDir("", "ql-bench-")
 	if err != nil {
 		b.Fatal(err)
 	}
 
 	n := runtime.GOMAXPROCS(0)
-	db, err := OpenFile(filepath.Join(dir, "ql.db"), &Options{CanCreate: true})
+	db, err := OpenFile(filepath.Join(dir, "ql.db"), &Options{CanCreate: true, FileFormat: ver})
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -1902,51 +2126,99 @@ func BenchmarkCrossJoinMem1e4X1e3(b *testing.B) {
 // ----
 
 func BenchmarkCrossJoinFile1e1NoX1e2(b *testing.B) {
-	benchmarkCrossJoinFile(b, 1e1, 1e2, false)
+	benchmarkCrossJoinFile(b, 1e1, 1e2, false, 0)
+}
+
+func BenchmarkCrossJoinFileV21e1NoX1e2(b *testing.B) {
+	benchmarkCrossJoinFile(b, 1e1, 1e2, false, 2)
 }
 
 func BenchmarkCrossJoinFile1e1X1e2(b *testing.B) {
-	benchmarkCrossJoinFile(b, 1e1, 1e2, true)
+	benchmarkCrossJoinFile(b, 1e1, 1e2, true, 0)
+}
+
+func BenchmarkCrossJoinFileV21e1X1e2(b *testing.B) {
+	benchmarkCrossJoinFile(b, 1e1, 1e2, true, 2)
 }
 
 func BenchmarkCrossJoinFile1e2NoX1e3(b *testing.B) {
-	benchmarkCrossJoinFile(b, 1e2, 1e3, false)
+	benchmarkCrossJoinFile(b, 1e2, 1e3, false, 0)
+}
+
+func BenchmarkCrossJoinFileV21e2NoX1e3(b *testing.B) {
+	benchmarkCrossJoinFile(b, 1e2, 1e3, false, 2)
 }
 
 func BenchmarkCrossJoinFile1e2X1e3(b *testing.B) {
-	benchmarkCrossJoinFile(b, 1e2, 1e3, true)
+	benchmarkCrossJoinFile(b, 1e2, 1e3, true, 0)
+}
+
+func BenchmarkCrossJoinFileV21e2X1e3(b *testing.B) {
+	benchmarkCrossJoinFile(b, 1e2, 1e3, true, 2)
 }
 
 func BenchmarkCrossJoinFile1e3NoX1e4(b *testing.B) {
-	benchmarkCrossJoinFile(b, 1e3, 1e4, false)
+	benchmarkCrossJoinFile(b, 1e3, 1e4, false, 0)
+}
+
+func BenchmarkCrossJoinFileV21e3NoX1e4(b *testing.B) {
+	benchmarkCrossJoinFile(b, 1e3, 1e4, false, 2)
 }
 
 func BenchmarkCrossJoinFile1e3X1e4(b *testing.B) {
-	benchmarkCrossJoinFile(b, 1e3, 1e4, true)
+	benchmarkCrossJoinFile(b, 1e3, 1e4, true, 0)
+}
+
+func BenchmarkCrossJoinFileV21e3X1e4(b *testing.B) {
+	benchmarkCrossJoinFile(b, 1e3, 1e4, true, 2)
 }
 
 func BenchmarkCrossJoinFile1e2NoX1e1(b *testing.B) {
-	benchmarkCrossJoinFile(b, 1e2, 1e1, false)
+	benchmarkCrossJoinFile(b, 1e2, 1e1, false, 0)
+}
+
+func BenchmarkCrossJoinFileV21e2NoX1e1(b *testing.B) {
+	benchmarkCrossJoinFile(b, 1e2, 1e1, false, 2)
 }
 
 func BenchmarkCrossJoinFile1e2X1e1(b *testing.B) {
-	benchmarkCrossJoinFile(b, 1e2, 1e1, true)
+	benchmarkCrossJoinFile(b, 1e2, 1e1, true, 0)
+}
+
+func BenchmarkCrossJoinFileV21e2X1e1(b *testing.B) {
+	benchmarkCrossJoinFile(b, 1e2, 1e1, true, 2)
 }
 
 func BenchmarkCrossJoinFile1e3NoX1e2(b *testing.B) {
-	benchmarkCrossJoinFile(b, 1e3, 1e2, false)
+	benchmarkCrossJoinFile(b, 1e3, 1e2, false, 0)
+}
+
+func BenchmarkCrossJoinFileV21e3NoX1e2(b *testing.B) {
+	benchmarkCrossJoinFile(b, 1e3, 1e2, false, 2)
 }
 
 func BenchmarkCrossJoinFile1e3X1e2(b *testing.B) {
-	benchmarkCrossJoinFile(b, 1e3, 1e2, true)
+	benchmarkCrossJoinFile(b, 1e3, 1e2, true, 0)
+}
+
+func BenchmarkCrossJoinFileV21e3X1e2(b *testing.B) {
+	benchmarkCrossJoinFile(b, 1e3, 1e2, true, 2)
 }
 
 func BenchmarkCrossJoinFile1e4NoX1e3(b *testing.B) {
-	benchmarkCrossJoinFile(b, 1e4, 1e3, false)
+	benchmarkCrossJoinFile(b, 1e4, 1e3, false, 0)
+}
+
+func BenchmarkCrossJoinFileV21e4NoX1e3(b *testing.B) {
+	benchmarkCrossJoinFile(b, 1e4, 1e3, false, 2)
 }
 
 func BenchmarkCrossJoinFile1e4X1e3(b *testing.B) {
-	benchmarkCrossJoinFile(b, 1e4, 1e3, true)
+	benchmarkCrossJoinFile(b, 1e4, 1e3, true, 0)
+}
+
+func BenchmarkCrossJoinFileV21e4X1e3(b *testing.B) {
+	benchmarkCrossJoinFile(b, 1e4, 1e3, true, 2)
 }
 
 func TestIssue35(t *testing.T) {
@@ -1997,12 +2269,16 @@ func TestIssue35(t *testing.T) {
 	}
 }
 
-func TestIssue28(t *testing.T) {
+func TestIssue28(t *testing.T)   { testIssue28(t, "ql") }
+func TestIssue28v2(t *testing.T) { testIssue28(t, "ql2") }
+
+func testIssue28(t *testing.T, drv string) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
 	}
 
 	RegisterDriver()
+	RegisterDriver2()
 	dir, err := ioutil.TempDir("", "ql-test-")
 	if err != nil {
 		t.Fatal(err)
@@ -2010,7 +2286,7 @@ func TestIssue28(t *testing.T) {
 
 	defer os.RemoveAll(dir)
 	pth := filepath.Join(dir, "ql.db")
-	sdb, err := sql.Open("ql", "file://"+pth)
+	sdb, err := sql.Open(drv, "file://"+pth)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2034,7 +2310,7 @@ func TestIssue28(t *testing.T) {
 	}
 
 	pth = filepath.Join(dir, "mem.db")
-	mdb, err := sql.Open("ql", "memory://"+pth)
+	mdb, err := sql.Open(drv, "memory://"+pth)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2065,7 +2341,10 @@ func dumpFields(f []*fld) string {
 	return strings.Join(a, ", ")
 }
 
-func TestIssue50(t *testing.T) { // https://github.com/cznic/ql/issues/50
+func TestIssue50(t *testing.T)   { testIssue50(t, "ql") }
+func TestIssue50v2(t *testing.T) { testIssue50(t, "ql2") }
+
+func testIssue50(t *testing.T, drv string) { // https://github.com/cznic/ql/issues/50
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
 	}
@@ -2119,7 +2398,7 @@ $9
 	// create db
 	t.Log("Opening db.")
 	RegisterDriver()
-	db, err := sql.Open("ql", filepath.Join(dir, dbFileName))
+	db, err := sql.Open(drv, filepath.Join(dir, dbFileName))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2209,7 +2488,10 @@ $9
 	t.Log("Done:", scans)
 }
 
-func TestIssue56(t *testing.T) {
+func TestIssue56(t *testing.T)   { testIssue56(t, "ql") }
+func TestIssue56v2(t *testing.T) { testIssue56(t, "ql2") }
+
+func testIssue56(t *testing.T, drv string) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
 	}
@@ -2225,6 +2507,7 @@ CREATE INDEX IF NOT EXISTS bIdx ON Test (B);
 `
 
 	RegisterDriver()
+	RegisterDriver2()
 	dir, err := ioutil.TempDir("", "ql-test-")
 	if err != nil {
 		t.Fatal(err)
@@ -2232,7 +2515,7 @@ CREATE INDEX IF NOT EXISTS bIdx ON Test (B);
 
 	defer os.RemoveAll(dir)
 	pth := filepath.Join(dir, "test.db")
-	db, err := sql.Open("ql", "file://"+pth)
+	db, err := sql.Open(drv, "file://"+pth)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2497,6 +2780,29 @@ func TestIssue66File(t *testing.T) {
 	t.Log(err)
 }
 
+func TestIssue66File2(t *testing.T) {
+	dir, err := ioutil.TempDir("", "ql-test-")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer os.RemoveAll(dir)
+
+	db, err := OpenFile(filepath.Join(dir, "test.db"), &Options{CanCreate: true, FileFormat: 2})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer db.Close()
+
+	_, _, err = db.Execute(NewRWCtx(), issue66)
+	if err == nil {
+		t.Fatal(err)
+	}
+
+	t.Log(err)
+}
+
 func TestIssue66MemDriver(t *testing.T) {
 	RegisterMemDriver()
 	db, err := sql.Open("ql-mem", "TestIssue66MemDriver-"+fmt.Sprintf("%d", time.Now().UnixNano()))
@@ -2528,6 +2834,34 @@ func TestIssue66FileDriver(t *testing.T) {
 	defer os.RemoveAll(dir)
 
 	db, err := sql.Open("ql", filepath.Join(dir, "TestIssue66MemDriver"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer db.Close()
+
+	tx, err := db.Begin()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if _, err = tx.Exec(issue66Src); err == nil {
+		t.Fatal(err)
+	}
+
+	t.Log(err)
+}
+
+func TestIssue66File2Driver(t *testing.T) {
+	RegisterDriver2()
+	dir, err := ioutil.TempDir("", "ql-test-")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer os.RemoveAll(dir)
+
+	db, err := sql.Open("ql2", filepath.Join(dir, "TestIssue66MemDriver"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -2595,7 +2929,10 @@ func Example_lIKE() {
 	// ----
 }
 
-func TestIssue73(t *testing.T) {
+func TestIssue73(t *testing.T)   { testIssue73(t, "ql") }
+func TestIssue73v2(t *testing.T) { testIssue73(t, "ql2") }
+
+func testIssue73(t *testing.T, drv string) {
 	if testing.Short() {
 		t.Skip("skipping test in short mode.")
 	}
@@ -2616,7 +2953,7 @@ func TestIssue73(t *testing.T) {
 		var row *sql.Row
 		var name string
 
-		if db, err = sql.Open("ql", pth); err != nil {
+		if db, err = sql.Open(drv, pth); err != nil {
 			t.Fatal("sql.Open: ", err)
 		}
 
@@ -3386,8 +3723,11 @@ func TestIssue109(t *testing.T) {
 	(issue109{T: t}).test(true)
 }
 
+func TestIssue142(t *testing.T)   { testIssue142(t, "ql") }
+func TestIssue142v2(t *testing.T) { testIssue142(t, "ql2") }
+
 // https://github.com/cznic/ql/issues/142
-func TestIssue142(t *testing.T) {
+func testIssue142(t *testing.T, drv string) {
 	cwd, err := os.Getwd()
 	if err != nil {
 		t.Fatal(err)
@@ -3409,7 +3749,7 @@ func TestIssue142(t *testing.T) {
 	RegisterDriver()
 	for _, nm := range []string{"test.db", "./test.db", "another.db"} {
 		t.Log(nm)
-		db, err := sql.Open("ql", nm)
+		db, err := sql.Open(drv, nm)
 		if err != nil {
 			t.Fatal(err)
 		}

@@ -14,6 +14,24 @@
 //
 // Change list
 //
+// 2018-11-04: Back end file format V2 is now released. To use the new format
+// for newly created databases set the FileFormat field in *Options passed to
+// OpenFile to value 2 or use the driver named "ql2" instead of "ql".
+//
+// - Both the old and new driver will properly open and use, read and write the
+// old (V1) or new file (V2) format of an existing database.
+//
+// - V1 format has a record size limit of ~64 kB. V2 format record size limit
+// is math.MaxInt32.
+//
+// - V1 format uncommitted transaction size is limited by memory resources. V2
+// format uncommitted transaction is limited by free disk space.
+//
+// - A direct consequence of the previous is that small transactions perform
+// better using V1 format and big transactions perform better using V2 format.
+//
+// - V2 format uses substantially less memory.
+//
 // 2018-08-02: Release v1.2.0 adds initial support for Go modules.
 //
 // 2017-01-10: Release v1.1.0 fixes some bugs and adds a configurable WAL

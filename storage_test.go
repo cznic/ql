@@ -326,7 +326,6 @@ func test(t *testing.T, s testDB) (panicked error) {
 		max = n
 	}
 	for itest, test := range testdata[*oN:max] {
-		//dbg("------------------------------------------------------------- ( itest %d ) ----", itest)
 		var re *regexp.Regexp
 		a := strings.Split(test+"|", "|")
 		q, rset := a[0], strings.TrimSpace(a[1])
@@ -420,7 +419,7 @@ func test(t *testing.T, s testDB) (panicked error) {
 
 				nfo, err := db.Info()
 				if err != nil {
-					dbg("", err)
+					//dbg("", err)
 					panic(err)
 				}
 
@@ -452,7 +451,7 @@ func test(t *testing.T, s testDB) (panicked error) {
 			}()
 
 			if err = s.mark(); err != nil {
-				t.Error(err)
+				t.Error(itest, err)
 				return
 			}
 

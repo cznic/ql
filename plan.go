@@ -623,7 +623,7 @@ func (r *indexPlan) do(ctx *execCtx, f func(interface{}, []interface{}) (bool, e
 		return r.doIntervalCO(ctx, f)
 	default:
 		//dbg("", r.kind)
-		panic("internal error 072")
+		panic("internal error 068")
 	}
 }
 
@@ -662,7 +662,7 @@ func (r *indexPlan) explain(w strutil.Formatter) {
 		w.Format(" > %v && %s <= %v", value{r.lval}, r.cname, value{r.hval})
 	default:
 		//dbg("", r.kind)
-		panic("internal error 073")
+		panic("internal error 053")
 	}
 	w.Format("\n└Output field names %v\n", qnames(r.fieldNames()))
 }

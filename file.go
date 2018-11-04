@@ -9,6 +9,7 @@
 package ql
 
 import (
+	"bytes"
 	"crypto/sha1"
 	"fmt"
 	"io"
@@ -82,6 +83,13 @@ func OpenFile(name string, opt *Options) (db *DB, err error) {
 				return nil, err
 			}
 
+			switch opt.FileFormat {
+			case 0, 1, 2:
+				// ok
+			default:
+				return nil, fmt.Errorf("OpenFile: invalid option.FileFormat value: %v", opt.FileFormat)
+			}
+
 			f, err = os.OpenFile(name, os.O_CREATE|os.O_EXCL|os.O_RDWR, 0666)
 			if err != nil {
 				return nil, err
@@ -89,7 +97,35 @@ func OpenFile(name string, opt *Options) (db *DB, err error) {
 		}
 	}
 
-	fi, err := newFileFromOSFile(f, opt.Headroom) // always ACID
+	nfo, err := f.Stat()
+	if err != nil {
+		return nil, err
+	}
+
+	var new bool
+	switch nfo.Size() {
+	case 0:
+		new = true
+		if opt.FileFormat == 2 {
+			return openFile2(name, f, opt, new)
+		}
+	default:
+		b := make([]byte, 16)
+		if _, err := f.ReadAt(b, 0); err != nil {
+			return nil, err
+		}
+
+		switch {
+		case bytes.Equal(b[:len(magic)], []byte(magic)):
+			// ok
+		case bytes.Equal(b[:len(magic2)], []byte(magic2)):
+			return openFile2(name, f, opt, new)
+		default:
+			return nil, fmt.Errorf("OpenFile: unrecognized file format")
+		}
+	}
+
+	fi, err := newFileFromOSFile(f, opt.Headroom, new)
 	if err != nil {
 		return
 	}
@@ -141,12 +177,22 @@ func OpenFile(name string, opt *Options) (db *DB, err error) {
 //
 // RemoveEmptyWAL controls whether empty WAL files should be deleted on
 // clean exit.
+//
+// FileVersion
+//
+// Select DB backend format when creating a new DB file.
+//
+// Supported values
+//
+//	0, 1	The original file format (version 1)
+//	2	File format version 2
 type Options struct {
 	CanCreate      bool
 	OSFile         lldb.OSFile
 	TempFile       func(dir, prefix string) (f lldb.OSFile, err error)
 	Headroom       int64
 	RemoveEmptyWAL bool
+	FileFormat     int
 }
 
 type fileBTreeIterator struct {
@@ -305,9 +351,7 @@ type fileTemp struct {
 	t     *lldb.BTree
 }
 
-func (t *fileTemp) BeginTransaction() error {
-	return nil
-}
+func (t *fileTemp) BeginTransaction() error { return nil }
 
 func (t *fileTemp) Get(k []interface{}) (v []interface{}, err error) {
 	if err = expand(k); err != nil {
@@ -404,7 +448,7 @@ type file struct {
 	removeEmptyWAL bool // Whether empty WAL files should be removed on close
 }
 
-func newFileFromOSFile(f lldb.OSFile, headroom int64) (fi *file, err error) {
+func newFileFromOSFile(f lldb.OSFile, headroom int64, new bool) (fi *file, err error) {
 	nm := lockName(f.Name())
 	lck, err := lock.Lock(nm)
 	if err != nil {
@@ -455,13 +499,8 @@ func newFileFromOSFile(f lldb.OSFile, headroom int64) (fi *file, err error) {
 		closew = st.Size() == 0
 	}
 
-	info, err := f.Stat()
-	if err != nil {
-		return nil, err
-	}
-
-	switch sz := info.Size(); {
-	case sz == 0:
+	switch {
+	case new:
 		b := make([]byte, 16)
 		copy(b, []byte(magic))
 		if _, err := f.Write(b); err != nil {
@@ -513,15 +552,6 @@ func newFileFromOSFile(f lldb.OSFile, headroom int64) (fi *file, err error) {
 		close, closew = false, false
 		return s, s.Commit()
 	default:
-		b := make([]byte, 16)
-		if _, err := f.Read(b); err != nil {
-			return nil, err
-		}
-
-		if string(b[:len(magic)]) != magic {
-			return nil, fmt.Errorf("(file-002) unknown file format")
-		}
-
 		filer := lldb.Filer(lldb.NewOSFiler(f))
 		filer = lldb.NewInnerFiler(filer, 16)
 		if filer, err = lldb.NewACIDFiler(filer, w, lldb.MinWAL(headroom)); err != nil {
