@@ -1,21 +1,5 @@
-ql
-==
+`github.com/cznic/ql` has moved to [`modernc.org/ql`](https://godoc.org/modernc.org/ql) ([vcs](https://gitlab.com/cznic/ql)).
 
-Package ql is a pure Go embedded (S)QL database.
+Please update your import paths to `modernc.org/ql`.
 
-Installation
-
-    $ go get github.com/cznic/ql
-
-Documentation: [godoc.org/github.com/cznic/ql](http://godoc.org/github.com/cznic/ql)
-
-----
-
-Accompanying tool to play with a DB
-
-Installation
-
-    $ go get github.com/cznic/ql/ql
-
-Documentation: [godoc.org/github.com/cznic/ql/ql](http://godoc.org/github.com/cznic/ql/ql)
-
+This repo is now archived.
